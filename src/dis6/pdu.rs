@@ -91,7 +91,9 @@ impl Pdu {
         data_stream.write_all(&[self.exercise_id]).unwrap();
         data_stream.write_all(&[self.pdu_type]).unwrap();
         data_stream.write_all(&[self.protocol_family]).unwrap();
-        data_stream.write_all(&self.timestamp.to_be_bytes()).unwrap();
+        data_stream
+            .write_all(&self.timestamp.to_be_bytes())
+            .unwrap();
         data_stream.write_all(&self.length.to_be_bytes()).unwrap();
         data_stream.write_all(&self.padding.to_be_bytes()).unwrap();
     }

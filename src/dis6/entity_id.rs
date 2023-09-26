@@ -15,13 +15,9 @@ impl EntityId {
         }
     }
 
-    pub fn marshal(&self) {
-        
-    }
+    pub fn marshal(&self) {}
 
-    pub fn unmarshal() {
-        
-    }
+    pub fn unmarshal() {}
 
     pub fn get_site(&self) -> u16 {
         self.site
@@ -52,8 +48,6 @@ impl EntityId {
     }
 
     pub fn equal(&self, rhs: &EntityId) -> bool {
-        self.site == rhs.site
-            && self.application == rhs.application
-            && self.entity == rhs.entity        
+        self.site == rhs.site && self.application == rhs.application && self.entity == rhs.entity
     }
 }
