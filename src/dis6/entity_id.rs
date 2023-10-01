@@ -15,9 +15,13 @@ impl EntityId {
         }
     }
 
-    pub fn marshal(&self) {}
+    pub fn marshal(&self) {
+        unimplemented!()
+    }
 
-    pub fn unmarshal() {}
+    pub fn unmarshal() {
+        unimplemented!()
+    }
 
     pub fn get_site(&self) -> u16 {
         self.site
