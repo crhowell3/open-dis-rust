@@ -1,5 +1,5 @@
 use crate::dis6::entity_id::EntityId;
-use crate::dis6::simulation_management_family_pdu::SimulationManagementFamilyPdu;
+use crate::dis6::families::simulation_management::SimulationManagementFamilyPdu;
 
 pub struct DataQueryPdu {
     pub originating_entity_id: EntityId,
