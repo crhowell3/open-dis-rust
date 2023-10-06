@@ -6,3 +6,9 @@
 
 pub mod common;
 pub mod families;
+pub mod entity_information;
+pub mod warfare;
+pub mod logistics;
+pub mod radio_communications;
+pub mod simulation_management;
+pub mod distributed_emission_regeneration;
