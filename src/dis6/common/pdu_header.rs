@@ -4,6 +4,11 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+use bytes::{BytesMut, BufMut, Buf};
+use chrono::{Utc, Timelike};
+use num_derive::FromPrimitive;
+
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct PduHeader {
     // The version of the protocol
     protocol_version: u8,
@@ -24,6 +29,29 @@ pub struct PduHeader {
 impl PduHeader {
     pub fn new(pdu_type: PduType, protocol_family: ProtocolFamily, exercise_id: u8, length: u16)
         -> Self {
+        PduHeader {
+            protocol_version,
+            exercise_id,
+            pdu_type,
+            protocol_family,
+            timestamp,
+            length: length as u16,
+            padding: 0 as u16
+        }        
+    }
+
+    pub fn default(pdu_type: PduType, protocol_family: ProtocolFamily, length: u16) -> Self {
+        PduHeader {
+            protocol_version,
+            exercise_id: 1,
+            pdu_type,
+            protocol_family,
+            length: length as u16,
+            padding: 0 as u16
+        }
+    }
+
+    pub fn serialize(&self, buf: &mut BytesMut) {
         
     }
 }
