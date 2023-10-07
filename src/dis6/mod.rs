@@ -5,7 +5,6 @@
 //     Licensed under the BSD 2-Clause License
 
 pub mod common;
-pub mod families;
 pub mod entity_information;
 pub mod warfare;
 pub mod logistics;
