@@ -19,4 +19,23 @@ impl EntityAppearance {
             specific_appearance
         }
     }
+
+    pub fn default() -> Self {
+        EntityAppearance {
+            general_appearance: GeneralAppearance::default(),
+            specific_appearance: SpecificAppearance::default()
+        }
+    }
+
+    pub fn serialize(&self, buf: &mut BytesMut) {
+        self.general_appearance.serialize(buf);
+        self.specific_appearance.serialize(buf);
+    }
+
+    pub fn decode(buf: &mut BytesMut) -> EntityAppearance {
+        EntityAppearance {
+            general_appearance: GeneralAppearance::decode(buf),
+            specific_appearance: SpecificAppearance::decode(buf)
+        }
+    }
 }
