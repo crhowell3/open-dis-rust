@@ -1,18 +1,18 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation 
+//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
 //                     (DIS) application protocol v6 and v7
 //     Copyright (C) 2023 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{BytesMut, BufMut, Buf};
+use bytes::{Buf, BufMut, BytesMut};
 use num_derive::FromPrimitive;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 
 pub struct GeneralAppearance {
     pub entity_paint_scheme: EntityPaintScheme,
-    pub entity_mobility_kill: EntityMobilitySkill,
+    pub entity_mobility_kill: EntityMobilityKill,
     pub entity_fire_power: EntityFirePower,
     pub entity_damage: EntityDamage,
     pub entity_smoke: EntitySmoke,
@@ -23,8 +23,9 @@ pub struct GeneralAppearance {
 }
 
 impl GeneralAppearance {
-    pub fn new(entity_paint_scheme: EntityPaintScheme,
-        entity_mobility_kill: EntityMobility_Kill,
+    pub fn new(
+        entity_paint_scheme: EntityPaintScheme,
+        entity_mobility_kill: EntityMobilityKill,
         entity_fire_power: EntityFirePower,
         entity_damage: EntityDamage,
         entity_smoke: EntitySmoke,
@@ -33,7 +34,7 @@ impl GeneralAppearance {
         entity_lights: EntityLights,
         entity_flaming_effect: EntityFlamingEffect,
     ) -> Self {
-        GeneralAppearance{
+        GeneralAppearance {
             entity_paint_scheme,
             entity_mobility_kill,
             entity_fire_power,
@@ -79,9 +80,16 @@ impl GeneralAppearance {
         let entity_lights = entity_lights << 1;
         let entity_flaming_effect: u16 = self.entity_flaming_effect as u16;
 
-        let general_appearance: u16 = 0u16 | entity_paint_scheme | entity_mobility_kill
-            | entity_fire_power | entity_damage | entity_smoke | entity_trailing_effect
-            | entity_hatch_state | entity_lights | entity_flaming_effect;
+        let general_appearance: u16 = 0u16
+            | entity_paint_scheme
+            | entity_mobility_kill
+            | entity_fire_power
+            | entity_damage
+            | entity_smoke
+            | entity_trailing_effect
+            | entity_hatch_state
+            | entity_lights
+            | entity_flaming_effect;
         buf.put_u16(general_appearance);
     }
 
@@ -96,7 +104,7 @@ impl GeneralAppearance {
             entity_trailing_effect: EntityTrailingEffect::from_u8((bytes >> 2) as u8),
             entity_hatch_state: EntityHatchState::from_u8((bytes >> 3) as u8),
             entity_lights: EntityLights::from_u8((bytes >> 3) as u8),
-            entity_flaming_effect: EntityFlamingEffect::from_u8((bytes >> 1) as u8)    
+            entity_flaming_effect: EntityFlamingEffect::from_u8((bytes >> 1) as u8),
         }
     }
 }
@@ -112,7 +120,7 @@ impl EntityPaintScheme {
         match bit {
             0 => EntityPaintScheme::UniformColor,
             1 => EntityPaintScheme::Camouflage,
-            2_u8..=u8::MAX => EntityPaintScheme::UniformColor
+            2_u8..=u8::MAX => EntityPaintScheme::UniformColor,
         }
     }
 }
@@ -128,7 +136,7 @@ impl EntityMobilityKill {
         match bit {
             0 => EntityMobilityKill::NoMobilityKill,
             1 => EntityMobilityKill::MobilityKill,
-            2_u8..=u8::MAX => EntityMobilityKill::NoMobilityKill
+            2_u8..=u8::MAX => EntityMobilityKill::NoMobilityKill,
         }
     }
 }
@@ -144,7 +152,7 @@ impl EntityFirePower {
         match bit {
             0 => EntityFirePower::NoFirePowerKill,
             1 => EntityFirePower::FirePowerKill,
-            2_u8..=u8::MAX => EntityFirePower::NoFirePowerKill
+            2_u8..=u8::MAX => EntityFirePower::NoFirePowerKill,
         }
     }
 }
@@ -163,7 +171,7 @@ impl EntityDamage {
             0 => EntityDamage::NoDamage,
             1 => EntityDamage::SlightDamage,
             2 => EntityDamage::ModerateDamage,
-            3_u8..=u8::MAX => EntityDamage::Destroyed
+            3_u8..=u8::MAX => EntityDamage::Destroyed,
         }
     }
 }
@@ -182,7 +190,7 @@ impl EntitySmoke {
             0 => EntitySmoke::NotSmoking,
             1 => EntitySmoke::SmokePlumeRising,
             2 => EntitySmoke::EngineSmoke,
-            3_u8..=u8::MAX => EntitySmoke::EngineSmokeAndSmokePlumeRising
+            3_u8..=u8::MAX => EntitySmoke::EngineSmokeAndSmokePlumeRising,
         }
     }
 }
@@ -201,7 +209,7 @@ impl EntityTrailingEffect {
             0 => EntityTrailingEffect::None,
             1 => EntityTrailingEffect::Small,
             2 => EntityTrailingEffect::Medium,
-            3_u8..=u8::MAX => EntityTrailingEffect::Large
+            3_u8..=u8::MAX => EntityTrailingEffect::Large,
         }
     }
 }
@@ -224,7 +232,7 @@ impl EntityHatchState {
             2 => EntityHatchState::PrimaryHatchPopped,
             3 => EntityHatchState::PrimaryHatchPoppedAndPersonVisibleUnderHatch,
             4 => EntityHatchState::PrimaryHatchOpen,
-            5_u8..=u8::MAX => EntityHatchState::PrimaryHatchOpenAndPersonVisible
+            5_u8..=u8::MAX => EntityHatchState::PrimaryHatchOpenAndPersonVisible,
         }
     }
 }
@@ -243,7 +251,7 @@ impl EntityLights {
             0 => EntityLights::None,
             1 => EntityLights::RunningLightsOn,
             2 => EntityLights::NavigationLightsOn,
-            3_u8..u8::MAX => EntityLights::FormationLightsOn
+            3_u8..=u8::MAX => EntityLights::FormationLightsOn,
         }
     }
 }
@@ -259,7 +267,7 @@ impl EntityFlamingEffect {
         match bit {
             0 => EntityFlamingEffect::None,
             1 => EntityFlamingEffect::FlamesPresent,
-            2_u8..u8::MAX => EntityFlamingEffect::None
+            2_u8..=u8::MAX => EntityFlamingEffect::None,
         }
     }
 }
