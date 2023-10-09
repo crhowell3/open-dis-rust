@@ -6,6 +6,7 @@
 
 use bytes::{BytesMut, BufMut, Buf};
 use num_derive::FromPrimitive;
+use serde::{Serialize, Deserialize};
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 

@@ -5,6 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 use bytes::BytesMut;
+use super::{general_appearance::GeneralAppearance, specific_appearance: SpecificAppearance};
 
 #[derive(Copy, Clone, Debug)]
 pub struct EntityAppearance {
