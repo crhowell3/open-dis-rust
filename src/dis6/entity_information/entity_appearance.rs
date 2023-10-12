@@ -9,8 +9,8 @@ use super::{general_appearance::GeneralAppearance, specific_appearance: Specific
 
 #[derive(Copy, Clone, Debug)]
 pub struct EntityAppearance {
-    pub general_appearance: GeneralAppearance;
-    pub specific_appearance: SpecificAppearance;
+    pub general_appearance: GeneralAppearance,
+    pub specific_appearance: SpecificAppearance,
 }
 
 impl EntityAppearance {

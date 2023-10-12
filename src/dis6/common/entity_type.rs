@@ -80,14 +80,15 @@ impl EntityType {
     fn decode_country(data: u16) -> Country {
         match data {
             1 => Country::Afghanistan,
-            2 => Country::Argentina,
-            3 => Country::Indonesia,
-            4 => Country::Iran,
-            5 => Country::Iraq,
-            6 => Country::Ireland,
-            7 => Country::Israel,
-            8 => Country::Italy,
-            9 => Country::NorthKorea,
+            2 => Country::Albania,
+            3 => Country::Algeria,
+            4 => Country::AmericanSamoa,
+            5 => Country::Andorra,
+            6 => Country::Angola,
+            7 => Country::Anguilla,
+            8 => Country::Antarctica,
+            9 => Country::AntiguaAndBarbuda,
+            10 => Country::Argentina
             120 => Country::SouthKorea,
             224 => Country::UnitedKingdom,
             225 => Country::UnitedStates,
@@ -96,4 +97,38 @@ impl EntityType {
             _ => Country::Other,
         }
     }
+}
+
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, PartialOrd, Serialize, Deserialize)]
+pub enum Kind {
+    Other = 0,
+    Platform = 1,
+    Munition = 2,
+    LifeForm = 3,
+    Environmental = 4,
+    CulturalFeature = 5,
+    Supply = 6,
+    Radio = 7,
+    Expendable = 8,
+    SensorEmittor = 9,
+}
+
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Serialize, Deserialize)]
+pub enum Country {
+    Other = 0,
+    Afghanistan = 1,
+    Albania = 2,
+    Algeria = 3,
+    AmericanSamoa = 4,
+    Andorra = 5,
+    Angola = 6,
+    Anguilla = 7,
+    Antarctica = 8,
+    AntiguaAndBarbuda = 9,
+    Argentina = 10,
+    SouthKorea = 120,
+    UnitedKingdom = 224,
+    UnitedStates = 225,
+    Russia = 260,
+    Ukraine = 265,
 }

@@ -4,8 +4,6 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use std::simd::f64x32;
-
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Copy, Clone, Debug, Default)]
