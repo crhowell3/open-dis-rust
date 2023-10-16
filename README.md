@@ -8,7 +8,7 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 | PDU Type | Supported? |
 | -------- | ---------- |
 | Acknowledge | ✅ |
-| AcknowledgeReliable | ❌ |
+| AcknowledgeReliable | ✅ |
 | ActionRequest | ❌ |
 | ActionRequestReliable | ❌ |
 | ActionResponse | ❌ |
