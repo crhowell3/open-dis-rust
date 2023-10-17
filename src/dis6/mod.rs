@@ -5,7 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 pub mod common;
-pub mod distributed_emission_regeneration;
+pub mod distributed_emissions;
 pub mod entity_information;
 pub mod logistics;
 pub mod radio_communications;
