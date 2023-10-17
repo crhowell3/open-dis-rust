@@ -10,4 +10,5 @@ pub mod entity_information;
 pub mod logistics;
 pub mod radio_communications;
 pub mod simulation_management;
+pub mod simulation_management_with_reliability;
 pub mod warfare;
