@@ -1,11 +1,11 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation 
+//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
 //                     (DIS) application protocol v6 and v7
 //     Copyright (C) 2023 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
+use super::{general_appearance::GeneralAppearance, specific_appearance::SpecificAppearance};
 use bytes::BytesMut;
-use super::{general_appearance::GeneralAppearance, specific_appearance: SpecificAppearance};
 
 #[derive(Copy, Clone, Debug)]
 pub struct EntityAppearance {
@@ -14,17 +14,20 @@ pub struct EntityAppearance {
 }
 
 impl EntityAppearance {
-    pub fn new(general_appearance: GeneralAppearance, specific_appearance: SpecificAppearance) -> Self {
+    pub fn new(
+        general_appearance: GeneralAppearance,
+        specific_appearance: SpecificAppearance,
+    ) -> Self {
         EntityAppearance {
             general_appearance,
-            specific_appearance
+            specific_appearance,
         }
     }
 
     pub fn default() -> Self {
         EntityAppearance {
             general_appearance: GeneralAppearance::default(),
-            specific_appearance: SpecificAppearance::default()
+            specific_appearance: SpecificAppearance::default(),
         }
     }
 
@@ -36,7 +39,7 @@ impl EntityAppearance {
     pub fn decode(buf: &mut BytesMut) -> EntityAppearance {
         EntityAppearance {
             general_appearance: GeneralAppearance::decode(buf),
-            specific_appearance: SpecificAppearance::decode(buf)
+            specific_appearance: SpecificAppearance::decode(buf),
         }
     }
 }

@@ -203,7 +203,10 @@ impl ForceId {
 #[cfg(test)]
 mod tests {
     use super::EntityStatePdu;
-    use crate::dis6::common::pdu_header::{PduHeader, PduType, ProtocolFamily};
+    use crate::dis6::common::{
+        pdu::Pdu,
+        pdu_header::{PduHeader, PduType, ProtocolFamily},
+    };
     use bytes::BytesMut;
 
     #[test]

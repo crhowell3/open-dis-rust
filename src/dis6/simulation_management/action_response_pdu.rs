@@ -1,12 +1,12 @@
-use bytes::{Buf, BufMut, BytesMut};
-use std::any::Any;
-
 use crate::dis6::common::{
     dis_error::DISError,
     entity_id::EntityId,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
+use bytes::{Buf, BufMut, BytesMut};
+use serde::{Deserialize, Serialize};
+use std::any::Any;
 
 #[derive(Copy, Clone, Debug)]
 pub struct ActionResponsePdu {
@@ -105,7 +105,7 @@ impl Pdu for ActionResponsePdu {
         let originating_entity_id = EntityId::decode(&mut buffer);
         let receiving_entity_id = EntityId::decode(&mut buffer);
         let request_id = buffer.get_u32();
-        let request_status = buffer.get_u32();
+        let request_status = RequestStatus::decode(&mut buffer);
         let number_of_fixed_datum_records = buffer.get_u32();
         let number_of_variable_datum_records = buffer.get_u32();
         let mut fixed_datum_records: u64 = 0;

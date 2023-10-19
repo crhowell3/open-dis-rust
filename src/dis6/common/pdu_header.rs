@@ -11,13 +11,13 @@ use num_derive::FromPrimitive;
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct PduHeader {
     // The version of the protocol
-    pub protocol_version: u8,
+    pub protocol_version: ProtocolVersion,
     // Exercise ID
     pub exercise_id: u8,
     // Type of PDU, unique for each PDU class
-    pub pdu_type: u8,
+    pub pdu_type: PduType,
     // Value that refers to the protocol family
-    pub protocol_family: u8,
+    pub protocol_family: ProtocolFamily,
     // Timestamp value
     pub timestamp: u32,
     // Length, in bytes, of the PDU
@@ -34,11 +34,11 @@ impl PduHeader {
         length: u16,
     ) -> Self {
         PduHeader {
-            protocol_version,
+            protocol_version: ProtocolVersion::DIS_PDUv2_Fourth_Draft_Revised,
             exercise_id,
             pdu_type,
             protocol_family,
-            timestamp,
+            timestamp: PduHeader::calculate_dis_timestamp() as u32,
             length: length as u16,
             padding: 0 as u16,
         }
@@ -46,7 +46,7 @@ impl PduHeader {
 
     pub fn default(pdu_type: PduType, protocol_family: ProtocolFamily, length: u16) -> Self {
         PduHeader {
-            protocol_version,
+            protocol_version: ProtocolVersion::DIS_PDUv2_Fourth_Draft_Revised,
             exercise_id: 1,
             pdu_type,
             protocol_family,
@@ -73,6 +73,29 @@ impl PduHeader {
         buf.put_u32(self.timestamp as u32);
         buf.put_u16(self.length as u16);
         buf.put_u16(self.padding as u16);
+    }
+
+    fn decode_protocol_version(data: u8) -> ProtocolVersion {
+        match data {
+            1 => ProtocolVersion::DIS_PDUv1,
+            2 => ProtocolVersion::IEEE1278,
+            3 => ProtocolVersion::DIS_PDUv2_Third_Draft,
+            4 => ProtocolVersion::DIS_PDUv2_Fourth_Draft_Revised,
+            5 => ProtocolVersion::IEEE1278_1,
+            _ => ProtocolVersion::Other,
+        }
+    }
+
+    pub fn decode(buf: &mut BytesMut) -> PduHeader {
+        PduHeader {
+            protocol_version: PduHeader::decode_protocol_version(buf.get_u8()),
+            exercise_id: buf.get_u8(),
+            pdu_type: PduHeader::decode_pdu_type(buf.get_u8()),
+            protocol_family: PduHeader::decode_protocol_family(buf.get_u8()),
+            timestamp: buf.get_u32(),
+            length: buf.get_u16(),
+            padding: buf.get_u16(),
+        }
     }
 
     pub fn decode_pdu_type(data: u8) -> PduType {
@@ -152,6 +175,18 @@ impl PduHeader {
             _ => PduType::Other,
         }
     }
+
+    fn decode_protocol_family(data: u8) -> ProtocolFamily {
+        match data {
+            1 => ProtocolFamily::EntityInformation,
+            2 => ProtocolFamily::Warfare,
+            3 => ProtocolFamily::Logistics,
+            4 => ProtocolFamily::RadioCommunications,
+            5 => ProtocolFamily::SimulationManagement,
+            6 => ProtocolFamily::DistributedEmissionRegeneration,
+            _ => ProtocolFamily::Other,
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
@@ -163,6 +198,17 @@ pub enum ProtocolFamily {
     RadioCommunications = 4,
     SimulationManagement = 5,
     DistributedEmissionRegeneration = 6,
+}
+
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum ProtocolVersion {
+    Other = 0,
+    DIS_PDUv1 = 1,
+    IEEE1278 = 2,
+    DIS_PDUv2_Third_Draft = 3,
+    DIS_PDUv2_Fourth_Draft_Revised = 4,
+    IEEE1278_1 = 5,
 }
 
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]

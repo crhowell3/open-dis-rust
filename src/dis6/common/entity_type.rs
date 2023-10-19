@@ -88,7 +88,7 @@ impl EntityType {
             7 => Country::Anguilla,
             8 => Country::Antarctica,
             9 => Country::AntiguaAndBarbuda,
-            10 => Country::Argentina
+            10 => Country::Argentina,
             120 => Country::SouthKorea,
             224 => Country::UnitedKingdom,
             225 => Country::UnitedStates,

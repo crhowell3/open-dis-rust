@@ -219,7 +219,7 @@ pub enum EntityHatchState {
     NotApplicable = 0,
     PrimaryHatchClosed = 1,
     PrimaryHatchPopped = 2,
-    PrimaryHatchePoppedAndPersonVisibleUnderHatch = 3,
+    PrimaryHatchPoppedAndPersonVisibleUnderHatch = 3,
     PrimaryHatchOpen = 4,
     PrimaryHatchOpenAndPersonVisible = 5,
 }

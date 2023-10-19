@@ -8,7 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use num_derive::FromPrimitive;
 
 use crate::dis6::common::{
-    angular_velocity::AngularVelocity, linear_acceleration::LinearAcceleration,
+    angular_velocity_vector::AngularVelocity, linear_acceleration::LinearAcceleration,
 };
 
 #[derive(Copy, Clone, Debug)]

@@ -53,8 +53,8 @@ impl Pdu for AcknowledgePdu {
         if pdu_header.pdu_type == PduType::Acknowledge {
             let originating_entity_id = EntityId::decode(&mut buffer);
             let receiving_entity_id = EntityId::decode(&mut buffer);
-            let acknowledge_flag = buffer.get_u8();
-            let response_flag = buffer.get_u8();
+            let acknowledge_flag = AcknowledgeFlag::from_u8(buffer.get_u8());
+            let response_flag = ResponseFlag::from_u8(buffer.get_u8());
             let request_id = buffer.get_u32();
 
             return Ok(AcknowledgePdu {
@@ -74,14 +74,17 @@ impl Pdu for AcknowledgePdu {
         self
     }
 
-    fn deserialize_without_header(buffer: BytesMut, pdu_header: PduHeader) -> Result<Self, DISError>
+    fn deserialize_without_header(
+        mut buffer: BytesMut,
+        pdu_header: PduHeader,
+    ) -> Result<Self, DISError>
     where
         Self: Sized,
     {
         let originating_entity_id = EntityId::decode(&mut buffer);
         let receiving_entity_id = EntityId::decode(&mut buffer);
-        let acknowledge_flag = buffer.get_u8();
-        let response_flag = buffer.get_u8();
+        let acknowledge_flag = AcknowledgeFlag::from_u8(buffer.get_u8());
+        let response_flag = ResponseFlag::from_u8(buffer.get_u8());
         let request_id = buffer.get_u32();
 
         return Ok(AcknowledgePdu {
@@ -112,6 +115,7 @@ impl AcknowledgeFlag {
             3 => AcknowledgeFlag::StartResume,
             4 => AcknowledgeFlag::StopFreeze,
             5 => AcknowledgeFlag::TransferOwnership,
+            _ => AcknowledgeFlag::CreateEntity,
         }
     }
 }
