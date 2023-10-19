@@ -1,4 +1,5 @@
 use bytes::{Buf, BufMut, BytesMut};
+use std::any::Any;
 
 use crate::dis6::common::{
     dis_error::DISError,
@@ -44,7 +45,7 @@ impl Pdu for AcknowledgePdu {
         buf.put_u32(self.request_id as u32);
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, crate::dis6::common::dis_error::DISError>
+    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
     {
@@ -67,6 +68,30 @@ impl Pdu for AcknowledgePdu {
         } else {
             Err(DISError::InvalidDISHeader)
         }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn deserialize_without_header(buffer: BytesMut, pdu_header: PduHeader) -> Result<Self, DISError>
+    where
+        Self: Sized,
+    {
+        let originating_entity_id = EntityId::decode(&mut buffer);
+        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let acknowledge_flag = buffer.get_u8();
+        let response_flag = buffer.get_u8();
+        let request_id = buffer.get_u32();
+
+        return Ok(AcknowledgePdu {
+            pdu_header,
+            originating_entity_id,
+            receiving_entity_id,
+            acknowledge_flag,
+            response_flag,
+            request_id,
+        });
     }
 }
 
@@ -108,5 +133,52 @@ impl ResponseFlag {
             3 => ResponseFlag::PendingOperatorAction,
             4_u8..=u8::MAX => ResponseFlag::Other,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::AcknowledgePdu;
+    use crate::dis6::common::{
+        pdu::Pdu,
+        pdu_header::{PduHeader, PduType, ProtocolFamily},
+    };
+    use bytes::BytesMut;
+
+    #[test]
+    fn create_header() {
+        let acknowledge_pdu = AcknowledgePdu::default();
+        let pdu_header = PduHeader::default(
+            PduType::Acknowledge,
+            ProtocolFamily::SimulationManagement,
+            448 / 8,
+        );
+
+        assert_eq!(
+            pdu_header.protocol_version,
+            acknowledge_pdu.pdu_header.protocol_version
+        );
+        assert_eq!(
+            pdu_header.exercise_id,
+            acknowledge_pdu.pdu_header.exercise_id
+        );
+        assert_eq!(pdu_header.pdu_type, acknowledge_pdu.pdu_header.pdu_type);
+        assert_eq!(
+            pdu_header.protocol_family,
+            acknowledge_pdu.pdu_header.protocol_family
+        );
+        assert_eq!(pdu_header.timestamp, acknowledge_pdu.pdu_header.timestamp);
+        assert_eq!(pdu_header.length, acknowledge_pdu.pdu_header.length);
+        assert_eq!(pdu_header.padding, acknowledge_pdu.pdu_header.padding);
+    }
+
+    #[test]
+    fn deserialize_header() {
+        let acknowledge_pdu = AcknowledgePdu::default();
+        let mut buffer = BytesMut::new();
+        acknowledge_pdu.serialize(&mut buffer);
+
+        let new_acknowledge_pdu = AcknowledgePdu::deserialize(buffer).unwrap();
+        assert_eq!(new_acknowledge_pdu.pdu_header, acknowledge_pdu.pdu_header);
     }
 }

@@ -9,34 +9,34 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SimulationAddress {
-    pub site_identifier: u16,
-    pub application_identifier: u16,
+    pub site_id: u16,
+    pub application_id: u16,
 }
 
 impl SimulationAddress {
-    pub fn new(site_identifier: u16, application_identifier: u16) -> Self {
+    pub fn new(site_id: u16, application_id: u16) -> Self {
         SimulationAddress {
-            site_identifier,
-            application_identifier,
+            site_id,
+            application_id,
         }
     }
 
     pub fn default() -> Self {
         SimulationAddress {
-            site_identifier: 1,
-            application_identifier: 1,
+            site_id: 1,
+            application_id: 1,
         }
     }
 
     pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.site_identifier);
-        buf.put_u16(self.application_identifier);
+        buf.put_u16(self.site_id);
+        buf.put_u16(self.application_id);
     }
 
     pub fn decode(buf: &mut BytesMut) -> SimulationAddress {
         SimulationAddress {
-            site_identifier: buf.get_u16(),
-            application_identifier: buf.get_u16(),
+            site_id: buf.get_u16(),
+            application_id: buf.get_u16(),
         }
     }
 }

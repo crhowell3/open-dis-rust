@@ -1,57 +1,44 @@
-use std::io::{Read, Write};
+use super::simulation_address::SimulationAddress;
+use bytes::{Buf, BufMut, BytesMut};
+use serde::{Deserialize, Serialize};
 
+#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EntityId {
-    site: u16,
-    application: u16,
-    entity: u16,
+    pub simulation_address: SimulationAddress,
+    pub entity_id: u16,
 }
 
 impl EntityId {
-    pub fn new() -> Self {
+    pub fn new(site_id: u16, application_id: u16, entity_id: u16) -> Self {
         EntityId {
-            site: 0,
-            application: 0,
-            entity: 0,
+            simulation_address: SimulationAddress::new(site_id, application_id),
+            entity_id,
         }
     }
 
-    pub fn marshal(&self) {
-        unimplemented!()
+    pub fn default(entity_id: u16) -> Self {
+        EntityId {
+            simulation_address: SimulationAddress::default(),
+            entity_id,
+        }
     }
 
-    pub fn unmarshal() {
-        unimplemented!()
+    pub fn serialize(&self, buf: &mut BytesMut) {
+        self.simulation_address.serialize(buf);
+        buf.put_u16(self.entity_id);
     }
 
-    pub fn get_site(&self) -> u16 {
-        self.site
+    pub fn decode(buf: &mut BytesMut) -> EntityId {
+        EntityId {
+            simulation_address: EntityId::decode_simulation_address(buf),
+            entity_id: buf.get_u16(),
+        }
     }
 
-    pub fn set_site(&mut self, x: u16) {
-        self.site = x;
-    }
-
-    pub fn get_application(&self) -> u16 {
-        self.application
-    }
-
-    pub fn set_application(&mut self, x: u16) {
-        self.application = x;
-    }
-
-    pub fn get_entity(&self) -> u16 {
-        self.entity
-    }
-
-    pub fn set_entity(&mut self, x: u16) {
-        self.entity = x;
-    }
-
-    pub fn get_marshalled_size(&self) -> usize {
-        6
-    }
-
-    pub fn equal(&self, rhs: &EntityId) -> bool {
-        self.site == rhs.site && self.application == rhs.application && self.entity == rhs.entity
+    fn decode_simulation_address(buf: &mut BytesMut) -> SimulationAddress {
+        SimulationAddress {
+            site_id: buf.get_u16(),
+            application_id: buf.get_u16(),
+        }
     }
 }

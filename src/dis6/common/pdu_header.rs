@@ -1,11 +1,11 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation 
+//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
 //                     (DIS) application protocol v6 and v7
 //     Copyright (C) 2023 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{BytesMut, BufMut, Buf};
-use chrono::{Utc, Timelike};
+use bytes::{Buf, BufMut, BytesMut};
+use chrono::{Timelike, Utc};
 use num_derive::FromPrimitive;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -27,8 +27,12 @@ pub struct PduHeader {
 }
 
 impl PduHeader {
-    pub fn new(pdu_type: PduType, protocol_family: ProtocolFamily, exercise_id: u8, length: u16)
-        -> Self {
+    pub fn new(
+        pdu_type: PduType,
+        protocol_family: ProtocolFamily,
+        exercise_id: u8,
+        length: u16,
+    ) -> Self {
         PduHeader {
             protocol_version,
             exercise_id,
@@ -36,8 +40,8 @@ impl PduHeader {
             protocol_family,
             timestamp,
             length: length as u16,
-            padding: 0 as u16
-        }        
+            padding: 0 as u16,
+        }
     }
 
     pub fn default(pdu_type: PduType, protocol_family: ProtocolFamily, length: u16) -> Self {
@@ -48,7 +52,7 @@ impl PduHeader {
             protocol_family,
             timestamp: PduHeader::calculate_dis_timestamp() as u32,
             length: length as u16,
-            padding: 0 as u16
+            padding: 0 as u16,
         }
     }
 
@@ -145,7 +149,7 @@ impl PduHeader {
             70 => PduType::InformationOperationsAction,
             71 => PduType::InformationOperationsReport,
             72 => PduType::Attribute,
-            _ => PduType::Other
+            _ => PduType::Other,
         }
     }
 }
@@ -158,7 +162,7 @@ pub enum ProtocolFamily {
     Logistics = 3,
     RadioCommunications = 4,
     SimulationManagement = 5,
-    DistributedEmissionRegeneration = 6
+    DistributedEmissionRegeneration = 6,
 }
 
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
@@ -235,5 +239,5 @@ pub enum PduType {
     EntityDamageStatus = 69,
     InformationOperationsAction = 70,
     InformationOperationsReport = 71,
-    Attribute = 72
+    Attribute = 72,
 }
