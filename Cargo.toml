@@ -1,8 +1,18 @@
 [package]
 name = "open-dis-rust"
 version = "0.1.0"
+authors = ["Cameron Howell <crhowell3@gmail.com>"]
 edition = "2021"
+license = "BSD 2-Clause"
+readme = "README.md"
+repository = "https://github.com/crhowell3/open-dis-rust"
+keywords = ["DIS", "IEEE", "Simulation"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bytes = "1.5.0"
+chrono = "0.4.31"
+num-derive = "0.4.1"
+num-traits = "0.2.17"
+serde = {version = "1.0.188", features = ["derive"]}
