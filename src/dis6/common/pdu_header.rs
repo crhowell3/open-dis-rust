@@ -34,7 +34,7 @@ impl PduHeader {
         length: u16,
     ) -> Self {
         PduHeader {
-            protocol_version: ProtocolVersion::DIS_PDUv2_Fourth_Draft_Revised,
+            protocol_version: ProtocolVersion::IEEE1278_1A_1998,
             exercise_id,
             pdu_type,
             protocol_family,
@@ -46,7 +46,7 @@ impl PduHeader {
 
     pub fn default(pdu_type: PduType, protocol_family: ProtocolFamily, length: u16) -> Self {
         PduHeader {
-            protocol_version: ProtocolVersion::DIS_PDUv2_Fourth_Draft_Revised,
+            protocol_version: ProtocolVersion::IEEE1278_1A_1998,
             exercise_id: 1,
             pdu_type,
             protocol_family,
@@ -78,10 +78,12 @@ impl PduHeader {
     fn decode_protocol_version(data: u8) -> ProtocolVersion {
         match data {
             1 => ProtocolVersion::DIS_PDUv1,
-            2 => ProtocolVersion::IEEE1278,
+            2 => ProtocolVersion::IEEE1278_1993,
             3 => ProtocolVersion::DIS_PDUv2_Third_Draft,
             4 => ProtocolVersion::DIS_PDUv2_Fourth_Draft_Revised,
-            5 => ProtocolVersion::IEEE1278_1,
+            5 => ProtocolVersion::IEEE1278_1_1995,
+            6 => ProtocolVersion::IEEE1278_1A_1998,
+            7 => ProtocolVersion::IEEE1278_1_2012,
             _ => ProtocolVersion::Other,
         }
     }
@@ -205,10 +207,12 @@ pub enum ProtocolFamily {
 pub enum ProtocolVersion {
     Other = 0,
     DIS_PDUv1 = 1,
-    IEEE1278 = 2,
+    IEEE1278_1993 = 2,
     DIS_PDUv2_Third_Draft = 3,
     DIS_PDUv2_Fourth_Draft_Revised = 4,
-    IEEE1278_1 = 5,
+    IEEE1278_1_1995 = 5,
+    IEEE1278_1A_1998 = 6,
+    IEEE1278_1_2012 = 7,
 }
 
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
