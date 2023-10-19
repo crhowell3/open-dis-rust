@@ -8,10 +8,10 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 | PDU Type | Supported? |
 | -------- | ---------- |
 | Acknowledge | ✅ |
-| AcknowledgeReliable | ✅ |
-| ActionRequest | ❌ |
+| AcknowledgeReliable | ❌  |
+| ActionRequest | ✅|
 | ActionRequestReliable | ❌ |
-| ActionResponse | ❌ |
+| ActionResponse | ✅|
 | ActionResponseReliable | ❌ |
 | AggregateState | ❌ |
 | ArealObjectState | ❌ |
@@ -21,8 +21,8 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 | CommentReliable | ❌ |
 | CreateEntity | ❌ |
 | CreateEntityReliable | ❌ |
-| Data | ✅ |
-| DataQuery | ✅ |
+| Data | ❌ |
+| DataQuery | ❌ |
 | DataQueryReliable | ❌ |
 | DataReliable | ❌ |
 | Designator | ❌ |
