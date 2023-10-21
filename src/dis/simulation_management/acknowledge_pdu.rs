@@ -1,7 +1,7 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use crate::dis6::common::{
+use crate::dis::common::{
     dis_error::DISError,
     entity_id::EntityId,
     pdu::Pdu,
@@ -143,7 +143,7 @@ impl ResponseFlag {
 #[cfg(test)]
 mod tests {
     use super::AcknowledgePdu;
-    use crate::dis6::common::{
+    use crate::dis::common::{
         pdu::Pdu,
         pdu_header::{PduHeader, PduType, ProtocolFamily},
     };

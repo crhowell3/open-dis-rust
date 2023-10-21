@@ -1,9 +1,7 @@
 # open-dis-rust
-Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) application protocol v6 and v7
+Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) application protocol
 
 ## Supported PDUs
-
-### DIS v6
 
 | PDU Type | Supported? |
 | -------- | ---------- |

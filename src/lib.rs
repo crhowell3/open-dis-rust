@@ -1,1 +1,1 @@
-pub mod dis6;
+pub mod dis;
