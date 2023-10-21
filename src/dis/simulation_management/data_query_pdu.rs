@@ -158,9 +158,6 @@ mod tests {
             action_request_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.time_interval,
-            action_request_pdu.pdu_header.time_interval
-        );
+        assert_eq!(pdu_header.padding, action_request_pdu.pdu_header.padding);
     }
 }
