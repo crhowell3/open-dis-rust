@@ -20,7 +20,7 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 | CreateEntity | ✅ |
 | CreateEntityReliable | ❌ |
 | Data | ✅ |
-| DataQuery | ❌ |
+| DataQuery | ✅ |
 | DataQueryReliable | ❌ |
 | DataReliable | ❌ |
 | Designator | ❌ |
@@ -29,7 +29,7 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 | EntityState | ✅ |
 | EntityStateUpdate | ❌ |
 | EnvironmentalProcess | ❌ |
-| EventReport | ❌ |
+| EventReport | ✅ |
 | EventReportReliable | ❌ |
 | FastEntityState | ❌ |
 | Fire | ❌ |
