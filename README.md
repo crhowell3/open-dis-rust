@@ -7,15 +7,15 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 | -------- | ---------- |
 | Acknowledge | ✅ |
 | AcknowledgeReliable | ❌  |
-| ActionRequest | ✅|
+| ActionRequest | ✅ |
 | ActionRequestReliable | ❌ |
-| ActionResponse | ✅|
+| ActionResponse | ✅ |
 | ActionResponseReliable | ❌ |
 | AggregateState | ❌ |
 | ArealObjectState | ❌ |
 | CollisionElastic | ❌ |
 | Collision | ❌ |
-| Comment | ❌ |
+| Comment | ✅ |
 | CommentReliable | ❌ |
 | CreateEntity | ❌ |
 | CreateEntityReliable | ❌ |

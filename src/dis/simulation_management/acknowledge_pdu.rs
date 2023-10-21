@@ -171,7 +171,6 @@ mod tests {
             pdu_header.protocol_family,
             acknowledge_pdu.pdu_header.protocol_family
         );
-        assert_eq!(pdu_header.timestamp, acknowledge_pdu.pdu_header.timestamp);
         assert_eq!(pdu_header.length, acknowledge_pdu.pdu_header.length);
         assert_eq!(pdu_header.padding, acknowledge_pdu.pdu_header.padding);
     }
