@@ -17,9 +17,9 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 | Collision | ❌ |
 | Comment | ✅ |
 | CommentReliable | ❌ |
-| CreateEntity | ❌ |
+| CreateEntity | ✅ |
 | CreateEntityReliable | ❌ |
-| Data | ❌ |
+| Data | ✅ |
 | DataQuery | ❌ |
 | DataQueryReliable | ❌ |
 | DataReliable | ❌ |
