@@ -56,7 +56,7 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 | ResupplyReceived | ❌ |
 | Sees | ❌ |
 | ServiceRequest | ❌ |
-| SetData | ❌ |
+| SetData | ✅ |
 | SetDataReliable | ❌ |
 | SetRecordReliable | ❌ |
 | Signal | ❌ |
