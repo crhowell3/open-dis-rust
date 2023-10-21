@@ -47,7 +47,7 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 | PointObjectState | ❌ |
 | Receiver | ❌ |
 | RecordQueryReliable | ❌ |
-| RemoveEntity | ❌ |
+| RemoveEntity | ✅ |
 | RemoveEntityReliable | ❌ |
 | RepairComplete | ❌ |
 | RepairResponse | ❌ |

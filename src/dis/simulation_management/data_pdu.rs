@@ -129,28 +129,39 @@ impl Pdu for DataPdu {
 #[cfg(test)]
 mod tests {
     use super::DataPdu;
-    use crate::dis::common::pdu_header::{PduHeader, PduType, ProtocolFamily};
+    use crate::dis::common::{
+        pdu::Pdu,
+        pdu_header::{PduHeader, PduType, ProtocolFamily},
+    };
+    use bytes::BytesMut;
 
     #[test]
     fn create_header() {
-        let action_request_pdu = DataPdu::default();
+        let data_pdu = DataPdu::default();
         let pdu_header =
             PduHeader::default(PduType::Data, ProtocolFamily::SimulationManagement, 448 / 8);
 
         assert_eq!(
             pdu_header.protocol_version,
-            action_request_pdu.pdu_header.protocol_version
+            data_pdu.pdu_header.protocol_version
         );
-        assert_eq!(
-            pdu_header.exercise_id,
-            action_request_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, action_request_pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.exercise_id, data_pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, data_pdu.pdu_header.pdu_type);
         assert_eq!(
             pdu_header.protocol_family,
-            action_request_pdu.pdu_header.protocol_family
+            data_pdu.pdu_header.protocol_family
         );
-        assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, action_request_pdu.pdu_header.padding);
+        assert_eq!(pdu_header.length, data_pdu.pdu_header.length);
+        assert_eq!(pdu_header.padding, data_pdu.pdu_header.padding);
+    }
+
+    #[test]
+    fn deserialize_header() {
+        let data_pdu = DataPdu::default();
+        let mut buffer = BytesMut::new();
+        data_pdu.serialize(&mut buffer);
+
+        let new_data_pdu = DataPdu::deserialize(buffer).unwrap();
+        assert_eq!(new_data_pdu.pdu_header, data_pdu.pdu_header);
     }
 }

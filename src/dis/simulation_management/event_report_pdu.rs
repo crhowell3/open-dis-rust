@@ -184,11 +184,15 @@ impl EventType {
 #[cfg(test)]
 mod tests {
     use super::EventReportPdu;
-    use crate::dis::common::pdu_header::{PduHeader, PduType, ProtocolFamily};
+    use crate::dis::common::{
+        pdu::Pdu,
+        pdu_header::{PduHeader, PduType, ProtocolFamily},
+    };
+    use bytes::BytesMut;
 
     #[test]
     fn create_header() {
-        let action_request_pdu = EventReportPdu::default();
+        let event_report_pdu = EventReportPdu::default();
         let pdu_header = PduHeader::default(
             PduType::EventReport,
             ProtocolFamily::SimulationManagement,
@@ -197,18 +201,28 @@ mod tests {
 
         assert_eq!(
             pdu_header.protocol_version,
-            action_request_pdu.pdu_header.protocol_version
+            event_report_pdu.pdu_header.protocol_version
         );
         assert_eq!(
             pdu_header.exercise_id,
-            action_request_pdu.pdu_header.exercise_id
+            event_report_pdu.pdu_header.exercise_id
         );
-        assert_eq!(pdu_header.pdu_type, action_request_pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.pdu_type, event_report_pdu.pdu_header.pdu_type);
         assert_eq!(
             pdu_header.protocol_family,
-            action_request_pdu.pdu_header.protocol_family
+            event_report_pdu.pdu_header.protocol_family
         );
-        assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, action_request_pdu.pdu_header.padding);
+        assert_eq!(pdu_header.length, event_report_pdu.pdu_header.length);
+        assert_eq!(pdu_header.padding, event_report_pdu.pdu_header.padding);
+    }
+
+    #[test]
+    fn deserialize_header() {
+        let event_report_pdu = EventReportPdu::default();
+        let mut buffer = BytesMut::new();
+        event_report_pdu.serialize(&mut buffer);
+
+        let new_event_report_pdu = EventReportPdu::deserialize(buffer).unwrap();
+        assert_eq!(new_event_report_pdu.pdu_header, event_report_pdu.pdu_header);
     }
 }
