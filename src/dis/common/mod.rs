@@ -5,6 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 pub mod angular_velocity_vector;
+pub mod clock_time;
 pub mod dis_error;
 pub mod entity_coordinate_vector;
 pub mod entity_id;

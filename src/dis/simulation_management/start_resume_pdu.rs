@@ -1,0 +1,146 @@
+use bytes::{Buf, BufMut, BytesMut};
+use std::any::Any;
+
+use crate::dis::common::{
+    clock_time::ClockTime,
+    dis_error::DISError,
+    entity_id::EntityId,
+    pdu::Pdu,
+    pdu_header::{PduHeader, PduType, ProtocolFamily},
+};
+
+#[derive(Copy, Clone, Debug)]
+pub struct StartResumePdu {
+    pub pdu_header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub real_world_time: ClockTime,
+    pub simulation_time: ClockTime,
+    pub request_id: u32,
+}
+
+impl StartResumePdu {
+    pub fn default() -> Self {
+        StartResumePdu {
+            pdu_header: PduHeader::default(
+                PduType::StartResume,
+                ProtocolFamily::SimulationManagement,
+                56,
+            ),
+            originating_entity_id: EntityId::default(1),
+            receiving_entity_id: EntityId::default(2),
+            real_world_time: ClockTime::default(),
+            simulation_time: ClockTime::default(),
+            request_id: 0,
+        }
+    }
+}
+
+impl Pdu for StartResumePdu {
+    fn serialize(&self, buf: &mut BytesMut) {
+        self.pdu_header.serialize(buf);
+        self.originating_entity_id.serialize(buf);
+        self.receiving_entity_id.serialize(buf);
+        self.real_world_time.serialize(buf);
+        self.simulation_time.serialize(buf);
+        buf.put_u32(self.request_id as u32);
+    }
+
+    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    where
+        Self: Sized,
+    {
+        let pdu_header = PduHeader::decode(&mut buffer);
+        if pdu_header.pdu_type == PduType::StartResume {
+            let originating_entity_id = EntityId::decode(&mut buffer);
+            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let real_world_time = ClockTime::decode(&mut buffer);
+            let simulation_time = ClockTime::decode(&mut buffer);
+            let request_id = buffer.get_u32();
+
+            return Ok(StartResumePdu {
+                pdu_header,
+                originating_entity_id,
+                receiving_entity_id,
+                real_world_time,
+                simulation_time,
+                request_id,
+            });
+        } else {
+            Err(DISError::InvalidDISHeader)
+        }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn deserialize_without_header(
+        mut buffer: BytesMut,
+        pdu_header: PduHeader,
+    ) -> Result<Self, DISError>
+    where
+        Self: Sized,
+    {
+        let originating_entity_id = EntityId::decode(&mut buffer);
+        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let real_world_time = ClockTime::decode(&mut buffer);
+        let simulation_time = ClockTime::decode(&mut buffer);
+        let request_id = buffer.get_u32();
+
+        return Ok(StartResumePdu {
+            pdu_header,
+            originating_entity_id,
+            receiving_entity_id,
+            real_world_time,
+            simulation_time,
+            request_id,
+        });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::StartResumePdu;
+    use crate::dis::common::{
+        pdu::Pdu,
+        pdu_header::{PduHeader, PduType, ProtocolFamily},
+    };
+    use bytes::BytesMut;
+
+    #[test]
+    fn create_header() {
+        let start_resume_pdu = StartResumePdu::default();
+        let pdu_header = PduHeader::default(
+            PduType::StartResume,
+            ProtocolFamily::SimulationManagement,
+            56,
+        );
+
+        assert_eq!(
+            pdu_header.protocol_version,
+            start_resume_pdu.pdu_header.protocol_version
+        );
+        assert_eq!(
+            pdu_header.exercise_id,
+            start_resume_pdu.pdu_header.exercise_id
+        );
+        assert_eq!(pdu_header.pdu_type, start_resume_pdu.pdu_header.pdu_type);
+        assert_eq!(
+            pdu_header.protocol_family,
+            start_resume_pdu.pdu_header.protocol_family
+        );
+        assert_eq!(pdu_header.length, start_resume_pdu.pdu_header.length);
+        assert_eq!(pdu_header.padding, start_resume_pdu.pdu_header.padding);
+    }
+
+    #[test]
+    fn deserialize_header() {
+        let start_resume_pdu = StartResumePdu::default();
+        let mut buffer = BytesMut::new();
+        start_resume_pdu.serialize(&mut buffer);
+
+        let new_start_resume_pdu = StartResumePdu::deserialize(buffer).unwrap();
+        assert_eq!(new_start_resume_pdu.pdu_header, start_resume_pdu.pdu_header);
+    }
+}
