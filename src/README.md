@@ -57,9 +57,9 @@
 | SetDataReliable | ❌ |
 | SetRecordReliable | ❌ |
 | Signal | ❌ |
-| StartResume | ❌ |
+| StartResume | ✅ |
 | StartResumeReliable | ❌ |
-| StopFreeze | ❌ |
+| StopFreeze | ✅ |
 | StopFreezeReliable | ❌ |
 | TransferControlRequest | ❌ |
 | Transmitter | ❌ |
