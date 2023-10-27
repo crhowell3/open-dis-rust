@@ -1,6 +1,6 @@
 [package]
 name = "open-dis-rust"
-version = "0.1.0"
+version = "0.1.0-alpha"
 authors = ["Cameron Howell <crhowell3@gmail.com>"]
 edition = "2021"
 license = "BSD 2-Clause"
