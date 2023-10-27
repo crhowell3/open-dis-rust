@@ -2,6 +2,7 @@
 name = "open-dis-rust"
 version = "0.1.0-alpha"
 authors = ["Cameron Howell <crhowell3@gmail.com>"]
+description = "A Rust implementation of the IEEE 1278.1 DIS Standard."
 edition = "2021"
 license = "BSD 2-Clause"
 readme = "README.md"
