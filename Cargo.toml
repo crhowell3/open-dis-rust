@@ -1,5 +1,5 @@
 [package]
-name = "open-dis"
+name = "open-dis-rust"
 version = "0.1.0-alpha"
 authors = ["Cameron Howell <crhowell3@gmail.com>"]
 description = "A Rust implementation of the IEEE 1278.1 DIS Standard."
