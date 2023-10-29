@@ -17,5 +17,7 @@ pub mod linear_velocity;
 pub mod pdu;
 pub mod pdu_header;
 pub mod simulation_address;
+pub mod vector3_double;
+pub mod vector3_float;
 pub mod velocity_vector;
 pub mod world_coordinate;
