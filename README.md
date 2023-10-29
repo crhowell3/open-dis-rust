@@ -51,7 +51,7 @@ Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) 
 <p align="center">
   <a href="https://github.com/crhowell3/open-dis-rust/blob/main/LICENSE"
     ><img
-      src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=BSD 2-Clause&logoColor=d9e0ee&colorA=282a36&colorB=c678dd"
+      src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=BSD-2-Clause&logoColor=d9e0ee&colorA=282a36&colorB=c678dd"
   /></a>
 </p>
 
