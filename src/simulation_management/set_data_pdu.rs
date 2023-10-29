@@ -1,4 +1,4 @@
-use crate::dis::common::{
+use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
     pdu::Pdu,
@@ -133,7 +133,7 @@ impl Pdu for SetDataPdu {
 #[cfg(test)]
 mod tests {
     use super::SetDataPdu;
-    use crate::dis::common::{
+    use crate::common::{
         pdu::Pdu,
         pdu_header::{PduHeader, PduType, ProtocolFamily},
     };

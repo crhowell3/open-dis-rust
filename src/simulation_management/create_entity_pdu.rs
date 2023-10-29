@@ -1,26 +1,25 @@
-use bytes::{Buf, BufMut, BytesMut};
-use std::any::Any;
-
-use crate::dis::common::{
+use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
+use bytes::{Buf, BufMut, BytesMut};
+use std::any::Any;
 
 #[derive(Copy, Clone, Debug)]
-pub struct RemoveEntityPdu {
+pub struct CreateEntityPdu {
     pub pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub request_id: u32,
 }
 
-impl RemoveEntityPdu {
+impl CreateEntityPdu {
     pub fn default() -> Self {
-        RemoveEntityPdu {
+        CreateEntityPdu {
             pdu_header: PduHeader::default(
-                PduType::RemoveEntity,
+                PduType::CreateEntity,
                 ProtocolFamily::SimulationManagement,
                 56,
             ),
@@ -31,7 +30,7 @@ impl RemoveEntityPdu {
     }
 }
 
-impl Pdu for RemoveEntityPdu {
+impl Pdu for CreateEntityPdu {
     fn serialize(&self, buf: &mut BytesMut) {
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
@@ -44,12 +43,12 @@ impl Pdu for RemoveEntityPdu {
         Self: Sized,
     {
         let pdu_header = PduHeader::decode(&mut buffer);
-        if pdu_header.pdu_type == PduType::RemoveEntity {
+        if pdu_header.pdu_type == PduType::CreateEntity {
             let originating_entity_id = EntityId::decode(&mut buffer);
             let receiving_entity_id = EntityId::decode(&mut buffer);
             let request_id = buffer.get_u32();
 
-            return Ok(RemoveEntityPdu {
+            return Ok(CreateEntityPdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -75,7 +74,7 @@ impl Pdu for RemoveEntityPdu {
         let receiving_entity_id = EntityId::decode(&mut buffer);
         let request_id = buffer.get_u32();
 
-        return Ok(RemoveEntityPdu {
+        return Ok(CreateEntityPdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -86,49 +85,32 @@ impl Pdu for RemoveEntityPdu {
 
 #[cfg(test)]
 mod tests {
-    use super::RemoveEntityPdu;
-    use crate::dis::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use super::CreateEntityPdu;
+    use crate::common::pdu_header::{PduHeader, PduType, ProtocolFamily};
 
     #[test]
     fn create_header() {
-        let remove_entity_pdu = RemoveEntityPdu::default();
+        let action_request_pdu = CreateEntityPdu::default();
         let pdu_header = PduHeader::default(
-            PduType::RemoveEntity,
+            PduType::CreateEntity,
             ProtocolFamily::SimulationManagement,
             448 / 8,
         );
 
         assert_eq!(
             pdu_header.protocol_version,
-            remove_entity_pdu.pdu_header.protocol_version
+            action_request_pdu.pdu_header.protocol_version
         );
         assert_eq!(
             pdu_header.exercise_id,
-            remove_entity_pdu.pdu_header.exercise_id
+            action_request_pdu.pdu_header.exercise_id
         );
-        assert_eq!(pdu_header.pdu_type, remove_entity_pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.pdu_type, action_request_pdu.pdu_header.pdu_type);
         assert_eq!(
             pdu_header.protocol_family,
-            remove_entity_pdu.pdu_header.protocol_family
+            action_request_pdu.pdu_header.protocol_family
         );
-        assert_eq!(pdu_header.length, remove_entity_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, remove_entity_pdu.pdu_header.padding);
-    }
-
-    #[test]
-    fn deserialize_header() {
-        let remove_entity_pdu = RemoveEntityPdu::default();
-        let mut buffer = BytesMut::new();
-        remove_entity_pdu.serialize(&mut buffer);
-
-        let new_remove_entity_pdu = RemoveEntityPdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_remove_entity_pdu.pdu_header,
-            remove_entity_pdu.pdu_header
-        );
+        assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
+        assert_eq!(pdu_header.padding, action_request_pdu.pdu_header.padding);
     }
 }

@@ -8,7 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 
-use crate::dis::common::{
+use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::{Country, EntityType, Kind},
@@ -203,7 +203,7 @@ impl ForceId {
 #[cfg(test)]
 mod tests {
     use super::EntityStatePdu;
-    use crate::dis::common::{
+    use crate::common::{
         pdu::Pdu,
         pdu_header::{PduHeader, PduType, ProtocolFamily},
     };

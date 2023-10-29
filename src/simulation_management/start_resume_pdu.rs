@@ -1,7 +1,7 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use crate::dis::common::{
+use crate::common::{
     clock_time::ClockTime,
     dis_error::DISError,
     entity_id::EntityId,
@@ -102,7 +102,7 @@ impl Pdu for StartResumePdu {
 #[cfg(test)]
 mod tests {
     use super::StartResumePdu;
-    use crate::dis::common::{
+    use crate::common::{
         pdu::Pdu,
         pdu_header::{PduHeader, PduType, ProtocolFamily},
     };

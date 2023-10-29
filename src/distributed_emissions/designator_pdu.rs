@@ -1,7 +1,7 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use crate::dis::common::{
+use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
     pdu::Pdu,
