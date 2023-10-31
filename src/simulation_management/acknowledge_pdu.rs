@@ -1,3 +1,8 @@
+//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     Copyright (C) 2023 Cameron Howell
+//
+//     Licensed under the BSD-2-Clause License
+
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
@@ -9,6 +14,7 @@ use crate::common::{
 };
 
 #[derive(Copy, Clone, Debug)]
+/// Implemented according to IEEE 1278.1-2012 §5.6.5.6
 pub struct AcknowledgePdu {
     pub pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
@@ -19,6 +25,16 @@ pub struct AcknowledgePdu {
 }
 
 impl AcknowledgePdu {
+    /// Creates a default Acknowledge PDU with arbitrary originating and receiving
+    /// entity IDs
+    ///
+    /// # Examples
+    ///
+    /// Initializing an Acknowledge PDU:
+    /// ```
+    /// let acknowledge_pdu = AcknowledgePdu::default();
+    /// ```
+    ///
     pub fn default() -> Self {
         AcknowledgePdu {
             pdu_header: PduHeader::default(
@@ -99,6 +115,7 @@ impl Pdu for AcknowledgePdu {
 }
 
 #[derive(Copy, Clone, Debug)]
+/// Implemented according to SISO-REF-010-2020 UID 69
 pub enum AcknowledgeFlag {
     CreateEntity = 1,
     RemoveEntity = 2,
@@ -121,6 +138,7 @@ impl AcknowledgeFlag {
 }
 
 #[derive(Copy, Clone, Debug)]
+/// Implemented according to SISO-REF-010-2020 UID 70
 pub enum ResponseFlag {
     Other = 0,
     AbleToComply = 1,
