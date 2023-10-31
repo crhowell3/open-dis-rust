@@ -1,26 +1,74 @@
+//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     Copyright (C) 2023 Cameron Howell
+//
+//     Licensed under the BSD-2-Clause License
+
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug)]
 pub struct EmitterSystem {
     pub emitter_name: EmitterName,
     pub function: EmitterSystemFunction,
-    pub emitter_id_number: ,
+    pub emitter_id_number: u8,
 }
 
 impl EmitterSystem {
-    pub fn new(name: EmitterName, function: EmitterSystemFunction, id: EmitterIdNumber) -> Self {
+    pub fn new(name: EmitterName, function: EmitterSystemFunction, id: u8) -> Self {
         EmitterSystem {
             emitter_name: name,
             function,
             emitter_id_number: id,
         }
     }
+
+    pub fn default() -> Self {
+        EmitterSystem {
+            emitter_name: EmitterName::E12456X,
+            function: EmitterSystemFunction::Other,
+            emitter_id_number: 0,
+        }
+    }
+
+    pub fn serialize(&self, buf: &mut BytesMut) {
+        buf.put_u16(self.emitter_name as u16);
+        buf.put_u8(self.function as u8);
+        buf.put_u8(self.emitter_id_number as u8);
+    }
+
+    pub fn decode(buf: &mut BytesMut) -> EmitterSystem {
+        EmitterSystem {
+            emitter_name: EmitterName::decode(buf.get_u16()),
+            function: EmitterSystemFunction::decode(buf.get_u8()),
+            emitter_id_number: buf.get_u8(),
+        }
+    }
 }
 
+// TODO: There are a LOT of values. Need to populate this.
+#[derive(Copy, Clone, Debug)]
 pub enum EmitterName {
-    
+    E12456X = 2,
+    E1L117 = 3,
+    E1L121E = 4,
+    E1l250 = 5,
+    E1L220U = 6,
+    E1L1221E = 7,
 }
 
+impl EmitterName {
+    pub fn decode(word: u16) -> EmitterName {
+        match word {
+            2 => EmitterName::E12456X,
+            3 => EmitterName::E1L117,
+            4 => EmitterName::E1L121E,
+            5 => EmitterName::E1l250,
+            6 => EmitterName::E1L220U,
+            7 => EmitterName::E1L1221E,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
 pub enum EmitterSystemFunction {
     Other = 0,
     MultiFunction = 1,
@@ -56,31 +104,31 @@ pub enum EmitterSystemFunction {
     GunLayBeacon = 31,
     GroundMapping = 32,
     HarborSurveillance = 33,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     IdentifyFriendOrFoe = 34,
     InstrumentLandingSystem = 35,
     IonosphericSound = 36,
     Interrogator = 37,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     BarrageJamming = 38,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     ClickJamming = 39,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     DeceptiveJamming = 40,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     FrequencySweptJamming = 41,
     Jammer = 42,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     NoiseJamming = 43,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     PulsedJamming = 44,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     RepeaterJamming = 45,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     SpotNoiseJamming = 46,
     MissileAcquisition = 47,
     MissileDownlink = 48,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     Meteorological = 49,
     Space = 50,
     SurfaceSearch = 51,
@@ -92,17 +140,17 @@ pub enum EmitterSystemFunction {
     MissileGuidance = 60,
     MissileHoming = 61,
     MissileTracking = 62,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     JammingNoise = 64,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     JammingDeception = 65,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     Decoy = 66,
     NavigationDistanceMeasuringEquipment = 71,
     TerrainFollowing = 72,
     WeatherAvoidance = 73,
     ProximityFuse = 74,
-    #[deprecated(note="Deprecated in SISO-REF-010-2020")]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2020")]
     Instrumentation1 = 75,
     Radiosonde = 76,
     Sonobuoy = 77,
@@ -205,8 +253,4 @@ impl EmitterSystemFunction {
             102 => EmitterSystemFunction::SearchAcquisition,
         }
     }
-}
-
-pub enum EmitterIdNumber {
-    
 }
