@@ -22,7 +22,7 @@
 | DataReliable | ❌ |
 | Designator | ❌ |
 | Detonation | ❌ |
-| ElectromagneticEmissions | ❌ |
+| ElectromagneticEmissions | ✅ |
 | EntityState | ✅ |
 | EntityStateUpdate | ❌ |
 | EnvironmentalProcess | ❌ |
@@ -46,7 +46,7 @@
 | RecordQueryReliable | ❌ |
 | RemoveEntity | ✅ |
 | RemoveEntityReliable | ❌ |
-| RepairComplete | ❌ |
+| RepairComplete | ✅ |
 | RepairResponse | ❌ |
 | ResupplyCancel | ❌ |
 | ResupplyOffer | ❌ |

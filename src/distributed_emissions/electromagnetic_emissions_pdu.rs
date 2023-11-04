@@ -35,6 +35,7 @@ impl ElectromagneticEmissionsPdu {
     ///
     /// Initializing an Electromagnetic Emissions PDU:
     /// ```
+    /// use open_dis_rust::distributed_emissions::electromagnetic_emissions_pdu::ElectromagneticEmissionsPdu;
     /// let electromagnetic_emissions_pdu = ElectromagneticEmissionsPdu::default();
     /// ```
     ///

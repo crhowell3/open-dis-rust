@@ -32,6 +32,7 @@ impl AcknowledgePdu {
     ///
     /// Initializing an Acknowledge PDU:
     /// ```
+    /// use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
     /// let acknowledge_pdu = AcknowledgePdu::default();
     /// ```
     ///
@@ -147,8 +148,8 @@ pub enum ResponseFlag {
 }
 
 impl ResponseFlag {
-    pub fn from_u8(bit: u8) -> ResponseFlag {
-        match bit {
+    pub fn from_u8(byte: u8) -> ResponseFlag {
+        match byte {
             0 => ResponseFlag::Other,
             1 => ResponseFlag::AbleToComply,
             2 => ResponseFlag::UnableToComply,
