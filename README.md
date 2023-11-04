@@ -1,71 +1,86 @@
-# open-dis-rust
-Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) application protocol v6 and v7
+<h1 align="center">
+  <img
+    src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/misc/transparent.png"
+    height="30"
+    width="0px"
+  />
+  🦀 Open DIS Rust
+  <img
+    src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/misc/transparent.png"
+    height="30"
+    width="0px"
+  />
+</h1>
 
-## Supported PDUs
+<p align="center">
+  <a href="https://github.com/crhowell3/open-dis-rust/stargazers">
+    <img
+      alt="Stargazers"
+      src="https://img.shields.io/github/stars/crhowell3/open-dis-rust?style=for-the-badge&logo=starship&color=c678dd&logoColor=d9e0ee&labelColor=282a36"
+    />
+  </a>
+  <a href="#">
+    <img
+      alt="Crates.io Version"
+      src="https://img.shields.io/crates/v/open-dis-rust?style=for-the-badge&logo=rust&color=c678dd&logoColor=d9e0ee&labelColor=282a36"
+    />
+  </a>
+  <a href="https://github.com/crhowell3/open-dis-rust/issues">
+    <img
+      alt="Issues"
+      src="https://img.shields.io/github/issues/crhowell3/open-dis-rust?style=for-the-badge&logo=gitbook&color=f0c062&logoColor=d9e0ee&labelColor=282a36"
+    />
+  </a>
+  <a href="https://github.com/crhowell3/open-dis-rust/contributors">
+    <img
+      alt="Contributors"
+      src="https://img.shields.io/github/contributors/crhowell3/open-dis-rust?style=for-the-badge&logo=opensourceinitiative&color=abcf84&logoColor=d9e0ee&labelColor=282a36"
+    />
+  </a>
+</p>
 
-### DIS v6
+&nbsp;
 
-| PDU Type | Supported? |
-| -------- | ---------- |
-| Acknowledge | ✅ |
-| AcknowledgeReliable | ❌  |
-| ActionRequest | ✅|
-| ActionRequestReliable | ❌ |
-| ActionResponse | ✅|
-| ActionResponseReliable | ❌ |
-| AggregateState | ❌ |
-| ArealObjectState | ❌ |
-| CollisionElastic | ❌ |
-| Collision | ❌ |
-| Comment | ❌ |
-| CommentReliable | ❌ |
-| CreateEntity | ❌ |
-| CreateEntityReliable | ❌ |
-| Data | ❌ |
-| DataQuery | ❌ |
-| DataQueryReliable | ❌ |
-| DataReliable | ❌ |
-| Designator | ❌ |
-| Detonation | ❌ |
-| ElectromagneticEmissions | ❌ |
-| EntityState | ✅ |
-| EntityStateUpdate | ❌ |
-| EnvironmentalProcess | ❌ |
-| EventReport | ❌ |
-| EventReportReliable | ❌ |
-| FastEntityState | ❌ |
-| Fire | ❌ |
-| GriddedData | ❌ |
-| IntercomControl | ❌ |
-| IntercomSignal | ❌ |
-| IsGroupOf | ❌ |
-| IsPartOf | ❌ |
-| LinearObjectState | ❌ |
-| Logistics | ❌ |
-| MinefieldData | ❌ |
-| MinefieldQuery | ❌ |
-| MinefieldResponseNack | ❌ |
-| MinefieldState | ❌ |
-| PointObjectState | ❌ |
-| Receiver | ❌ |
-| RecordQueryReliable | ❌ |
-| RemoveEntity | ❌ |
-| RemoveEntityReliable | ❌ |
-| RepairComplete | ❌ |
-| RepairResponse | ❌ |
-| ResupplyCancel | ❌ |
-| ResupplyOffer | ❌ |
-| ResupplyReceived | ❌ |
-| Sees | ❌ |
-| ServiceRequest | ❌ |
-| SetData | ❌ |
-| SetDataReliable | ❌ |
-| SetRecordReliable | ❌ |
-| Signal | ❌ |
-| StartResume | ❌ |
-| StartResumeReliable | ❌ |
-| StopFreeze | ❌ |
-| StopFreezeReliable | ❌ |
-| TransferControlRequest | ❌ |
-| Transmitter | ❌ |
-| UnderwaterAcoustic | ❌ |
+## 💭 About
+Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation (DIS) application protocol. This library was implemented according to the IEEE Std 1278.1-2012 publication as well as [SISO-REF-010-2020](https://www.sisostandards.org/resource/resmgr/reference_documents_/siso-ref-010-2023-v31.zip).
+
+## 📕 Documentation
+The documentation for the latest version of this library can be found [here](https://docs.rs/open-dis-rust/). All previously published versions of this package can be found on [crates.io](https://crates.io/crates/open-dis-rust/versions), and each version's respective documentation is accessible from there as well.
+
+## 🔰 Getting Started
+### Installation
+This library can be installed using cargo:
+```shell
+cargo add open-dis-rust
+```
+or by adding this to your project's Cargo.toml `[dependencies]` section:
+```toml
+open-dis-rust = "<insert version>"
+```
+
+### Example Usage
+```rust
+use bytes::BytesMut;
+
+// Import the Open DIS crate
+extern crate open_dis_rust;
+use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+
+// Create a new AcknowledgePdu with default data
+let ack_pdu = AcknowledgePdu::default();
+let mut buffer = BytesMut::new();
+Pdu::serialize(&ack_pdu, &mut buffer);
+```
+
+<p align="center">
+  Copyright &copy; 2023-present
+  <a href="https://github.com/crhowell3" target="_blank">Cameron Howell</a>
+</p>
+<p align="center">
+  <a href="https://github.com/crhowell3/open-dis-rust/blob/main/LICENSE"
+    ><img
+      src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=BSD-2-Clause&logoColor=d9e0ee&colorA=282a36&colorB=c678dd"
+  /></a>
+</p>
+
+
