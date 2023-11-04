@@ -44,7 +44,7 @@ impl ElectromagneticEmissionBeamData {
         buf.put_u8(self.high_density_track_jam as u8);
         buf.put_u8(self.pad4 as u8);
         buf.put_u32(self.jamming_mode_sequence as u32);
-        for target in self.track_jam_targets {
+        for target in &self.track_jam_targets {
             target.serialize(buf);
         }
     }

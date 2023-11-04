@@ -32,7 +32,7 @@ impl ElectromagneticEmissionSystemData {
         buf.put_u8(self.emissions_padding2 as u8);
         self.emitter_system.serialize(buf);
         self.location.serialize(buf);
-        for beams in self.beam_data_records {
+        for beams in &self.beam_data_records {
             beams.serialize(buf);
         }
     }

@@ -64,6 +64,7 @@ impl EmitterName {
             5 => EmitterName::E1l250,
             6 => EmitterName::E1L220U,
             7 => EmitterName::E1L1221E,
+            _ => EmitterName::E12456X,
         }
     }
 }
@@ -251,6 +252,7 @@ impl EmitterSystemFunction {
             100 => EmitterSystemFunction::TrackGuidance,
             101 => EmitterSystemFunction::GuidanceIlluminationTrackAcquisition,
             102 => EmitterSystemFunction::SearchAcquisition,
+            _ => EmitterSystemFunction::Other,
         }
     }
 }
