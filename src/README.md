@@ -3,7 +3,7 @@
 | PDU Type | Supported? |
 | -------- | ---------- |
 | Acknowledge | ✅ |
-| AcknowledgeReliable | ❌  |
+| AcknowledgeReliable | ✅  |
 | ActionRequest | ✅ |
 | ActionRequestReliable | ❌ |
 | ActionResponse | ✅ |

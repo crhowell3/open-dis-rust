@@ -185,6 +185,13 @@ impl PduHeader {
             4 => ProtocolFamily::RadioCommunications,
             5 => ProtocolFamily::SimulationManagement,
             6 => ProtocolFamily::DistributedEmissionRegeneration,
+            7 => ProtocolFamily::EntityManagement,
+            8 => ProtocolFamily::Minefield,
+            9 => ProtocolFamily::SyntheticEnvironment,
+            10 => ProtocolFamily::SimulationManagementWithReliability,
+            11 => ProtocolFamily::LiveEntityInformationInteraction,
+            12 => ProtocolFamily::NonRealTime,
+            13 => ProtocolFamily::InformationOperations,
             _ => ProtocolFamily::Other,
         }
     }
@@ -199,6 +206,13 @@ pub enum ProtocolFamily {
     RadioCommunications = 4,
     SimulationManagement = 5,
     DistributedEmissionRegeneration = 6,
+    EntityManagement = 7,
+    Minefield = 8,
+    SyntheticEnvironment = 9,
+    SimulationManagementWithReliability = 10,
+    LiveEntityInformationInteraction = 11,
+    NonRealTime = 12,
+    InformationOperations = 13,
 }
 
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
