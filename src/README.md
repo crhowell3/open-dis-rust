@@ -5,7 +5,7 @@
 | Acknowledge | ✅ |
 | AcknowledgeReliable | ✅  |
 | ActionRequest | ✅ |
-| ActionRequestReliable | ❌ |
+| ActionRequestReliable | ✅ |
 | ActionResponse | ✅ |
 | ActionResponseReliable | ✅ |
 | AggregateState | ❌ |
