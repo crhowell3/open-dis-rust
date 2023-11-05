@@ -32,8 +32,8 @@ impl AcknowledgeReliablePdu {
     ///
     /// Initializing an Acknowledge Reliable PDU:
     /// ```
-    /// use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgeReliablePdu;
-    /// let acknowledge_pdu = AcknowledgeReliablePdu::default();
+    /// use open_dis_rust::simulation_management_with_reliability::acknowledge_reliable_pdu::AcknowledgeReliablePdu;
+    /// let acknowledge_reliable_pdu = AcknowledgeReliablePdu::default();
     /// ```
     ///
     pub fn default() -> Self {
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn create_header() {
-        let acknowledge_pdu = AcknowledgeReliablePdu::default();
+        let acknowledge_reliable_pdu = AcknowledgeReliablePdu::default();
         let pdu_header = PduHeader::default(
             PduType::AcknowledgeReliable,
             ProtocolFamily::SimulationManagementWithReliability,
@@ -179,28 +179,40 @@ mod tests {
 
         assert_eq!(
             pdu_header.protocol_version,
-            acknowledge_pdu.pdu_header.protocol_version
+            acknowledge_reliable_pdu.pdu_header.protocol_version
         );
         assert_eq!(
             pdu_header.exercise_id,
-            acknowledge_pdu.pdu_header.exercise_id
+            acknowledge_reliable_pdu.pdu_header.exercise_id
         );
-        assert_eq!(pdu_header.pdu_type, acknowledge_pdu.pdu_header.pdu_type);
+        assert_eq!(
+            pdu_header.pdu_type,
+            acknowledge_reliable_pdu.pdu_header.pdu_type
+        );
         assert_eq!(
             pdu_header.protocol_family,
-            acknowledge_pdu.pdu_header.protocol_family
+            acknowledge_reliable_pdu.pdu_header.protocol_family
         );
-        assert_eq!(pdu_header.length, acknowledge_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, acknowledge_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.length,
+            acknowledge_reliable_pdu.pdu_header.length
+        );
+        assert_eq!(
+            pdu_header.padding,
+            acknowledge_reliable_pdu.pdu_header.padding
+        );
     }
 
     #[test]
     fn deserialize_header() {
-        let acknowledge_pdu = AcknowledgeReliablePdu::default();
+        let acknowledge_reliable_pdu = AcknowledgeReliablePdu::default();
         let mut buffer = BytesMut::new();
-        acknowledge_pdu.serialize(&mut buffer);
+        acknowledge_reliable_pdu.serialize(&mut buffer);
 
-        let new_acknowledge_pdu = AcknowledgeReliablePdu::deserialize(buffer).unwrap();
-        assert_eq!(new_acknowledge_pdu.pdu_header, acknowledge_pdu.pdu_header);
+        let new_acknowledge_reliable_pdu = AcknowledgeReliablePdu::deserialize(buffer).unwrap();
+        assert_eq!(
+            new_acknowledge_reliable_pdu.pdu_header,
+            acknowledge_reliable_pdu.pdu_header
+        );
     }
 }
