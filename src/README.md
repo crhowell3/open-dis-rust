@@ -3,7 +3,7 @@
 | PDU Type | Supported? |
 | -------- | ---------- |
 | Acknowledge | ✅ |
-| AcknowledgeReliable | ✅  |
+| AcknowledgeReliable | ✅ |
 | ActionRequest | ✅ |
 | ActionRequestReliable | ✅ |
 | ActionResponse | ✅ |
@@ -13,7 +13,7 @@
 | CollisionElastic | ❌ |
 | Collision | ❌ |
 | Comment | ✅ |
-| CommentReliable | ❌ |
+| CommentReliable | ✅ |
 | CreateEntity | ✅ |
 | CreateEntityReliable | ❌ |
 | Data | ✅ |
