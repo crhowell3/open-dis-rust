@@ -123,7 +123,7 @@ mod tests {
 
     #[test]
     fn create_header() {
-        let action_request_pdu = CommentPdu::default();
+        let comment_pdu = CommentPdu::default();
         let pdu_header = PduHeader::default(
             PduType::Comment,
             ProtocolFamily::SimulationManagement,
@@ -132,18 +132,15 @@ mod tests {
 
         assert_eq!(
             pdu_header.protocol_version,
-            action_request_pdu.pdu_header.protocol_version
+            comment_pdu.pdu_header.protocol_version
         );
-        assert_eq!(
-            pdu_header.exercise_id,
-            action_request_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, action_request_pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.exercise_id, comment_pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, comment_pdu.pdu_header.pdu_type);
         assert_eq!(
             pdu_header.protocol_family,
-            action_request_pdu.pdu_header.protocol_family
+            comment_pdu.pdu_header.protocol_family
         );
-        assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, action_request_pdu.pdu_header.padding);
+        assert_eq!(pdu_header.length, comment_pdu.pdu_header.length);
+        assert_eq!(pdu_header.padding, comment_pdu.pdu_header.padding);
     }
 }
