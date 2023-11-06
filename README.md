@@ -41,13 +41,13 @@
   <a href="#">
     <img
       alt="Documentation"
-      src="https://img.shields.io/docsrs/open-dis-rust?style=for-the-badge&logo=opensourceinitiative&color=98971a&logoColor=d9e0ee&labelColor=282a36"
+      src="https://img.shields.io/docsrs/open-dis-rust?style=for-the-badge&logo=docsdotrs&color=98971a&logoColor=d9e0ee&labelColor=282a36"
     />
   </a>
   <a href="#">
     <img
       alt="Maintained"
-      src="https://img.shields.io/maintenance/yes/2023?style=for-the-badge&logo=opensourceinitiative&color=98971a&logoColor=d9e0ee&labelColor=282a36"
+      src="https://img.shields.io/maintenance/yes/2023?style=for-the-badge&color=98971a&labelColor=282a36"
     />
   </a>
 </p>
