@@ -15,7 +15,7 @@
 | Comment | ✅ |
 | CommentReliable | ✅ |
 | CreateEntity | ✅ |
-| CreateEntityReliable | ❌ |
+| CreateEntityReliable | ✅ |
 | Data | ✅ |
 | DataQuery | ✅ |
 | DataQueryReliable | ❌ |
