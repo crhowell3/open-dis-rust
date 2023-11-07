@@ -27,7 +27,7 @@
 | EntityStateUpdate | ❌ |
 | EnvironmentalProcess | ❌ |
 | EventReport | ✅ |
-| EventReportReliable | ❌ |
+| EventReportReliable | ✅ |
 | FastEntityState | ❌ |
 | Fire | ❌ |
 | GriddedData | ❌ |
