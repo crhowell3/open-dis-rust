@@ -18,7 +18,7 @@
 | CreateEntityReliable | ✅ |
 | Data | ✅ |
 | DataQuery | ✅ |
-| DataQueryReliable | ❌ |
+| DataQueryReliable | ✅ |
 | DataReliable | ❌ |
 | Designator | ❌ |
 | Detonation | ❌ |
