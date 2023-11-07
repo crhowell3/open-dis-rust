@@ -19,7 +19,7 @@
 | Data | ✅ |
 | DataQuery | ✅ |
 | DataQueryReliable | ✅ |
-| DataReliable | ❌ |
+| DataReliable | ✅ |
 | Designator | ❌ |
 | Detonation | ❌ |
 | ElectromagneticEmissions | ✅ |
