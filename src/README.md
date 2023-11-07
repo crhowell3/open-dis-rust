@@ -43,7 +43,7 @@
 | MinefieldState | ❌ |
 | PointObjectState | ❌ |
 | Receiver | ❌ |
-| RecordQueryReliable | ❌ |
+| RecordQueryReliable | ✅ |
 | RemoveEntity | ✅ |
 | RemoveEntityReliable | ❌ |
 | RepairComplete | ✅ |
