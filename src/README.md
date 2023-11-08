@@ -45,7 +45,7 @@
 | Receiver | ❌ |
 | RecordQueryReliable | ✅ |
 | RemoveEntity | ✅ |
-| RemoveEntityReliable | ❌ |
+| RemoveEntityReliable | ✅ |
 | RepairComplete | ✅ |
 | RepairResponse | ❌ |
 | ResupplyCancel | ❌ |
