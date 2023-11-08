@@ -54,7 +54,7 @@
 | Sees | ❌ |
 | ServiceRequest | ❌ |
 | SetData | ✅ |
-| SetDataReliable | ❌ |
+| SetDataReliable | ✅ |
 | SetRecordReliable | ❌ |
 | Signal | ❌ |
 | StartResume | ✅ |
