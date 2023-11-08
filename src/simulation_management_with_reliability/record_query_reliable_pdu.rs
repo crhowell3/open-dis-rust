@@ -61,7 +61,7 @@ impl Pdu for RecordQueryReliablePdu {
         buf.put_u8(self.required_reliability_service as u8);
         buf.put_u16(self.pad1 as u16);
         buf.put_u8(self.pad2 as u8);
-        buf.put_u16(self.event_type as u16);
+        buf.put_u32(self.event_type as u32);
         buf.put_u32(self.time as u32);
         buf.put_u32(self.number_of_records as u32);
         for i in &self.record_ids {
