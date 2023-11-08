@@ -16,25 +16,38 @@
   <a href="https://github.com/crhowell3/open-dis-rust/stargazers">
     <img
       alt="Stargazers"
-      src="https://img.shields.io/github/stars/crhowell3/open-dis-rust?style=for-the-badge&logo=starship&color=c678dd&logoColor=d9e0ee&labelColor=282a36"
+      src="https://img.shields.io/github/stars/crhowell3/open-dis-rust?style=for-the-badge&logo=starship&color=b16286&logoColor=d9e0ee&labelColor=282a36"
     />
   </a>
-  <a href="#">
+  <a href="https://crates.io/crates/open-dis-rust">
     <img
       alt="Crates.io Version"
-      src="https://img.shields.io/crates/v/open-dis-rust?style=for-the-badge&logo=rust&color=c678dd&logoColor=d9e0ee&labelColor=282a36"
+      src="https://img.shields.io/crates/v/open-dis-rust?style=for-the-badge&logo=rust&color=458588&logoColor=d9e0ee&labelColor=282a36"
     />
   </a>
   <a href="https://github.com/crhowell3/open-dis-rust/issues">
     <img
       alt="Issues"
-      src="https://img.shields.io/github/issues/crhowell3/open-dis-rust?style=for-the-badge&logo=gitbook&color=f0c062&logoColor=d9e0ee&labelColor=282a36"
+      src="https://img.shields.io/github/issues/crhowell3/open-dis-rust?style=for-the-badge&logo=gitbook&color=d79921&logoColor=d9e0ee&labelColor=282a36"
     />
   </a>
   <a href="https://github.com/crhowell3/open-dis-rust/contributors">
     <img
       alt="Contributors"
-      src="https://img.shields.io/github/contributors/crhowell3/open-dis-rust?style=for-the-badge&logo=opensourceinitiative&color=abcf84&logoColor=d9e0ee&labelColor=282a36"
+      src="https://img.shields.io/github/contributors/crhowell3/open-dis-rust?style=for-the-badge&logo=opensourceinitiative&color=689d6a&logoColor=d9e0ee&labelColor=282a36"
+    />
+  </a>
+  <br/>
+  <a href="#">
+    <img
+      alt="Documentation"
+      src="https://img.shields.io/docsrs/open-dis-rust?style=for-the-badge&logo=docsdotrs&color=98971a&logoColor=d9e0ee&labelColor=282a36"
+    />
+  </a>
+  <a href="#">
+    <img
+      alt="Maintained"
+      src="https://img.shields.io/maintenance/yes/2023?style=for-the-badge&color=98971a&labelColor=282a36"
     />
   </a>
 </p>
@@ -79,7 +92,7 @@ Pdu::serialize(&ack_pdu, &mut buffer);
 <p align="center">
   <a href="https://github.com/crhowell3/open-dis-rust/blob/main/LICENSE"
     ><img
-      src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=BSD-2-Clause&logoColor=d9e0ee&colorA=282a36&colorB=c678dd"
+      src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=BSD-2-Clause&logoColor=d9e0ee&colorA=282a36&colorB=b16286"
   /></a>
 </p>
 

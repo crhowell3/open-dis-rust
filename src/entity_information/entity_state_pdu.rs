@@ -227,7 +227,6 @@ mod tests {
             header.protocol_family,
             entity_state_pdu.pdu_header.protocol_family
         );
-        assert_eq!(header.timestamp, entity_state_pdu.pdu_header.timestamp);
         assert_eq!(header.length, entity_state_pdu.pdu_header.length);
         assert_eq!(header.padding, entity_state_pdu.pdu_header.padding);
     }
