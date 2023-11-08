@@ -55,12 +55,12 @@
 | ServiceRequest | ❌ |
 | SetData | ✅ |
 | SetDataReliable | ✅ |
-| SetRecordReliable | ❌ |
+| SetRecordReliable | ✅ |
 | Signal | ❌ |
 | StartResume | ✅ |
-| StartResumeReliable | ❌ |
+| StartResumeReliable | ✅ |
 | StopFreeze | ✅ |
-| StopFreezeReliable | ❌ |
+| StopFreezeReliable | ✅ |
 | TransferControlRequest | ❌ |
 | Transmitter | ❌ |
 | UnderwaterAcoustic | ❌ |
