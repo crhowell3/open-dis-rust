@@ -13,8 +13,6 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
-use super::event_report_reliable_pdu::EventType;
-
 #[derive(Clone, Debug)]
 pub struct SetRecordReliablePdu {
     pub pdu_header: PduHeader,
