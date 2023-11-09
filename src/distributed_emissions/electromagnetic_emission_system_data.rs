@@ -44,7 +44,7 @@ impl ElectromagneticEmissionSystemData {
         let emitter_system = EmitterSystem::decode(buf);
         let location = Vector3Float::decode(buf);
         let mut beam_data_records: Vec<ElectromagneticEmissionBeamData> = vec![];
-        for i in 0..number_of_beams {
+        for _i in 0..number_of_beams {
             beam_data_records.push(ElectromagneticEmissionBeamData::decode(buf));
         }
 

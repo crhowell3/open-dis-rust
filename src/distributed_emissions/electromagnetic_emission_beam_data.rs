@@ -60,7 +60,7 @@ impl ElectromagneticEmissionBeamData {
         let pad4 = buf.get_u8();
         let jamming_mode_sequence = buf.get_u32();
         let mut track_jam_targets: Vec<TrackJamTarget> = vec![];
-        for i in 0..number_of_track_jam_targets {
+        for _i in 0..number_of_track_jam_targets {
             track_jam_targets.push(TrackJamTarget::decode(buf));
         }
 
