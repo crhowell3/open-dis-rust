@@ -70,6 +70,7 @@ impl EmitterName {
 }
 
 #[derive(Copy, Clone, Debug)]
+#[allow(deprecated)]
 pub enum EmitterSystemFunction {
     Other = 0,
     MultiFunction = 1,
