@@ -42,7 +42,7 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 45
     env:
-      RUSTDOCFLAGS= -Dwarnings
+      RUSTDOCFLAGS: -Dwarnings
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
