@@ -32,7 +32,7 @@ impl EntityCapabilities {
         let fuel_supply = if self.fuel_supply { 1u32 } else { 0u32 } << 30;
         let recovery = if self.recovery { 1u32 } else { 0u32 } << 29;
         let repair = if self.repair { 1u32 } else { 0u32 } << 28;
-        let capabilities = 0u32 | ammunition_supply | fuel_supply | recovery | repair;
+        let capabilities = ammunition_supply | fuel_supply | recovery | repair;
         buf.put_u32(capabilities);
     }
 

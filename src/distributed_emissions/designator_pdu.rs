@@ -57,16 +57,16 @@ impl Pdu for DesignatorPdu {
     fn serialize(&self, buf: &mut BytesMut) {
         self.pdu_header.serialize(buf);
         self.designating_entity_id.serialize(buf);
-        buf.put_u8(self.code_name as u8);
+        buf.put_u8(self.code_name);
         self.designated_entity_id.serialize(buf);
-        buf.put_u8(self.designator_code as u8);
-        buf.put_f32(self.designator_power as f32);
-        buf.put_f32(self.designator_wavelength as f32);
+        buf.put_u8(self.designator_code);
+        buf.put_f32(self.designator_power);
+        buf.put_f32(self.designator_wavelength);
         self.designator_spot_wrt_designated.serialize(buf);
         self.designator_spot_location.serialize(buf);
         buf.put_u8(self.dead_reckoning_algorithm as u8);
-        buf.put_u8(self.padding1 as u8);
-        buf.put_i8(self.padding2 as i8);
+        buf.put_u8(self.padding1);
+        buf.put_i8(self.padding2);
         self.entity_linear_acceleration.serialize(buf);
     }
 
@@ -89,7 +89,7 @@ impl Pdu for DesignatorPdu {
             let padding2 = buffer.get_i8();
             let entity_linear_acceleration = Vector3Float::decode(&mut buffer);
 
-            return Ok(DesignatorPdu {
+            Ok(DesignatorPdu {
                 pdu_header,
                 designating_entity_id,
                 code_name,
@@ -103,7 +103,7 @@ impl Pdu for DesignatorPdu {
                 padding1,
                 padding2,
                 entity_linear_acceleration,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -133,7 +133,7 @@ impl Pdu for DesignatorPdu {
         let padding2 = buffer.get_i8();
         let entity_linear_acceleration = Vector3Float::decode(&mut buffer);
 
-        return Ok(DesignatorPdu {
+        Ok(DesignatorPdu {
             pdu_header,
             designating_entity_id,
             code_name,
@@ -147,6 +147,6 @@ impl Pdu for DesignatorPdu {
             padding1,
             padding2,
             entity_linear_acceleration,
-        });
+        })
     }
 }

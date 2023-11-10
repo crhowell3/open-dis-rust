@@ -47,7 +47,7 @@ impl Pdu for EventReportReliablePdu {
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         buf.put_u32(self.event_type as u32);
-        buf.put_u32(self.padding as u32);
+        buf.put_u32(self.padding);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
         buf.put_u64(self.fixed_datum_records);
@@ -75,7 +75,7 @@ impl Pdu for EventReportReliablePdu {
                 variable_datum_records += buffer.get_u64();
             }
 
-            return Ok(EventReportReliablePdu {
+            Ok(EventReportReliablePdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -85,7 +85,7 @@ impl Pdu for EventReportReliablePdu {
                 number_of_variable_datum_records,
                 fixed_datum_records,
                 variable_datum_records,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -117,7 +117,7 @@ impl Pdu for EventReportReliablePdu {
             variable_datum_records += buffer.get_u64();
         }
 
-        return Ok(EventReportReliablePdu {
+        Ok(EventReportReliablePdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -127,7 +127,7 @@ impl Pdu for EventReportReliablePdu {
             number_of_variable_datum_records,
             fixed_datum_records,
             variable_datum_records,
-        });
+        })
     }
 }
 

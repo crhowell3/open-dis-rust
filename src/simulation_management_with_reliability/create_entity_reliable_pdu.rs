@@ -41,10 +41,10 @@ impl Pdu for CreateEntityReliablePdu {
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
-        buf.put_u8(self.required_reliability_service as u8);
-        buf.put_u16(self.pad1 as u16);
-        buf.put_u8(self.pad2 as u8);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u8(self.required_reliability_service);
+        buf.put_u16(self.pad1);
+        buf.put_u8(self.pad2);
+        buf.put_u32(self.request_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -60,7 +60,7 @@ impl Pdu for CreateEntityReliablePdu {
             let pad2 = buffer.get_u8();
             let request_id = buffer.get_u32();
 
-            return Ok(CreateEntityReliablePdu {
+            Ok(CreateEntityReliablePdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -68,7 +68,7 @@ impl Pdu for CreateEntityReliablePdu {
                 pad1,
                 pad2,
                 request_id,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -92,7 +92,7 @@ impl Pdu for CreateEntityReliablePdu {
         let pad2 = buffer.get_u8();
         let request_id = buffer.get_u32();
 
-        return Ok(CreateEntityReliablePdu {
+        Ok(CreateEntityReliablePdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -100,7 +100,7 @@ impl Pdu for CreateEntityReliablePdu {
             pad1,
             pad2,
             request_id,
-        });
+        })
     }
 }
 

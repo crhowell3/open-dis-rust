@@ -37,9 +37,9 @@ impl PduHeader {
             exercise_id,
             pdu_type,
             protocol_family,
-            timestamp: PduHeader::calculate_dis_timestamp() as u32,
-            length: length as u16,
-            padding: 0 as u16,
+            timestamp: PduHeader::calculate_dis_timestamp(),
+            length: length,
+            padding: 0_u16,
         }
     }
 
@@ -49,9 +49,9 @@ impl PduHeader {
             exercise_id: 1,
             pdu_type,
             protocol_family,
-            timestamp: PduHeader::calculate_dis_timestamp() as u32,
-            length: length as u16,
-            padding: 0 as u16,
+            timestamp: PduHeader::calculate_dis_timestamp(),
+            length: length,
+            padding: 0_u16,
         }
     }
 
@@ -66,12 +66,12 @@ impl PduHeader {
 
     pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_u8(self.protocol_version as u8);
-        buf.put_u8(self.exercise_id as u8);
+        buf.put_u8(self.exercise_id);
         buf.put_u8(self.pdu_type as u8);
         buf.put_u8(self.protocol_family as u8);
-        buf.put_u32(self.timestamp as u32);
-        buf.put_u16(self.length as u16);
-        buf.put_u16(self.padding as u16);
+        buf.put_u32(self.timestamp);
+        buf.put_u16(self.length);
+        buf.put_u16(self.padding);
     }
 
     fn decode_protocol_version(data: u8) -> ProtocolVersion {

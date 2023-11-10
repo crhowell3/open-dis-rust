@@ -36,7 +36,7 @@ impl Pdu for RemoveEntityPdu {
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u32(self.request_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -49,12 +49,12 @@ impl Pdu for RemoveEntityPdu {
             let receiving_entity_id = EntityId::decode(&mut buffer);
             let request_id = buffer.get_u32();
 
-            return Ok(RemoveEntityPdu {
+            Ok(RemoveEntityPdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
                 request_id,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -75,12 +75,12 @@ impl Pdu for RemoveEntityPdu {
         let receiving_entity_id = EntityId::decode(&mut buffer);
         let request_id = buffer.get_u32();
 
-        return Ok(RemoveEntityPdu {
+        Ok(RemoveEntityPdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
             request_id,
-        });
+        })
     }
 }
 

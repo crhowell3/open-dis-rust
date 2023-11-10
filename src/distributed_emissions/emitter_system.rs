@@ -32,7 +32,7 @@ impl EmitterSystem {
     pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_u16(self.emitter_name as u16);
         buf.put_u8(self.function as u8);
-        buf.put_u8(self.emitter_id_number as u8);
+        buf.put_u8(self.emitter_id_number);
     }
 
     pub fn decode(buf: &mut BytesMut) -> EmitterSystem {

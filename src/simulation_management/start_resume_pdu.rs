@@ -43,7 +43,7 @@ impl Pdu for StartResumePdu {
         self.receiving_entity_id.serialize(buf);
         self.real_world_time.serialize(buf);
         self.simulation_time.serialize(buf);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u32(self.request_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -58,14 +58,14 @@ impl Pdu for StartResumePdu {
             let simulation_time = ClockTime::decode(&mut buffer);
             let request_id = buffer.get_u32();
 
-            return Ok(StartResumePdu {
+            Ok(StartResumePdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
                 real_world_time,
                 simulation_time,
                 request_id,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -88,14 +88,14 @@ impl Pdu for StartResumePdu {
         let simulation_time = ClockTime::decode(&mut buffer);
         let request_id = buffer.get_u32();
 
-        return Ok(StartResumePdu {
+        Ok(StartResumePdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
             real_world_time,
             simulation_time,
             request_id,
-        });
+        })
     }
 }
 

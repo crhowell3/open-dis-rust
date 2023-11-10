@@ -48,8 +48,8 @@ impl Pdu for StopFreezePdu {
         self.real_world_time.serialize(buf);
         buf.put_u8(self.reason as u8);
         buf.put_u8(self.frozen_behavior as u8);
-        buf.put_i16(self.padding as i16);
-        buf.put_u32(self.request_id as u32);
+        buf.put_i16(self.padding);
+        buf.put_u32(self.request_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -66,7 +66,7 @@ impl Pdu for StopFreezePdu {
             let padding = buffer.get_i16();
             let request_id = buffer.get_u32();
 
-            return Ok(StopFreezePdu {
+            Ok(StopFreezePdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -75,7 +75,7 @@ impl Pdu for StopFreezePdu {
                 frozen_behavior,
                 padding,
                 request_id,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -100,7 +100,7 @@ impl Pdu for StopFreezePdu {
         let padding = buffer.get_i16();
         let request_id = buffer.get_u32();
 
-        return Ok(StopFreezePdu {
+        Ok(StopFreezePdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -109,7 +109,7 @@ impl Pdu for StopFreezePdu {
             frozen_behavior,
             padding,
             request_id,
-        });
+        })
     }
 }
 

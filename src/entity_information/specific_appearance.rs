@@ -161,8 +161,7 @@ impl LandPlatforms {
         let ramp: u16 = self.ramp as u16;
         let ramp = ramp << 6;
 
-        let land_appearance = 0u16
-            | launcher
+        let land_appearance = launcher
             | camouflage
             | concealed
             | frozen_status
@@ -211,7 +210,7 @@ impl AirPlatforms {
         let state: u16 = self.state as u16;
         let state = state << 8;
 
-        let air_appearance: u16 = 0u16 | afterburner | frozen_status | power_plant_status | state;
+        let air_appearance: u16 = afterburner | frozen_status | power_plant_status | state;
         buf.put_u16(air_appearance);
     }
 
@@ -246,7 +245,7 @@ impl SurfacePlatforms {
         let state: u16 = self.state as u16;
         let state = state << 8;
 
-        let surface_appearance = 0u16 | frozen_status | power_plant_status | state;
+        let surface_appearance = frozen_status | power_plant_status | state;
         buf.put_u16(surface_appearance);
     }
 
@@ -280,7 +279,7 @@ impl SubSurfacePlatforms {
         let state: u16 = self.state as u16;
         let state = state << 8;
 
-        let subsurface_appearance = 0u16 | frozen_status | power_plant_status | state;
+        let subsurface_appearance = frozen_status | power_plant_status | state;
         buf.put_u16(subsurface_appearance);
     }
 
@@ -314,7 +313,7 @@ impl SpacePlatforms {
         let state: u16 = self.state as u16;
         let state = state << 8;
 
-        let subsurface_appearance = 0u16 | frozen_status | power_plant_status | state;
+        let subsurface_appearance = frozen_status | power_plant_status | state;
         buf.put_u16(subsurface_appearance);
     }
 
@@ -346,7 +345,7 @@ impl GuidedMunitionsPlatforms {
         let frozen_status: u16 = self.frozen_status as u16;
         let state: u16 = self.state as u16;
 
-        let guided_appearance = 0u16 | (launch_flash << 15) | (frozen_status << 10) | (state << 8);
+        let guided_appearance = (launch_flash << 15) | (frozen_status << 10) | (state << 8);
         buf.put_u16(guided_appearance);
     }
 
@@ -382,8 +381,7 @@ impl LifeForms {
         let weapon_1: u16 = self.weapon_1 as u16;
         let weapon_2: u16 = self.weapon_2 as u16;
 
-        let life_form_appearance = 0u16
-            | (life_form_state << 12)
+        let life_form_appearance = (life_form_state << 12)
             | (frozen_status << 10)
             | (activity_state << 8)
             | (weapon_1 << 6)
@@ -415,7 +413,7 @@ pub struct Environmentals {
 impl Environmentals {
     pub fn serialize(&self, buf: &mut BytesMut) {
         let density: u16 = self.density as u16;
-        let env_appearance = 0u16 | (density << 12);
+        let env_appearance = (density << 12);
         buf.put_u16(env_appearance);
     }
 

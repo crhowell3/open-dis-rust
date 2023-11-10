@@ -65,13 +65,13 @@ impl Pdu for RepairCompletePdu {
             let repair = RepairGroups::from_u8(buffer.get_u8());
             let padding2 = buffer.get_i8();
 
-            return Ok(RepairCompletePdu {
+            Ok(RepairCompletePdu {
                 pdu_header,
                 receiving_entity_id,
                 repairing_entity_id,
                 repair,
                 padding2,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -93,13 +93,13 @@ impl Pdu for RepairCompletePdu {
         let repair = RepairGroups::from_u8(buffer.get_u8());
         let padding2 = buffer.get_i8();
 
-        return Ok(RepairCompletePdu {
+        Ok(RepairCompletePdu {
             pdu_header,
             receiving_entity_id,
             repairing_entity_id,
             repair,
             padding2,
-        });
+        })
     }
 }
 

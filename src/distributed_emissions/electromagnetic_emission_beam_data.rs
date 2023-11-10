@@ -35,15 +35,15 @@ impl ElectromagneticEmissionBeamData {
     }
 
     pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.beam_data_length as u8);
-        buf.put_u8(self.beam_id_number as u8);
-        buf.put_u8(self.beam_parameter_index as u8);
+        buf.put_u8(self.beam_data_length);
+        buf.put_u8(self.beam_id_number);
+        buf.put_u8(self.beam_parameter_index);
         self.fundamental_parameter_data.serialize(buf);
-        buf.put_u8(self.beam_function as u8);
-        buf.put_u8(self.number_of_track_jam_targets as u8);
-        buf.put_u8(self.high_density_track_jam as u8);
-        buf.put_u8(self.pad4 as u8);
-        buf.put_u32(self.jamming_mode_sequence as u32);
+        buf.put_u8(self.beam_function);
+        buf.put_u8(self.number_of_track_jam_targets);
+        buf.put_u8(self.high_density_track_jam);
+        buf.put_u8(self.pad4);
+        buf.put_u32(self.jamming_mode_sequence);
         for target in &self.track_jam_targets {
             target.serialize(buf);
         }

@@ -80,8 +80,7 @@ impl GeneralAppearance {
         let entity_lights = entity_lights << 1;
         let entity_flaming_effect: u16 = self.entity_flaming_effect as u16;
 
-        let general_appearance: u16 = 0u16
-            | entity_paint_scheme
+        let general_appearance: u16 = entity_paint_scheme
             | entity_mobility_kill
             | entity_fire_power
             | entity_damage

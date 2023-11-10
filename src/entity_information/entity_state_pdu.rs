@@ -88,7 +88,7 @@ impl Pdu for EntityStatePdu {
         self.pdu_header.serialize(buf);
         self.entity_id.serialize(buf);
         buf.put_u8(self.force_id as u8);
-        buf.put_u8(self.number_of_articulation_parameters as u8);
+        buf.put_u8(self.number_of_articulation_parameters);
         self.entity_type.serialize(buf);
         self.alternative_entity_type.serialize(buf);
         self.entity_linear_velocity.serialize(buf);
@@ -116,7 +116,7 @@ impl Pdu for EntityStatePdu {
             let entity_marking = EntityMarking::decode(&mut buffer);
             let entity_capabilities = EntityCapabilities::decode(&mut buffer);
 
-            return Ok(EntityStatePdu {
+            Ok(EntityStatePdu {
                 pdu_header,
                 entity_id,
                 force_id,
@@ -131,7 +131,7 @@ impl Pdu for EntityStatePdu {
                 entity_marking,
                 entity_capabilities,
                 articulation_parameter: 0.0,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -161,7 +161,7 @@ impl Pdu for EntityStatePdu {
         let entity_marking = EntityMarking::decode(&mut buffer);
         let entity_capabilities = EntityCapabilities::decode(&mut buffer);
 
-        return Ok(EntityStatePdu {
+        Ok(EntityStatePdu {
             pdu_header,
             entity_id,
             force_id,
@@ -176,7 +176,7 @@ impl Pdu for EntityStatePdu {
             entity_marking,
             entity_capabilities,
             articulation_parameter: 0.0,
-        });
+        })
     }
 }
 

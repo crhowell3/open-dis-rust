@@ -27,9 +27,9 @@ impl ElectromagneticEmissionSystemData {
     }
 
     pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.system_data_length as u8);
-        buf.put_u8(self.number_of_beams as u8);
-        buf.put_u8(self.emissions_padding2 as u8);
+        buf.put_u8(self.system_data_length);
+        buf.put_u8(self.number_of_beams);
+        buf.put_u8(self.emissions_padding2);
         self.emitter_system.serialize(buf);
         self.location.serialize(buf);
         for beams in &self.beam_data_records {

@@ -51,11 +51,11 @@ impl Pdu for SetRecordReliablePdu {
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
-        buf.put_u32(self.request_id as u32);
-        buf.put_u8(self.required_reliability_service as u8);
-        buf.put_u16(self.pad1 as u16);
-        buf.put_u8(self.pad2 as u8);
-        buf.put_u32(self.number_of_records as u32);
+        buf.put_u32(self.request_id);
+        buf.put_u8(self.required_reliability_service);
+        buf.put_u16(self.pad1);
+        buf.put_u8(self.pad2);
+        buf.put_u32(self.number_of_records);
         for i in &self.record_ids {
             buf.put_u32(*i);
         }

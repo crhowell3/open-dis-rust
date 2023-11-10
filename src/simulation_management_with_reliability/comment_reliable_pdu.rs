@@ -66,7 +66,7 @@ impl Pdu for CommentReliablePdu {
                 variable_datum_records += buffer.get_u64();
             }
 
-            return Ok(CommentReliablePdu {
+            Ok(CommentReliablePdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -74,7 +74,7 @@ impl Pdu for CommentReliablePdu {
                 number_of_variable_datum_records,
                 fixed_datum_records,
                 variable_datum_records,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -104,7 +104,7 @@ impl Pdu for CommentReliablePdu {
             variable_datum_records += buffer.get_u64();
         }
 
-        return Ok(CommentReliablePdu {
+        Ok(CommentReliablePdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -112,7 +112,7 @@ impl Pdu for CommentReliablePdu {
             number_of_variable_datum_records,
             fixed_datum_records,
             variable_datum_records,
-        });
+        })
     }
 }
 
