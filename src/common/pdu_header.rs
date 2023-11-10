@@ -38,7 +38,7 @@ impl PduHeader {
             pdu_type,
             protocol_family,
             timestamp: PduHeader::calculate_dis_timestamp(),
-            length: length,
+            length,
             padding: 0_u16,
         }
     }
@@ -50,7 +50,7 @@ impl PduHeader {
             pdu_type,
             protocol_family,
             timestamp: PduHeader::calculate_dis_timestamp(),
-            length: length,
+            length,
             padding: 0_u16,
         }
     }

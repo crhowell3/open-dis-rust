@@ -413,7 +413,7 @@ pub struct Environmentals {
 impl Environmentals {
     pub fn serialize(&self, buf: &mut BytesMut) {
         let density: u16 = self.density as u16;
-        let env_appearance = (density << 12);
+        let env_appearance = density << 12;
         buf.put_u16(env_appearance);
     }
 
