@@ -7,7 +7,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use chrono::{Timelike, Utc};
 use num_derive::FromPrimitive;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct PduHeader {
     // The version of the protocol
     pub protocol_version: ProtocolVersion,
@@ -197,8 +197,9 @@ impl PduHeader {
     }
 }
 
-#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ProtocolFamily {
+    #[default]
     Other = 0,
     EntityInformation = 1,
     Warfare = 2,
@@ -215,9 +216,10 @@ pub enum ProtocolFamily {
     InformationOperations = 13,
 }
 
-#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum ProtocolVersion {
+    #[default]
     Other = 0,
     DIS_PDUv1 = 1,
     IEEE1278_1993 = 2,
@@ -228,8 +230,9 @@ pub enum ProtocolVersion {
     IEEE1278_1_2012 = 7,
 }
 
-#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PduType {
+    #[default]
     Other = 0,
     EntityState = 1,
     Fire = 2,

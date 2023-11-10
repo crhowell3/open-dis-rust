@@ -22,8 +22,8 @@ pub struct StopFreezeReliablePdu {
     pub request_id: u32,
 }
 
-impl StopFreezeReliablePdu {
-    pub fn default() -> Self {
+impl Default for StopFreezeReliablePdu {
+    fn default() -> Self {
         StopFreezeReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::StopFreezeReliable,
@@ -120,8 +120,9 @@ impl Pdu for StopFreezeReliablePdu {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub enum Reason {
+    #[default]
     Other = 0,
     Recess = 1,
     Termination = 2,
@@ -150,8 +151,9 @@ impl Reason {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub enum FrozenBehavior {
+    #[default]
     Frozen = 0,
     RunSimClock = 1,
     TransmitUpdates = 2,
