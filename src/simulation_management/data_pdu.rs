@@ -20,8 +20,8 @@ pub struct DataPdu {
     pub variable_datum_records: u64,
 }
 
-impl DataPdu {
-    pub fn default() -> Self {
+impl Default for DataPdu {
+    fn default() -> Self {
         DataPdu {
             pdu_header: PduHeader::default(PduType::Data, ProtocolFamily::SimulationManagement, 56),
             originating_entity_id: EntityId::default(1),

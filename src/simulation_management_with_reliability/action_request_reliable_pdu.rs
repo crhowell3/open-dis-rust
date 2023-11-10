@@ -24,8 +24,8 @@ pub struct ActionRequestReliablePdu {
     pub variable_datum_records: u64,
 }
 
-impl ActionRequestReliablePdu {
-    pub fn default() -> Self {
+impl Default for ActionRequestReliablePdu {
+    fn default() -> Self {
         ActionRequestReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::ActionRequestReliable,

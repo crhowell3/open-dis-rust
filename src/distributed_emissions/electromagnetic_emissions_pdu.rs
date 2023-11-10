@@ -28,7 +28,7 @@ pub struct ElectromagneticEmissionsPdu {
     pub systems: Vec<ElectromagneticEmissionSystemData>,
 }
 
-impl ElectromagneticEmissionsPdu {
+impl Default for ElectromagneticEmissionsPdu {
     /// Creates a default Electromagnetic Emissions PDU with arbitrary data
     ///
     /// # Examples
@@ -39,7 +39,7 @@ impl ElectromagneticEmissionsPdu {
     /// let electromagnetic_emissions_pdu = ElectromagneticEmissionsPdu::default();
     /// ```
     ///
-    pub fn default() -> Self {
+    fn default() -> Self {
         ElectromagneticEmissionsPdu {
             pdu_header: PduHeader::default(
                 PduType::ElectromagneticEmission,

@@ -24,7 +24,7 @@ pub struct AcknowledgeReliablePdu {
     pub request_id: u32,
 }
 
-impl AcknowledgeReliablePdu {
+impl Default for AcknowledgeReliablePdu {
     /// Creates a default Acknowledge Reliable PDU with arbitrary originating and receiving
     /// entity IDs
     ///
@@ -36,7 +36,7 @@ impl AcknowledgeReliablePdu {
     /// let acknowledge_reliable_pdu = AcknowledgeReliablePdu::default();
     /// ```
     ///
-    pub fn default() -> Self {
+    fn default() -> Self {
         AcknowledgeReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::AcknowledgeReliable,

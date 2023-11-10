@@ -21,8 +21,8 @@ pub struct ActionRequestPdu {
     pub variable_datum_records: u64,
 }
 
-impl ActionRequestPdu {
-    pub fn default() -> Self {
+impl Default for ActionRequestPdu {
+    fn default() -> Self {
         ActionRequestPdu {
             pdu_header: PduHeader::default(
                 PduType::ActionRequest,

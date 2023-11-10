@@ -22,7 +22,24 @@ pub struct GeneralAppearance {
     pub entity_flaming_effect: EntityFlamingEffect,
 }
 
+impl Default for GeneralAppearance {
+    fn default() -> Self {
+        GeneralAppearance {
+            entity_paint_scheme: EntityPaintScheme::UniformColor,
+            entity_mobility_kill: EntityMobilityKill::NoMobilityKill,
+            entity_fire_power: EntityFirePower::NoFirePowerKill,
+            entity_damage: EntityDamage::NoDamage,
+            entity_smoke: EntitySmoke::NotSmoking,
+            entity_trailing_effect: EntityTrailingEffect::None,
+            entity_hatch_state: EntityHatchState::NotApplicable,
+            entity_lights: EntityLights::None,
+            entity_flaming_effect: EntityFlamingEffect::None,
+        }
+    }
+}
+
 impl GeneralAppearance {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         entity_paint_scheme: EntityPaintScheme,
         entity_mobility_kill: EntityMobilityKill,
@@ -44,20 +61,6 @@ impl GeneralAppearance {
             entity_hatch_state,
             entity_lights,
             entity_flaming_effect,
-        }
-    }
-
-    pub fn default() -> Self {
-        GeneralAppearance {
-            entity_paint_scheme: EntityPaintScheme::UniformColor,
-            entity_mobility_kill: EntityMobilityKill::NoMobilityKill,
-            entity_fire_power: EntityFirePower::NoFirePowerKill,
-            entity_damage: EntityDamage::NoDamage,
-            entity_smoke: EntitySmoke::NotSmoking,
-            entity_trailing_effect: EntityTrailingEffect::None,
-            entity_hatch_state: EntityHatchState::NotApplicable,
-            entity_lights: EntityLights::None,
-            entity_flaming_effect: EntityFlamingEffect::None,
         }
     }
 

@@ -21,8 +21,8 @@ pub struct StopFreezePdu {
     pub request_id: u32,
 }
 
-impl StopFreezePdu {
-    pub fn default() -> Self {
+impl Default for StopFreezePdu {
+    fn default() -> Self {
         StopFreezePdu {
             pdu_header: PduHeader::default(
                 PduType::StopFreeze,

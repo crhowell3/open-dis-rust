@@ -19,8 +19,8 @@ pub struct StartResumePdu {
     pub request_id: u32,
 }
 
-impl StartResumePdu {
-    pub fn default() -> Self {
+impl Default for StartResumePdu {
+    fn default() -> Self {
         StartResumePdu {
             pdu_header: PduHeader::default(
                 PduType::StartResume,

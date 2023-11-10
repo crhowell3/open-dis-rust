@@ -30,8 +30,8 @@ pub struct RecordQueryReliablePdu {
     pub record_ids: Vec<u32>,
 }
 
-impl RecordQueryReliablePdu {
-    pub fn default() -> Self {
+impl Default for RecordQueryReliablePdu {
+    fn default() -> Self {
         RecordQueryReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::RecordQueryReliable,

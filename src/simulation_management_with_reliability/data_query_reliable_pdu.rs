@@ -23,8 +23,8 @@ pub struct DataQueryReliablePdu {
     pub variable_datum_records: u64,
 }
 
-impl DataQueryReliablePdu {
-    pub fn default() -> Self {
+impl Default for DataQueryReliablePdu {
+    fn default() -> Self {
         DataQueryReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::DataQueryReliable,

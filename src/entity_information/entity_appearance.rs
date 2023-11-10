@@ -7,7 +7,7 @@
 use super::{general_appearance::GeneralAppearance, specific_appearance::SpecificAppearance};
 use bytes::BytesMut;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct EntityAppearance {
     pub general_appearance: GeneralAppearance,
     pub specific_appearance: SpecificAppearance,
@@ -21,13 +21,6 @@ impl EntityAppearance {
         EntityAppearance {
             general_appearance,
             specific_appearance,
-        }
-    }
-
-    pub fn default() -> Self {
-        EntityAppearance {
-            general_appearance: GeneralAppearance::default(),
-            specific_appearance: SpecificAppearance::default(),
         }
     }
 

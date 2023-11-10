@@ -29,8 +29,8 @@ pub struct DesignatorPdu {
     pub entity_linear_acceleration: Vector3Float,
 }
 
-impl DesignatorPdu {
-    pub fn default() -> Self {
+impl Default for DesignatorPdu {
+    fn default() -> Self {
         DesignatorPdu {
             pdu_header: PduHeader::default(
                 PduType::Designator,

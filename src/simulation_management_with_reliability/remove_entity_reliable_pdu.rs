@@ -19,8 +19,8 @@ pub struct RemoveEntityReliablePdu {
     pub request_id: u32,
 }
 
-impl RemoveEntityReliablePdu {
-    pub fn default() -> Self {
+impl Default for RemoveEntityReliablePdu {
+    fn default() -> Self {
         RemoveEntityReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::RemoveEntityReliable,

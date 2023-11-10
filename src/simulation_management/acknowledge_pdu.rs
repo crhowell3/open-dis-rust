@@ -24,7 +24,7 @@ pub struct AcknowledgePdu {
     pub request_id: u32,
 }
 
-impl AcknowledgePdu {
+impl Default for AcknowledgePdu {
     /// Creates a default Acknowledge PDU with arbitrary originating and receiving
     /// entity IDs
     ///
@@ -36,7 +36,7 @@ impl AcknowledgePdu {
     /// let acknowledge_pdu = AcknowledgePdu::default();
     /// ```
     ///
-    pub fn default() -> Self {
+    fn default() -> Self {
         AcknowledgePdu {
             pdu_header: PduHeader::default(
                 PduType::Acknowledge,

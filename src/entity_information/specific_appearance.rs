@@ -12,30 +12,8 @@ pub struct SpecificAppearance {
     pub environmentals: Environmentals,
 }
 
-impl SpecificAppearance {
-    pub fn new(
-        land_platforms: LandPlatforms,
-        air_platforms: AirPlatforms,
-        surface_platforms: SurfacePlatforms,
-        subsurface_platforms: SubSurfacePlatforms,
-        space_platforms: SpacePlatforms,
-        guided_munitions_platforms: GuidedMunitionsPlatforms,
-        life_forms: LifeForms,
-        environmentals: Environmentals,
-    ) -> Self {
-        SpecificAppearance {
-            land_platforms,
-            air_platforms,
-            surface_platforms,
-            subsurface_platforms,
-            space_platforms,
-            guided_munitions_platforms,
-            life_forms,
-            environmentals,
-        }
-    }
-
-    pub fn default() -> Self {
+impl Default for SpecificAppearance {
+    fn default() -> Self {
         SpecificAppearance {
             land_platforms: LandPlatforms {
                 launcher: Launcher::NotRaised,
@@ -100,6 +78,31 @@ impl SpecificAppearance {
                 unused: 0,
                 entity_specific: 0,
             },
+        }
+    }
+}
+
+impl SpecificAppearance {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        land_platforms: LandPlatforms,
+        air_platforms: AirPlatforms,
+        surface_platforms: SurfacePlatforms,
+        subsurface_platforms: SubSurfacePlatforms,
+        space_platforms: SpacePlatforms,
+        guided_munitions_platforms: GuidedMunitionsPlatforms,
+        life_forms: LifeForms,
+        environmentals: Environmentals,
+    ) -> Self {
+        SpecificAppearance {
+            land_platforms,
+            air_platforms,
+            surface_platforms,
+            subsurface_platforms,
+            space_platforms,
+            guided_munitions_platforms,
+            life_forms,
+            environmentals,
         }
     }
 
@@ -438,7 +441,7 @@ impl Launcher {
         match bit {
             0 => Launcher::NotRaised,
             1 => Launcher::Raised,
-            2_u8..=u8::MAX => Launcher::NotRaised,
+            _ => Launcher::NotRaised,
         }
     }
 }
@@ -458,7 +461,7 @@ impl CamouflageType {
             1 => CamouflageType::WinterCamoflage,
             2 => CamouflageType::ForestCamoflage,
             3 => CamouflageType::Unused,
-            2_u8..=u8::MAX => CamouflageType::Unused,
+            _ => CamouflageType::Unused,
         }
     }
 }
@@ -474,7 +477,7 @@ impl Concealed {
         match bit {
             0 => Concealed::NotConcealed,
             1 => Concealed::EntityConcealed,
-            2_u8..=u8::MAX => Concealed::NotConcealed,
+            _ => Concealed::NotConcealed,
         }
     }
 }
@@ -490,7 +493,7 @@ impl FrozenStatus {
         match bit {
             0 => FrozenStatus::NotFrozen,
             1 => FrozenStatus::Frozen,
-            2_u8..=u8::MAX => FrozenStatus::NotFrozen,
+            _ => FrozenStatus::NotFrozen,
         }
     }
 }
@@ -506,7 +509,7 @@ impl PowerplantStatus {
         match bit {
             0 => PowerplantStatus::PowerplantOff,
             1 => PowerplantStatus::PowerplantOn,
-            2_u8..=u8::MAX => PowerplantStatus::PowerplantOff,
+            _ => PowerplantStatus::PowerplantOff,
         }
     }
 }
@@ -522,7 +525,7 @@ impl State {
         match bit {
             0 => State::Active,
             1 => State::Deactivated,
-            2_u8..=u8::MAX => State::Active,
+            _ => State::Active,
         }
     }
 }
@@ -538,7 +541,7 @@ impl Tent {
         match bit {
             0 => Tent::NotExtended,
             1 => Tent::Extended,
-            2_u8..=u8::MAX => Tent::NotExtended,
+            _ => Tent::NotExtended,
         }
     }
 }
@@ -554,7 +557,7 @@ impl Ramp {
         match bit {
             0 => Ramp::Up,
             1 => Ramp::Down,
-            2_u8..=u8::MAX => Ramp::Up,
+            _ => Ramp::Up,
         }
     }
 }
@@ -570,7 +573,7 @@ impl Afterburner {
         match bit {
             0 => Afterburner::AfterburnerNotOn,
             1 => Afterburner::AfterburnerOn,
-            2_u8..=u8::MAX => Afterburner::AfterburnerNotOn,
+            _ => Afterburner::AfterburnerNotOn,
         }
     }
 }
@@ -586,7 +589,7 @@ impl LaunchFlash {
         match bit {
             0 => LaunchFlash::NoLaunchFlashPresent,
             1 => LaunchFlash::LaunchFlashPresent,
-            2_u8..=u8::MAX => LaunchFlash::NoLaunchFlashPresent,
+            _ => LaunchFlash::NoLaunchFlashPresent,
         }
     }
 }
@@ -618,13 +621,14 @@ impl LifeFormState {
             7 => LifeFormState::Swimming,
             8 => LifeFormState::Parachuting,
             9 => LifeFormState::Jumping,
-            2_u8..=u8::MAX => LifeFormState::Null,
+            _ => LifeFormState::Null,
         }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum LifeFormWeapon {
+    #[default]
     NoWeaponPresent = 0,
     WeaponIsStowed = 1,
     WeaponIsDeployed = 2,
@@ -638,13 +642,14 @@ impl LifeFormWeapon {
             1 => LifeFormWeapon::WeaponIsStowed,
             2 => LifeFormWeapon::WeaponIsDeployed,
             3 => LifeFormWeapon::WeaponInFiringPositon,
-            2_u8..=u8::MAX => LifeFormWeapon::NoWeaponPresent,
+            _ => LifeFormWeapon::NoWeaponPresent,
         }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum Density {
+    #[default]
     Clear = 0,
     Hazy = 1,
     Dense = 2,
@@ -660,7 +665,7 @@ impl Density {
             2 => Density::Dense,
             3 => Density::VeryDense,
             4 => Density::Opaque,
-            2_u8..=u8::MAX => Density::Clear,
+            _ => Density::Clear,
         }
     }
 }

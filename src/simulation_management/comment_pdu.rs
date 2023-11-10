@@ -18,8 +18,8 @@ pub struct CommentPdu {
     pub variable_datum_records: u64,
 }
 
-impl CommentPdu {
-    pub fn default() -> Self {
+impl Default for CommentPdu {
+    fn default() -> Self {
         CommentPdu {
             pdu_header: PduHeader::default(
                 PduType::Comment,

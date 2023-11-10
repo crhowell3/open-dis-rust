@@ -18,15 +18,6 @@ impl EntityCapabilities {
         }
     }
 
-    pub fn default() -> Self {
-        EntityCapabilities {
-            ammunition_supply: false,
-            fuel_supply: false,
-            recovery: false,
-            repair: false,
-        }
-    }
-
     pub fn serialize(&self, buf: &mut BytesMut) {
         let ammunition_supply = if self.ammunition_supply { 1u32 } else { 0u32 } << 31;
         let fuel_supply = if self.fuel_supply { 1u32 } else { 0u32 } << 30;

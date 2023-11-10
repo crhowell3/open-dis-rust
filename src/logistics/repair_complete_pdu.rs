@@ -23,7 +23,7 @@ pub struct RepairCompletePdu {
     pub padding2: i8,
 }
 
-impl RepairCompletePdu {
+impl Default for RepairCompletePdu {
     /// Creates a default Repair Complete PDU with arbitrary receiving and repairing entity IDs
     ///
     /// # Examples
@@ -34,7 +34,7 @@ impl RepairCompletePdu {
     /// let repair_complete_pdu = RepairCompletePdu::default();
     /// ```
     ///
-    pub fn default() -> Self {
+    fn default() -> Self {
         RepairCompletePdu {
             pdu_header: PduHeader::default(PduType::RepairComplete, ProtocolFamily::Logistics, 56),
             receiving_entity_id: EntityId::default(1),

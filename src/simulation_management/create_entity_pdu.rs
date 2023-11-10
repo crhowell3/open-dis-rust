@@ -15,8 +15,8 @@ pub struct CreateEntityPdu {
     pub request_id: u32,
 }
 
-impl CreateEntityPdu {
-    pub fn default() -> Self {
+impl Default for CreateEntityPdu {
+    fn default() -> Self {
         CreateEntityPdu {
             pdu_header: PduHeader::default(
                 PduType::CreateEntity,

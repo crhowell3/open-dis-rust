@@ -26,8 +26,8 @@ pub struct SetRecordReliablePdu {
     pub record_ids: Vec<u32>,
 }
 
-impl SetRecordReliablePdu {
-    pub fn default() -> Self {
+impl Default for SetRecordReliablePdu {
+    fn default() -> Self {
         SetRecordReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::SetRecordReliable,

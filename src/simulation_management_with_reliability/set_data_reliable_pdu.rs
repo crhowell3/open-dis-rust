@@ -22,8 +22,8 @@ pub struct SetDataReliablePdu {
     pub variable_datum_records: u64,
 }
 
-impl SetDataReliablePdu {
-    pub fn default() -> Self {
+impl Default for SetDataReliablePdu {
+    fn default() -> Self {
         SetDataReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::SetDataReliable,

@@ -16,8 +16,8 @@ pub struct RemoveEntityPdu {
     pub request_id: u32,
 }
 
-impl RemoveEntityPdu {
-    pub fn default() -> Self {
+impl Default for RemoveEntityPdu {
+    fn default() -> Self {
         RemoveEntityPdu {
             pdu_header: PduHeader::default(
                 PduType::RemoveEntity,

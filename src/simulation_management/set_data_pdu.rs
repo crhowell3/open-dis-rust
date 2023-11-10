@@ -20,8 +20,8 @@ pub struct SetDataPdu {
     pub variable_datum_records: u64,
 }
 
-impl SetDataPdu {
-    pub fn default() -> Self {
+impl Default for SetDataPdu {
+    fn default() -> Self {
         SetDataPdu {
             pdu_header: PduHeader::default(
                 PduType::SetData,

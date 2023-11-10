@@ -20,8 +20,8 @@ pub struct DataQueryPdu {
     pub variable_datum_records: u64,
 }
 
-impl DataQueryPdu {
-    pub fn default() -> Self {
+impl Default for DataQueryPdu {
+    fn default() -> Self {
         DataQueryPdu {
             pdu_header: PduHeader::default(
                 PduType::DataQuery,

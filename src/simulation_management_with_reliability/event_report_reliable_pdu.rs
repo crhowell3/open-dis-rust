@@ -21,8 +21,8 @@ pub struct EventReportReliablePdu {
     pub variable_datum_records: u64,
 }
 
-impl EventReportReliablePdu {
-    pub fn default() -> Self {
+impl Default for EventReportReliablePdu {
+    fn default() -> Self {
         EventReportReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::EventReportReliable,

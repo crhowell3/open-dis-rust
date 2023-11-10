@@ -22,8 +22,8 @@ pub struct StartResumeReliablePdu {
     pub request_id: u32,
 }
 
-impl StartResumeReliablePdu {
-    pub fn default() -> Self {
+impl Default for StartResumeReliablePdu {
+    fn default() -> Self {
         StartResumeReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::StartResumeReliable,

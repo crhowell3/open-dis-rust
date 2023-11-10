@@ -18,8 +18,8 @@ pub struct CommentReliablePdu {
     pub variable_datum_records: u64,
 }
 
-impl CommentReliablePdu {
-    pub fn default() -> Self {
+impl Default for CommentReliablePdu {
+    fn default() -> Self {
         CommentReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::CommentReliable,

@@ -12,20 +12,22 @@ pub struct EmitterSystem {
     pub emitter_id_number: u8,
 }
 
+impl Default for EmitterSystem {
+    fn default() -> Self {
+        EmitterSystem {
+            emitter_name: EmitterName::E12456X,
+            function: EmitterSystemFunction::Other,
+            emitter_id_number: 0,
+        }
+    }
+}
+
 impl EmitterSystem {
     pub fn new(name: EmitterName, function: EmitterSystemFunction, id: u8) -> Self {
         EmitterSystem {
             emitter_name: name,
             function,
             emitter_id_number: id,
-        }
-    }
-
-    pub fn default() -> Self {
-        EmitterSystem {
-            emitter_name: EmitterName::E12456X,
-            function: EmitterSystemFunction::Other,
-            emitter_id_number: 0,
         }
     }
 

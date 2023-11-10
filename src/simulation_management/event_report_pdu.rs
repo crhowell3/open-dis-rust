@@ -21,8 +21,8 @@ pub struct EventReportPdu {
     pub variable_datum_records: u64,
 }
 
-impl EventReportPdu {
-    pub fn default() -> Self {
+impl Default for EventReportPdu {
+    fn default() -> Self {
         EventReportPdu {
             pdu_header: PduHeader::default(
                 PduType::EventReport,

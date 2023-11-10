@@ -42,8 +42,8 @@ pub struct EntityStatePdu {
     pub articulation_parameter: f32,
 }
 
-impl EntityStatePdu {
-    pub fn default() -> Self {
+impl Default for EntityStatePdu {
+    fn default() -> Self {
         EntityStatePdu {
             pdu_header: PduHeader::default(
                 PduType::EntityState,

@@ -18,8 +18,8 @@ pub struct CreateEntityReliablePdu {
     pub request_id: u32,
 }
 
-impl CreateEntityReliablePdu {
-    pub fn default() -> Self {
+impl Default for CreateEntityReliablePdu {
+    fn default() -> Self {
         CreateEntityReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::CreateEntityReliable,

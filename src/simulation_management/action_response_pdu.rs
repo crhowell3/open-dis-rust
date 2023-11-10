@@ -21,8 +21,8 @@ pub struct ActionResponsePdu {
     pub variable_datum_records: u64,
 }
 
-impl ActionResponsePdu {
-    pub fn default() -> Self {
+impl Default for ActionResponsePdu {
+    fn default() -> Self {
         ActionResponsePdu {
             pdu_header: PduHeader::default(
                 PduType::ActionResponse,

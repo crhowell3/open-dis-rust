@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct FundamentalParameterData {
     pub frequency: f32,
     pub frequency_range: f32,
@@ -20,21 +20,6 @@ pub struct FundamentalParameterData {
 }
 
 impl FundamentalParameterData {
-    pub fn default() -> Self {
-        FundamentalParameterData {
-            frequency: 0.0,
-            frequency_range: 0.0,
-            effective_radiated_power: 0.0,
-            pulse_repetition_frequency: 0.0,
-            pulse_width: 0.0,
-            beam_azimuth_center: 0.0,
-            beam_azimuth_sweep: 0.0,
-            beam_elevation_center: 0.0,
-            beam_elevation_sweep: 0.0,
-            beam_sweep_sync: 0.0,
-        }
-    }
-
     pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_f32(self.frequency);
         buf.put_f32(self.frequency_range);
