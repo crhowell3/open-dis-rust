@@ -89,6 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@miri
+      - run: rustup override set nightly
       - run: cargo miri setup
       - run: cargo miri test
         env:
