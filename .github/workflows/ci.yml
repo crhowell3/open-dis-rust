@@ -93,4 +93,4 @@ jobs:
       - run: cargo miri setup
       - run: cargo miri test
         env:
-          MIRIFLAGS: -Zmiri-strict-provenance, -Zmiri-disable-isolation
+          MIRIFLAGS: "-Zmiri-strict-provenance -Zmiri-disable-isolation"
