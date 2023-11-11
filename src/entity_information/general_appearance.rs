@@ -22,7 +22,24 @@ pub struct GeneralAppearance {
     pub entity_flaming_effect: EntityFlamingEffect,
 }
 
+impl Default for GeneralAppearance {
+    fn default() -> Self {
+        GeneralAppearance {
+            entity_paint_scheme: EntityPaintScheme::UniformColor,
+            entity_mobility_kill: EntityMobilityKill::NoMobilityKill,
+            entity_fire_power: EntityFirePower::NoFirePowerKill,
+            entity_damage: EntityDamage::NoDamage,
+            entity_smoke: EntitySmoke::NotSmoking,
+            entity_trailing_effect: EntityTrailingEffect::None,
+            entity_hatch_state: EntityHatchState::NotApplicable,
+            entity_lights: EntityLights::None,
+            entity_flaming_effect: EntityFlamingEffect::None,
+        }
+    }
+}
+
 impl GeneralAppearance {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         entity_paint_scheme: EntityPaintScheme,
         entity_mobility_kill: EntityMobilityKill,
@@ -47,20 +64,6 @@ impl GeneralAppearance {
         }
     }
 
-    pub fn default() -> Self {
-        GeneralAppearance {
-            entity_paint_scheme: EntityPaintScheme::UniformColor,
-            entity_mobility_kill: EntityMobilityKill::NoMobilityKill,
-            entity_fire_power: EntityFirePower::NoFirePowerKill,
-            entity_damage: EntityDamage::NoDamage,
-            entity_smoke: EntitySmoke::NotSmoking,
-            entity_trailing_effect: EntityTrailingEffect::None,
-            entity_hatch_state: EntityHatchState::NotApplicable,
-            entity_lights: EntityLights::None,
-            entity_flaming_effect: EntityFlamingEffect::None,
-        }
-    }
-
     pub fn serialize(&self, buf: &mut BytesMut) {
         let entity_paint_scheme: u16 = self.entity_paint_scheme as u16;
         let entity_paint_scheme = entity_paint_scheme << 15;
@@ -80,8 +83,7 @@ impl GeneralAppearance {
         let entity_lights = entity_lights << 1;
         let entity_flaming_effect: u16 = self.entity_flaming_effect as u16;
 
-        let general_appearance: u16 = 0u16
-            | entity_paint_scheme
+        let general_appearance: u16 = entity_paint_scheme
             | entity_mobility_kill
             | entity_fire_power
             | entity_damage

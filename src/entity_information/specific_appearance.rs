@@ -12,30 +12,8 @@ pub struct SpecificAppearance {
     pub environmentals: Environmentals,
 }
 
-impl SpecificAppearance {
-    pub fn new(
-        land_platforms: LandPlatforms,
-        air_platforms: AirPlatforms,
-        surface_platforms: SurfacePlatforms,
-        subsurface_platforms: SubSurfacePlatforms,
-        space_platforms: SpacePlatforms,
-        guided_munitions_platforms: GuidedMunitionsPlatforms,
-        life_forms: LifeForms,
-        environmentals: Environmentals,
-    ) -> Self {
-        SpecificAppearance {
-            land_platforms,
-            air_platforms,
-            surface_platforms,
-            subsurface_platforms,
-            space_platforms,
-            guided_munitions_platforms,
-            life_forms,
-            environmentals,
-        }
-    }
-
-    pub fn default() -> Self {
+impl Default for SpecificAppearance {
+    fn default() -> Self {
         SpecificAppearance {
             land_platforms: LandPlatforms {
                 launcher: Launcher::NotRaised,
@@ -102,6 +80,31 @@ impl SpecificAppearance {
             },
         }
     }
+}
+
+impl SpecificAppearance {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        land_platforms: LandPlatforms,
+        air_platforms: AirPlatforms,
+        surface_platforms: SurfacePlatforms,
+        subsurface_platforms: SubSurfacePlatforms,
+        space_platforms: SpacePlatforms,
+        guided_munitions_platforms: GuidedMunitionsPlatforms,
+        life_forms: LifeForms,
+        environmentals: Environmentals,
+    ) -> Self {
+        SpecificAppearance {
+            land_platforms,
+            air_platforms,
+            surface_platforms,
+            subsurface_platforms,
+            space_platforms,
+            guided_munitions_platforms,
+            life_forms,
+            environmentals,
+        }
+    }
 
     pub fn serialize(&self, buf: &mut BytesMut) {
         self.land_platforms.serialize(buf);
@@ -161,8 +164,7 @@ impl LandPlatforms {
         let ramp: u16 = self.ramp as u16;
         let ramp = ramp << 6;
 
-        let land_appearance = 0u16
-            | launcher
+        let land_appearance = launcher
             | camouflage
             | concealed
             | frozen_status
@@ -211,7 +213,7 @@ impl AirPlatforms {
         let state: u16 = self.state as u16;
         let state = state << 8;
 
-        let air_appearance: u16 = 0u16 | afterburner | frozen_status | power_plant_status | state;
+        let air_appearance: u16 = afterburner | frozen_status | power_plant_status | state;
         buf.put_u16(air_appearance);
     }
 
@@ -246,7 +248,7 @@ impl SurfacePlatforms {
         let state: u16 = self.state as u16;
         let state = state << 8;
 
-        let surface_appearance = 0u16 | frozen_status | power_plant_status | state;
+        let surface_appearance = frozen_status | power_plant_status | state;
         buf.put_u16(surface_appearance);
     }
 
@@ -280,7 +282,7 @@ impl SubSurfacePlatforms {
         let state: u16 = self.state as u16;
         let state = state << 8;
 
-        let subsurface_appearance = 0u16 | frozen_status | power_plant_status | state;
+        let subsurface_appearance = frozen_status | power_plant_status | state;
         buf.put_u16(subsurface_appearance);
     }
 
@@ -314,7 +316,7 @@ impl SpacePlatforms {
         let state: u16 = self.state as u16;
         let state = state << 8;
 
-        let subsurface_appearance = 0u16 | frozen_status | power_plant_status | state;
+        let subsurface_appearance = frozen_status | power_plant_status | state;
         buf.put_u16(subsurface_appearance);
     }
 
@@ -346,7 +348,7 @@ impl GuidedMunitionsPlatforms {
         let frozen_status: u16 = self.frozen_status as u16;
         let state: u16 = self.state as u16;
 
-        let guided_appearance = 0u16 | (launch_flash << 15) | (frozen_status << 10) | (state << 8);
+        let guided_appearance = (launch_flash << 15) | (frozen_status << 10) | (state << 8);
         buf.put_u16(guided_appearance);
     }
 
@@ -382,8 +384,7 @@ impl LifeForms {
         let weapon_1: u16 = self.weapon_1 as u16;
         let weapon_2: u16 = self.weapon_2 as u16;
 
-        let life_form_appearance = 0u16
-            | (life_form_state << 12)
+        let life_form_appearance = (life_form_state << 12)
             | (frozen_status << 10)
             | (activity_state << 8)
             | (weapon_1 << 6)
@@ -415,7 +416,7 @@ pub struct Environmentals {
 impl Environmentals {
     pub fn serialize(&self, buf: &mut BytesMut) {
         let density: u16 = self.density as u16;
-        let env_appearance = 0u16 | (density << 12);
+        let env_appearance = density << 12;
         buf.put_u16(env_appearance);
     }
 
@@ -440,7 +441,7 @@ impl Launcher {
         match bit {
             0 => Launcher::NotRaised,
             1 => Launcher::Raised,
-            2_u8..=u8::MAX => Launcher::NotRaised,
+            _ => Launcher::NotRaised,
         }
     }
 }
@@ -460,7 +461,7 @@ impl CamouflageType {
             1 => CamouflageType::WinterCamoflage,
             2 => CamouflageType::ForestCamoflage,
             3 => CamouflageType::Unused,
-            2_u8..=u8::MAX => CamouflageType::Unused,
+            _ => CamouflageType::Unused,
         }
     }
 }
@@ -476,7 +477,7 @@ impl Concealed {
         match bit {
             0 => Concealed::NotConcealed,
             1 => Concealed::EntityConcealed,
-            2_u8..=u8::MAX => Concealed::NotConcealed,
+            _ => Concealed::NotConcealed,
         }
     }
 }
@@ -492,7 +493,7 @@ impl FrozenStatus {
         match bit {
             0 => FrozenStatus::NotFrozen,
             1 => FrozenStatus::Frozen,
-            2_u8..=u8::MAX => FrozenStatus::NotFrozen,
+            _ => FrozenStatus::NotFrozen,
         }
     }
 }
@@ -508,7 +509,7 @@ impl PowerplantStatus {
         match bit {
             0 => PowerplantStatus::PowerplantOff,
             1 => PowerplantStatus::PowerplantOn,
-            2_u8..=u8::MAX => PowerplantStatus::PowerplantOff,
+            _ => PowerplantStatus::PowerplantOff,
         }
     }
 }
@@ -524,7 +525,7 @@ impl State {
         match bit {
             0 => State::Active,
             1 => State::Deactivated,
-            2_u8..=u8::MAX => State::Active,
+            _ => State::Active,
         }
     }
 }
@@ -540,7 +541,7 @@ impl Tent {
         match bit {
             0 => Tent::NotExtended,
             1 => Tent::Extended,
-            2_u8..=u8::MAX => Tent::NotExtended,
+            _ => Tent::NotExtended,
         }
     }
 }
@@ -556,7 +557,7 @@ impl Ramp {
         match bit {
             0 => Ramp::Up,
             1 => Ramp::Down,
-            2_u8..=u8::MAX => Ramp::Up,
+            _ => Ramp::Up,
         }
     }
 }
@@ -572,7 +573,7 @@ impl Afterburner {
         match bit {
             0 => Afterburner::AfterburnerNotOn,
             1 => Afterburner::AfterburnerOn,
-            2_u8..=u8::MAX => Afterburner::AfterburnerNotOn,
+            _ => Afterburner::AfterburnerNotOn,
         }
     }
 }
@@ -588,7 +589,7 @@ impl LaunchFlash {
         match bit {
             0 => LaunchFlash::NoLaunchFlashPresent,
             1 => LaunchFlash::LaunchFlashPresent,
-            2_u8..=u8::MAX => LaunchFlash::NoLaunchFlashPresent,
+            _ => LaunchFlash::NoLaunchFlashPresent,
         }
     }
 }
@@ -620,13 +621,14 @@ impl LifeFormState {
             7 => LifeFormState::Swimming,
             8 => LifeFormState::Parachuting,
             9 => LifeFormState::Jumping,
-            2_u8..=u8::MAX => LifeFormState::Null,
+            _ => LifeFormState::Null,
         }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum LifeFormWeapon {
+    #[default]
     NoWeaponPresent = 0,
     WeaponIsStowed = 1,
     WeaponIsDeployed = 2,
@@ -640,13 +642,14 @@ impl LifeFormWeapon {
             1 => LifeFormWeapon::WeaponIsStowed,
             2 => LifeFormWeapon::WeaponIsDeployed,
             3 => LifeFormWeapon::WeaponInFiringPositon,
-            2_u8..=u8::MAX => LifeFormWeapon::NoWeaponPresent,
+            _ => LifeFormWeapon::NoWeaponPresent,
         }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum Density {
+    #[default]
     Clear = 0,
     Hazy = 1,
     Dense = 2,
@@ -662,7 +665,7 @@ impl Density {
             2 => Density::Dense,
             3 => Density::VeryDense,
             4 => Density::Opaque,
-            2_u8..=u8::MAX => Density::Clear,
+            _ => Density::Clear,
         }
     }
 }

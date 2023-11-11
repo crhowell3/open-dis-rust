@@ -7,7 +7,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use chrono::{Timelike, Utc};
 use num_derive::FromPrimitive;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct PduHeader {
     // The version of the protocol
     pub protocol_version: ProtocolVersion,
@@ -37,9 +37,9 @@ impl PduHeader {
             exercise_id,
             pdu_type,
             protocol_family,
-            timestamp: PduHeader::calculate_dis_timestamp() as u32,
-            length: length as u16,
-            padding: 0 as u16,
+            timestamp: PduHeader::calculate_dis_timestamp(),
+            length,
+            padding: 0_u16,
         }
     }
 
@@ -49,9 +49,9 @@ impl PduHeader {
             exercise_id: 1,
             pdu_type,
             protocol_family,
-            timestamp: PduHeader::calculate_dis_timestamp() as u32,
-            length: length as u16,
-            padding: 0 as u16,
+            timestamp: PduHeader::calculate_dis_timestamp(),
+            length,
+            padding: 0_u16,
         }
     }
 
@@ -66,12 +66,12 @@ impl PduHeader {
 
     pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_u8(self.protocol_version as u8);
-        buf.put_u8(self.exercise_id as u8);
+        buf.put_u8(self.exercise_id);
         buf.put_u8(self.pdu_type as u8);
         buf.put_u8(self.protocol_family as u8);
-        buf.put_u32(self.timestamp as u32);
-        buf.put_u16(self.length as u16);
-        buf.put_u16(self.padding as u16);
+        buf.put_u32(self.timestamp);
+        buf.put_u16(self.length);
+        buf.put_u16(self.padding);
     }
 
     fn decode_protocol_version(data: u8) -> ProtocolVersion {
@@ -197,8 +197,9 @@ impl PduHeader {
     }
 }
 
-#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ProtocolFamily {
+    #[default]
     Other = 0,
     EntityInformation = 1,
     Warfare = 2,
@@ -215,9 +216,10 @@ pub enum ProtocolFamily {
     InformationOperations = 13,
 }
 
-#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum ProtocolVersion {
+    #[default]
     Other = 0,
     DIS_PDUv1 = 1,
     IEEE1278_1993 = 2,
@@ -228,8 +230,9 @@ pub enum ProtocolVersion {
     IEEE1278_1_2012 = 7,
 }
 
-#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PduType {
+    #[default]
     Other = 0,
     EntityState = 1,
     Fire = 2,

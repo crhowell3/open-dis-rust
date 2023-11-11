@@ -23,7 +23,7 @@ pub struct RepairCompletePdu {
     pub padding2: i8,
 }
 
-impl RepairCompletePdu {
+impl Default for RepairCompletePdu {
     /// Creates a default Repair Complete PDU with arbitrary receiving and repairing entity IDs
     ///
     /// # Examples
@@ -34,7 +34,7 @@ impl RepairCompletePdu {
     /// let repair_complete_pdu = RepairCompletePdu::default();
     /// ```
     ///
-    pub fn default() -> Self {
+    fn default() -> Self {
         RepairCompletePdu {
             pdu_header: PduHeader::default(PduType::RepairComplete, ProtocolFamily::Logistics, 56),
             receiving_entity_id: EntityId::default(1),
@@ -65,13 +65,13 @@ impl Pdu for RepairCompletePdu {
             let repair = RepairGroups::from_u8(buffer.get_u8());
             let padding2 = buffer.get_i8();
 
-            return Ok(RepairCompletePdu {
+            Ok(RepairCompletePdu {
                 pdu_header,
                 receiving_entity_id,
                 repairing_entity_id,
                 repair,
                 padding2,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -93,13 +93,13 @@ impl Pdu for RepairCompletePdu {
         let repair = RepairGroups::from_u8(buffer.get_u8());
         let padding2 = buffer.get_i8();
 
-        return Ok(RepairCompletePdu {
+        Ok(RepairCompletePdu {
             pdu_header,
             receiving_entity_id,
             repairing_entity_id,
             repair,
             padding2,
-        });
+        })
     }
 }
 

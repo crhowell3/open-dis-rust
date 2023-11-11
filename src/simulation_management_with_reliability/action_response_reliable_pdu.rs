@@ -21,8 +21,8 @@ pub struct ActionResponseReliablePdu {
     pub variable_datum_records: u64,
 }
 
-impl ActionResponseReliablePdu {
-    pub fn default() -> Self {
+impl Default for ActionResponseReliablePdu {
+    fn default() -> Self {
         ActionResponseReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::ActionResponseReliable,
@@ -46,7 +46,7 @@ impl Pdu for ActionResponseReliablePdu {
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u32(self.request_id);
         buf.put_u32(self.request_status as u32);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
@@ -75,7 +75,7 @@ impl Pdu for ActionResponseReliablePdu {
                 variable_datum_records += buffer.get_u64();
             }
 
-            return Ok(ActionResponseReliablePdu {
+            Ok(ActionResponseReliablePdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -85,7 +85,7 @@ impl Pdu for ActionResponseReliablePdu {
                 number_of_variable_datum_records,
                 fixed_datum_records,
                 variable_datum_records,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -117,7 +117,7 @@ impl Pdu for ActionResponseReliablePdu {
             variable_datum_records += buffer.get_u64();
         }
 
-        return Ok(ActionResponseReliablePdu {
+        Ok(ActionResponseReliablePdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -127,7 +127,7 @@ impl Pdu for ActionResponseReliablePdu {
             number_of_variable_datum_records,
             fixed_datum_records,
             variable_datum_records,
-        });
+        })
     }
 }
 

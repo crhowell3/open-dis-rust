@@ -22,8 +22,8 @@ pub struct StartResumeReliablePdu {
     pub request_id: u32,
 }
 
-impl StartResumeReliablePdu {
-    pub fn default() -> Self {
+impl Default for StartResumeReliablePdu {
+    fn default() -> Self {
         StartResumeReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::StartResumeReliable,
@@ -52,7 +52,7 @@ impl Pdu for StartResumeReliablePdu {
         buf.put_u8(self.required_reliability_service);
         buf.put_u16(self.pad1);
         buf.put_u8(self.pad2);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u32(self.request_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>

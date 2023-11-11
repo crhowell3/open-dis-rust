@@ -18,8 +18,8 @@ pub struct CommentPdu {
     pub variable_datum_records: u64,
 }
 
-impl CommentPdu {
-    pub fn default() -> Self {
+impl Default for CommentPdu {
+    fn default() -> Self {
         CommentPdu {
             pdu_header: PduHeader::default(
                 PduType::Comment,
@@ -66,7 +66,7 @@ impl Pdu for CommentPdu {
                 variable_datum_records += buffer.get_u64();
             }
 
-            return Ok(CommentPdu {
+            Ok(CommentPdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -74,7 +74,7 @@ impl Pdu for CommentPdu {
                 number_of_variable_datum_records,
                 fixed_datum_records,
                 variable_datum_records,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -104,7 +104,7 @@ impl Pdu for CommentPdu {
             variable_datum_records += buffer.get_u64();
         }
 
-        return Ok(CommentPdu {
+        Ok(CommentPdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -112,7 +112,7 @@ impl Pdu for CommentPdu {
             number_of_variable_datum_records,
             fixed_datum_records,
             variable_datum_records,
-        });
+        })
     }
 }
 

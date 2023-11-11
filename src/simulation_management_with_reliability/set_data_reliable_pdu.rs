@@ -22,8 +22,8 @@ pub struct SetDataReliablePdu {
     pub variable_datum_records: u64,
 }
 
-impl SetDataReliablePdu {
-    pub fn default() -> Self {
+impl Default for SetDataReliablePdu {
+    fn default() -> Self {
         SetDataReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::SetDataReliable,
@@ -52,7 +52,7 @@ impl Pdu for SetDataReliablePdu {
         buf.put_u8(self.required_reliability_service);
         buf.put_u16(self.pad1);
         buf.put_u8(self.pad2);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u32(self.request_id);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
         buf.put_u64(self.fixed_datum_records);

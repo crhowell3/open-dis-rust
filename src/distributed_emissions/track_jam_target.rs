@@ -14,15 +14,17 @@ pub struct TrackJamTarget {
     pub beam_id: u8,
 }
 
-impl TrackJamTarget {
-    pub fn default() -> Self {
+impl Default for TrackJamTarget {
+    fn default() -> Self {
         TrackJamTarget {
             track_jam: EntityId::default(1),
             emitter_id: 0,
             beam_id: 0,
         }
     }
+}
 
+impl TrackJamTarget {
     pub fn serialize(&self, buf: &mut BytesMut) {
         self.track_jam.serialize(buf);
         buf.put_u8(self.emitter_id);

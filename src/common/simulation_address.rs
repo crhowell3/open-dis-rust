@@ -6,10 +6,19 @@
 use bytes::{Buf, BufMut, BytesMut};
 use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SimulationAddress {
     pub site_id: u16,
     pub application_id: u16,
+}
+
+impl Default for SimulationAddress {
+    fn default() -> Self {
+        SimulationAddress {
+            site_id: 1,
+            application_id: 1,
+        }
+    }
 }
 
 impl SimulationAddress {
@@ -17,13 +26,6 @@ impl SimulationAddress {
         SimulationAddress {
             site_id,
             application_id,
-        }
-    }
-
-    pub fn default() -> Self {
-        SimulationAddress {
-            site_id: 1,
-            application_id: 1,
         }
     }
 

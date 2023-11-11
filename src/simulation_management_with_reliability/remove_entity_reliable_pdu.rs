@@ -19,8 +19,8 @@ pub struct RemoveEntityReliablePdu {
     pub request_id: u32,
 }
 
-impl RemoveEntityReliablePdu {
-    pub fn default() -> Self {
+impl Default for RemoveEntityReliablePdu {
+    fn default() -> Self {
         RemoveEntityReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::RemoveEntityReliable,
@@ -45,7 +45,7 @@ impl Pdu for RemoveEntityReliablePdu {
         buf.put_u8(self.required_reliability_service);
         buf.put_u16(self.pad1);
         buf.put_u8(self.pad2);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u32(self.request_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>

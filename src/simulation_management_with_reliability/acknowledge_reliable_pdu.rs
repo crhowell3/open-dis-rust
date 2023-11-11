@@ -24,7 +24,7 @@ pub struct AcknowledgeReliablePdu {
     pub request_id: u32,
 }
 
-impl AcknowledgeReliablePdu {
+impl Default for AcknowledgeReliablePdu {
     /// Creates a default Acknowledge Reliable PDU with arbitrary originating and receiving
     /// entity IDs
     ///
@@ -36,7 +36,7 @@ impl AcknowledgeReliablePdu {
     /// let acknowledge_reliable_pdu = AcknowledgeReliablePdu::default();
     /// ```
     ///
-    pub fn default() -> Self {
+    fn default() -> Self {
         AcknowledgeReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::AcknowledgeReliable,
@@ -59,7 +59,7 @@ impl Pdu for AcknowledgeReliablePdu {
         self.receiving_entity_id.serialize(buf);
         buf.put_u8(self.acknowledge_flag as u8);
         buf.put_u8(self.response_flag as u8);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u32(self.request_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -74,14 +74,14 @@ impl Pdu for AcknowledgeReliablePdu {
             let response_flag = ResponseFlag::from_u8(buffer.get_u8());
             let request_id = buffer.get_u32();
 
-            return Ok(AcknowledgeReliablePdu {
+            Ok(AcknowledgeReliablePdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
                 acknowledge_flag,
                 response_flag,
                 request_id,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -104,14 +104,14 @@ impl Pdu for AcknowledgeReliablePdu {
         let response_flag = ResponseFlag::from_u8(buffer.get_u8());
         let request_id = buffer.get_u32();
 
-        return Ok(AcknowledgeReliablePdu {
+        Ok(AcknowledgeReliablePdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
             acknowledge_flag,
             response_flag,
             request_id,
-        });
+        })
     }
 }
 

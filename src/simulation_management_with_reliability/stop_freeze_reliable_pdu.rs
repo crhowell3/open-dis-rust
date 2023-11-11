@@ -22,8 +22,8 @@ pub struct StopFreezeReliablePdu {
     pub request_id: u32,
 }
 
-impl StopFreezeReliablePdu {
-    pub fn default() -> Self {
+impl Default for StopFreezeReliablePdu {
+    fn default() -> Self {
         StopFreezeReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::StopFreezeReliable,
@@ -52,7 +52,7 @@ impl Pdu for StopFreezeReliablePdu {
         buf.put_u8(self.frozen_behavior as u8);
         buf.put_u8(self.required_reliability_service);
         buf.put_u8(self.pad1);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u32(self.request_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -120,8 +120,9 @@ impl Pdu for StopFreezeReliablePdu {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub enum Reason {
+    #[default]
     Other = 0,
     Recess = 1,
     Termination = 2,
@@ -150,8 +151,9 @@ impl Reason {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub enum FrozenBehavior {
+    #[default]
     Frozen = 0,
     RunSimClock = 1,
     TransmitUpdates = 2,

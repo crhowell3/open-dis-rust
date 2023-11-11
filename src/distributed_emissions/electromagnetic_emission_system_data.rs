@@ -4,7 +4,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use crate::common::vector3_float::Vector3Float;
 use crate::distributed_emissions::emitter_system::EmitterSystem;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct ElectromagneticEmissionSystemData {
     pub system_data_length: u8,
     pub number_of_beams: u8,
@@ -15,21 +15,10 @@ pub struct ElectromagneticEmissionSystemData {
 }
 
 impl ElectromagneticEmissionSystemData {
-    pub fn default() -> Self {
-        ElectromagneticEmissionSystemData {
-            system_data_length: 0,
-            number_of_beams: 0,
-            emissions_padding2: 0,
-            emitter_system: EmitterSystem::default(),
-            location: Vector3Float::new(0.0, 0.0, 0.0),
-            beam_data_records: vec![],
-        }
-    }
-
     pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.system_data_length as u8);
-        buf.put_u8(self.number_of_beams as u8);
-        buf.put_u8(self.emissions_padding2 as u8);
+        buf.put_u8(self.system_data_length);
+        buf.put_u8(self.number_of_beams);
+        buf.put_u8(self.emissions_padding2);
         self.emitter_system.serialize(buf);
         self.location.serialize(buf);
         for beams in &self.beam_data_records {
@@ -44,7 +33,7 @@ impl ElectromagneticEmissionSystemData {
         let emitter_system = EmitterSystem::decode(buf);
         let location = Vector3Float::decode(buf);
         let mut beam_data_records: Vec<ElectromagneticEmissionBeamData> = vec![];
-        for i in 0..number_of_beams {
+        for _i in 0..number_of_beams {
             beam_data_records.push(ElectromagneticEmissionBeamData::decode(buf));
         }
 

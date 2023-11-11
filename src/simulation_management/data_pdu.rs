@@ -20,8 +20,8 @@ pub struct DataPdu {
     pub variable_datum_records: u64,
 }
 
-impl DataPdu {
-    pub fn default() -> Self {
+impl Default for DataPdu {
+    fn default() -> Self {
         DataPdu {
             pdu_header: PduHeader::default(PduType::Data, ProtocolFamily::SimulationManagement, 56),
             originating_entity_id: EntityId::default(1),
@@ -41,8 +41,8 @@ impl Pdu for DataPdu {
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
-        buf.put_u32(self.request_id as u32);
-        buf.put_u32(self.padding as u32);
+        buf.put_u32(self.request_id);
+        buf.put_u32(self.padding);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
         buf.put_u64(self.fixed_datum_records);
@@ -70,7 +70,7 @@ impl Pdu for DataPdu {
                 variable_datum_records += buffer.get_u64();
             }
 
-            return Ok(DataPdu {
+            Ok(DataPdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -80,7 +80,7 @@ impl Pdu for DataPdu {
                 number_of_variable_datum_records,
                 fixed_datum_records,
                 variable_datum_records,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -112,7 +112,7 @@ impl Pdu for DataPdu {
             variable_datum_records += buffer.get_u64();
         }
 
-        return Ok(DataPdu {
+        Ok(DataPdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -122,7 +122,7 @@ impl Pdu for DataPdu {
             number_of_variable_datum_records,
             fixed_datum_records,
             variable_datum_records,
-        });
+        })
     }
 }
 

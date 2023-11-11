@@ -24,7 +24,7 @@ pub struct AcknowledgePdu {
     pub request_id: u32,
 }
 
-impl AcknowledgePdu {
+impl Default for AcknowledgePdu {
     /// Creates a default Acknowledge PDU with arbitrary originating and receiving
     /// entity IDs
     ///
@@ -36,7 +36,7 @@ impl AcknowledgePdu {
     /// let acknowledge_pdu = AcknowledgePdu::default();
     /// ```
     ///
-    pub fn default() -> Self {
+    fn default() -> Self {
         AcknowledgePdu {
             pdu_header: PduHeader::default(
                 PduType::Acknowledge,
@@ -59,7 +59,7 @@ impl Pdu for AcknowledgePdu {
         self.receiving_entity_id.serialize(buf);
         buf.put_u8(self.acknowledge_flag as u8);
         buf.put_u8(self.response_flag as u8);
-        buf.put_u32(self.request_id as u32);
+        buf.put_u32(self.request_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -74,14 +74,14 @@ impl Pdu for AcknowledgePdu {
             let response_flag = ResponseFlag::from_u8(buffer.get_u8());
             let request_id = buffer.get_u32();
 
-            return Ok(AcknowledgePdu {
+            Ok(AcknowledgePdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
                 acknowledge_flag,
                 response_flag,
                 request_id,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -104,14 +104,14 @@ impl Pdu for AcknowledgePdu {
         let response_flag = ResponseFlag::from_u8(buffer.get_u8());
         let request_id = buffer.get_u32();
 
-        return Ok(AcknowledgePdu {
+        Ok(AcknowledgePdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
             acknowledge_flag,
             response_flag,
             request_id,
-        });
+        })
     }
 }
 

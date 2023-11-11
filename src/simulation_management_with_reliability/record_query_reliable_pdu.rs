@@ -30,8 +30,8 @@ pub struct RecordQueryReliablePdu {
     pub record_ids: Vec<u32>,
 }
 
-impl RecordQueryReliablePdu {
-    pub fn default() -> Self {
+impl Default for RecordQueryReliablePdu {
+    fn default() -> Self {
         RecordQueryReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::RecordQueryReliable,
@@ -57,13 +57,13 @@ impl Pdu for RecordQueryReliablePdu {
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
-        buf.put_u32(self.request_id as u32);
-        buf.put_u8(self.required_reliability_service as u8);
-        buf.put_u16(self.pad1 as u16);
-        buf.put_u8(self.pad2 as u8);
+        buf.put_u32(self.request_id);
+        buf.put_u8(self.required_reliability_service);
+        buf.put_u16(self.pad1);
+        buf.put_u8(self.pad2);
         buf.put_u32(self.event_type as u32);
-        buf.put_u32(self.time as u32);
-        buf.put_u32(self.number_of_records as u32);
+        buf.put_u32(self.time);
+        buf.put_u32(self.number_of_records);
         for i in &self.record_ids {
             buf.put_u32(*i);
         }
@@ -89,7 +89,7 @@ impl Pdu for RecordQueryReliablePdu {
                 record_ids.push(buffer.get_u32());
             }
 
-            return Ok(RecordQueryReliablePdu {
+            Ok(RecordQueryReliablePdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -101,7 +101,7 @@ impl Pdu for RecordQueryReliablePdu {
                 time,
                 number_of_records,
                 record_ids,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -132,7 +132,7 @@ impl Pdu for RecordQueryReliablePdu {
             record_ids.push(buffer.get_u32());
         }
 
-        return Ok(RecordQueryReliablePdu {
+        Ok(RecordQueryReliablePdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -144,7 +144,7 @@ impl Pdu for RecordQueryReliablePdu {
             time,
             number_of_records,
             record_ids,
-        });
+        })
     }
 }
 

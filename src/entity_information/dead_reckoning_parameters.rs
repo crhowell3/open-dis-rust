@@ -19,6 +19,17 @@ pub struct DeadReckoningParameters {
     pub entity_angular_velocity: AngularVelocity,
 }
 
+impl Default for DeadReckoningParameters {
+    fn default() -> Self {
+        DeadReckoningParameters {
+            dead_reckoning_algorithm: DeadReckoningAlgorithm::Static,
+            dead_reckoning_other_parameters: 0,
+            entity_linear_acceleration: LinearAcceleration::new(0.0, 0.0, 0.0),
+            entity_angular_velocity: AngularVelocity::new(0.0, 0.0, 0.0),
+        }
+    }
+}
+
 impl DeadReckoningParameters {
     pub fn new(
         dead_reckoning_algorithm: DeadReckoningAlgorithm,
@@ -30,15 +41,6 @@ impl DeadReckoningParameters {
             dead_reckoning_other_parameters: 0,
             entity_linear_acceleration,
             entity_angular_velocity,
-        }
-    }
-
-    pub fn default() -> Self {
-        DeadReckoningParameters {
-            dead_reckoning_algorithm: DeadReckoningAlgorithm::Static,
-            dead_reckoning_other_parameters: 0,
-            entity_linear_acceleration: LinearAcceleration::new(0.0, 0.0, 0.0),
-            entity_angular_velocity: AngularVelocity::new(0.0, 0.0, 0.0),
         }
     }
 

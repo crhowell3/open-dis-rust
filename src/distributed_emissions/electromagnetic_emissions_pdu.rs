@@ -28,7 +28,7 @@ pub struct ElectromagneticEmissionsPdu {
     pub systems: Vec<ElectromagneticEmissionSystemData>,
 }
 
-impl ElectromagneticEmissionsPdu {
+impl Default for ElectromagneticEmissionsPdu {
     /// Creates a default Electromagnetic Emissions PDU with arbitrary data
     ///
     /// # Examples
@@ -39,7 +39,7 @@ impl ElectromagneticEmissionsPdu {
     /// let electromagnetic_emissions_pdu = ElectromagneticEmissionsPdu::default();
     /// ```
     ///
-    pub fn default() -> Self {
+    fn default() -> Self {
         ElectromagneticEmissionsPdu {
             pdu_header: PduHeader::default(
                 PduType::ElectromagneticEmission,
@@ -61,9 +61,9 @@ impl Pdu for ElectromagneticEmissionsPdu {
         self.pdu_header.serialize(buf);
         self.emitting_entity_id.serialize(buf);
         self.event_id.serialize(buf);
-        buf.put_u8(self.state_update_indicator as u8);
-        buf.put_u8(self.number_of_systems as u8);
-        buf.put_u8(self.padding_for_emissions_pdu as u8);
+        buf.put_u8(self.state_update_indicator);
+        buf.put_u8(self.number_of_systems);
+        buf.put_u8(self.padding_for_emissions_pdu);
         for i in 0..self.number_of_systems {
             self.systems[i as usize].serialize(buf);
         }
@@ -85,7 +85,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
                 systems.push(ElectromagneticEmissionSystemData::decode(&mut buffer));
             }
 
-            return Ok(ElectromagneticEmissionsPdu {
+            Ok(ElectromagneticEmissionsPdu {
                 pdu_header,
                 emitting_entity_id,
                 event_id,
@@ -93,7 +93,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
                 number_of_systems,
                 padding_for_emissions_pdu,
                 systems,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -120,7 +120,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
             systems.push(ElectromagneticEmissionSystemData::decode(&mut buffer));
         }
 
-        return Ok(ElectromagneticEmissionsPdu {
+        Ok(ElectromagneticEmissionsPdu {
             pdu_header,
             emitting_entity_id,
             event_id,
@@ -128,6 +128,6 @@ impl Pdu for ElectromagneticEmissionsPdu {
             number_of_systems,
             padding_for_emissions_pdu,
             systems,
-        });
+        })
     }
 }

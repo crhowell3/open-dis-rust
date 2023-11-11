@@ -20,8 +20,8 @@ pub struct SetDataPdu {
     pub variable_datum_records: u64,
 }
 
-impl SetDataPdu {
-    pub fn default() -> Self {
+impl Default for SetDataPdu {
+    fn default() -> Self {
         SetDataPdu {
             pdu_header: PduHeader::default(
                 PduType::SetData,
@@ -45,8 +45,8 @@ impl Pdu for SetDataPdu {
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
-        buf.put_u32(self.request_id as u32);
-        buf.put_u32(self.padding as u32);
+        buf.put_u32(self.request_id);
+        buf.put_u32(self.padding);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
         buf.put_u64(self.fixed_datum_records);
@@ -74,7 +74,7 @@ impl Pdu for SetDataPdu {
                 variable_datum_records += buffer.get_u64();
             }
 
-            return Ok(SetDataPdu {
+            Ok(SetDataPdu {
                 pdu_header,
                 originating_entity_id,
                 receiving_entity_id,
@@ -84,7 +84,7 @@ impl Pdu for SetDataPdu {
                 number_of_variable_datum_records,
                 fixed_datum_records,
                 variable_datum_records,
-            });
+            })
         } else {
             Err(DISError::InvalidDISHeader)
         }
@@ -116,7 +116,7 @@ impl Pdu for SetDataPdu {
             variable_datum_records += buffer.get_u64();
         }
 
-        return Ok(SetDataPdu {
+        Ok(SetDataPdu {
             pdu_header,
             originating_entity_id,
             receiving_entity_id,
@@ -126,7 +126,7 @@ impl Pdu for SetDataPdu {
             number_of_variable_datum_records,
             fixed_datum_records,
             variable_datum_records,
-        });
+        })
     }
 }
 
