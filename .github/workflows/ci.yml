@@ -66,6 +66,7 @@ jobs:
   clippy:
     name: Clippy
     runs-on: self-hosted
+    permissions: write-all
     if: github.event_name != 'pull_request'
     timeout-minutes: 45
     steps:
