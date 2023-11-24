@@ -3,15 +3,15 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-use std::any::Any;
-
+use super::intercom_communications_parameters::IntercomCommunicationsParameters;
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
+use bytes::{Buf, BufMut, BytesMut};
+use std::any::Any;
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.6.5.6
@@ -41,7 +41,7 @@ impl Default for IntercomControlPdu {
     ///
     /// Initializing an IntercomControl PDU:
     /// ```
-    /// use open_dis_rust::simulation_management::intercom_control_pdu::IntercomControlPdu;
+    /// use open_dis_rust::radio_communications::intercom_control_pdu::IntercomControlPdu;
     /// let intercom_control_pdu = IntercomControlPdu::default();
     /// ```
     ///
@@ -86,8 +86,8 @@ impl Pdu for IntercomControlPdu {
         self.master_entity_id.serialize(buf);
         buf.put_u16(self.master_communications_device_id);
         buf.put_u32(self.intercom_parameters_length);
-        for i in 0..self.intercom_parameters_length {
-            buf.put_u64(self.intercom_parameters[i]);
+        for i in 0usize..self.intercom_parameters_length as usize {
+            self.intercom_parameters[i].serialize(buf);
         }
     }
 
@@ -110,9 +110,9 @@ impl Pdu for IntercomControlPdu {
             let master_entity_id = EntityId::decode(&mut buffer);
             let master_communications_device_id = buffer.get_u16();
             let intercom_parameters_length = buffer.get_u32();
-            let mut intercom_parameters: Vec<u64>;
-            for i in 0..intercom_parameters_length {
-                intercom_parameters.push(buffer.get_u64());
+            let mut intercom_parameters: Vec<IntercomCommunicationsParameters> = vec![];
+            for _i in 0..intercom_parameters_length {
+                intercom_parameters.push(IntercomCommunicationsParameters::decode(&mut buffer));
             }
             Ok(IntercomControlPdu {
                 pdu_header,
@@ -160,9 +160,9 @@ impl Pdu for IntercomControlPdu {
         let master_entity_id = EntityId::decode(&mut buffer);
         let master_communications_device_id = buffer.get_u16();
         let intercom_parameters_length = buffer.get_u32();
-        let mut intercom_parameters: Vec<u64>;
-        for i in 0..intercom_parameters_length {
-            intercom_parameters.push(buffer.get_u64());
+        let mut intercom_parameters: Vec<IntercomCommunicationsParameters> = vec![];
+        for _i in 0..intercom_parameters_length {
+            intercom_parameters.push(IntercomCommunicationsParameters::decode(&mut buffer));
         }
         Ok(IntercomControlPdu {
             pdu_header,

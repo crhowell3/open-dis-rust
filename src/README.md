@@ -31,7 +31,7 @@
 | FastEntityState | ❌ |
 | Fire | ❌ |
 | GriddedData | ❌ |
-| IntercomControl | ❌ |
+| IntercomControl | ✅ |
 | IntercomSignal | ❌ |
 | IsGroupOf | ❌ |
 | IsPartOf | ❌ |
