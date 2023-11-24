@@ -42,7 +42,7 @@
 | MinefieldResponseNack | ❌ |
 | MinefieldState | ❌ |
 | PointObjectState | ❌ |
-| Receiver | ❌ |
+| Receiver | ✅ |
 | RecordQueryReliable | ✅ |
 | RemoveEntity | ✅ |
 | RemoveEntityReliable | ✅ |

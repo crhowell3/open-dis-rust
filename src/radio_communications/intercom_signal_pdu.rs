@@ -13,10 +13,11 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.6.5.6
+/// Implemented according to IEEE 1278.1-2012 §5.8.6
 pub struct IntercomSignalPdu {
     pub pdu_header: PduHeader,
     pub entity_id: EntityId,
+    pub radio_id: u16,
     pub communications_device_id: u16,
     pub encoding_scheme: u16,
     pub tdl_type: u16,
@@ -46,6 +47,7 @@ impl Default for IntercomSignalPdu {
                 56,
             ),
             entity_id: EntityId::default(1),
+            radio_id: 0,
             communications_device_id: 0,
             encoding_scheme: 0,
             tdl_type: 0,
@@ -61,6 +63,7 @@ impl Pdu for IntercomSignalPdu {
     fn serialize(&self, buf: &mut BytesMut) {
         self.pdu_header.serialize(buf);
         self.entity_id.serialize(buf);
+        buf.put_u16(self.radio_id);
         buf.put_u16(self.communications_device_id);
         buf.put_u16(self.encoding_scheme);
         buf.put_u16(self.tdl_type);
@@ -79,6 +82,7 @@ impl Pdu for IntercomSignalPdu {
         let pdu_header = PduHeader::decode(&mut buffer);
         if pdu_header.pdu_type == PduType::IntercomSignal {
             let entity_id = EntityId::decode(&mut buffer);
+            let radio_id = buffer.get_u16();
             let communications_device_id = buffer.get_u16();
             let encoding_scheme = buffer.get_u16();
             let tdl_type = buffer.get_u16();
@@ -92,6 +96,7 @@ impl Pdu for IntercomSignalPdu {
             Ok(IntercomSignalPdu {
                 pdu_header,
                 entity_id,
+                radio_id,
                 communications_device_id,
                 encoding_scheme,
                 tdl_type,
@@ -117,6 +122,7 @@ impl Pdu for IntercomSignalPdu {
         Self: Sized,
     {
         let entity_id = EntityId::decode(&mut buffer);
+        let radio_id = buffer.get_u16();
         let communications_device_id = buffer.get_u16();
         let encoding_scheme = buffer.get_u16();
         let tdl_type = buffer.get_u16();
@@ -130,6 +136,7 @@ impl Pdu for IntercomSignalPdu {
         Ok(IntercomSignalPdu {
             pdu_header,
             entity_id,
+            radio_id,
             communications_device_id,
             encoding_scheme,
             tdl_type,
