@@ -56,7 +56,7 @@
 | SetData | ✅ |
 | SetDataReliable | ✅ |
 | SetRecordReliable | ✅ |
-| Signal | ❌ |
+| Signal | ✅ |
 | StartResume | ✅ |
 | StartResumeReliable | ✅ |
 | StopFreeze | ✅ |
