@@ -32,7 +32,7 @@
 | Fire | ❌ |
 | GriddedData | ❌ |
 | IntercomControl | ✅ |
-| IntercomSignal | ❌ |
+| IntercomSignal | ✅ |
 | IsGroupOf | ❌ |
 | IsPartOf | ❌ |
 | LinearObjectState | ❌ |
