@@ -17,7 +17,7 @@ use std::any::Any;
 use super::{modulation_type::ModulationType, radio_entity_type::RadioEntityType};
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.8.5
+/// Implemented according to IEEE 1278.1-2012 §5.8.3
 pub struct TransmitterPdu {
     pub pdu_header: PduHeader,
     pub entity_id: EntityId,
@@ -64,11 +64,25 @@ impl Default for TransmitterPdu {
             ),
             entity_id: EntityId::default(1),
             radio_id: 0,
-            receiver_state: 0,
+            radio_entity_type: RadioEntityType::default(),
+            transmit_state: 0,
+            input_source: 0,
             padding1: 0,
-            received_power: 0.0,
-            transmitter_entity_id: EntityId::default(2),
-            transmitter_radio_id: 0,
+            antenna_location: Vector3Double::default(),
+            relative_antenna_location: Vector3Float::default(),
+            antenna_pattern_type: 0,
+            antenna_pattern_count: 0,
+            frequency: 0,
+            transmit_frequency_bandwidth: 0.0,
+            power: 0.0,
+            modulation_type: ModulationType::default(),
+            crypto_system: 0,
+            crypto_key_id: 0,
+            modulation_parameter_count: 0,
+            padding2: 0,
+            padding3: 0,
+            modulation_parameter_list: vec![Vector3Float::default()],
+            antenna_pattern_list: vec![Vector3Float::default()],
         }
     }
 }
@@ -78,11 +92,6 @@ impl Pdu for TransmitterPdu {
         self.pdu_header.serialize(buf);
         self.entity_id.serialize(buf);
         buf.put_u16(self.radio_id);
-        buf.put_u16(self.receiver_state);
-        buf.put_u16(self.padding1);
-        buf.put_f32(self.received_power);
-        self.transmitter_entity_id.serialize(buf);
-        buf.put_u16(self.transmitter_radio_id);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -102,11 +111,6 @@ impl Pdu for TransmitterPdu {
                 pdu_header,
                 entity_id,
                 radio_id,
-                receiver_state,
-                padding1,
-                received_power,
-                transmitter_entity_id,
-                transmitter_radio_id,
             })
         } else {
             Err(DISError::InvalidDISHeader)
@@ -126,20 +130,10 @@ impl Pdu for TransmitterPdu {
     {
         let entity_id = EntityId::decode(&mut buffer);
         let radio_id = buffer.get_u16();
-        let receiver_state = buffer.get_u16();
-        let padding1 = buffer.get_u16();
-        let received_power = buffer.get_f32();
-        let transmitter_entity_id = EntityId::decode(&mut buffer);
-        let transmitter_radio_id = buffer.get_u16();
         Ok(TransmitterPdu {
             pdu_header,
             entity_id,
             radio_id,
-            receiver_state,
-            padding1,
-            received_power,
-            transmitter_entity_id,
-            transmitter_radio_id,
         })
     }
 }
