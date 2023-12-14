@@ -62,5 +62,5 @@
 | StopFreeze | ✅ |
 | StopFreezeReliable | ✅ |
 | TransferControlRequest | ❌ |
-| Transmitter | ❌ |
+| Transmitter | ✅ |
 | UnderwaterAcoustic | ❌ |

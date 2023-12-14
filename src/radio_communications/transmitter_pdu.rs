@@ -102,15 +102,54 @@ impl Pdu for TransmitterPdu {
         if pdu_header.pdu_type == PduType::Transmitter {
             let entity_id = EntityId::decode(&mut buffer);
             let radio_id = buffer.get_u16();
-            let receiver_state = buffer.get_u16();
+            let radio_entity_type = RadioEntityType::decode(&mut buffer);
+            let transmit_state = buffer.get_u8();
+            let input_source = buffer.get_u8();
             let padding1 = buffer.get_u16();
-            let received_power = buffer.get_f32();
-            let transmitter_entity_id = EntityId::decode(&mut buffer);
-            let transmitter_radio_id = buffer.get_u16();
+            let antenna_location = Vector3Double::decode(&mut buffer);
+            let relative_antenna_location = Vector3Float::decode(&mut buffer);
+            let antenna_pattern_type = buffer.get_u16();
+            let antenna_pattern_count = buffer.get_u16();
+            let frequency = buffer.get_u64();
+            let transmit_frequency_bandwidth = buffer.get_f32();
+            let power = buffer.get_f32();
+            let modulation_type = ModulationType::decode(&mut buffer);
+            let crypto_system = buffer.get_u16();
+            let crypto_key_id = buffer.get_u16();
+            let modulation_parameter_count = buffer.get_u8();
+            let padding2 = buffer.get_u16();
+            let padding3 = buffer.get_u8();
+            let mut modulation_parameter_list: Vec<Vector3Float> = vec![];
+            for _i in 0..modulation_parameter_count {
+                modulation_parameter_list.push(Vector3Float::decode(&mut buffer));
+            }
+            let mut antenna_pattern_list: Vec<Vector3Float> = vec![];
+            for _i in 0..antenna_pattern_count {
+                antenna_pattern_list.push(Vector3Float::decode(&mut buffer));
+            }
             Ok(TransmitterPdu {
                 pdu_header,
                 entity_id,
                 radio_id,
+                radio_entity_type,
+                transmit_state,
+                input_source,
+                padding1,
+                antenna_location,
+                relative_antenna_location,
+                antenna_pattern_type,
+                antenna_pattern_count,
+                frequency,
+                transmit_frequency_bandwidth,
+                power,
+                modulation_type,
+                crypto_system,
+                crypto_key_id,
+                modulation_parameter_count,
+                padding2,
+                padding3,
+                modulation_parameter_list,
+                antenna_pattern_list,
             })
         } else {
             Err(DISError::InvalidDISHeader)
@@ -130,10 +169,54 @@ impl Pdu for TransmitterPdu {
     {
         let entity_id = EntityId::decode(&mut buffer);
         let radio_id = buffer.get_u16();
+        let radio_entity_type = RadioEntityType::decode(&mut buffer);
+        let transmit_state = buffer.get_u8();
+        let input_source = buffer.get_u8();
+        let padding1 = buffer.get_u16();
+        let antenna_location = Vector3Double::decode(&mut buffer);
+        let relative_antenna_location = Vector3Float::decode(&mut buffer);
+        let antenna_pattern_type = buffer.get_u16();
+        let antenna_pattern_count = buffer.get_u16();
+        let frequency = buffer.get_u64();
+        let transmit_frequency_bandwidth = buffer.get_f32();
+        let power = buffer.get_f32();
+        let modulation_type = ModulationType::decode(&mut buffer);
+        let crypto_system = buffer.get_u16();
+        let crypto_key_id = buffer.get_u16();
+        let modulation_parameter_count = buffer.get_u8();
+        let padding2 = buffer.get_u16();
+        let padding3 = buffer.get_u8();
+        let mut modulation_parameter_list: Vec<Vector3Float> = vec![];
+        for _i in 0..modulation_parameter_count {
+            modulation_parameter_list.push(Vector3Float::decode(&mut buffer));
+        }
+        let mut antenna_pattern_list: Vec<Vector3Float> = vec![];
+        for _i in 0..antenna_pattern_count {
+            antenna_pattern_list.push(Vector3Float::decode(&mut buffer));
+        }
         Ok(TransmitterPdu {
             pdu_header,
             entity_id,
             radio_id,
+            radio_entity_type,
+            transmit_state,
+            input_source,
+            padding1,
+            antenna_location,
+            relative_antenna_location,
+            antenna_pattern_type,
+            antenna_pattern_count,
+            frequency,
+            transmit_frequency_bandwidth,
+            power,
+            modulation_type,
+            crypto_system,
+            crypto_key_id,
+            modulation_parameter_count,
+            padding2,
+            padding3,
+            modulation_parameter_list,
+            antenna_pattern_list,
         })
     }
 }
