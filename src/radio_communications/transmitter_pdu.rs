@@ -236,7 +236,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::Transmitter,
             ProtocolFamily::RadioCommunications,
-            448 / 8,
+            688 / 8,
         );
 
         assert_eq!(
