@@ -60,7 +60,7 @@ impl Default for TransmitterPdu {
             pdu_header: PduHeader::default(
                 PduType::Transmitter,
                 ProtocolFamily::RadioCommunications,
-                256,
+                112,
             ),
             entity_id: EntityId::default(1),
             radio_id: 0,
@@ -92,6 +92,29 @@ impl Pdu for TransmitterPdu {
         self.pdu_header.serialize(buf);
         self.entity_id.serialize(buf);
         buf.put_u16(self.radio_id);
+        self.radio_entity_type.serialize(buf);
+        buf.put_u8(self.transmit_state);
+        buf.put_u8(self.input_source);
+        buf.put_u16(self.padding1);
+        self.antenna_location.serialize(buf);
+        self.relative_antenna_location.serialize(buf);
+        buf.put_u16(self.antenna_pattern_type);
+        buf.put_u16(self.antenna_pattern_count);
+        buf.put_u64(self.frequency);
+        buf.put_f32(self.transmit_frequency_bandwidth);
+        buf.put_f32(self.power);
+        self.modulation_type.serialize(buf);
+        buf.put_u16(self.crypto_system);
+        buf.put_u16(self.crypto_key_id);
+        buf.put_u8(self.modulation_parameter_count);
+        buf.put_u16(self.padding2);
+        buf.put_u8(self.padding3);
+        for i in 0..self.modulation_parameter_list.len() {
+            self.modulation_parameter_list[i].serialize(buf);
+        }
+        for i in 0..self.antenna_pattern_list.len() {
+            self.antenna_pattern_list[i].serialize(buf);
+        }
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -236,7 +259,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::Transmitter,
             ProtocolFamily::RadioCommunications,
-            2048 / 8,
+            896 / 8,
         );
 
         assert_eq!(
