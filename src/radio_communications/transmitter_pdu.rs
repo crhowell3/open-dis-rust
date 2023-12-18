@@ -60,7 +60,7 @@ impl Default for TransmitterPdu {
             pdu_header: PduHeader::default(
                 PduType::Transmitter,
                 ProtocolFamily::RadioCommunications,
-                86,
+                128,
             ),
             entity_id: EntityId::default(1),
             radio_id: 0,
@@ -236,7 +236,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::Transmitter,
             ProtocolFamily::RadioCommunications,
-            896 / 8,
+            1024 / 8,
         );
 
         assert_eq!(
