@@ -31,8 +31,8 @@
 | FastEntityState | ❌ |
 | Fire | ❌ |
 | GriddedData | ❌ |
-| IntercomControl | ❌ |
-| IntercomSignal | ❌ |
+| IntercomControl | ✅ |
+| IntercomSignal | ✅ |
 | IsGroupOf | ❌ |
 | IsPartOf | ❌ |
 | LinearObjectState | ❌ |
@@ -42,7 +42,7 @@
 | MinefieldResponseNack | ❌ |
 | MinefieldState | ❌ |
 | PointObjectState | ❌ |
-| Receiver | ❌ |
+| Receiver | ✅ |
 | RecordQueryReliable | ✅ |
 | RemoveEntity | ✅ |
 | RemoveEntityReliable | ✅ |
@@ -56,11 +56,11 @@
 | SetData | ✅ |
 | SetDataReliable | ✅ |
 | SetRecordReliable | ✅ |
-| Signal | ❌ |
+| Signal | ✅ |
 | StartResume | ✅ |
 | StartResumeReliable | ✅ |
 | StopFreeze | ✅ |
 | StopFreezeReliable | ✅ |
 | TransferControlRequest | ❌ |
-| Transmitter | ❌ |
+| Transmitter | ✅ |
 | UnderwaterAcoustic | ❌ |
