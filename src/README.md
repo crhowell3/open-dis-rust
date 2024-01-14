@@ -37,10 +37,10 @@
 | IsPartOf | ❌ |
 | LinearObjectState | ❌ |
 | Logistics | ❌ |
-| MinefieldData | ❌ |
-| MinefieldQuery | ❌ |
-| MinefieldResponseNack | ❌ |
-| MinefieldState | ❌ |
+| MinefieldData | ✅ |
+| MinefieldQuery | ✅ |
+| MinefieldResponseNack | ✅ |
+| MinefieldState | ✅ |
 | PointObjectState | ❌ |
 | Receiver | ✅ |
 | RecordQueryReliable | ✅ |

@@ -18,6 +18,20 @@ pub struct EntityType {
     pub extra: u8,
 }
 
+impl Default for EntityType {
+    fn default() -> Self {
+        EntityType {
+            kind: Kind::Other,
+            domain: 0,
+            country: Country::Other,
+            category: 0,
+            subcategory: 0,
+            specific: 0,
+            extra: 0,
+        }
+    }
+}
+
 impl EntityType {
     pub fn new(
         kind: Kind,
