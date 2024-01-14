@@ -37,7 +37,7 @@
 | IsPartOf | ❌ |
 | LinearObjectState | ❌ |
 | Logistics | ❌ |
-| MinefieldData | ❌ |
+| MinefieldData | ✅ |
 | MinefieldQuery | ❌ |
 | MinefieldResponseNack | ❌ |
 | MinefieldState | ❌ |
