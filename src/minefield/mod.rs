@@ -5,6 +5,8 @@
 //     Licensed under the BSD 2-Clause License
 
 pub mod minefield_data_pdu;
+pub mod minefield_identifier;
 pub mod minefield_query_pdu;
 pub mod minefield_response_nack_pdu;
 pub mod minefield_state_pdu;
+pub mod point;

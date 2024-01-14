@@ -38,9 +38,9 @@
 | LinearObjectState | ❌ |
 | Logistics | ❌ |
 | MinefieldData | ✅ |
-| MinefieldQuery | ❌ |
-| MinefieldResponseNack | ❌ |
-| MinefieldState | ❌ |
+| MinefieldQuery | ✅ |
+| MinefieldResponseNack | ✅ |
+| MinefieldState | ✅ |
 | PointObjectState | ❌ |
 | Receiver | ✅ |
 | RecordQueryReliable | ✅ |
