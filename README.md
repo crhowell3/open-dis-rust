@@ -47,7 +47,7 @@
   <a href="#">
     <img
       alt="Maintained"
-      src="https://img.shields.io/maintenance/yes/2023?style=for-the-badge&color=98971a&labelColor=282a36"
+      src="https://img.shields.io/maintenance/yes/2024?style=for-the-badge&color=98971a&labelColor=282a36"
     />
   </a>
 </p>
