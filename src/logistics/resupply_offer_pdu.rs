@@ -20,7 +20,7 @@ use super::supply_quantity::SupplyQuantity;
 pub struct ResupplyOfferPdu {
     pub pdu_header: PduHeader,
     pub receiving_entity_id: EntityId,
-    pub repairing_entity_id: EntityId,
+    pub supplying_entity_id: EntityId,
     pub number_of_supply_types: u8,
     pub padding1: i16,
     pub padding2: i8,
@@ -28,7 +28,7 @@ pub struct ResupplyOfferPdu {
 }
 
 impl Default for ResupplyOfferPdu {
-    /// Creates a default Resupply Offer PDU with arbitrary receiving and repairing entity IDs
+    /// Creates a default Resupply Offer PDU with arbitrary receiving and supplying entity IDs
     ///
     /// # Examples
     ///
@@ -42,7 +42,7 @@ impl Default for ResupplyOfferPdu {
         ResupplyOfferPdu {
             pdu_header: PduHeader::default(PduType::ResupplyOffer, ProtocolFamily::Logistics, 56),
             receiving_entity_id: EntityId::default(1),
-            repairing_entity_id: EntityId::default(2),
+            supplying_entity_id: EntityId::default(2),
             number_of_supply_types: 0,
             padding1: 0,
             padding2: 0,
@@ -55,7 +55,7 @@ impl Pdu for ResupplyOfferPdu {
     fn serialize(&self, buf: &mut BytesMut) {
         self.pdu_header.serialize(buf);
         self.receiving_entity_id.serialize(buf);
-        self.repairing_entity_id.serialize(buf);
+        self.supplying_entity_id.serialize(buf);
         buf.put_u8(self.number_of_supply_types);
         buf.put_i16(self.padding1);
         buf.put_i8(self.padding2);
@@ -71,7 +71,7 @@ impl Pdu for ResupplyOfferPdu {
         let pdu_header = PduHeader::decode(&mut buffer);
         if pdu_header.pdu_type == PduType::ResupplyOffer {
             let receiving_entity_id = EntityId::decode(&mut buffer);
-            let repairing_entity_id = EntityId::decode(&mut buffer);
+            let supplying_entity_id = EntityId::decode(&mut buffer);
             let number_of_supply_types = buffer.get_u8();
             let padding1 = buffer.get_i16();
             let padding2 = buffer.get_i8();
@@ -83,7 +83,7 @@ impl Pdu for ResupplyOfferPdu {
             Ok(ResupplyOfferPdu {
                 pdu_header,
                 receiving_entity_id,
-                repairing_entity_id,
+                supplying_entity_id,
                 number_of_supply_types,
                 padding1,
                 padding2,
@@ -106,7 +106,7 @@ impl Pdu for ResupplyOfferPdu {
         Self: Sized,
     {
         let receiving_entity_id = EntityId::decode(&mut buffer);
-        let repairing_entity_id = EntityId::decode(&mut buffer);
+        let supplying_entity_id = EntityId::decode(&mut buffer);
         let number_of_supply_types = buffer.get_u8();
         let padding1 = buffer.get_i16();
         let padding2 = buffer.get_i8();
@@ -118,7 +118,7 @@ impl Pdu for ResupplyOfferPdu {
         Ok(ResupplyOfferPdu {
             pdu_header,
             receiving_entity_id,
-            repairing_entity_id,
+            supplying_entity_id,
             number_of_supply_types,
             padding1,
             padding2,

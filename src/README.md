@@ -48,11 +48,11 @@
 | RemoveEntityReliable | ✅ |
 | RepairComplete | ✅ |
 | RepairResponse | ✅ |
-| ResupplyCancel | ❌ |
-| ResupplyOffer | ❌ |
-| ResupplyReceived | ❌ |
+| ResupplyCancel | ✅ |
+| ResupplyOffer | ✅ |
+| ResupplyReceived | ✅ |
 | Sees | ❌ |
-| ServiceRequest | ❌ |
+| ServiceRequest | ✅ |
 | SetData | ✅ |
 | SetDataReliable | ✅ |
 | SetRecordReliable | ✅ |
