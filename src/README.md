@@ -28,7 +28,6 @@
 | EnvironmentalProcess | ❌ |
 | EventReport | ✅ |
 | EventReportReliable | ✅ |
-| FastEntityState | ❌ |
 | Fire | ❌ |
 | GriddedData | ❌ |
 | IntercomControl | ✅ |
@@ -36,7 +35,6 @@
 | IsGroupOf | ❌ |
 | IsPartOf | ❌ |
 | LinearObjectState | ❌ |
-| Logistics | ❌ |
 | MinefieldData | ✅ |
 | MinefieldQuery | ✅ |
 | MinefieldResponseNack | ✅ |
