@@ -9,3 +9,4 @@ pub mod resupply_cancel_pdu;
 pub mod resupply_offer_pdu;
 pub mod resupply_received_pdu;
 pub mod service_request_pdu;
+pub mod supply_quantity;
