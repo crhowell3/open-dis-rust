@@ -9,6 +9,7 @@ pub mod dis_error;
 pub mod entity_coordinate_vector;
 pub mod entity_id;
 pub mod entity_type;
+pub mod enums;
 pub mod euler_angles;
 pub mod event_id;
 pub mod linear_acceleration;
