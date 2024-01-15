@@ -47,7 +47,7 @@
 | RemoveEntity | ✅ |
 | RemoveEntityReliable | ✅ |
 | RepairComplete | ✅ |
-| RepairResponse | ❌ |
+| RepairResponse | ✅ |
 | ResupplyCancel | ❌ |
 | ResupplyOffer | ❌ |
 | ResupplyReceived | ❌ |
