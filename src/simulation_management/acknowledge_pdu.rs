@@ -41,7 +41,7 @@ impl Default for AcknowledgePdu {
             pdu_header: PduHeader::default(
                 PduType::Acknowledge,
                 ProtocolFamily::SimulationManagement,
-                56,
+                32,
             ),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
@@ -174,7 +174,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::Acknowledge,
             ProtocolFamily::SimulationManagement,
-            448 / 8,
+            32,
         );
 
         assert_eq!(

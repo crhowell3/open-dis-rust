@@ -35,7 +35,7 @@ impl Default for DesignatorPdu {
             pdu_header: PduHeader::default(
                 PduType::Designator,
                 ProtocolFamily::DistributedEmissionRegeneration,
-                56,
+                88,
             ),
             designating_entity_id: EntityId::default(1),
             code_name: 0,
