@@ -28,7 +28,7 @@ impl Default for StopFreezePdu {
             pdu_header: PduHeader::default(
                 PduType::StopFreeze,
                 ProtocolFamily::SimulationManagement,
-                56,
+                40,
             ),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
@@ -129,7 +129,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::StopFreeze,
             ProtocolFamily::SimulationManagement,
-            56,
+            40,
         );
 
         assert_eq!(

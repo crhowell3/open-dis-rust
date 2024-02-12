@@ -43,7 +43,7 @@ impl Default for SignalPdu {
             pdu_header: PduHeader::default(
                 PduType::Signal,
                 ProtocolFamily::RadioCommunications,
-                56,
+                256,
             ),
             entity_id: EntityId::default(1),
             radio_id: 0,
@@ -159,11 +159,8 @@ mod tests {
     #[test]
     fn create_header() {
         let signal_pdu = SignalPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::Signal,
-            ProtocolFamily::RadioCommunications,
-            448 / 8,
-        );
+        let pdu_header =
+            PduHeader::default(PduType::Signal, ProtocolFamily::RadioCommunications, 256);
 
         assert_eq!(
             pdu_header.protocol_version,
