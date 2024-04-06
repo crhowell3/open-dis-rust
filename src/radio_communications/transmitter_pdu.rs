@@ -288,4 +288,17 @@ mod tests {
         let new_transmitter_pdu = TransmitterPdu::deserialize(buffer).unwrap();
         assert_eq!(new_transmitter_pdu.pdu_header, transmitter_pdu.pdu_header);
     }
+
+    #[test]
+    fn deserialize_without_header() {
+        let transmitter_pdu = TransmitterPdu::default();
+        let mut buffer = BytesMut::new();
+        transmitter_pdu.serialize(&mut buffer);
+        let pdu_header = PduHeader::decode(&mut buffer);
+        let body_data = buffer.split_off(12);
+
+        let new_transmitter_pdu =
+            TransmitterPdu::deserialize_without_header(body_data, pdu_header).unwrap();
+        assert_eq!(new_transmitter_pdu.pdu_header, transmitter_pdu.pdu_header);
+    }
 }
