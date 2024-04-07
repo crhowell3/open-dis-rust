@@ -41,6 +41,7 @@ impl Default for ElectromagneticEmissionsPdu {
     ///
     fn default() -> Self {
         ElectromagneticEmissionsPdu {
+            // The default size of an EE PDU is 864 bits, or 108 bytes
             pdu_header: PduHeader::default(
                 PduType::ElectromagneticEmission,
                 ProtocolFamily::DistributedEmissionRegeneration,
@@ -49,9 +50,9 @@ impl Default for ElectromagneticEmissionsPdu {
             emitting_entity_id: EntityId::default(1),
             event_id: EventId::default(1),
             state_update_indicator: 0,
-            number_of_systems: 0,
+            number_of_systems: 1,
             padding_for_emissions_pdu: 0,
-            systems: vec![],
+            systems: vec![ElectromagneticEmissionSystemData::default()],
         }
     }
 }
