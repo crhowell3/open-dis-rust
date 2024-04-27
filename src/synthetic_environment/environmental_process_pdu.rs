@@ -150,8 +150,8 @@ mod tests {
     fn create_header() {
         let environmental_process_pdu = EnvironmentalProcessPdu::default();
         let pdu_header = PduHeader::default(
-            PduType::Signal,
-            ProtocolFamily::RadioCommunications,
+            PduType::EnvironmentalProcess,
+            ProtocolFamily::SyntheticEnvironment,
             448 / 8,
         );
 
