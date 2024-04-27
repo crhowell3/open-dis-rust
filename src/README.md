@@ -9,7 +9,7 @@
 | ActionResponse | ✅ |
 | ActionResponseReliable | ✅ |
 | AggregateState | ❌ |
-| ArealObjectState | ❌ |
+| ArealObjectState | ✅ |
 | CollisionElastic | ❌ |
 | Collision | ❌ |
 | Comment | ✅ |
@@ -25,7 +25,7 @@
 | ElectromagneticEmissions | ✅ |
 | EntityState | ✅ |
 | EntityStateUpdate | ❌ |
-| EnvironmentalProcess | ❌ |
+| EnvironmentalProcess | ✅ |
 | EventReport | ✅ |
 | EventReportReliable | ✅ |
 | Fire | ❌ |
