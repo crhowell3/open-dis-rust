@@ -5,6 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 pub mod areal_object_state_pdu;
+pub mod environment;
 pub mod environmental_process_pdu;
 pub mod gridded_data_pdu;
 pub mod linear_object_state_pdu;
