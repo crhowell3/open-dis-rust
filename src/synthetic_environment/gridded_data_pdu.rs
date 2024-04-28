@@ -81,6 +81,7 @@ impl Pdu for GriddedDataPdu {
         self.environmental_simulation_application_id.serialize(buf);
         buf.put_u16(self.field_number);
         buf.put_u16(self.pdu_number);
+        buf.put_u16(self.pdu_total);
         buf.put_u16(self.coordinate_system);
         buf.put_u8(self.number_of_grid_axes);
         buf.put_u8(self.constant_grid);
@@ -105,6 +106,7 @@ impl Pdu for GriddedDataPdu {
             let environmental_simulation_application_id = EntityId::decode(&mut buffer);
             let field_number = buffer.get_u16();
             let pdu_number = buffer.get_u16();
+            let pdu_total = buffer.get_u16();
             let coordinate_system = buffer.get_u16();
             let number_of_grid_axes = buffer.get_u8();
             let constant_grid = buffer.get_u8();
@@ -124,6 +126,7 @@ impl Pdu for GriddedDataPdu {
                 environmental_simulation_application_id,
                 field_number,
                 pdu_number,
+                pdu_total,
                 coordinate_system,
                 number_of_grid_axes,
                 constant_grid,
@@ -155,6 +158,7 @@ impl Pdu for GriddedDataPdu {
         let environmental_simulation_application_id = EntityId::decode(&mut buffer);
         let field_number = buffer.get_u16();
         let pdu_number = buffer.get_u16();
+        let pdu_total = buffer.get_u16();
         let coordinate_system = buffer.get_u16();
         let number_of_grid_axes = buffer.get_u8();
         let constant_grid = buffer.get_u8();
@@ -174,6 +178,7 @@ impl Pdu for GriddedDataPdu {
             environmental_simulation_application_id,
             field_number,
             pdu_number,
+            pdu_total,
             coordinate_system,
             number_of_grid_axes,
             constant_grid,
