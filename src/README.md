@@ -29,7 +29,7 @@
 | EventReport | ✅ |
 | EventReportReliable | ✅ |
 | Fire | ❌ |
-| GriddedData | ❌ |
+| GriddedData | ⚠️ |
 | IntercomControl | ✅ |
 | IntercomSignal | ✅ |
 | IsGroupOf | ❌ |
