@@ -8,7 +8,7 @@
 | ActionRequestReliable | ✅ |
 | ActionResponse | ✅ |
 | ActionResponseReliable | ✅ |
-| AggregateState | ❌ |
+| AggregateState | ✅ |
 | ArealObjectState | ✅ |
 | CollisionElastic | ❌ |
 | Collision | ❌ |
