@@ -3,7 +3,7 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use bytes::{/*Buf, BufMut,*/ BytesMut};
 
 #[derive(Clone, Debug)]
 pub struct GridAxisRecord {}
@@ -19,11 +19,11 @@ impl GridAxisRecord {
         GridAxisRecord {}
     }
 
-    pub fn serialize(&self, buf: &mut BytesMut) {
+    pub fn serialize(&self, _buf: &mut BytesMut) {
         unimplemented!();
     }
 
-    pub fn decode(buf: &mut BytesMut) -> GridAxisRecord {
+    pub fn decode(_buf: &mut BytesMut) -> GridAxisRecord {
         GridAxisRecord {}
     }
 }
