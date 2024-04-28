@@ -18,7 +18,7 @@ use crate::common::{
 use super::{named_location::NamedLocation, relationship::Relationship};
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012
+/// Implemented according to IEEE 1278.1-2012 §5.9.5
 pub struct IsPartOfPdu {
     pub pdu_header: PduHeader,
     pub originating_entity_id: EntityId,

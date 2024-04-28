@@ -20,7 +20,7 @@ use crate::common::{
 use super::{aggregate_id::AggregateId, aggregate_marking::AggregateMarking};
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012
+/// Implemented according to IEEE 1278.1-2012 §5.9.2.2
 pub struct AggregateStatePdu {
     pub pdu_header: PduHeader,
     pub aggregate_id: EntityId,

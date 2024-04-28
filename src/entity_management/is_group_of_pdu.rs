@@ -14,7 +14,7 @@ use crate::common::{
 };
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012
+/// Implemented according to IEEE 1278.1-2012 §5.9.3
 pub struct IsGroupOfPdu {
     pub pdu_header: PduHeader,
     pub group_entity_id: EntityId,
