@@ -9,3 +9,5 @@ pub mod aggregate_marking;
 pub mod aggregate_state_pdu;
 pub mod is_group_of_pdu;
 pub mod is_part_of_pdu;
+pub mod named_location;
+pub mod relationship;

@@ -32,8 +32,8 @@
 | GriddedData | ⚠️ |
 | IntercomControl | ✅ |
 | IntercomSignal | ✅ |
-| IsGroupOf | ❌ |
-| IsPartOf | ❌ |
+| IsGroupOf | ✅ |
+| IsPartOf | ✅ |
 | LinearObjectState | ✅ |
 | MinefieldData | ✅ |
 | MinefieldQuery | ✅ |
