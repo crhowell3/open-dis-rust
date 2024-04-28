@@ -9,4 +9,6 @@ pub mod environment;
 pub mod environmental_process_pdu;
 pub mod gridded_data_pdu;
 pub mod linear_object_state_pdu;
+pub mod linear_segment_parameter;
+pub mod object_type;
 pub mod point_object_state_pdu;

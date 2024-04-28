@@ -34,7 +34,7 @@
 | IntercomSignal | ✅ |
 | IsGroupOf | ❌ |
 | IsPartOf | ❌ |
-| LinearObjectState | ❌ |
+| LinearObjectState | ✅ |
 | MinefieldData | ✅ |
 | MinefieldQuery | ✅ |
 | MinefieldResponseNack | ✅ |
