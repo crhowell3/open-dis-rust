@@ -8,7 +8,7 @@
 | ActionRequestReliable | ✅ |
 | ActionResponse | ✅ |
 | ActionResponseReliable | ✅ |
-| AggregateState | ❌ |
+| AggregateState | ✅ |
 | ArealObjectState | ✅ |
 | CollisionElastic | ❌ |
 | Collision | ❌ |
@@ -32,8 +32,8 @@
 | GriddedData | ⚠️ |
 | IntercomControl | ✅ |
 | IntercomSignal | ✅ |
-| IsGroupOf | ❌ |
-| IsPartOf | ❌ |
+| IsGroupOf | ✅ |
+| IsPartOf | ✅ |
 | LinearObjectState | ✅ |
 | MinefieldData | ✅ |
 | MinefieldQuery | ✅ |
