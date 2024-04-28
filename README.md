@@ -71,19 +71,20 @@ or by adding this to your project's Cargo.toml `[dependencies]` section:
 open-dis-rust = "<insert version>"
 ```
 
-### Example Usage
-```rust
-use bytes::BytesMut;
-
-// Import the Open DIS crate
-extern crate open_dis_rust;
-use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
-
-// Create a new AcknowledgePdu with default data
-let ack_pdu = AcknowledgePdu::default();
-let mut buffer = BytesMut::new();
-Pdu::serialize(&ack_pdu, &mut buffer);
+### Examples
+This package contains some examples for transmitting PDUs via UDP. To run the example, both the 
+client and the server applications need to be executed. Start by running the server as follows:
+```shell
+cargo run --example udp_server
 ```
+
+Then, in another terminal on the same machine, run the client as follows:
+```shell
+cargo run --example udp_client -- --udp 127.0.0.1:3000
+```
+
+A PDU will be transmitted from the client to the server, and then the data within the PDU
+will be echoed back to the client and displayed in the terminal.
 
 <p align="center">
   Copyright &copy; 2023-present
