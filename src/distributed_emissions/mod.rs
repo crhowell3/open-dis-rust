@@ -14,5 +14,5 @@ pub mod iff_pdu;
 pub mod propulsion_system_data;
 pub mod supplemental_emission_pdu;
 pub mod track_jam_target;
-pub mod underwater_acoustics_pdu;
+pub mod underwater_acoustic_pdu;
 pub mod vectoring_nozzle_system_data;
