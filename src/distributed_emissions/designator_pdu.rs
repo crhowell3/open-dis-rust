@@ -150,3 +150,49 @@ impl Pdu for DesignatorPdu {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::DesignatorPdu;
+    use crate::common::{
+        pdu::Pdu,
+        pdu_header::{PduHeader, PduType, ProtocolFamily},
+    };
+    use bytes::BytesMut;
+
+    #[test]
+    fn create_header() {
+        let designator_pdu = DesignatorPdu::default();
+        let pdu_header = PduHeader::default(
+            PduType::Designator,
+            ProtocolFamily::DistributedEmissionRegeneration,
+            448 / 8,
+        );
+
+        assert_eq!(
+            pdu_header.protocol_version,
+            designator_pdu.pdu_header.protocol_version
+        );
+        assert_eq!(
+            pdu_header.exercise_id,
+            designator_pdu.pdu_header.exercise_id
+        );
+        assert_eq!(pdu_header.pdu_type, designator_pdu.pdu_header.pdu_type);
+        assert_eq!(
+            pdu_header.protocol_family,
+            designator_pdu.pdu_header.protocol_family
+        );
+        assert_eq!(pdu_header.length, designator_pdu.pdu_header.length);
+        assert_eq!(pdu_header.padding, designator_pdu.pdu_header.padding);
+    }
+
+    #[test]
+    fn deserialize_header() {
+        let designator_pdu = DesignatorPdu::default();
+        let mut buffer = BytesMut::new();
+        designator_pdu.serialize(&mut buffer);
+
+        let new_designator_pdu = DesignatorPdu::deserialize(buffer).unwrap();
+        assert_eq!(new_designator_pdu.pdu_header, designator_pdu.pdu_header);
+    }
+}

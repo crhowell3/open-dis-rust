@@ -49,7 +49,7 @@
 | ResupplyCancel | ✅ |
 | ResupplyOffer | ✅ |
 | ResupplyReceived | ✅ |
-| Sees | ❌ |
+| SupplementalEmission | ✅ |
 | ServiceRequest | ✅ |
 | SetData | ✅ |
 | SetDataReliable | ✅ |
