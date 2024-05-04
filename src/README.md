@@ -20,7 +20,7 @@
 | DataQuery | ✅ |
 | DataQueryReliable | ✅ |
 | DataReliable | ✅ |
-| Designator | ❌ |
+| Designator | ✅ |
 | Detonation | ❌ |
 | ElectromagneticEmissions | ✅ |
 | EntityState | ✅ |
@@ -30,6 +30,7 @@
 | EventReportReliable | ✅ |
 | Fire | ❌ |
 | GriddedData | ⚠️ |
+| IFF | ❌ |
 | IntercomControl | ✅ |
 | IntercomSignal | ✅ |
 | IsGroupOf | ✅ |
@@ -61,4 +62,4 @@
 | StopFreezeReliable | ✅ |
 | TransferControlRequest | ❌ |
 | Transmitter | ✅ |
-| UnderwaterAcoustic | ❌ |
+| UnderwaterAcoustic | ✅ |

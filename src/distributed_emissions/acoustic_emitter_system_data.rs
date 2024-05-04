@@ -7,7 +7,9 @@ use bytes::{Buf, BufMut, BytesMut};
 
 use crate::common::vector3_float::Vector3Float;
 
-#[derive(Copy, Clone, Debug)]
+use super::{acoustic_beam_data::AcousticBeamData, acoustic_emitter_system::AcousticEmitterSystem};
+
+#[derive(Clone, Debug)]
 pub struct AcousticEmitterSystemData {
     pub emitter_system_data_length: u8,
     pub number_of_beams: u8,
@@ -61,6 +63,22 @@ impl AcousticEmitterSystemData {
     }
 
     pub fn decode(buf: &mut BytesMut) -> AcousticEmitterSystemData {
-        AcousticEmitterSystemData {}
+        let emitter_system_data_length = buf.get_u8();
+        let number_of_beams = buf.get_u8();
+        let pad2 = buf.get_u16();
+        let acoustic_emitter_system = AcousticEmitterSystem::decode(buf);
+        let emitter_location = Vector3Float::decode(buf);
+        let mut beam_records: Vec<AcousticBeamData> = vec![];
+        for _i in 0..number_of_beams {
+            beam_records.push(AcousticBeamData::decode(buf));
+        }
+        AcousticEmitterSystemData {
+            emitter_system_data_length,
+            number_of_beams,
+            pad2,
+            acoustic_emitter_system,
+            emitter_location,
+            beam_records,
+        }
     }
 }

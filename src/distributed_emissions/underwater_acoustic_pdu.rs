@@ -9,7 +9,9 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
-use super::{apa_data::ApaData, shaft_rpms::ShaftRPMs};
+use super::{
+    acoustic_emitter_system::AcousticEmitterSystem, apa_data::ApaData, shaft_rpms::ShaftRPMs,
+};
 
 #[derive(Clone, Debug)]
 pub struct UnderwaterAcousticPdu {
@@ -55,17 +57,23 @@ impl Default for UnderwaterAcousticPdu {
 impl Pdu for UnderwaterAcousticPdu {
     fn serialize(&self, buf: &mut BytesMut) {
         self.pdu_header.serialize(buf);
-        self.originating_entity_id.serialize(buf);
-        buf.put_u16(self.infrared_signature_representation_index);
-        buf.put_u16(self.acoustic_signature_representation_index);
-        buf.put_u16(self.radar_cross_section_signature_representation_index);
-        buf.put_u16(self.number_of_propulsion_systems);
-        buf.put_u16(self.number_of_vectoring_nozzle_systems);
-        for i in 0..self.propulsion_system_data.len() {
-            self.propulsion_system_data[i].serialize(buf);
+        self.emitting_entity_id.serialize(buf);
+        self.event_id.serialize(buf);
+        buf.put_i8(self.state_change_indicator);
+        buf.put_i8(self.pad);
+        buf.put_u16(self.passive_parameter_index);
+        buf.put_u8(self.propulsion_plant_configuration);
+        buf.put_u8(self.number_of_shafts);
+        buf.put_u8(self.number_of_apas);
+        buf.put_u8(self.number_of_ua_emitter_systems);
+        for i in 0..self.shaft_rpms.len() {
+            self.shaft_rpms[i].serialize(buf);
         }
-        for i in 0..self.vectoring_nozzle_system_data.len() {
-            self.vectoring_nozzle_system_data[i].serialize(buf);
+        for i in 0..self.apa_data.len() {
+            self.apa_data[i].serialize(buf);
+        }
+        for i in 0..self.emitter_systems.len() {
+            self.emitter_systems[i].serialize(buf);
         }
     }
 
@@ -75,30 +83,41 @@ impl Pdu for UnderwaterAcousticPdu {
     {
         let pdu_header = PduHeader::decode(&mut buffer);
         if pdu_header.pdu_type == PduType::UnderwaterAcoustic {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let infrared_signature_representation_index = buffer.get_u16();
-            let acoustic_signature_representation_index = buffer.get_u16();
-            let radar_cross_section_signature_representation_index = buffer.get_u16();
-            let number_of_propulsion_systems = buffer.get_u16();
-            let number_of_vectoring_nozzle_systems = buffer.get_u16();
-            let mut propulsion_system_data: Vec<PropulsionSystemData> = vec![];
-            for _i in 0..number_of_propulsion_systems {
-                propulsion_system_data.push(PropulsionSystemData::decode(&mut buffer));
+            let emitting_entity_id = EntityId::decode(&mut buffer);
+            let event_id = EventId::decode(&mut buffer);
+            let state_change_indicator = buffer.get_i8();
+            let pad = buffer.get_i8();
+            let passive_parameter_index = buffer.get_u16();
+            let propulsion_plant_configuration = buffer.get_u8();
+            let number_of_shafts = buffer.get_u8();
+            let number_of_apas = buffer.get_u8();
+            let number_of_ua_emitter_systems = buffer.get_u8();
+            let mut shaft_rpms: Vec<ShaftRPMs> = vec![];
+            for _i in 0..number_of_shafts {
+                shaft_rpms.push(ShaftRPMs::decode(&mut buffer));
             }
-            let mut vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData> = vec![];
-            for _i in 0..number_of_vectoring_nozzle_systems {
-                vectoring_nozzle_system_data.push(VectoringNozzleSystemData::decode(&mut buffer));
+            let mut apa_data: Vec<ApaData> = vec![];
+            for _i in 0..number_of_apas {
+                apa_data.push(ApaData::decode(&mut buffer));
+            }
+            let mut emitter_systems: Vec<AcousticEmitterSystem> = vec![];
+            for _i in 0..number_of_ua_emitter_systems {
+                emitter_systems.push(AcousticEmitterSystem::decode(&mut buffer));
             }
             Ok(UnderwaterAcousticPdu {
                 pdu_header,
-                originating_entity_id,
-                infrared_signature_representation_index,
-                acoustic_signature_representation_index,
-                radar_cross_section_signature_representation_index,
-                number_of_propulsion_systems,
-                number_of_vectoring_nozzle_systems,
-                propulsion_system_data,
-                vectoring_nozzle_system_data,
+                emitting_entity_id,
+                event_id,
+                state_change_indicator,
+                pad,
+                passive_parameter_index,
+                propulsion_plant_configuration,
+                number_of_shafts,
+                number_of_apas,
+                number_of_ua_emitter_systems,
+                shaft_rpms,
+                apa_data,
+                emitter_systems,
             })
         } else {
             Err(DISError::InvalidDISHeader)
@@ -116,30 +135,41 @@ impl Pdu for UnderwaterAcousticPdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let infrared_signature_representation_index = buffer.get_u16();
-        let acoustic_signature_representation_index = buffer.get_u16();
-        let radar_cross_section_signature_representation_index = buffer.get_u16();
-        let number_of_propulsion_systems = buffer.get_u16();
-        let number_of_vectoring_nozzle_systems = buffer.get_u16();
-        let mut propulsion_system_data: Vec<PropulsionSystemData> = vec![];
-        for _i in 0..number_of_propulsion_systems {
-            propulsion_system_data.push(PropulsionSystemData::decode(&mut buffer));
+        let emitting_entity_id = EntityId::decode(&mut buffer);
+        let event_id = EventId::decode(&mut buffer);
+        let state_change_indicator = buffer.get_i8();
+        let pad = buffer.get_i8();
+        let passive_parameter_index = buffer.get_u16();
+        let propulsion_plant_configuration = buffer.get_u8();
+        let number_of_shafts = buffer.get_u8();
+        let number_of_apas = buffer.get_u8();
+        let number_of_ua_emitter_systems = buffer.get_u8();
+        let mut shaft_rpms: Vec<ShaftRPMs> = vec![];
+        for _i in 0..number_of_shafts {
+            shaft_rpms.push(ShaftRPMs::decode(&mut buffer));
         }
-        let mut vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData> = vec![];
-        for _i in 0..number_of_vectoring_nozzle_systems {
-            vectoring_nozzle_system_data.push(VectoringNozzleSystemData::decode(&mut buffer));
+        let mut apa_data: Vec<ApaData> = vec![];
+        for _i in 0..number_of_apas {
+            apa_data.push(ApaData::decode(&mut buffer));
+        }
+        let mut emitter_systems: Vec<AcousticEmitterSystem> = vec![];
+        for _i in 0..number_of_ua_emitter_systems {
+            emitter_systems.push(AcousticEmitterSystem::decode(&mut buffer));
         }
         Ok(UnderwaterAcousticPdu {
             pdu_header,
-            originating_entity_id,
-            infrared_signature_representation_index,
-            acoustic_signature_representation_index,
-            radar_cross_section_signature_representation_index,
-            number_of_propulsion_systems,
-            number_of_vectoring_nozzle_systems,
-            propulsion_system_data,
-            vectoring_nozzle_system_data,
+            emitting_entity_id,
+            event_id,
+            state_change_indicator,
+            pad,
+            passive_parameter_index,
+            propulsion_plant_configuration,
+            number_of_shafts,
+            number_of_apas,
+            number_of_ua_emitter_systems,
+            shaft_rpms,
+            apa_data,
+            emitter_systems,
         })
     }
 }
