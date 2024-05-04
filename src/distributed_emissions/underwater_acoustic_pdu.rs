@@ -9,6 +9,8 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
+use super::{apa_data::ApaData, shaft_rpms::ShaftRPMs};
+
 #[derive(Clone, Debug)]
 pub struct UnderwaterAcousticPdu {
     pub pdu_header: PduHeader,
