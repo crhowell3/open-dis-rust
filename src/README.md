@@ -30,7 +30,7 @@
 | EventReportReliable | ✅ |
 | Fire | ❌ |
 | GriddedData | ⚠️ |
-| IFF | ❌ |
+| IFF | ✅ |
 | IntercomControl | ✅ |
 | IntercomSignal | ✅ |
 | IsGroupOf | ✅ |

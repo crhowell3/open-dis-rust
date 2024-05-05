@@ -9,6 +9,7 @@ pub mod acoustic_beam_fundamental_parameter;
 pub mod acoustic_emitter_system;
 pub mod acoustic_emitter_system_data;
 pub mod apa_data;
+pub mod data_types;
 pub mod designator_pdu;
 pub mod electromagnetic_emission_beam_data;
 pub mod electromagnetic_emission_system_data;
