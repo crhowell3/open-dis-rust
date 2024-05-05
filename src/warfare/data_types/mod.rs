@@ -3,6 +3,4 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-pub mod data_types;
-pub mod detonation_pdu;
-pub mod fire_pdu;
+pub mod munition_descriptor;

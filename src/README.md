@@ -28,7 +28,7 @@
 | EnvironmentalProcess | ✅ |
 | EventReport | ✅ |
 | EventReportReliable | ✅ |
-| Fire | ❌ |
+| Fire | ✅ |
 | GriddedData | ⚠️ |
 | IFF | ✅ |
 | IntercomControl | ✅ |
