@@ -21,7 +21,7 @@
 | DataQueryReliable | ✅ |
 | DataReliable | ✅ |
 | Designator | ✅ |
-| Detonation | ❌ |
+| Detonation | ✅ |
 | ElectromagneticEmissions | ✅ |
 | EntityState | ✅ |
 | EntityStateUpdate | ❌ |

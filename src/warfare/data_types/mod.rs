@@ -4,3 +4,4 @@
 //     Licensed under the BSD-2-Clause License
 
 pub mod munition_descriptor;
+pub mod variable_parameter;
