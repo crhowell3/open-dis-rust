@@ -5,4 +5,6 @@
 
 pub mod data_types;
 pub mod detonation_pdu;
+pub mod directed_energy_fire_pdu;
+pub mod entity_damage_status_pdu;
 pub mod fire_pdu;

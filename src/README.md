@@ -23,6 +23,7 @@
 | Designator | ✅ |
 | Detonation | ✅ |
 | ElectromagneticEmissions | ✅ |
+| EntityDamageStatus | ✅ |
 | EntityState | ✅ |
 | EntityStateUpdate | ❌ |
 | EnvironmentalProcess | ✅ |

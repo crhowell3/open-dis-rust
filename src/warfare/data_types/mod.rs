@@ -3,5 +3,6 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+pub mod directed_energy_damage;
 pub mod munition_descriptor;
 pub mod variable_parameter;
