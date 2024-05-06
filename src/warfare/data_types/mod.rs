@@ -5,4 +5,5 @@
 
 pub mod directed_energy_damage;
 pub mod munition_descriptor;
+pub mod standard_variable_specification;
 pub mod variable_parameter;
