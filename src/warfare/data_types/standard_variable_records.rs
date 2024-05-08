@@ -5,27 +5,28 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
-pub struct StandardVariableSpecification {
-    pub number_of_standard_variable_records: u16,
-    pub standard_variable_records: Vec<StandardVariableRecords>,
+#[derive(Copy, Clone, Debug)]
+pub struct StandardVariableRecords {
+    pub record_type: u32,
+    pub record_length: u16,
+    pub re
 }
 
-impl Default for StandardVariableSpecification {
+impl Default for StandardVariableRecords {
     fn default() -> Self {
-        StandardVariableSpecification {
+        StandardVariableRecords {
             number_of_standard_variable_records: 0,
             standard_variable_records: vec![],
         }
     }
 }
 
-impl StandardVariableSpecification {
+impl StandardVariableRecords {
     pub fn new(
         number_of_standard_variable_records: u16,
         standard_variable_records: Vec<StandardVariableRecords>,
     ) -> Self {
-        StandardVariableSpecification {
+        StandardVariableRecords {
             number_of_standard_variable_records,
             standard_variable_records,
         }
@@ -38,13 +39,13 @@ impl StandardVariableSpecification {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> StandardVariableSpecification {
+    pub fn decode(buf: &mut BytesMut) -> StandardVariableRecords {
         let number_of_standard_variable_records = buf.get_u16();
         let mut standard_variable_records: Vec<StandardVariableRecords> = vec![];
         for _i in 0..number_of_standard_variable_records {
             standard_variable_records.push(StandardVariableRecords::decode(buf));
         }
-        StandardVariableSpecification {
+        StandardVariableRecords {
             number_of_standard_variable_records,
             standard_variable_records,
         }
