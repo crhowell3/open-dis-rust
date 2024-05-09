@@ -5,49 +5,51 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct StandardVariableRecords {
     pub record_type: u32,
     pub record_length: u16,
-    pub re
+    pub record_specific_fields: Vec<u8>,
 }
 
 impl Default for StandardVariableRecords {
     fn default() -> Self {
         StandardVariableRecords {
-            number_of_standard_variable_records: 0,
-            standard_variable_records: vec![],
+            record_type: 0,
+            record_length: 0,
+            record_specific_fields: vec![],
         }
     }
 }
 
 impl StandardVariableRecords {
-    pub fn new(
-        number_of_standard_variable_records: u16,
-        standard_variable_records: Vec<StandardVariableRecords>,
-    ) -> Self {
+    pub fn new(record_type: u32, record_length: u16, record_specific_fields: Vec<u8>) -> Self {
         StandardVariableRecords {
-            number_of_standard_variable_records,
-            standard_variable_records,
+            record_type,
+            record_length,
+            record_specific_fields,
         }
     }
 
     pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.number_of_standard_variable_records);
-        for i in 0..self.standard_variable_records.len() {
-            self.standard_variable_records[i].serialize(buf);
+        buf.put_u32(self.record_type);
+        buf.put_u16(self.record_length);
+        for i in 0..self.record_specific_fields.len() {
+            buf.put_u8(self.record_specific_fields[i]);
         }
     }
 
     pub fn decode(buf: &mut BytesMut) -> StandardVariableRecords {
-        let number_of_standard_variable_records = buf.get_u16();
-        let mut standard_variable_records: Vec<StandardVariableRecords> = vec![];
-        for _i in 0..number_of_standard_variable_records {
-            standard_variable_records.push(StandardVariableRecords::decode(buf));
+        let record_type = buf.get_u32();
+        let record_length = buf.get_u16();
+        let mut record_specific_fields: Vec<u8> = vec![];
+        for _i in 0..record_length {
+            record_specific_fields.push(buf.get_u8());
         }
         StandardVariableRecords {
-            number_of_standard_variable_records,
-            standard_variable_records,
+            record_type,
+            record_length,
+            record_specific_fields,
         }
     }
 }

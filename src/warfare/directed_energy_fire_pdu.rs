@@ -17,6 +17,8 @@ use crate::common::{
     vector3_float::Vector3Float,
 };
 
+use super::data_types::standard_variable_specification::StandardVariableSpecification;
+
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.4.4
 pub struct DirectedEnergyFirePdu {
@@ -36,7 +38,7 @@ pub struct DirectedEnergyFirePdu {
     pub pulse_shape: u8,
     pub padding1: u8,
     pub padding2: u32,
-    pub padding2: u16,
+    pub padding3: u16,
     pub number_of_de_records: u16,
     pub de_records: Vec<StandardVariableSpecification>,
 }
@@ -49,7 +51,7 @@ impl Default for DirectedEnergyFirePdu {
     ///
     /// Initializing a Directed Energy Fire PDU:
     /// ```
-    /// use open_dis_rust::warfare::directed_enery_fire_pdu::DirectedEnergyFirePdu;
+    /// use open_dis_rust::warfare::directed_energy_fire_pdu::DirectedEnergyFirePdu;
     /// let directed_enery_fire_pdu = DirectedEnergyFirePdu::default();
     /// ```
     ///
@@ -61,17 +63,23 @@ impl Default for DirectedEnergyFirePdu {
                 56,
             ),
             firing_entity_id: EntityId::default(1),
-            target_entity_id: EntityId::default(2),
-            exploding_entity_id: EntityId::default(3),
             event_id: EventId::default(1),
-            velocity: Vector3Float::default(),
-            location_in_world_coordinates: Vector3Double::default(),
-            descriptor: MunitionDescriptor::default(),
-            location_in_entitys_coordinates: Vector3Float::default(),
-            directed_enery_fire_result: 0,
-            number_of_variable_parameters: 0,
+            munition_type: EntityType::default(),
+            shot_start_time: ClockTime::default(),
+            cumulative_shot_time: 0.0,
+            aperture_emitter_location: Vector3Float::default(),
+            aperture_diameter: 0.0,
+            wavelength: 0.0,
             padding: 0,
-            variable_parameters: vec![],
+            pulse_repetition_frequency: 0.0,
+            pulse_width: 0.0,
+            flags: 0,
+            pulse_shape: 0,
+            padding1: 0,
+            padding2: 0,
+            padding3: 0,
+            number_of_de_records: 0,
+            de_records: vec![],
         }
     }
 }
@@ -80,18 +88,24 @@ impl Pdu for DirectedEnergyFirePdu {
     fn serialize(&self, buf: &mut BytesMut) {
         self.pdu_header.serialize(buf);
         self.firing_entity_id.serialize(buf);
-        self.target_entity_id.serialize(buf);
-        self.exploding_entity_id.serialize(buf);
         self.event_id.serialize(buf);
-        self.velocity.serialize(buf);
-        self.location_in_world_coordinates.serialize(buf);
-        self.descriptor.serialize(buf);
-        self.location_in_entitys_coordinates.serialize(buf);
-        buf.put_u8(self.directed_enery_fire_result);
-        buf.put_u8(self.number_of_variable_parameters);
-        buf.put_u16(self.padding);
-        for i in 0..self.variable_parameters.len() {
-            self.variable_parameters[i].serialize(buf);
+        self.munition_type.serialize(buf);
+        self.shot_start_time.serialize(buf);
+        buf.put_f32(self.cumulative_shot_time);
+        self.aperture_emitter_location.serialize(buf);
+        buf.put_f32(self.aperture_diameter);
+        buf.put_f32(self.wavelength);
+        buf.put_u32(self.padding);
+        buf.put_f32(self.pulse_repetition_frequency);
+        buf.put_f32(self.pulse_width);
+        buf.put_u16(self.flags);
+        buf.put_u8(self.pulse_shape);
+        buf.put_u8(self.padding1);
+        buf.put_u32(self.padding2);
+        buf.put_u16(self.padding3);
+        buf.put_u16(self.number_of_de_records);
+        for i in 0..self.de_records.len() {
+            self.de_records[i].serialize(buf);
         }
     }
 
@@ -102,34 +116,46 @@ impl Pdu for DirectedEnergyFirePdu {
         let pdu_header = PduHeader::decode(&mut buffer);
         if pdu_header.pdu_type == PduType::DirectedEnergyFire {
             let firing_entity_id = EntityId::decode(&mut buffer);
-            let target_entity_id = EntityId::decode(&mut buffer);
-            let exploding_entity_id = EntityId::decode(&mut buffer);
             let event_id = EventId::decode(&mut buffer);
-            let velocity = Vector3Float::decode(&mut buffer);
-            let location_in_world_coordinates = Vector3Double::decode(&mut buffer);
-            let descriptor = MunitionDescriptor::decode(&mut buffer);
-            let location_in_entitys_coordinates = Vector3Float::decode(&mut buffer);
-            let directed_enery_fire_result = buffer.get_u8();
-            let number_of_variable_parameters = buffer.get_u8();
-            let padding = buffer.get_u16();
-            let mut variable_parameters: Vec<VariableParameter> = vec![];
-            for _i in 0..number_of_variable_parameters {
-                variable_parameters.push(VariableParameter::decode(&mut buffer));
+            let munition_type = EntityType::decode(&mut buffer);
+            let shot_start_time = ClockTime::decode(&mut buffer);
+            let cumulative_shot_time = buffer.get_f32();
+            let aperture_emitter_location = Vector3Float::decode(&mut buffer);
+            let aperture_diameter = buffer.get_f32();
+            let wavelength = buffer.get_f32();
+            let padding = buffer.get_u32();
+            let pulse_repetition_frequency = buffer.get_f32();
+            let pulse_width = buffer.get_f32();
+            let flags = buffer.get_u16();
+            let pulse_shape = buffer.get_u8();
+            let padding1 = buffer.get_u8();
+            let padding2 = buffer.get_u32();
+            let padding3 = buffer.get_u16();
+            let number_of_de_records = buffer.get_u16();
+            let mut de_records: Vec<StandardVariableSpecification> = vec![];
+            for _i in 0..number_of_de_records {
+                de_records.push(StandardVariableSpecification::decode(&mut buffer));
             }
             Ok(DirectedEnergyFirePdu {
                 pdu_header,
                 firing_entity_id,
-                target_entity_id,
-                exploding_entity_id,
                 event_id,
-                velocity,
-                location_in_world_coordinates,
-                descriptor,
-                location_in_entitys_coordinates,
-                directed_enery_fire_result,
-                number_of_variable_parameters,
+                munition_type,
+                shot_start_time,
+                cumulative_shot_time,
+                aperture_emitter_location,
+                aperture_diameter,
+                wavelength,
                 padding,
-                variable_parameters,
+                pulse_repetition_frequency,
+                pulse_width,
+                flags,
+                pulse_shape,
+                padding1,
+                padding2,
+                padding3,
+                number_of_de_records,
+                de_records,
             })
         } else {
             Err(DISError::InvalidDISHeader)
@@ -148,34 +174,46 @@ impl Pdu for DirectedEnergyFirePdu {
         Self: Sized,
     {
         let firing_entity_id = EntityId::decode(&mut buffer);
-        let target_entity_id = EntityId::decode(&mut buffer);
-        let exploding_entity_id = EntityId::decode(&mut buffer);
         let event_id = EventId::decode(&mut buffer);
-        let velocity = Vector3Float::decode(&mut buffer);
-        let location_in_world_coordinates = Vector3Double::decode(&mut buffer);
-        let descriptor = MunitionDescriptor::decode(&mut buffer);
-        let location_in_entitys_coordinates = Vector3Float::decode(&mut buffer);
-        let directed_enery_fire_result = buffer.get_u8();
-        let number_of_variable_parameters = buffer.get_u8();
-        let padding = buffer.get_u16();
-        let mut variable_parameters: Vec<VariableParameter> = vec![];
-        for _i in 0..number_of_variable_parameters {
-            variable_parameters.push(VariableParameter::decode(&mut buffer));
+        let munition_type = EntityType::decode(&mut buffer);
+        let shot_start_time = ClockTime::decode(&mut buffer);
+        let cumulative_shot_time = buffer.get_f32();
+        let aperture_emitter_location = Vector3Float::decode(&mut buffer);
+        let aperture_diameter = buffer.get_f32();
+        let wavelength = buffer.get_f32();
+        let padding = buffer.get_u32();
+        let pulse_repetition_frequency = buffer.get_f32();
+        let pulse_width = buffer.get_f32();
+        let flags = buffer.get_u16();
+        let pulse_shape = buffer.get_u8();
+        let padding1 = buffer.get_u8();
+        let padding2 = buffer.get_u32();
+        let padding3 = buffer.get_u16();
+        let number_of_de_records = buffer.get_u16();
+        let mut de_records: Vec<StandardVariableSpecification> = vec![];
+        for _i in 0..number_of_de_records {
+            de_records.push(StandardVariableSpecification::decode(&mut buffer));
         }
         Ok(DirectedEnergyFirePdu {
             pdu_header,
             firing_entity_id,
-            target_entity_id,
-            exploding_entity_id,
             event_id,
-            velocity,
-            location_in_world_coordinates,
-            descriptor,
-            location_in_entitys_coordinates,
-            directed_enery_fire_result,
-            number_of_variable_parameters,
+            munition_type,
+            shot_start_time,
+            cumulative_shot_time,
+            aperture_emitter_location,
+            aperture_diameter,
+            wavelength,
             padding,
-            variable_parameters,
+            pulse_repetition_frequency,
+            pulse_width,
+            flags,
+            pulse_shape,
+            padding1,
+            padding2,
+            padding3,
+            number_of_de_records,
+            de_records,
         })
     }
 }

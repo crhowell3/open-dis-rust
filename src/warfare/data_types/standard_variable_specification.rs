@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use super::standard_variable_records::StandardVariableRecords;
+
 #[derive(Clone, Debug)]
 pub struct StandardVariableSpecification {
     pub number_of_standard_variable_records: u16,

@@ -22,6 +22,7 @@
 | DataReliable | ✅ |
 | Designator | ✅ |
 | Detonation | ✅ |
+| DirectedEnergyFire | ✅ |
 | ElectromagneticEmissions | ✅ |
 | EntityDamageStatus | ✅ |
 | EntityState | ✅ |
