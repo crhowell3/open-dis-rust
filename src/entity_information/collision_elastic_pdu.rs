@@ -15,7 +15,6 @@ use crate::common::{
     linear_velocity::LinearVelocity,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
-    vector3_float::Vector3Float,
 };
 
 #[derive(Clone, Debug)]

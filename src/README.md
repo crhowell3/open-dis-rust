@@ -26,7 +26,7 @@
 | ElectromagneticEmissions | ✅ |
 | EntityDamageStatus | ✅ |
 | EntityState | ✅ |
-| EntityStateUpdate | ❌ |
+| EntityStateUpdate | ✅ |
 | EnvironmentalProcess | ✅ |
 | EventReport | ✅ |
 | EventReportReliable | ✅ |
@@ -62,6 +62,6 @@
 | StartResumeReliable | ✅ |
 | StopFreeze | ✅ |
 | StopFreezeReliable | ✅ |
-| TransferControlRequest | ❌ |
+| TransferOwnership | ✅ |
 | Transmitter | ✅ |
 | UnderwaterAcoustic | ✅ |
