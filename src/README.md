@@ -10,8 +10,8 @@
 | ActionResponseReliable | ✅ |
 | AggregateState | ✅ |
 | ArealObjectState | ✅ |
-| CollisionElastic | ❌ |
-| Collision | ❌ |
+| CollisionElastic | ✅ |
+| Collision | ✅ |
 | Comment | ✅ |
 | CommentReliable | ✅ |
 | CreateEntity | ✅ |
