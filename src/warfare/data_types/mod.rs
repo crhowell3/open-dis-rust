@@ -3,8 +3,8 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-pub mod data_types;
-pub mod detonation_pdu;
-pub mod directed_energy_fire_pdu;
-pub mod entity_damage_status_pdu;
-pub mod fire_pdu;
+pub mod directed_energy_damage;
+pub mod munition_descriptor;
+pub mod standard_variable_records;
+pub mod standard_variable_specification;
+pub mod variable_parameter;
