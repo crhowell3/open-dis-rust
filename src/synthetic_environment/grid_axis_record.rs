@@ -15,6 +15,7 @@ impl Default for GridAxisRecord {
 }
 
 impl GridAxisRecord {
+    #[must_use]
     pub fn new() -> Self {
         GridAxisRecord {}
     }

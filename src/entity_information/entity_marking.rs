@@ -7,6 +7,7 @@ pub struct EntityMarking {
 }
 
 impl EntityMarking {
+    #[must_use]
     pub fn new(
         entity_marking_character_set: EntityMarkingCharacterSet,
         entity_marking_string: String,

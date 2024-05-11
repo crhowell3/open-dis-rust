@@ -10,6 +10,7 @@ pub struct EntityCapabilities {
 }
 
 impl EntityCapabilities {
+    #[must_use]
     pub fn new(ammunition_supply: bool, fuel_supply: bool, recovery: bool, repair: bool) -> Self {
         EntityCapabilities {
             ammunition_supply,

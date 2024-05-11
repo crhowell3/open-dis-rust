@@ -5,24 +5,15 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct IntercomCommunicationsParameters {
     pub record_type: u16,
     pub record_length: u16,
     pub record_specific_field: u32,
 }
 
-impl Default for IntercomCommunicationsParameters {
-    fn default() -> Self {
-        IntercomCommunicationsParameters {
-            record_type: 0,
-            record_length: 0,
-            record_specific_field: 0,
-        }
-    }
-}
-
 impl IntercomCommunicationsParameters {
+    #[must_use]
     pub fn new(record_type: u16, record_length: u16, record_specific_field: u32) -> Self {
         IntercomCommunicationsParameters {
             record_type,

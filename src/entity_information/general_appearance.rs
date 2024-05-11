@@ -39,6 +39,7 @@ impl Default for GeneralAppearance {
 }
 
 impl GeneralAppearance {
+    #[must_use]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         entity_paint_scheme: EntityPaintScheme,

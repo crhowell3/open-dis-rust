@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct RadioEntityType {
     pub entity_kind: u8,
     pub domain: u8,
@@ -15,20 +15,8 @@ pub struct RadioEntityType {
     pub nomenclature: u16,
 }
 
-impl Default for RadioEntityType {
-    fn default() -> Self {
-        RadioEntityType {
-            entity_kind: 0,
-            domain: 0,
-            country: 0,
-            category: 0,
-            nomenclature_version: 0,
-            nomenclature: 0,
-        }
-    }
-}
-
 impl RadioEntityType {
+    #[must_use]
     pub fn new(
         entity_kind: u8,
         domain: u8,

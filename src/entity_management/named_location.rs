@@ -5,22 +5,14 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct NamedLocation {
     pub station_name: u16,
     pub station_number: u16,
 }
 
-impl Default for NamedLocation {
-    fn default() -> Self {
-        NamedLocation {
-            station_name: 0,
-            station_number: 0,
-        }
-    }
-}
-
 impl NamedLocation {
+    #[must_use]
     pub fn new(station_name: u16, station_number: u16) -> Self {
         NamedLocation {
             station_name,

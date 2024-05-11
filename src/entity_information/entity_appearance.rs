@@ -14,6 +14,7 @@ pub struct EntityAppearance {
 }
 
 impl EntityAppearance {
+    #[must_use]
     pub fn new(
         general_appearance: GeneralAppearance,
         specific_appearance: SpecificAppearance,

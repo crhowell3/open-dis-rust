@@ -83,6 +83,7 @@ impl Default for SpecificAppearance {
 }
 
 impl SpecificAppearance {
+    #[must_use]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         land_platforms: LandPlatforms,

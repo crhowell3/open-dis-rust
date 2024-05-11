@@ -24,13 +24,14 @@ impl Default for DeadReckoningParameters {
         DeadReckoningParameters {
             dead_reckoning_algorithm: DeadReckoningAlgorithm::Static,
             dead_reckoning_other_parameters: 0,
-            entity_linear_acceleration: LinearAcceleration::new(0.0, 0.0, 0.0),
-            entity_angular_velocity: AngularVelocity::new(0.0, 0.0, 0.0),
+            entity_linear_acceleration: LinearAcceleration::default(),
+            entity_angular_velocity: AngularVelocity::default(),
         }
     }
 }
 
 impl DeadReckoningParameters {
+    #[must_use]
     pub fn new(
         dead_reckoning_algorithm: DeadReckoningAlgorithm,
         entity_linear_acceleration: LinearAcceleration,

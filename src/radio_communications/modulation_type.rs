@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct ModulationType {
     pub spread_spectrum: u16,
     pub major: u16,
@@ -13,18 +13,8 @@ pub struct ModulationType {
     pub system: u16,
 }
 
-impl Default for ModulationType {
-    fn default() -> Self {
-        ModulationType {
-            spread_spectrum: 0,
-            major: 0,
-            detail: 0,
-            system: 0,
-        }
-    }
-}
-
 impl ModulationType {
+    #[must_use]
     pub fn new(spread_spectrum: u16, major: u16, detail: u16, system: u16) -> Self {
         ModulationType {
             spread_spectrum,

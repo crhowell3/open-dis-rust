@@ -5,24 +5,15 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct AggregateId {
     pub site: u16,
     pub application: u16,
     pub aggregate_id: u16,
 }
 
-impl Default for AggregateId {
-    fn default() -> Self {
-        AggregateId {
-            site: 0,
-            application: 0,
-            aggregate_id: 0,
-        }
-    }
-}
-
 impl AggregateId {
+    #[must_use]
     pub fn new(site: u16, application: u16, aggregate_id: u16) -> Self {
         AggregateId {
             site,
