@@ -5,24 +5,15 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct AcousticEmitterSystem {
     pub acoustic_name: u16,
     pub acoustic_function: u8,
     pub acoustic_id: u8,
 }
 
-impl Default for AcousticEmitterSystem {
-    fn default() -> Self {
-        AcousticEmitterSystem {
-            acoustic_name: 0,
-            acoustic_function: 0,
-            acoustic_id: 0,
-        }
-    }
-}
-
 impl AcousticEmitterSystem {
+    #[must_use]
     pub fn new(acoustic_name: u16, acoustic_function: u8, acoustic_id: u8) -> Self {
         AcousticEmitterSystem {
             acoustic_name,

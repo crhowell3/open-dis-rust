@@ -5,22 +5,14 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct VectoringNozzleSystemData {
     pub horizontal_deflection_angle: f32,
     pub vertical_deflection_angle: f32,
 }
 
-impl Default for VectoringNozzleSystemData {
-    fn default() -> Self {
-        VectoringNozzleSystemData {
-            horizontal_deflection_angle: 0.0,
-            vertical_deflection_angle: 0.0,
-        }
-    }
-}
-
 impl VectoringNozzleSystemData {
+    #[must_use]
     pub fn new(horizontal_deflection_angle: f32, vertical_deflection_angle: f32) -> Self {
         VectoringNozzleSystemData {
             horizontal_deflection_angle,

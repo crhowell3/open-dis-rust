@@ -31,6 +31,7 @@ impl Default for IFFFundamentalParameterData {
 }
 
 impl IFFFundamentalParameterData {
+    #[must_use]
     pub fn new(
         erp: f32,
         frequency: f32,

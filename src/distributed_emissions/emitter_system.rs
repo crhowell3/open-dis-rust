@@ -23,6 +23,7 @@ impl Default for EmitterSystem {
 }
 
 impl EmitterSystem {
+    #[must_use]
     pub fn new(name: EmitterName, function: EmitterSystemFunction, id: u8) -> Self {
         EmitterSystem {
             emitter_name: name,

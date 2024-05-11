@@ -9,7 +9,7 @@ use crate::common::vector3_float::Vector3Float;
 
 use super::{acoustic_beam_data::AcousticBeamData, acoustic_emitter_system::AcousticEmitterSystem};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct AcousticEmitterSystemData {
     pub emitter_system_data_length: u8,
     pub number_of_beams: u8,
@@ -19,20 +19,8 @@ pub struct AcousticEmitterSystemData {
     pub beam_records: Vec<AcousticBeamData>,
 }
 
-impl Default for AcousticEmitterSystemData {
-    fn default() -> Self {
-        AcousticEmitterSystemData {
-            emitter_system_data_length: 0,
-            number_of_beams: 0,
-            pad2: 0,
-            acoustic_emitter_system: AcousticEmitterSystem::default(),
-            emitter_location: Vector3Float::default(),
-            beam_records: vec![],
-        }
-    }
-}
-
 impl AcousticEmitterSystemData {
+    #[must_use]
     pub fn new(
         emitter_system_data_length: u8,
         number_of_beams: u8,

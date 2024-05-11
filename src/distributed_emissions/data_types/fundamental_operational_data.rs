@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct FundamentalOperationalData {
     pub system_status: u8,
     pub data_field1: u8,
@@ -19,24 +19,8 @@ pub struct FundamentalOperationalData {
     pub parameter6: u8,
 }
 
-impl Default for FundamentalOperationalData {
-    fn default() -> Self {
-        FundamentalOperationalData {
-            system_status: 0,
-            data_field1: 0,
-            information_layers: 0,
-            data_field2: 0,
-            parameter1: 0,
-            parameter2: 0,
-            parameter3: 0,
-            parameter4: 0,
-            parameter5: 0,
-            parameter6: 0,
-        }
-    }
-}
-
 impl FundamentalOperationalData {
+    #[must_use]
     pub fn new(
         system_status: u8,
         data_field1: u8,

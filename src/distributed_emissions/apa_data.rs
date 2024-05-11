@@ -5,22 +5,14 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct ApaData {
     pub parameter_index: u16,
     pub parameter_value: i16,
 }
 
-impl Default for ApaData {
-    fn default() -> Self {
-        ApaData {
-            parameter_index: 0,
-            parameter_value: 0,
-        }
-    }
-}
-
 impl ApaData {
+    #[must_use]
     pub fn new(parameter_index: u16, parameter_value: i16) -> Self {
         ApaData {
             parameter_index,

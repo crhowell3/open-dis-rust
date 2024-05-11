@@ -5,24 +5,15 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct SecondaryOperationalData {
     pub operational_data1: u8,
     pub operational_data2: u8,
     pub number_of_iff_fundamental_parameter_records: u16,
 }
 
-impl Default for SecondaryOperationalData {
-    fn default() -> Self {
-        SecondaryOperationalData {
-            operational_data1: 0,
-            operational_data2: 0,
-            number_of_iff_fundamental_parameter_records: 0,
-        }
-    }
-}
-
 impl SecondaryOperationalData {
+    #[must_use]
     pub fn new(
         operational_data1: u8,
         operational_data2: u8,

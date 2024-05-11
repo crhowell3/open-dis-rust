@@ -7,7 +7,7 @@ use bytes::{Buf, BufMut, BytesMut};
 
 use super::acoustic_beam_fundamental_parameter::AcousticBeamFundamentalParameter;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct AcousticBeamData {
     pub beam_data_length: u16,
     pub beam_id_number: u8,
@@ -15,18 +15,8 @@ pub struct AcousticBeamData {
     pub fundamental_data_parameters: AcousticBeamFundamentalParameter,
 }
 
-impl Default for AcousticBeamData {
-    fn default() -> Self {
-        AcousticBeamData {
-            beam_data_length: 0,
-            beam_id_number: 0,
-            pad2: 0,
-            fundamental_data_parameters: AcousticBeamFundamentalParameter::default(),
-        }
-    }
-}
-
 impl AcousticBeamData {
+    #[must_use]
     pub fn new(
         beam_data_length: u16,
         beam_id_number: u8,
