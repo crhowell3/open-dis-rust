@@ -26,6 +26,7 @@ pub struct PduHeader {
 }
 
 impl PduHeader {
+    #[must_use]
     pub fn new(
         pdu_type: PduType,
         protocol_family: ProtocolFamily,
@@ -33,7 +34,7 @@ impl PduHeader {
         length: u16,
     ) -> Self {
         PduHeader {
-            protocol_version: ProtocolVersion::IEEE1278_1A_1998,
+            protocol_version: ProtocolVersion::IEEE1278_1_2012,
             exercise_id,
             pdu_type,
             protocol_family,
@@ -45,7 +46,7 @@ impl PduHeader {
 
     pub fn default(pdu_type: PduType, protocol_family: ProtocolFamily, length: u16) -> Self {
         PduHeader {
-            protocol_version: ProtocolVersion::IEEE1278_1A_1998,
+            protocol_version: ProtocolVersion::IEEE1278_1_2012,
             exercise_id: 1,
             pdu_type,
             protocol_family,

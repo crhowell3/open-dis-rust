@@ -13,6 +13,8 @@ pub struct EulerAngles {
 }
 
 impl EulerAngles {
+    #[must_use]
+    #[allow(clippy::similar_names)]
     pub fn new(psi: f32, theta: f32, phi: f32) -> Self {
         EulerAngles { psi, theta, phi }
     }

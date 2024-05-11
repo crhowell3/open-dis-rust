@@ -13,6 +13,7 @@ pub struct Vector3Float {
 }
 
 impl Vector3Float {
+    #[must_use]
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Vector3Float { x, y, z }
     }

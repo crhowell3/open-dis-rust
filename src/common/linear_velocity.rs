@@ -13,6 +13,7 @@ pub struct LinearVelocity {
 }
 
 impl LinearVelocity {
+    #[must_use]
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         LinearVelocity {
             first_vector_component: x,

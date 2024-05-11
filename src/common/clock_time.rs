@@ -12,6 +12,7 @@ pub struct ClockTime {
 }
 
 impl ClockTime {
+    #[must_use]
     pub fn new(h: u32, p: u32) -> Self {
         ClockTime {
             hour: h,

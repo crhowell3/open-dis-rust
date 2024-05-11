@@ -14,6 +14,7 @@ pub struct SupplyQuantity {
 }
 
 impl SupplyQuantity {
+    #[must_use]
     pub fn new(supply_type: EntityType, quantity: f32) -> Self {
         SupplyQuantity {
             supply_type,

@@ -12,7 +12,7 @@ use crate::{
     },
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct LinearSegmentParameter {
     pub segment_number: u8,
     pub segment_modification: u8,
@@ -26,24 +26,8 @@ pub struct LinearSegmentParameter {
     pub segment_depth: u16,
 }
 
-impl Default for LinearSegmentParameter {
-    fn default() -> Self {
-        LinearSegmentParameter {
-            segment_number: 0,
-            segment_modification: 0,
-            general_segment_appearance: GeneralAppearance::default(),
-            specific_segment_appearance: SpecificAppearance::default(),
-            segment_location: Vector3Double::default(),
-            segment_orientation: EulerAngles::default(),
-            segment_length: 0,
-            segment_width: 0,
-            segment_height: 0,
-            segment_depth: 0,
-        }
-    }
-}
-
 impl LinearSegmentParameter {
+    #[must_use]
     pub fn new(
         segment_number: u8,
         segment_modification: u8,

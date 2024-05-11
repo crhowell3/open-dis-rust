@@ -14,6 +14,7 @@ pub struct EventId {
 }
 
 impl EventId {
+    #[must_use]
     pub fn new(site_identifier: u16, application_identifier: u16, event_identifier: u16) -> Self {
         EventId {
             simulation_address: SimulationAddress::new(site_identifier, application_identifier),

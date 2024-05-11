@@ -39,6 +39,7 @@ impl EntityMarking {
 }
 
 #[derive(Copy, Clone, Debug)]
+#[allow(clippy::module_name_repetitions)]
 pub enum EntityMarkingCharacterSet {
     Unused = 0,
     ASCII = 1,

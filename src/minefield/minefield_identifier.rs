@@ -14,6 +14,7 @@ pub struct MinefieldIdentifier {
 }
 
 impl MinefieldIdentifier {
+    #[must_use]
     pub fn new(simulation_address: SimulationAddress, minefield_number: u16) -> Self {
         MinefieldIdentifier {
             simulation_address,

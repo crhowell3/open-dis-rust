@@ -13,6 +13,7 @@ pub struct WorldCoordinate {
 }
 
 impl WorldCoordinate {
+    #[must_use]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         WorldCoordinate {
             x_coordinate: x,

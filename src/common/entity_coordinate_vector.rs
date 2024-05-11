@@ -13,6 +13,7 @@ pub struct EntityCoordinateVector {
 }
 
 impl EntityCoordinateVector {
+    #[must_use]
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         EntityCoordinateVector {
             x_coordinate: x,

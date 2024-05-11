@@ -12,6 +12,7 @@ pub struct Point {
 }
 
 impl Point {
+    #[must_use]
     pub fn new(x: f32, y: f32) -> Self {
         Point { x, y }
     }
