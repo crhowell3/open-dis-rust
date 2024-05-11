@@ -7,22 +7,14 @@ use bytes::{Buf, BufMut, BytesMut};
 
 use super::standard_variable_records::StandardVariableRecords;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct StandardVariableSpecification {
     pub number_of_standard_variable_records: u16,
     pub standard_variable_records: Vec<StandardVariableRecords>,
 }
 
-impl Default for StandardVariableSpecification {
-    fn default() -> Self {
-        StandardVariableSpecification {
-            number_of_standard_variable_records: 0,
-            standard_variable_records: vec![],
-        }
-    }
-}
-
 impl StandardVariableSpecification {
+    #[must_use]
     pub fn new(
         number_of_standard_variable_records: u16,
         standard_variable_records: Vec<StandardVariableRecords>,

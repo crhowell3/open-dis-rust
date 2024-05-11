@@ -27,6 +27,7 @@ impl Default for VariableParameter {
 }
 
 impl VariableParameter {
+    #[must_use]
     pub fn new(
         record_type: u8,
         variable_parameter_field1: f64,

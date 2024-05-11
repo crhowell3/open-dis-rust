@@ -5,24 +5,15 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct StandardVariableRecords {
     pub record_type: u32,
     pub record_length: u16,
     pub record_specific_fields: Vec<u8>,
 }
 
-impl Default for StandardVariableRecords {
-    fn default() -> Self {
-        StandardVariableRecords {
-            record_type: 0,
-            record_length: 0,
-            record_specific_fields: vec![],
-        }
-    }
-}
-
 impl StandardVariableRecords {
+    #[must_use]
     pub fn new(record_type: u32, record_length: u16, record_specific_fields: Vec<u8>) -> Self {
         StandardVariableRecords {
             record_type,
