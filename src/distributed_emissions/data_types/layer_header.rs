@@ -5,24 +5,15 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct LayerHeader {
     pub layer_number: u8,
     pub layer_specific_information: u8,
     pub length: u16,
 }
 
-impl Default for LayerHeader {
-    fn default() -> Self {
-        LayerHeader {
-            layer_number: 0,
-            layer_specific_information: 0,
-            length: 0,
-        }
-    }
-}
-
 impl LayerHeader {
+    #[must_use]
     pub fn new(layer_number: u8, layer_specific_information: u8, length: u16) -> Self {
         LayerHeader {
             layer_number,

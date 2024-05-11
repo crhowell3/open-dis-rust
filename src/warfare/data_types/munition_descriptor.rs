@@ -7,7 +7,7 @@ use bytes::{Buf, BufMut, BytesMut};
 
 use crate::common::entity_type::EntityType;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct MunitionDescriptor {
     pub munition_type: EntityType,
     pub warhead: u16,
@@ -16,19 +16,8 @@ pub struct MunitionDescriptor {
     pub rate: u16,
 }
 
-impl Default for MunitionDescriptor {
-    fn default() -> Self {
-        MunitionDescriptor {
-            munition_type: EntityType::default(),
-            warhead: 0,
-            fuse: 0,
-            quantity: 0,
-            rate: 0,
-        }
-    }
-}
-
 impl MunitionDescriptor {
+    #[must_use]
     pub fn new(
         munition_type: EntityType,
         warhead: u16,

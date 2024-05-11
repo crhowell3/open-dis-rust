@@ -5,22 +5,14 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Relationship {
     pub nature: u16,
     pub position: u16,
 }
 
-impl Default for Relationship {
-    fn default() -> Self {
-        Relationship {
-            nature: 0,
-            position: 0,
-        }
-    }
-}
-
 impl Relationship {
+    #[must_use]
     pub fn new(nature: u16, position: u16) -> Self {
         Relationship { nature, position }
     }

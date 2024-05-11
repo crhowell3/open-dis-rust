@@ -22,6 +22,7 @@ impl Default for SimulationAddress {
 }
 
 impl SimulationAddress {
+    #[must_use]
     pub fn new(site_id: u16, application_id: u16) -> Self {
         SimulationAddress {
             site_id,

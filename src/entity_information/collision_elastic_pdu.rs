@@ -84,6 +84,7 @@ impl Pdu for CollisionElasticPdu {
         buf.put_f32(self.coefficient_of_restitution);
     }
 
+    #[allow(clippy::similar_names)]
     fn deserialize(mut buffer: BytesMut) -> Result<CollisionElasticPdu, DISError> {
         let pdu_header = PduHeader::decode(&mut buffer);
         if pdu_header.pdu_type == PduType::CollisionElastic {
@@ -129,6 +130,7 @@ impl Pdu for CollisionElasticPdu {
         self
     }
 
+    #[allow(clippy::similar_names)]
     fn deserialize_without_header(
         mut buffer: BytesMut,
         pdu_header: PduHeader,

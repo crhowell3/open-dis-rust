@@ -13,6 +13,7 @@ pub struct Vector3Double {
 }
 
 impl Vector3Double {
+    #[must_use]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3Double { x, y, z }
     }

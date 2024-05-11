@@ -13,6 +13,7 @@ pub struct AngularVelocity {
 }
 
 impl AngularVelocity {
+    #[must_use]
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         AngularVelocity {
             rate_about_x_axis: x,

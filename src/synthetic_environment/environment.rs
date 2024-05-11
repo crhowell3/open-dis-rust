@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Environment {
     pub environment_type: u32,
     pub length: u16,
@@ -13,18 +13,8 @@ pub struct Environment {
     pub padding: u8,
 }
 
-impl Default for Environment {
-    fn default() -> Self {
-        Environment {
-            environment_type: 0,
-            length: 0,
-            index: 0,
-            padding: 0,
-        }
-    }
-}
-
 impl Environment {
+    #[must_use]
     pub fn new(environment_type: u32, length: u16, index: u8, padding: u8) -> Self {
         Environment {
             environment_type,

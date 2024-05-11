@@ -16,6 +16,7 @@ pub struct RecordSpecificationElement {
 }
 
 impl RecordSpecificationElement {
+    #[must_use]
     pub fn new(
         record_id: u32,
         record_set_serial_number: u32,

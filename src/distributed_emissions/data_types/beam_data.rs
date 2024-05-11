@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct BeamData {
     pub beam_azimuth_center: f32,
     pub beam_azimuth_sweep: f32,
@@ -14,19 +14,8 @@ pub struct BeamData {
     pub beam_sweep_sync: f32,
 }
 
-impl Default for BeamData {
-    fn default() -> Self {
-        BeamData {
-            beam_azimuth_center: 0.0,
-            beam_azimuth_sweep: 0.0,
-            beam_elevation_center: 0.0,
-            beam_elevation_sweep: 0.0,
-            beam_sweep_sync: 0.0,
-        }
-    }
-}
-
 impl BeamData {
+    #[must_use]
     pub fn new(
         beam_azimuth_center: f32,
         beam_azimuth_sweep: f32,

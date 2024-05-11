@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct AcousticBeamFundamentalParameter {
     pub active_emission_parameter_index: u16,
     pub scan_pattern: u16,
@@ -15,20 +15,8 @@ pub struct AcousticBeamFundamentalParameter {
     pub de_beamwidth: f32,
 }
 
-impl Default for AcousticBeamFundamentalParameter {
-    fn default() -> Self {
-        AcousticBeamFundamentalParameter {
-            active_emission_parameter_index: 0,
-            scan_pattern: 0,
-            beam_center_azimuth: 0.0,
-            azimuthal_beamwidth: 0.0,
-            beam_center_de: 0.0,
-            de_beamwidth: 0.0,
-        }
-    }
-}
-
 impl AcousticBeamFundamentalParameter {
+    #[must_use]
     pub fn new(
         active_emission_parameter_index: u16,
         scan_pattern: u16,

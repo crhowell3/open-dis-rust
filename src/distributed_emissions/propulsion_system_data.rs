@@ -5,22 +5,14 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct PropulsionSystemData {
     pub power_setting: f32,
     pub engine_rpm: f32,
 }
 
-impl Default for PropulsionSystemData {
-    fn default() -> Self {
-        PropulsionSystemData {
-            power_setting: 0.0,
-            engine_rpm: 0.0,
-        }
-    }
-}
-
 impl PropulsionSystemData {
+    #[must_use]
     pub fn new(power_setting: f32, engine_rpm: f32) -> Self {
         PropulsionSystemData {
             power_setting,

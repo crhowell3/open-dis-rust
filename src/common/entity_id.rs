@@ -14,6 +14,7 @@ pub struct EntityId {
 }
 
 impl EntityId {
+    #[must_use]
     pub fn new(site_id: u16, application_id: u16, entity_id: u16) -> Self {
         EntityId {
             simulation_address: SimulationAddress::new(site_id, application_id),
@@ -21,6 +22,7 @@ impl EntityId {
         }
     }
 
+    #[must_use]
     pub fn default(entity_id: u16) -> Self {
         EntityId {
             simulation_address: SimulationAddress::default(),

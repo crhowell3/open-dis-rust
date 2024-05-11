@@ -39,6 +39,7 @@ impl Default for GeneralAppearance {
 }
 
 impl GeneralAppearance {
+    #[must_use]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         entity_paint_scheme: EntityPaintScheme,
@@ -95,6 +96,8 @@ impl GeneralAppearance {
         buf.put_u16(general_appearance);
     }
 
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn decode(buf: &mut BytesMut) -> GeneralAppearance {
         let bytes = buf.get_u16();
         GeneralAppearance {
@@ -118,11 +121,11 @@ pub enum EntityPaintScheme {
 }
 
 impl EntityPaintScheme {
+    #[must_use]
     pub fn from_u8(bit: u8) -> EntityPaintScheme {
         match bit {
-            0 => EntityPaintScheme::UniformColor,
             1 => EntityPaintScheme::Camouflage,
-            2_u8..=u8::MAX => EntityPaintScheme::UniformColor,
+            _ => EntityPaintScheme::UniformColor,
         }
     }
 }
@@ -134,11 +137,11 @@ pub enum EntityMobilityKill {
 }
 
 impl EntityMobilityKill {
+    #[must_use]
     pub fn from_u8(bit: u8) -> EntityMobilityKill {
         match bit {
-            0 => EntityMobilityKill::NoMobilityKill,
             1 => EntityMobilityKill::MobilityKill,
-            2_u8..=u8::MAX => EntityMobilityKill::NoMobilityKill,
+            _ => EntityMobilityKill::NoMobilityKill,
         }
     }
 }
@@ -150,11 +153,11 @@ pub enum EntityFirePower {
 }
 
 impl EntityFirePower {
+    #[must_use]
     pub fn from_u8(bit: u8) -> EntityFirePower {
         match bit {
-            0 => EntityFirePower::NoFirePowerKill,
             1 => EntityFirePower::FirePowerKill,
-            2_u8..=u8::MAX => EntityFirePower::NoFirePowerKill,
+            _ => EntityFirePower::NoFirePowerKill,
         }
     }
 }
@@ -168,12 +171,13 @@ pub enum EntityDamage {
 }
 
 impl EntityDamage {
+    #[must_use]
     pub fn from_u8(bit: u8) -> EntityDamage {
         match bit {
-            0 => EntityDamage::NoDamage,
             1 => EntityDamage::SlightDamage,
             2 => EntityDamage::ModerateDamage,
-            3_u8..=u8::MAX => EntityDamage::Destroyed,
+            3 => EntityDamage::Destroyed,
+            _ => EntityDamage::NoDamage,
         }
     }
 }
@@ -187,12 +191,13 @@ pub enum EntitySmoke {
 }
 
 impl EntitySmoke {
+    #[must_use]
     pub fn from_u8(bit: u8) -> EntitySmoke {
         match bit {
-            0 => EntitySmoke::NotSmoking,
             1 => EntitySmoke::SmokePlumeRising,
             2 => EntitySmoke::EngineSmoke,
-            3_u8..=u8::MAX => EntitySmoke::EngineSmokeAndSmokePlumeRising,
+            3 => EntitySmoke::EngineSmokeAndSmokePlumeRising,
+            _ => EntitySmoke::NotSmoking,
         }
     }
 }
@@ -206,12 +211,13 @@ pub enum EntityTrailingEffect {
 }
 
 impl EntityTrailingEffect {
+    #[must_use]
     pub fn from_u8(bit: u8) -> EntityTrailingEffect {
         match bit {
-            0 => EntityTrailingEffect::None,
             1 => EntityTrailingEffect::Small,
             2 => EntityTrailingEffect::Medium,
-            3_u8..=u8::MAX => EntityTrailingEffect::Large,
+            3 => EntityTrailingEffect::Large,
+            _ => EntityTrailingEffect::None,
         }
     }
 }
@@ -227,14 +233,15 @@ pub enum EntityHatchState {
 }
 
 impl EntityHatchState {
+    #[must_use]
     pub fn from_u8(bit: u8) -> EntityHatchState {
         match bit {
-            0 => EntityHatchState::NotApplicable,
             1 => EntityHatchState::PrimaryHatchClosed,
             2 => EntityHatchState::PrimaryHatchPopped,
             3 => EntityHatchState::PrimaryHatchPoppedAndPersonVisibleUnderHatch,
             4 => EntityHatchState::PrimaryHatchOpen,
-            5_u8..=u8::MAX => EntityHatchState::PrimaryHatchOpenAndPersonVisible,
+            5 => EntityHatchState::PrimaryHatchOpenAndPersonVisible,
+            _ => EntityHatchState::NotApplicable,
         }
     }
 }
@@ -248,12 +255,13 @@ pub enum EntityLights {
 }
 
 impl EntityLights {
+    #[must_use]
     pub fn from_u8(bit: u8) -> EntityLights {
         match bit {
-            0 => EntityLights::None,
             1 => EntityLights::RunningLightsOn,
             2 => EntityLights::NavigationLightsOn,
-            3_u8..=u8::MAX => EntityLights::FormationLightsOn,
+            3 => EntityLights::FormationLightsOn,
+            _ => EntityLights::None,
         }
     }
 }
@@ -265,11 +273,11 @@ pub enum EntityFlamingEffect {
 }
 
 impl EntityFlamingEffect {
+    #[must_use]
     pub fn from_u8(bit: u8) -> EntityFlamingEffect {
         match bit {
-            0 => EntityFlamingEffect::None,
             1 => EntityFlamingEffect::FlamesPresent,
-            2_u8..=u8::MAX => EntityFlamingEffect::None,
+            _ => EntityFlamingEffect::None,
         }
     }
 }

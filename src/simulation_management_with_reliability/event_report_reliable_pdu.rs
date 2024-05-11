@@ -131,8 +131,9 @@ impl Pdu for EventReportReliablePdu {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 pub enum EventType {
+    #[default]
     Other = 0,
     RanOutOfAmmunition = 2,
     KilledInAction = 3,
@@ -157,7 +158,6 @@ pub enum EventType {
 impl EventType {
     pub fn decode(buf: &mut BytesMut) -> EventType {
         match buf.get_u32() {
-            0 => EventType::Other,
             2 => EventType::RanOutOfAmmunition,
             3 => EventType::KilledInAction,
             4 => EventType::Damage,

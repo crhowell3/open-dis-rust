@@ -31,6 +31,7 @@ impl Default for IFFFundamentalParameterData {
 }
 
 impl IFFFundamentalParameterData {
+    #[must_use]
     pub fn new(
         erp: f32,
         frequency: f32,
@@ -58,8 +59,8 @@ impl IFFFundamentalParameterData {
         buf.put_f32(self.pulse_width);
         buf.put_u32(self.burst_length);
         buf.put_u8(self.applicable_modes);
-        for i in 0..3 {
-            buf.put_u8(self.system_specific_data[i]);
+        for i in self.system_specific_data {
+            buf.put_u8(i);
         }
     }
 
@@ -71,8 +72,8 @@ impl IFFFundamentalParameterData {
         let burst_length = buf.get_u32();
         let applicable_modes = buf.get_u8();
         let mut system_specific_data: [u8; 3] = [0; 3];
-        for i in 0..3 {
-            system_specific_data[i] = buf.get_u8();
+        for data in &mut system_specific_data {
+            *data = buf.get_u8();
         }
         IFFFundamentalParameterData {
             erp,

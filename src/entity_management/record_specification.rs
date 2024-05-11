@@ -7,22 +7,14 @@ use bytes::{Buf, BufMut, BytesMut};
 
 use super::record_specification_element::RecordSpecificationElement;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct RecordSpecification {
     pub number_of_record_sets: u32,
     pub record_sets: Vec<RecordSpecificationElement>,
 }
 
-impl Default for RecordSpecification {
-    fn default() -> Self {
-        RecordSpecification {
-            number_of_record_sets: 0,
-            record_sets: vec![],
-        }
-    }
-}
-
 impl RecordSpecification {
+    #[must_use]
     pub fn new(number_of_record_sets: u32, record_sets: Vec<RecordSpecificationElement>) -> Self {
         RecordSpecification {
             number_of_record_sets,

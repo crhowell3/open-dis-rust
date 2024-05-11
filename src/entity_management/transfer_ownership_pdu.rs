@@ -26,7 +26,7 @@ pub struct TransferOwnershipPdu {
     pub required_reliability_service: u8,
     pub transfer_type: u8,
     pub transfer_entity_id: EntityId,
-    pub record_information: Vec<RecordSpecification>,
+    pub record_information: RecordSpecification,
 }
 
 impl Default for TransferOwnershipPdu {
@@ -53,7 +53,7 @@ impl Default for TransferOwnershipPdu {
             required_reliability_service: 0,
             transfer_type: 0,
             transfer_entity_id: EntityId::default(1),
-            record_information: vec![],
+            record_information: RecordSpecification::default(),
         }
     }
 }
@@ -67,9 +67,7 @@ impl Pdu for TransferOwnershipPdu {
         buf.put_u8(self.required_reliability_service);
         buf.put_u8(self.transfer_type);
         self.transfer_entity_id.serialize(buf);
-        for i in 0..self.record_information.len() {
-            self.record_information[i].serialize(buf);
-        }
+        self.record_information.serialize(buf);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -84,11 +82,7 @@ impl Pdu for TransferOwnershipPdu {
             let required_reliability_service = buffer.get_u8();
             let transfer_type = buffer.get_u8();
             let transfer_entity_id = EntityId::decode(&mut buffer);
-            let mut record_information: Vec<RecordSpecification> = vec![];
-            // @todo Need to fix
-            for _i in 0..0 {
-                record_information.push(RecordSpecification::decode(&mut buffer));
-            }
+            let record_information = RecordSpecification::decode(&mut buffer);
             Ok(TransferOwnershipPdu {
                 pdu_header,
                 originating_id,
@@ -121,11 +115,7 @@ impl Pdu for TransferOwnershipPdu {
         let required_reliability_service = buffer.get_u8();
         let transfer_type = buffer.get_u8();
         let transfer_entity_id = EntityId::decode(&mut buffer);
-        let mut record_information: Vec<RecordSpecification> = vec![];
-        // @todo Need to fix
-        for _i in 0..0 {
-            record_information.push(RecordSpecification::decode(&mut buffer));
-        }
+        let record_information = RecordSpecification::decode(&mut buffer);
         Ok(TransferOwnershipPdu {
             pdu_header,
             originating_id,

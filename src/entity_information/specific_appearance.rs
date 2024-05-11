@@ -83,6 +83,7 @@ impl Default for SpecificAppearance {
 }
 
 impl SpecificAppearance {
+    #[must_use]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         land_platforms: LandPlatforms,
@@ -175,6 +176,8 @@ impl LandPlatforms {
         buf.put_u16(land_appearance);
     }
 
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn decode(buf: &mut BytesMut) -> LandPlatforms {
         let bytes = buf.get_u16();
         LandPlatforms {
@@ -217,6 +220,8 @@ impl AirPlatforms {
         buf.put_u16(air_appearance);
     }
 
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn decode(buf: &mut BytesMut) -> AirPlatforms {
         let bytes = buf.get_u16();
         AirPlatforms {
@@ -252,6 +257,8 @@ impl SurfacePlatforms {
         buf.put_u16(surface_appearance);
     }
 
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn decode(buf: &mut BytesMut) -> SurfacePlatforms {
         let bytes = buf.get_u16();
         SurfacePlatforms {
@@ -286,6 +293,8 @@ impl SubSurfacePlatforms {
         buf.put_u16(subsurface_appearance);
     }
 
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn decode(buf: &mut BytesMut) -> SubSurfacePlatforms {
         let bytes = buf.get_u16();
         SubSurfacePlatforms {
@@ -320,6 +329,8 @@ impl SpacePlatforms {
         buf.put_u16(subsurface_appearance);
     }
 
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn decode(buf: &mut BytesMut) -> SpacePlatforms {
         let bytes = buf.get_u16();
         SpacePlatforms {
@@ -352,6 +363,8 @@ impl GuidedMunitionsPlatforms {
         buf.put_u16(guided_appearance);
     }
 
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn decode(buf: &mut BytesMut) -> GuidedMunitionsPlatforms {
         let bytes = buf.get_u16();
         GuidedMunitionsPlatforms {
@@ -392,6 +405,8 @@ impl LifeForms {
         buf.put_u16(life_form_appearance);
     }
 
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn decode(buf: &mut BytesMut) -> LifeForms {
         let bytes = buf.get_u16();
         LifeForms {
@@ -420,6 +435,8 @@ impl Environmentals {
         buf.put_u16(env_appearance);
     }
 
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn decode(buf: &mut BytesMut) -> Environmentals {
         let bytes = buf.get_u16();
         Environmentals {
@@ -437,9 +454,9 @@ pub enum Launcher {
 }
 
 impl Launcher {
+    #[must_use]
     pub fn from_u8(bit: u8) -> Launcher {
         match bit {
-            0 => Launcher::NotRaised,
             1 => Launcher::Raised,
             _ => Launcher::NotRaised,
         }
@@ -455,12 +472,12 @@ pub enum CamouflageType {
 }
 
 impl CamouflageType {
+    #[must_use]
     pub fn from_u8(bit: u8) -> CamouflageType {
         match bit {
             0 => CamouflageType::DesertCamouflage,
             1 => CamouflageType::WinterCamoflage,
             2 => CamouflageType::ForestCamoflage,
-            3 => CamouflageType::Unused,
             _ => CamouflageType::Unused,
         }
     }
@@ -473,9 +490,9 @@ pub enum Concealed {
 }
 
 impl Concealed {
+    #[must_use]
     pub fn from_u8(bit: u8) -> Concealed {
         match bit {
-            0 => Concealed::NotConcealed,
             1 => Concealed::EntityConcealed,
             _ => Concealed::NotConcealed,
         }
@@ -489,9 +506,9 @@ pub enum FrozenStatus {
 }
 
 impl FrozenStatus {
+    #[must_use]
     pub fn from_u8(bit: u8) -> FrozenStatus {
         match bit {
-            0 => FrozenStatus::NotFrozen,
             1 => FrozenStatus::Frozen,
             _ => FrozenStatus::NotFrozen,
         }
@@ -505,9 +522,9 @@ pub enum PowerplantStatus {
 }
 
 impl PowerplantStatus {
+    #[must_use]
     pub fn from_u8(bit: u8) -> PowerplantStatus {
         match bit {
-            0 => PowerplantStatus::PowerplantOff,
             1 => PowerplantStatus::PowerplantOn,
             _ => PowerplantStatus::PowerplantOff,
         }
@@ -521,9 +538,9 @@ pub enum State {
 }
 
 impl State {
+    #[must_use]
     pub fn from_u8(bit: u8) -> State {
         match bit {
-            0 => State::Active,
             1 => State::Deactivated,
             _ => State::Active,
         }
@@ -537,9 +554,9 @@ pub enum Tent {
 }
 
 impl Tent {
+    #[must_use]
     pub fn from_u8(bit: u8) -> Tent {
         match bit {
-            0 => Tent::NotExtended,
             1 => Tent::Extended,
             _ => Tent::NotExtended,
         }
@@ -553,9 +570,9 @@ pub enum Ramp {
 }
 
 impl Ramp {
+    #[must_use]
     pub fn from_u8(bit: u8) -> Ramp {
         match bit {
-            0 => Ramp::Up,
             1 => Ramp::Down,
             _ => Ramp::Up,
         }
@@ -569,9 +586,9 @@ pub enum Afterburner {
 }
 
 impl Afterburner {
+    #[must_use]
     pub fn from_u8(bit: u8) -> Afterburner {
         match bit {
-            0 => Afterburner::AfterburnerNotOn,
             1 => Afterburner::AfterburnerOn,
             _ => Afterburner::AfterburnerNotOn,
         }
@@ -585,9 +602,9 @@ pub enum LaunchFlash {
 }
 
 impl LaunchFlash {
+    #[must_use]
     pub fn from_u8(bit: u8) -> LaunchFlash {
         match bit {
-            0 => LaunchFlash::NoLaunchFlashPresent,
             1 => LaunchFlash::LaunchFlashPresent,
             _ => LaunchFlash::NoLaunchFlashPresent,
         }
@@ -609,9 +626,9 @@ pub enum LifeFormState {
 }
 
 impl LifeFormState {
+    #[must_use]
     pub fn from_u8(bit: u8) -> LifeFormState {
         match bit {
-            0 => LifeFormState::Null,
             1 => LifeFormState::UprightStandingStill,
             2 => LifeFormState::UprightWalking,
             3 => LifeFormState::UprightRunning,
@@ -636,9 +653,9 @@ pub enum LifeFormWeapon {
 }
 
 impl LifeFormWeapon {
+    #[must_use]
     pub fn from_u8(bit: u8) -> LifeFormWeapon {
         match bit {
-            0 => LifeFormWeapon::NoWeaponPresent,
             1 => LifeFormWeapon::WeaponIsStowed,
             2 => LifeFormWeapon::WeaponIsDeployed,
             3 => LifeFormWeapon::WeaponInFiringPositon,
@@ -658,9 +675,9 @@ pub enum Density {
 }
 
 impl Density {
+    #[must_use]
     pub fn from_u8(bit: u8) -> Density {
         match bit {
-            0 => Density::Clear,
             1 => Density::Hazy,
             2 => Density::Dense,
             3 => Density::VeryDense,

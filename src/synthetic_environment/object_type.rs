@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct ObjectType {
     pub domain: u8,
     pub object_kind: u8,
@@ -13,18 +13,8 @@ pub struct ObjectType {
     pub subcategory: u8,
 }
 
-impl Default for ObjectType {
-    fn default() -> Self {
-        ObjectType {
-            domain: 0,
-            object_kind: 0,
-            category: 0,
-            subcategory: 0,
-        }
-    }
-}
-
 impl ObjectType {
+    #[must_use]
     pub fn new(domain: u8, object_kind: u8, category: u8, subcategory: u8) -> Self {
         ObjectType {
             domain,

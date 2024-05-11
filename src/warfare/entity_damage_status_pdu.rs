@@ -29,11 +29,11 @@ pub struct EntityDamageStatusPdu {
 }
 
 impl Default for EntityDamageStatusPdu {
-    /// Creates a default EntityDamageStatus PDU with arbitrary firing entity ID and target entity ID
+    /// Creates a default Entity Damage Status PDU with arbitrary firing entity ID and target entity ID
     ///
     /// # Examples
     ///
-    /// Initializing a EntityDamageStatus PDU:
+    /// Initializing an Entity Damage Status PDU:
     /// ```
     /// use open_dis_rust::warfare::entity_damage_status_pdu::EntityDamageStatusPdu;
     /// let entity_damage_status_pdu = EntityDamageStatusPdu::default();

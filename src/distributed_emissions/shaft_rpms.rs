@@ -5,24 +5,15 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct ShaftRPMs {
     pub current_shaft_rpms: i16,
     pub ordered_shaft_rpms: i16,
     pub shaft_rpm_rate_of_change: f32,
 }
 
-impl Default for ShaftRPMs {
-    fn default() -> Self {
-        ShaftRPMs {
-            current_shaft_rpms: 0,
-            ordered_shaft_rpms: 0,
-            shaft_rpm_rate_of_change: 0.0,
-        }
-    }
-}
-
 impl ShaftRPMs {
+    #[must_use]
     pub fn new(
         current_shaft_rpms: i16,
         ordered_shaft_rpms: i16,

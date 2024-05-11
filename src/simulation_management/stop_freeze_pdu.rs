@@ -113,8 +113,9 @@ impl Pdu for StopFreezePdu {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub enum Reason {
+    #[default]
     Other = 0,
     Recess = 1,
     Termination = 2,
@@ -127,9 +128,9 @@ pub enum Reason {
 }
 
 impl Reason {
+    #[must_use]
     pub fn from_u8(bit: u8) -> Reason {
         match bit {
-            0 => Reason::Other,
             1 => Reason::Recess,
             2 => Reason::Termination,
             3 => Reason::SystemFailure,
@@ -143,8 +144,9 @@ impl Reason {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub enum FrozenBehavior {
+    #[default]
     Frozen = 0,
     RunSimClock = 1,
     TransmitUpdates = 2,
@@ -156,9 +158,9 @@ pub enum FrozenBehavior {
 }
 
 impl FrozenBehavior {
+    #[must_use]
     pub fn from_u8(bit: u8) -> FrozenBehavior {
         match bit {
-            0 => FrozenBehavior::Frozen,
             1 => FrozenBehavior::RunSimClock,
             2 => FrozenBehavior::TransmitUpdates,
             3 => FrozenBehavior::TransmitAndRun,

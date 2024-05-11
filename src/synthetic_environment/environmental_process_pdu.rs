@@ -63,10 +63,10 @@ impl Pdu for EnvironmentalProcessPdu {
         self.pdu_header.serialize(buf);
         self.environmental_process_id.serialize(buf);
         self.environment_type.serialize(buf);
-        buf.put_u8(self.model_type as u8);
-        buf.put_u8(self.environment_status as u8);
-        buf.put_u8(self.number_of_environment_records as u8);
-        buf.put_u8(self.sequence_number as u8);
+        buf.put_u8(self.model_type);
+        buf.put_u8(self.environment_status);
+        buf.put_u8(self.number_of_environment_records);
+        buf.put_u8(self.sequence_number);
         for i in 0..self.environment_records.len() {
             self.environment_records[i].serialize(buf);
         }

@@ -33,6 +33,7 @@ impl Default for EntityType {
 }
 
 impl EntityType {
+    #[must_use]
     pub fn new(
         kind: Kind,
         domain: u8,

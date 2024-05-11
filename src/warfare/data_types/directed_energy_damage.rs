@@ -43,6 +43,8 @@ impl Default for DirectedEnergyDamage {
 }
 
 impl DirectedEnergyDamage {
+    #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         record_type: u32,
         record_length: u16,

@@ -34,12 +34,12 @@ pub struct IntercomControlPdu {
 }
 
 impl Default for IntercomControlPdu {
-    /// Creates a default IntercomControl PDU with arbitrary originating and receiving
+    /// Creates a default Intercom Control PDU with arbitrary originating and receiving
     /// entity IDs
     ///
     /// # Examples
     ///
-    /// Initializing an IntercomControl PDU:
+    /// Initializing an Intercom Control PDU:
     /// ```
     /// use open_dis_rust::radio_communications::intercom_control_pdu::IntercomControlPdu;
     /// let intercom_control_pdu = IntercomControlPdu::default();

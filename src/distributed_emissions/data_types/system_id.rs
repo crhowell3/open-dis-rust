@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct SystemId {
     pub system_type: u16,
     pub system_name: u16,
@@ -13,18 +13,8 @@ pub struct SystemId {
     pub change_options: u8,
 }
 
-impl Default for SystemId {
-    fn default() -> Self {
-        SystemId {
-            system_type: 0,
-            system_name: 0,
-            system_mode: 0,
-            change_options: 0,
-        }
-    }
-}
-
 impl SystemId {
+    #[must_use]
     pub fn new(system_type: u16, system_name: u16, system_mode: u8, change_options: u8) -> Self {
         SystemId {
             system_type,

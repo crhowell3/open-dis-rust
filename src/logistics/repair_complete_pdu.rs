@@ -119,9 +119,9 @@ pub enum RepairGroups {
 }
 
 impl RepairGroups {
+    #[must_use]
     pub fn from_u8(byte: u8) -> RepairGroups {
         match byte {
-            0 => RepairGroups::GeneralRepairCodes,
             1 => RepairGroups::DriveTrain,
             2 => RepairGroups::HullAirframeBody,
             3 => RepairGroups::InterfacesWithEnvironment,

@@ -28,12 +28,12 @@ pub struct IntercomSignalPdu {
 }
 
 impl Default for IntercomSignalPdu {
-    /// Creates a default IntercomSignal PDU with arbitrary originating and receiving
+    /// Creates a default Intercom Signal PDU with arbitrary originating and receiving
     /// entity IDs
     ///
     /// # Examples
     ///
-    /// Initializing an IntercomSignal PDU:
+    /// Initializing an Intercom Signal PDU:
     /// ```
     /// use open_dis_rust::radio_communications::intercom_signal_pdu::IntercomSignalPdu;
     /// let intercom_signal_pdu = IntercomSignalPdu::default();
