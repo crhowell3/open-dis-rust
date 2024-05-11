@@ -9,9 +9,15 @@ use std::any::Any;
 
 pub trait Pdu {
     fn serialize(&self, buf: &mut BytesMut);
+    /// # Errors
+    ///
+    /// Will return `DISError` if the PDU header within the Byte Array is invalid
     fn deserialize(buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized;
+    /// # Errors
+    ///
+    /// Will return `DISError` if the PDU header provided is invalid
     fn deserialize_without_header(
         buffer: BytesMut,
         pdu_header: PduHeader,

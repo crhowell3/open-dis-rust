@@ -22,6 +22,7 @@ impl EventId {
         }
     }
 
+    #[must_use]
     pub fn default(event_identifier: u16) -> Self {
         EventId {
             simulation_address: SimulationAddress::default(),

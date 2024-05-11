@@ -155,9 +155,9 @@ pub enum EventType {
 }
 
 impl EventType {
+    #[must_use]
     pub fn decode(buf: &mut BytesMut) -> EventType {
         match buf.get_u32() {
-            0 => EventType::Other,
             2 => EventType::RanOutOfAmmunition,
             3 => EventType::KilledInAction,
             4 => EventType::Damage,

@@ -131,8 +131,9 @@ impl Pdu for ActionResponseReliablePdu {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 pub enum RequestStatus {
+    #[default]
     Other = 0,
     Pending = 1,
     Executing = 2,
@@ -150,9 +151,9 @@ pub enum RequestStatus {
 }
 
 impl RequestStatus {
+    #[must_use]
     pub fn decode(buf: &mut BytesMut) -> RequestStatus {
         match buf.get_u32() {
-            0 => RequestStatus::Other,
             1 => RequestStatus::Pending,
             2 => RequestStatus::Executing,
             3 => RequestStatus::PartiallyComplete,

@@ -15,7 +15,7 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
-use super::grid_axis_record::GridAxisRecord;
+use super::data_types::grid_data_record::GridDataRecord;
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.11.2.3
@@ -35,7 +35,7 @@ pub struct GriddedDataPdu {
     pub vector_dimension: u8,
     pub padding1: u16,
     pub padding2: u8,
-    pub grid_data_list: Vec<GridAxisRecord>,
+    pub grid_data_list: Vec<GridDataRecord>,
 }
 
 impl Default for GriddedDataPdu {
@@ -117,9 +117,9 @@ impl Pdu for GriddedDataPdu {
             let vector_dimension = buffer.get_u8();
             let padding1 = buffer.get_u16();
             let padding2 = buffer.get_u8();
-            let mut grid_data_list: Vec<GridAxisRecord> = vec![];
+            let mut grid_data_list: Vec<GridDataRecord> = vec![];
             for _i in 0..number_of_grid_axes {
-                grid_data_list.push(GridAxisRecord::decode(&mut buffer));
+                grid_data_list.push(GridDataRecord::decode(&mut buffer));
             }
             Ok(GriddedDataPdu {
                 pdu_header,
@@ -169,9 +169,9 @@ impl Pdu for GriddedDataPdu {
         let vector_dimension = buffer.get_u8();
         let padding1 = buffer.get_u16();
         let padding2 = buffer.get_u8();
-        let mut grid_data_list: Vec<GridAxisRecord> = vec![];
+        let mut grid_data_list: Vec<GridDataRecord> = vec![];
         for _i in 0..number_of_grid_axes {
-            grid_data_list.push(GridAxisRecord::decode(&mut buffer));
+            grid_data_list.push(GridDataRecord::decode(&mut buffer));
         }
         Ok(GriddedDataPdu {
             pdu_header,

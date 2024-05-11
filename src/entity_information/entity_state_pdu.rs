@@ -76,7 +76,7 @@ impl Default for EntityStatePdu {
             entity_orientation: EulerAngles::new(0.0, 0.0, 0.0),
             entity_appearance: EntityAppearance::default(),
             dead_reckoning_parameters: DeadReckoningParameters::default(),
-            entity_marking: EntityMarking::default("".to_string()),
+            entity_marking: EntityMarking::default(String::new()),
             entity_capabilities: EntityCapabilities::default(),
             articulation_parameter: 0.0,
         }

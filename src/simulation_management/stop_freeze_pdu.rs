@@ -128,6 +128,7 @@ pub enum Reason {
 }
 
 impl Reason {
+    #[must_use]
     pub fn from_u8(bit: u8) -> Reason {
         match bit {
             1 => Reason::Recess,
@@ -157,6 +158,7 @@ pub enum FrozenBehavior {
 }
 
 impl FrozenBehavior {
+    #[must_use]
     pub fn from_u8(bit: u8) -> FrozenBehavior {
         match bit {
             1 => FrozenBehavior::RunSimClock,

@@ -22,6 +22,7 @@ impl EntityId {
         }
     }
 
+    #[must_use]
     pub fn default(entity_id: u16) -> Self {
         EntityId {
             simulation_address: SimulationAddress::default(),

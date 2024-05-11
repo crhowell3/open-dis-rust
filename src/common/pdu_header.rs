@@ -44,6 +44,7 @@ impl PduHeader {
         }
     }
 
+    #[must_use]
     pub fn default(pdu_type: PduType, protocol_family: ProtocolFamily, length: u16) -> Self {
         PduHeader {
             protocol_version: ProtocolVersion::IEEE1278_1_2012,
@@ -57,10 +58,16 @@ impl PduHeader {
     }
 
     /// Gets the current time in terms of IEEE-1278.1 DIS time units
+    #[must_use]
+    #[allow(
+        clippy::cast_precision_loss,
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss
+    )]
     pub fn calculate_dis_timestamp() -> u32 {
-        let minute_curr = ((Utc::now().minute() * 60) * 1e6 as u32) as u64;
-        let second_curr = (Utc::now().second() * 1e6 as u32) as u64;
-        let nanosecond_curr = (Utc::now().nanosecond() / 1000) as u64;
+        let minute_curr = u64::from((Utc::now().minute() * 60) * 1_000_000);
+        let second_curr = u64::from(Utc::now().second() * 1_000_000);
+        let nanosecond_curr = u64::from(Utc::now().nanosecond() / 1000);
         let dis_time = (second_curr + minute_curr + nanosecond_curr) as f32 / 1.68;
         dis_time as u32
     }
@@ -100,6 +107,7 @@ impl PduHeader {
         }
     }
 
+    #[must_use]
     pub fn decode_pdu_type(data: u8) -> PduType {
         match data {
             1 => PduType::EntityState,
@@ -178,6 +186,7 @@ impl PduHeader {
         }
     }
 
+    #[must_use]
     fn decode_protocol_family(data: u8) -> ProtocolFamily {
         match data {
             1 => ProtocolFamily::EntityInformation,

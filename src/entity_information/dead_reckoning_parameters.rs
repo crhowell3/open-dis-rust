@@ -62,8 +62,9 @@ impl DeadReckoningParameters {
     }
 }
 
-#[derive(Debug, FromPrimitive, PartialEq, Copy, Clone)]
+#[derive(Debug, FromPrimitive, PartialEq, Copy, Clone, Default)]
 pub enum DeadReckoningAlgorithm {
+    #[default]
     Other = 0,
     Static = 1,
     DRMFPW = 2,
@@ -77,9 +78,9 @@ pub enum DeadReckoningAlgorithm {
 }
 
 impl DeadReckoningAlgorithm {
+    #[must_use]
     pub fn from_u8(bit: u8) -> DeadReckoningAlgorithm {
         match bit {
-            0 => DeadReckoningAlgorithm::Other,
             1 => DeadReckoningAlgorithm::Static,
             2 => DeadReckoningAlgorithm::DRMFPW,
             3 => DeadReckoningAlgorithm::DRMRPW,
@@ -89,7 +90,7 @@ impl DeadReckoningAlgorithm {
             7 => DeadReckoningAlgorithm::DRMRPB,
             8 => DeadReckoningAlgorithm::DRMRVB,
             9 => DeadReckoningAlgorithm::DRMFVB,
-            10_u8..=u8::MAX => DeadReckoningAlgorithm::Other,
+            _ => DeadReckoningAlgorithm::Other,
         }
     }
 }

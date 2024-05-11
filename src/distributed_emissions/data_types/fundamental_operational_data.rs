@@ -21,6 +21,7 @@ pub struct FundamentalOperationalData {
 
 impl FundamentalOperationalData {
     #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         system_status: u8,
         data_field1: u8,

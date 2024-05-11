@@ -5,19 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct AggregateMarking {
     pub character_set: u8,
     pub characters: [i8; 31],
-}
-
-impl Default for AggregateMarking {
-    fn default() -> Self {
-        AggregateMarking {
-            character_set: 0,
-            characters: [0; 31],
-        }
-    }
 }
 
 impl AggregateMarking {
@@ -31,16 +22,16 @@ impl AggregateMarking {
 
     pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_u8(self.character_set);
-        for i in 0..self.characters.len() {
-            buf.put_i8(self.characters[i]);
+        for i in self.characters {
+            buf.put_i8(i);
         }
     }
 
     pub fn decode(buf: &mut BytesMut) -> AggregateMarking {
         let character_set = buf.get_u8();
         let mut characters: [i8; 31] = [0; 31];
-        for i in 0..characters.len() {
-            characters[i] = buf.get_i8();
+        for char in &mut characters {
+            *char = buf.get_i8();
         }
         AggregateMarking {
             character_set,

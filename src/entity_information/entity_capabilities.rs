@@ -11,6 +11,7 @@ pub struct EntityCapabilities {
 
 impl EntityCapabilities {
     #[must_use]
+    #[allow(clippy::fn_params_excessive_bools)]
     pub fn new(ammunition_supply: bool, fuel_supply: bool, recovery: bool, repair: bool) -> Self {
         EntityCapabilities {
             ammunition_supply,
@@ -21,10 +22,10 @@ impl EntityCapabilities {
     }
 
     pub fn serialize(&self, buf: &mut BytesMut) {
-        let ammunition_supply = if self.ammunition_supply { 1u32 } else { 0u32 } << 31;
-        let fuel_supply = if self.fuel_supply { 1u32 } else { 0u32 } << 30;
-        let recovery = if self.recovery { 1u32 } else { 0u32 } << 29;
-        let repair = if self.repair { 1u32 } else { 0u32 } << 28;
+        let ammunition_supply = u32::from(self.ammunition_supply) << 31;
+        let fuel_supply = u32::from(self.fuel_supply) << 30;
+        let recovery = u32::from(self.recovery) << 29;
+        let repair = u32::from(self.repair) << 28;
         let capabilities = ammunition_supply | fuel_supply | recovery | repair;
         buf.put_u32(capabilities);
     }

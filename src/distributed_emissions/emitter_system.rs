@@ -38,6 +38,7 @@ impl EmitterSystem {
         buf.put_u8(self.emitter_id_number);
     }
 
+    #[must_use]
     pub fn decode(buf: &mut BytesMut) -> EmitterSystem {
         EmitterSystem {
             emitter_name: EmitterName::decode(buf.get_u16()),
@@ -59,9 +60,9 @@ pub enum EmitterName {
 }
 
 impl EmitterName {
+    #[must_use]
     pub fn decode(word: u16) -> EmitterName {
         match word {
-            2 => EmitterName::E12456X,
             3 => EmitterName::E1L117,
             4 => EmitterName::E1L121E,
             5 => EmitterName::E1l250,
@@ -72,9 +73,10 @@ impl EmitterName {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-#[allow(deprecated)]
+#[derive(Copy, Clone, Debug, Default)]
+#[allow(deprecated, clippy::module_name_repetitions)]
 pub enum EmitterSystemFunction {
+    #[default]
     Other = 0,
     MultiFunction = 1,
     EarlyWarningSurveillance = 2,
@@ -172,10 +174,11 @@ pub enum EmitterSystemFunction {
     SearchAcquisition = 102,
 }
 
+#[allow(clippy::module_name_repetitions)]
 impl EmitterSystemFunction {
+    #[must_use]
     pub fn decode(byte: u8) -> EmitterSystemFunction {
         match byte {
-            0 => EmitterSystemFunction::Other,
             1 => EmitterSystemFunction::MultiFunction,
             2 => EmitterSystemFunction::EarlyWarningSurveillance,
             3 => EmitterSystemFunction::HeightFinder,

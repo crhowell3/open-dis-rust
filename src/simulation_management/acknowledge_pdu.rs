@@ -126,9 +126,9 @@ pub enum AcknowledgeFlag {
 }
 
 impl AcknowledgeFlag {
+    #[must_use]
     pub fn from_u8(bit: u8) -> AcknowledgeFlag {
         match bit {
-            1 => AcknowledgeFlag::CreateEntity,
             2 => AcknowledgeFlag::RemoveEntity,
             3 => AcknowledgeFlag::StartResume,
             4 => AcknowledgeFlag::StopFreeze,
@@ -148,13 +148,13 @@ pub enum ResponseFlag {
 }
 
 impl ResponseFlag {
+    #[must_use]
     pub fn from_u8(byte: u8) -> ResponseFlag {
         match byte {
-            0 => ResponseFlag::Other,
             1 => ResponseFlag::AbleToComply,
             2 => ResponseFlag::UnableToComply,
             3 => ResponseFlag::PendingOperatorAction,
-            4_u8..=u8::MAX => ResponseFlag::Other,
+            _ => ResponseFlag::Other,
         }
     }
 }
