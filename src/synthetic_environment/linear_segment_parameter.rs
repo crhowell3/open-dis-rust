@@ -28,6 +28,7 @@ pub struct LinearSegmentParameter {
 
 impl LinearSegmentParameter {
     #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         segment_number: u8,
         segment_modification: u8,
