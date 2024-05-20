@@ -5755,46 +5755,46 @@ pub enum EmitterName {
     TRD1235 = 35489,
     TRS2100 = 35490,
     TRACNG = 35491,
-     = 35505,
-    36D6 = 35550,
-     = 35570,
+    TieRods = 35505,
+    _36D6 = 35550,
+    TinTrap = 35570,
     TIRSPONDER = 35580,
     TK25E5 = 35583,
     TMKMk2 = 35585,
     TMXMk2 = 35586,
-     = 35595,
-     = 35640,
-     = 35685,
-     = 35730,
-     = 35775,
+    ToadStool1 = 35595,
+    ToadStool2 = 35640,
+    ToadStool3 = 35685,
+    ToadStool4 = 35730,
+    ToadStool5 = 35775,
     TokenB = 35785,
-     = 35800,
+    TombStone = 35800,
     Tonson = 35810,
-     = 35820,
-     = 35865,
-     = 35910,
-     = 35955,
-     = 36000,
-     = 36045,
-     = 36046,
-     = 36090,
+    TopBow = 35820,
+    TopDome = 35865,
+    TopKnot = 35910,
+    TopMesh = 35955,
+    TopPair = 36000,
+    TopPlate = 36045,
+    TopPlateB = 36046,
+    TopSail = 36090,
     TYPE208 = 36120,
-     = 36135,
-     = 36180,
+    TopSteer = 36135,
+    TopTrough = 36180,
     TornadoGMR = 36200,
     TornadoTFR = 36201,
-     = 36220,
-     = 36225,
+    ScrumHalfTA = 36220,
+    ScrumHalfTT = 36225,
     TORM2TER = 36226,
-     = 36230,
-     = 36270,
+    ScrumHalfMG = 36230,
+    TrackDish = 36270,
     TR47C = 36300,
     TORSOM = 36315,
     TQN2 = 36320,
-     = 36360,
+    TrapDoor = 36360,
     TRD1500 = 36365,
-     = 36370,
-     = 36371,
+    TrickShotTAR = 36370,
+    TrickShotTER = 36371,
     TRISPONDE = 36380,
     TRML = 36381,
     TRS2215 = 36382,
@@ -5824,16 +5824,16 @@ pub enum EmitterName {
     TSE5000 = 36495,
     TSR333 = 36540,
     TSR793 = 36550,
-     = 36563,
-     = 36585,
+    TubBrick = 36563,
+    TubeArm = 36585,
     TW1374 = 36590,
     TW1378 = 36595,
     TW1446 = 36600,
-     = 36630,
-     = 36675,
-     = 36720,
-     = 36765,
-     = 36810,
+    TwinEyes = 36630,
+    TwinPill = 36675,
+    TwinScan = 36720,
+    TwinScanRo = 36765,
+    TwoSpot = 36810,
     Type071LPD = 36821,
     Type212JA = 36827,
     Type221JA = 36830,
@@ -5945,39 +5945,39 @@ pub enum EmitterName {
     W8818 = 38070,
     W8838 = 38115,
     W8852 = 38120,
-     = 38140,
-     = 38150,
+    WALLBOARD = 38140,
+    WallRust = 38150,
     WAS74S = 38160,
-     = 38205,
+    WaspHead = 38205,
     WATCHDOG = 38210,
-     = 38250,
+    WatchGuard = 38250,
     Watchman = 38260,
     WAVESTORM = 38270,
     WATCHMANS = 38275,
     WATCHMANT = 38276,
     WEATHERSCOUT2 = 38280,
-     = 38295,
-     = 38320,
-     = 38340,
-     = 38385,
-     = 38430,
-     = 38475,
+    WesternElectricMK10 = 38295,
+    WestinghouseADR4LRSR = 38320,
+    WestinghouseElectricSPG50 = 38340,
+    WestinghouseElectricW120 = 38385,
+    WestinghouseSPS29C = 38430,
+    WestinghouseSPS37 = 38475,
     WetEye = 38520,
     WetEye2 = 38525,
     WetEyeMod = 38565,
     WF44S = 38568,
     WGU41B = 38570,
     WGU44B = 38572,
-     = 38610,
-     = 38655,
-     = 38700,
-     = 38715,
-     = 38730,
+    Whiff = 38610,
+    WhiffBrick = 38655,
+    WhiffFire = 38700,
+    WHITEHOUSE = 38715,
+    WideMat = 38730,
     WineGlassJammer = 38735,
     WildCard = 38745,
     WILDCAT = 38748,
-     = 38790,
-     = 38835,
+    WitchEight = 38790,
+    WitchFive = 38835,
     WLR = 38840,
     WM2XSeries = 38880,
     WM2XSeriesCAS = 38925,
@@ -5989,14 +5989,14 @@ pub enum EmitterName {
     WXR700C = 38960,
     WXR2100 = 38965,
     WXR2100MSTT = 38966,
-     = 38970,
+    WoodGage = 38970,
     XTAR25 = 38990,
     XTAR3D = 38995,
     YAOGAN3 = 39000,
     Yaogan29 = 39014,
-     = 39015,
+    YardRake = 39015,
     YH96 = 39050,
-     = 39060,
+    YewLoop = 39060,
     YITIANADS = 39061,
     YD3 = 39062,
     YJ12MH = 39063,
@@ -6011,7 +6011,7 @@ pub enum EmitterName {
     YLC8 = 39080,
     YLC8B = 39081,
     YLC18 = 39085,
-     = 39105,
+    YoYo = 39105,
     ZaslonA = 39110,
     ZaslonMultipurpose = 39112,
     ZooPark1 = 39125,
@@ -7640,10 +7640,8 @@ pub enum ObjectKind {
 }
 
 // SISO-REF-010-2023 GriddedDataFieldNumber [UID 243]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum GriddedDataFieldNumber {
-    #[default]
-}
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+pub enum GriddedDataFieldNumber {}
 
 // SISO-REF-010-2023 GriddedDataCoordinateSystem [UID 244]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -7725,20 +7723,19 @@ pub enum SignalEncodingClass {
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SignalEncodingType {
     #[default]
-    8bitmulaw = 1,
+    _8bitmulaw = 1,
     CVSD = 2,
     ADPCM = 3,
-    16bitLinearPCM2sComplementBigEndian = 4,
-    8bitLinearPCMUnsigned = 5,
+    _16bitLinearPCM2sComplementBigEndian = 4,
+    _8bitLinearPCMUnsigned = 5,
+    #[deprecated]
     VQ = 6,
-     = 7,
     GSMFullRate = 8,
     GSMHalfRate = 9,
     SpeexNarrowBand = 10,
     Opus = 11,
     LPC10 = 12,
-    16bitLinearPCM2sComplementLittleEndian = 100,
-     = 255,
+    _16bitLinearPCM2sComplementLittleEndian = 100,
 }
 
 // SISO-REF-010-2023 RepairGroups [UID 272]
@@ -8029,7 +8026,7 @@ pub enum EEAttributeStateIndicator {
 
 // SISO-REF-010-2023 DISPDUStatusTransferredEntityIndicator(TEI) [UID 301]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DISPDUStatusTransferredEntityIndicator(TEI) {
+pub enum TransferredEntityIndicator {
     #[default]
     NoDifference = 0,
     Difference = 1,
@@ -8047,7 +8044,7 @@ pub enum LVCIndicator {
 
 // SISO-REF-010-2023 DISPDUStatusCoupledExtensionIndicator(CEI) [UID 303]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DISPDUStatusCoupledExtensionIndicator(CEI) {
+pub enum CoupledExtensionIndicator {
     #[default]
     NotCoupled = 0,
     Coupled = 1,
@@ -8055,7 +8052,7 @@ pub enum DISPDUStatusCoupledExtensionIndicator(CEI) {
 
 // SISO-REF-010-2023 DISPDUStatusFireTypeIndicator(FTI) [UID 304]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DISPDUStatusFireTypeIndicator(FTI) {
+pub enum FireTypeIndicator {
     #[default]
     Munition = 0,
     Expendable = 1,
@@ -8063,7 +8060,7 @@ pub enum DISPDUStatusFireTypeIndicator(FTI) {
 
 // SISO-REF-010-2023 DISPDUStatusDetonationTypeIndicator(DTI) [UID 305]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DISPDUStatusDetonationTypeIndicator(DTI) {
+pub enum DetonationTypeIndicator {
     #[default]
     Munition = 0,
     Expendable = 1,
@@ -8081,7 +8078,7 @@ pub enum RadioAttachedIndicator {
 
 // SISO-REF-010-2023 DISPDUStatusIntercomAttachedIndicator(IAI) [UID 307]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DISPDUStatusIntercomAttachedIndicator(IAI) {
+pub enum IntercomAttachedIndicator {
     #[default]
     NoStatement = 0,
     Unattached = 1,
@@ -8090,7 +8087,7 @@ pub enum DISPDUStatusIntercomAttachedIndicator(IAI) {
 
 // SISO-REF-010-2023 DISPDUStatusIFFSimulationMode(ISM) [UID 308]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DISPDUStatusIFFSimulationMode(ISM) {
+pub enum IFFSimulationMode {
     #[default]
     Regeneration = 0,
     Interactive = 1,
@@ -8331,6 +8328,7 @@ pub enum SensorRecordSensorTypeOtherActiveSensors {
 
 // SISO-REF-010-2023 SensorRecordSensorTypePassiveSensors [UID 326]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[allow(non_camel_case_types)]
 pub enum SensorRecordSensorTypePassiveSensors {
     #[default]
     ALR400 = 60000,
@@ -8359,12 +8357,12 @@ pub enum SensorRecordSensorTypePassiveSensors {
     ARI18223 = 60023,
     BOW21 = 60024,
     ChaparralIRST = 60025,
-     = 60026,
-     = 60027,
-     = 60028,
-     = 60029,
-     = 60030,
-     = 60031,
+    FlankerIRST = 60026,
+    FoxbatIRST = 60027,
+    FoxhoundIRST = 60028,
+    FulcrumIRST = 60029,
+    HavocIRST = 60030,
+    HindIRST = 60031,
     KJ200 = 60032,
     KJ8602 = 60033,
     L150Pastel = 60034,
@@ -8379,29 +8377,29 @@ pub enum SensorRecordSensorTypePassiveSensors {
     SPS200 = 60043,
     Tarang = 60044,
     ANAAQ29A = 60045,
-    101KSUMAW = 60046,
-     = 60047,
-     = 60048,
+    _101KSUMAW = 60046,
+    Abrams2GFFLIR = 60047,
+    Abrams3GFFLIR = 60048,
     ANAAQ13LANTIRNFLIR = 60049,
-    ANALR74 = 60050,
-    ANALR90 = 60051,
+    AN_ALR74 = 60050,
+    AN_ALR90 = 60051,
     ANAPR48 = 60052,
     ELT156X = 60053,
-    101KSV = 60054,
+    _101KSV = 60054,
     TP23ML = 60055,
-     = 60056,
-     = 60057,
-     = 60058,
-     = 60059,
+    GenericFLIR = 60056,
+    GenericIRST = 60057,
+    GenericMAWS = 60058,
+    GenericRWR = 60059,
     L136Mak = 60060,
-     = 60061,
-     = 60062,
-     = 60063,
-     = 60064,
-     = 60065,
+    LeonardoSASSIRST = 60061,
+    OSFIRST = 60062,
+    PirateIRST = 60063,
+    RECCELITE = 60064,
+    ThalesNederlandSiriusIRST = 60065,
     TornadoRWR = 60066,
     TOES521FLIR = 60067,
-     = 60068,
+    SafranVampir_MB = 60068,
 }
 
 // SISO-REF-010-2023 MunitionExpendableStatus [UID 327]
@@ -8560,8 +8558,8 @@ pub enum TCASACASIndicator {
 pub enum TCASACASSoftwareVersion {
     #[default]
     NoStatement = 0,
-    6_0_2 = 1,
-    7_0 = 2,
+    _6_0_2 = 1,
+    _7_0 = 2,
 }
 
 // SISO-REF-010-2023 TCASACASType [UID 344]
@@ -8732,8 +8730,8 @@ pub enum IFFDataRecordAvailable {
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Mode5SAltitudeResolution {
     #[default]
-    100foot = 0,
-    25foot = 1,
+    _100foot = 0,
+    _25foot = 1,
 }
 
 // SISO-REF-010-2023 DeltaMode5SAltitudePositiveNegativeIndicator [UID 362]
@@ -8788,7 +8786,7 @@ pub enum TurnRateSource {
     #[default]
     ComputeLocally = 0,
     LessThan1DegreeTurnorNotTurning = 1,
-    1DegreeorGreaterTurnRate = 2,
+    _1DegreeorGreaterTurnRate = 2,
 }
 
 // SISO-REF-010-2023 TimeTypeSource [UID 367]
@@ -9006,7 +9004,7 @@ pub enum AppearanceSubsurfaceHatch {
 
 // SISO-REF-010-2023 DISPDUStatusActiveInterrogationIndicator(AII) [UID 389]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DISPDUStatusActiveInterrogationIndicator(AII) {
+pub enum ActiveInterrogationIndicator {
     #[default]
     NotActive = 0,
     Active = 1,
@@ -9424,24 +9422,24 @@ pub enum PlatformLandCarSubcategories {
     GenericIntermediateStandard = 13,
     GenericFullPremiumLuxury = 14,
     GenericOversize = 15,
-    2Door = 20,
-    2Door = 21,
-    2Door = 22,
-    2Door = 23,
-    3DoorHatchback = 30,
-    3DoorHatchbackMiniMicrocar = 31,
-    3DoorHatchbackEconomyCompact = 32,
-    4DoorSedan = 40,
-    4DoorSedanMiniMicrocar = 41,
-    4DoorSedanEconomyCompact = 42,
-    4DoorSedanIntermediateStandard = 43,
-    4DoorSedanFullPremiumLuxury = 44,
-    4DoorSedanOversize = 45,
-    5DoorHatchback = 50,
-    5DoorHatchbackMiniMicrocar = 51,
-    5DoorHatchbackEconomyCompact = 52,
-    5DoorHatchbackIntermediateStandard = 53,
-    5DoorHatchbackFullPremiumLuxury = 54,
+    _2DoorCoupe = 20,
+    _2DoorCoupeMiniMicrocar = 21,
+    _2DoorCoupeEconomyCompact = 22,
+    _2DoorCoupeIntermediateStandard = 23,
+    _3DoorHatchback = 30,
+    _3DoorHatchbackMiniMicrocar = 31,
+    _3DoorHatchbackEconomyCompact = 32,
+    _4DoorSedan = 40,
+    _4DoorSedanMiniMicrocar = 41,
+    _4DoorSedanEconomyCompact = 42,
+    _4DoorSedanIntermediateStandard = 43,
+    _4DoorSedanFullPremiumLuxury = 44,
+    _4DoorSedanOversize = 45,
+    _5DoorHatchback = 50,
+    _5DoorHatchbackMiniMicrocar = 51,
+    _5DoorHatchbackEconomyCompact = 52,
+    _5DoorHatchbackIntermediateStandard = 53,
+    _5DoorHatchbackFullPremiumLuxury = 54,
     Wagon = 60,
     WagonEconomyCompact = 62,
     WagonIntermediateStandard = 63,
@@ -10481,17 +10479,13 @@ pub enum LifeFormHumanSpecificEquipmentClass {
     Spotlight = 6,
 }
 
-// SISO-REF-010-2023 PlatformSubsurfaceCivilianSubmarineSubcategories [UID 506]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum PlatformSubsurfaceCivilianSubmarineSubcategories {
-    #[default]
-}
+// SISO-REF-010-2023 CivilianSubmarineSubcategories [UID 506]
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+pub enum CivilianSubmarineSubcategories {}
 
 // SISO-REF-010-2023 PlatformSubsurfaceCivilianSubmersibleSubcategories [UID 507]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum PlatformSubsurfaceCivilianSubmersibleSubcategories {
-    #[default]
-}
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
+pub enum CivilianSubmersibleSubcategories {}
 
 // SISO-REF-010-2023 PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories [UID 508]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -10513,153 +10507,154 @@ pub enum LeafCoverage {
 pub enum LifeFormHumanSpecificAntiMaterielRifles {
     #[default]
     Other = 0,
-    12_7mmAW50 = 10,
-    12_7mmAW50F = 11,
+    _12_7mmAW50 = 10,
+    _12_7mmAW50F = 11,
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificShotGuns [UID 511]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[allow(non_camel_case_types)]
 pub enum LifeFormHumanSpecificShotGuns {
     #[default]
     Other = 0,
     BrowningSuperposedOU = 20,
     BrowningCynergy = 21,
     BrowningAuto5 = 22,
-    18_5mmBrowningCitoriOU12Gauge = 23,
-    16_8mmBrowningCitoriOU16Gauge = 24,
-    15_6mmBrowningCitoriOU20Gauge = 25,
-    14mmBrowningCitoriOU28Gauge = 26,
-    10_4mmBrowningCitoriOU_410Bore = 27,
-    18_5mmBrowningDoubleAutomatic12Gauge = 28,
-    18_5mmIthaca3712Gauge = 29,
-    16_8mmIthaca3716Gauge = 30,
-    15_6mmIthaca3720Gauge = 31,
-    14mmIthaca3728Gauge = 32,
-    19_7mmIthacaMag10SA10Gauge = 33,
-    19_7mmMarlinModel5510Gauge = 34,
-    18_5mmMarlinModel5512Gauge = 35,
-    16_8mmMarlinModel5516Gauge = 36,
-    15_6mmMarlinModel5520Gauge = 37,
-    18_5mmMossberg50012Gauge = 38,
-    15_6mmMossberg50020Gauge = 39,
-    10_4mmMossberg500_410Bore = 40,
-    18_5mmMossberg59012Gauge = 41,
-    15_6mmMossberg59020Gauge = 42,
-    10_4mmMossberg590_410Bore = 43,
-    18_5mmMossberg930SA12Gauge = 44,
+    _18_5mmBrowningCitoriOU12Gauge = 23,
+    _16_8mmBrowningCitoriOU16Gauge = 24,
+    _15_6mmBrowningCitoriOU20Gauge = 25,
+    _14mmBrowningCitoriOU28Gauge = 26,
+    _10_4mmBrowningCitoriOU_410Bore = 27,
+    _18_5mmBrowningDoubleAutomatic12Gauge = 28,
+    _18_5mmIthaca3712Gauge = 29,
+    _16_8mmIthaca3716Gauge = 30,
+    _15_6mmIthaca3720Gauge = 31,
+    _14mmIthaca3728Gauge = 32,
+    _19_7mmIthacaMag10SA10Gauge = 33,
+    _19_7mmMarlinModel5510Gauge = 34,
+    _18_5mmMarlinModel5512Gauge = 35,
+    _16_8mmMarlinModel5516Gauge = 36,
+    _15_6mmMarlinModel5520Gauge = 37,
+    _18_5mmMossberg50012Gauge = 38,
+    _15_6mmMossberg50020Gauge = 39,
+    _10_4mmMossberg500_410Bore = 40,
+    _18_5mmMossberg59012Gauge = 41,
+    _15_6mmMossberg59020Gauge = 42,
+    _10_4mmMossberg590_410Bore = 43,
+    _18_5mmMossberg930SA12Gauge = 44,
     RemingtonModel11SA = 45,
     RemingtonModel1012Gauge = 46,
-    15_6mmRemingtonModel1720Gauge = 47,
+    _15_6mmRemingtonModel1720Gauge = 47,
     RemingtonModel31 = 48,
     RemingtonModel1148SA = 49,
-    18_5mmRemington87012Gauge = 50,
-    16_8mmRemington87016Gauge = 51,
-    15_6mmRemington87020Gauge = 52,
-    14mmRemington87028Gauge = 53,
-    10_4mmRemington870_410Bore = 54,
+    _18_5mmRemington87012Gauge = 50,
+    _16_8mmRemington87016Gauge = 51,
+    _15_6mmRemington87020Gauge = 52,
+    _14mmRemington87028Gauge = 53,
+    _10_4mmRemington870_410Bore = 54,
     RemingtonModel58SA = 55,
-    18_5mmRemington878SA12Gauge = 56,
-    18_5mmRemingtonModel1100SA12Gauge = 57,
-    16_8mmRemingtonModel1100SA16Gauge = 58,
-    15_6mmRemingtonModel1100SA20Gauge = 59,
-    14mmRemingtonModel1100SA28Gauge = 60,
-    10_4mmRemingtonModel1100SA_410Bore = 61,
-    18_5mmRemington1187SA12Gauge = 62,
-    15_6mmRemington1187SA20Gauge = 63,
-    19_7mmRemingtonModelSP10SA10Gauge = 64,
-    18_5mmRemington88712Gauge = 65,
-    18_5mmRemingtonSparta100SxS12Gauge = 70,
-    15_6mmRemingtonSparta100SxS20Gauge = 71,
-    10_4mmRemingtonSparta100SxS_410Bore = 72,
-    18_5mmRemingtonSpartan310OU12Gauge = 73,
-    15_6mmRemingtonSpartan310OU20Gauge = 74,
-    14mmRemingtonSpartan310OU28Gauge = 75,
-    10_4mmRemingtonSpartan310OU_410Bore = 76,
-    18_5mmRemingtonSpartan453SA12Gauge = 77,
-    18_5mmWinchesterModel120012Gauge = 80,
-    16_8mmWinchesterModel120016Gauge = 81,
-    15_6mmWinchesterModel120020Gauge = 82,
+    _18_5mmRemington878SA12Gauge = 56,
+    _18_5mmRemingtonModel1100SA12Gauge = 57,
+    _16_8mmRemingtonModel1100SA16Gauge = 58,
+    _15_6mmRemingtonModel1100SA20Gauge = 59,
+    _14mmRemingtonModel1100SA28Gauge = 60,
+    _10_4mmRemingtonModel1100SA_410Bore = 61,
+    _18_5mmRemington1187SA12Gauge = 62,
+    _15_6mmRemington1187SA20Gauge = 63,
+    _19_7mmRemingtonModelSP10SA10Gauge = 64,
+    _18_5mmRemington88712Gauge = 65,
+    _18_5mmRemingtonSparta100SxS12Gauge = 70,
+    _15_6mmRemingtonSparta100SxS20Gauge = 71,
+    _10_4mmRemingtonSparta100SxS_410Bore = 72,
+    _18_5mmRemingtonSpartan310OU12Gauge = 73,
+    _15_6mmRemingtonSpartan310OU20Gauge = 74,
+    _14mmRemingtonSpartan310OU28Gauge = 75,
+    _10_4mmRemingtonSpartan310OU_410Bore = 76,
+    _18_5mmRemingtonSpartan453SA12Gauge = 77,
+    _18_5mmWinchesterModel120012Gauge = 80,
+    _16_8mmWinchesterModel120016Gauge = 81,
+    _15_6mmWinchesterModel120020Gauge = 82,
     WinchesterModel18871901 = 83,
     WinchesterModel1897 = 84,
     WinchesterModel1912 = 85,
     WinchesterModel21SxS = 86,
     WinchesterModel37SxS = 87,
-    18_5mmHRUltraslugSxS12Gauge = 88,
-    15_6mmHRUltraslugSxS20Gauge = 89,
-    18_5mmCienerUltimateOU12Gauge = 90,
-    18_5mmCoachGunSxSDoubleBarrel12Gauge = 91,
-    18_5mmRugerGoldLabelSxS12Gauge = 92,
-    18_5mmHighStandardModel10SA12Gauge = 93,
-    18_5mmKelTexKSG12Gauge = 94,
-    18_5KACMasterkey12Gauge = 95,
-    18_5mmM26M_A_S_S_12Gauge = 96,
-    18_5mmSRMArmsM1216SA12Gauge = 97,
-    18_5mmAA12FAAtchissonAssault = 98,
-    18_5mmPancorJackhammerFA12Gauge = 99,
-    18_5mmUSAS12FA12Gauge = 110,
-    18_5mmMAULSA12Gauge = 111,
-    18_5mmFNSLPSA12Gauge = 112,
-    18_5mmFNTPS12Gauge = 113,
-    18_5mmENARMPentagunSA12Gauge = 115,
+    _18_5mmHRUltraslugSxS12Gauge = 88,
+    _15_6mmHRUltraslugSxS20Gauge = 89,
+    _18_5mmCienerUltimateOU12Gauge = 90,
+    _18_5mmCoachGunSxSDoubleBarrel12Gauge = 91,
+    _18_5mmRugerGoldLabelSxS12Gauge = 92,
+    _18_5mmHighStandardModel10SA12Gauge = 93,
+    _18_5mmKelTexKSG12Gauge = 94,
+    _18_5KACMasterkey12Gauge = 95,
+    _18_5mmM26M_A_S_S_12Gauge = 96,
+    _18_5mmSRMArmsM1216SA12Gauge = 97,
+    _18_5mmAA12FAAtchissonAssault = 98,
+    _18_5mmPancorJackhammerFA12Gauge = 99,
+    _18_5mmUSAS12FA12Gauge = 110,
+    _18_5mmMAULSA12Gauge = 111,
+    _18_5mmFNSLPSA12Gauge = 112,
+    _18_5mmFNTPS12Gauge = 113,
+    _18_5mmENARMPentagunSA12Gauge = 115,
     StevensModel520620 = 116,
     StoegerCoachGunSxS = 117,
     StoegerCondorOU = 118,
-    18_5mmArmscorModel30SA12Gauge = 120,
+    _18_5mmArmscorModel30SA12Gauge = 120,
     WeatherbySA08SA = 121,
-    18_5mmFabarmSDASSTactical12Gauge = 122,
-    18_5mmMAG712Gauge = 123,
-    18_5mmNeostead12Gauge = 124,
-    18_5mmArmselStrikerSA12Gauge = 125,
-    18_5mmParkerHaleRogunSA12Gauge = 127,
-    26mmRGA86Revolver = 130,
-    18_5mmSjorgrenSA12Gauge = 131,
-    18_5mmAkdalMKA1919SA12Gauge = 132,
-    18_5mmRetayMasaiMaraSA12Gauge = 133,
-    18_5mmSafirT14SA12Gauge = 134,
-    18_5mmBenelliM1Super90SA12Gauge = 150,
-    15_6mmBenelliM1Super90SA20Gauge = 151,
-    18_5mmBenelliM3Super90SA12Gauge = 152,
-    15_6mmBenelliM3Super90SA20Gauge = 153,
-    18_5mmBenelliM4Super90SA12Gauge = 154,
-    18_5mmBenelliNova12Gauge = 155,
-    15_6mmBenelliNove20Gauge = 156,
-    18_5mmBenelliRaffaelloSA12Gauge = 157,
-    18_5mmBenelliSupernova12Gauge = 158,
-    18_5mmBenelliVinciSA12Gauge = 159,
-    18_5mmBeretta1201FPSA12Gauge = 160,
-    18_5mmBeretta682OU12Gauge = 161,
-    15_6mmBeretta682OU20Gauge = 162,
-    14mmBeretta682OU28Gauge = 163,
-    10_4mmBeretta682OU_410Bore = 164,
-    18_5mmBerettaA303SA12Gauge = 165,
-    18_5mmBerettaAL391SA12Gauge = 166,
-    15_6mmBerettaAL391SA20Gauge = 167,
-    18_5mmBerettaDT10OU12Gauge = 168,
+    _18_5mmFabarmSDASSTactical12Gauge = 122,
+    _18_5mmMAG712Gauge = 123,
+    _18_5mmNeostead12Gauge = 124,
+    _18_5mmArmselStrikerSA12Gauge = 125,
+    _18_5mmParkerHaleRogunSA12Gauge = 127,
+    _26mmRGA86Revolver = 130,
+    _18_5mmSjorgrenSA12Gauge = 131,
+    _18_5mmAkdalMKA1919SA12Gauge = 132,
+    _18_5mmRetayMasaiMaraSA12Gauge = 133,
+    _18_5mmSafirT14SA12Gauge = 134,
+    _18_5mmBenelliM1Super90SA12Gauge = 150,
+    _15_6mmBenelliM1Super90SA20Gauge = 151,
+    _18_5mmBenelliM3Super90SA12Gauge = 152,
+    _15_6mmBenelliM3Super90SA20Gauge = 153,
+    _18_5mmBenelliM4Super90SA12Gauge = 154,
+    _18_5mmBenelliNova12Gauge = 155,
+    _15_6mmBenelliNove20Gauge = 156,
+    _18_5mmBenelliRaffaelloSA12Gauge = 157,
+    _18_5mmBenelliSupernova12Gauge = 158,
+    _18_5mmBenelliVinciSA12Gauge = 159,
+    _18_5mmBeretta1201FPSA12Gauge = 160,
+    _18_5mmBeretta682OU12Gauge = 161,
+    _15_6mmBeretta682OU20Gauge = 162,
+    _14mmBeretta682OU28Gauge = 163,
+    _10_4mmBeretta682OU_410Bore = 164,
+    _18_5mmBerettaA303SA12Gauge = 165,
+    _18_5mmBerettaAL391SA12Gauge = 166,
+    _15_6mmBerettaAL391SA20Gauge = 167,
+    _18_5mmBerettaDT10OU12Gauge = 168,
     BerettaSilverPigeonOU = 169,
-    18_5mmBerettaXtrema2SA12Gauge = 170,
-    15_6mmFranchiAL48SA20Gauge = 171,
-    14mmFranchiAL48SA28Gauge = 172,
-    10_4mmFranchimod_410FA_410Bore = 173,
-    18_5mmFranchiSPAS12SA12Gauge = 174,
-    18_5mmFranchiSPAS15SA12Gauge = 175,
-    18_5mmValtroPM5PM535012Gauge = 176,
+    _18_5mmBerettaXtrema2SA12Gauge = 170,
+    _15_6mmFranchiAL48SA20Gauge = 171,
+    _14mmFranchiAL48SA28Gauge = 172,
+    _10_4mmFranchimod_410FA_410Bore = 173,
+    _18_5mmFranchiSPAS12SA12Gauge = 174,
+    _18_5mmFranchiSPAS15SA12Gauge = 175,
+    _18_5mmValtroPM5PM535012Gauge = 176,
     BlazerF3OU = 180,
-    18_5mmHKFABARMFP612Gauge = 181,
-    18_5mmHKCAWSFA12Gauge = 182,
-    18_5mmBaikalMP153SA12Gauge = 200,
-    18_5mmBandayevskyRB1212Gauge = 201,
-    18_5mmMolotBekasM12Gauge = 202,
-    16_8mmMolotBekasM16Gauge = 203,
-    18_5mmTOZ19412Gauge = 204,
-    23mmKS23 = 205,
+    _18_5mmHKFABARMFP612Gauge = 181,
+    _18_5mmHKCAWSFA12Gauge = 182,
+    _18_5mmBaikalMP153SA12Gauge = 200,
+    _18_5mmBandayevskyRB1212Gauge = 201,
+    _18_5mmMolotBekasM12Gauge = 202,
+    _16_8mmMolotBekasM16Gauge = 203,
+    _18_5mmTOZ19412Gauge = 204,
+    _23mmKS23 = 205,
     MTs255Revoler12Gauge = 206,
-    18_5mmRMB9312Gauge = 207,
-    18_5mmSaiga12SA12Gauge = 208,
-    15_6mmSaiga12SA20Gauge = 209,
-    10_4mmSaiga12SA_410Bore = 210,
-    18_5mmVepr12SA12Gauge = 211,
-    18_5mmFort50012Gauge = 212,
-    18_5mmNorincoHP9112Gauge = 220,
+    _18_5mmRMB9312Gauge = 207,
+    _18_5mmSaiga12SA12Gauge = 208,
+    _15_6mmSaiga12SA20Gauge = 209,
+    _10_4mmSaiga12SA_410Bore = 210,
+    _18_5mmVepr12SA12Gauge = 211,
+    _18_5mmFort50012Gauge = 212,
+    _18_5mmNorincoHP9112Gauge = 220,
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificMortars [UID 512]
@@ -11034,29 +11029,29 @@ pub enum LifeFormHumanSpecificAntiTankMissiles {
 pub enum LifeFormHumanSpecificManPortableAirDefenseSystem {
     #[default]
     Other = 0,
-    70mmFIM43Redeye = 1,
-    70mmFIM92Stinger = 2,
-    76mmBlowpipe = 10,
-    76mmStarburst = 11,
-    130mmStarstreakHVM = 12,
-    90mmMistral = 15,
-    72mm9K32MStrela2 = 20,
-    72mm9K36Strela3 = 21,
-    72mm9K38Igla = 22,
-    72mm9K310IglaM = 23,
-    72mm9K333Verba = 24,
-    72mm9K338IglaS = 25,
-    72mm9K32MStrela2M = 26,
-    72mmHN5HongYing5 = 30,
-    72mmQW1Vanguard = 31,
-    72mmQW2Vanguard2 = 32,
-    90mmQW3 = 33,
-    72mmFN6 = 34,
-    71mmMisagh1 = 45,
-    71mmMisagh2 = 46,
-    80mmType91KinSAM = 50,
-    80mmKPSAMShunGung = 55,
-    106mmRBS70 = 60,
+    _70mmFIM43Redeye = 1,
+    _70mmFIM92Stinger = 2,
+    _76mmBlowpipe = 10,
+    _76mmStarburst = 11,
+    _130mmStarstreakHVM = 12,
+    _90mmMistral = 15,
+    _72mm9K32MStrela2 = 20,
+    _72mm9K36Strela3 = 21,
+    _72mm9K38Igla = 22,
+    _72mm9K310IglaM = 23,
+    _72mm9K333Verba = 24,
+    _72mm9K338IglaS = 25,
+    _72mm9K32MStrela2M = 26,
+    _72mmHN5HongYing5 = 30,
+    _72mmQW1Vanguard = 31,
+    _72mmQW2Vanguard2 = 32,
+    _90mmQW3 = 33,
+    _72mmFN6 = 34,
+    _71mmMisagh1 = 45,
+    _71mmMisagh2 = 46,
+    _80mmType91KinSAM = 50,
+    _80mmKPSAMShunGung = 55,
+    _106mmRBS70 = 60,
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificRecoillessRifles [UID 521]
@@ -11064,34 +11059,34 @@ pub enum LifeFormHumanSpecificManPortableAirDefenseSystem {
 pub enum LifeFormHumanSpecificRecoillessRifles {
     #[default]
     Other = 0,
-    84mmM136AT4CS = 15,
-    57mmM18RR = 20,
-    75mmM20RR = 21,
-    120mmM28DavyCrockett = 22,
-    155mmM29DavyCrockett = 23,
-    106mmM40RecoillessRifle = 24,
-    82mmM60RR = 25,
-    90mmM67RR = 26,
-    84mmM1CarlGustav = 30,
-    84mmM2CarlGustav = 31,
-    84mmM3CarlGustav = 32,
-    84mmM4CarlGustav = 33,
-    74mmPansarskottm68Miniman = 35,
-    84mmALAC = 40,
-    82mmB10RR = 45,
-    107mmB11RR = 46,
-    80mmBredaFolgore = 50,
-    120mmBATRR = 55,
-    73mmSPG9Kopye = 60,
-    88mmRCL3_45in = 65,
-    90mmPvpj110 = 70,
-    50mmJagdfaust = 75,
-    30mmRheinmetallRMK30 = 80,
-    88mm55S55Raikka = 90,
-    95mm95S5861 = 91,
-    73mmLG40 = 95,
-    105mmLG40 = 96,
-    105mmLG42 = 97,
+    _84mmM136AT4CS = 15,
+    _57mmM18RR = 20,
+    _75mmM20RR = 21,
+    _120mmM28DavyCrockett = 22,
+    _155mmM29DavyCrockett = 23,
+    _106mmM40RecoillessRifle = 24,
+    _82mmM60RR = 25,
+    _90mmM67RR = 26,
+    _84mmM1CarlGustav = 30,
+    _84mmM2CarlGustav = 31,
+    _84mmM3CarlGustav = 32,
+    _84mmM4CarlGustav = 33,
+    _74mmPansarskottm68Miniman = 35,
+    _84mmALAC = 40,
+    _82mmB10RR = 45,
+    _107mmB11RR = 46,
+    _80mmBredaFolgore = 50,
+    _120mmBATRR = 55,
+    _73mmSPG9Kopye = 60,
+    _88mmRCL3_45in = 65,
+    _90mmPvpj110 = 70,
+    _50mmJagdfaust = 75,
+    _30mmRheinmetallRMK30 = 80,
+    _88mm55S55Raikka = 90,
+    _95mm95S5861 = 91,
+    _73mmLG40 = 95,
+    _105mmLG40 = 96,
+    _105mmLG42 = 97,
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificFlameRockets [UID 522]
@@ -11099,12 +11094,12 @@ pub enum LifeFormHumanSpecificRecoillessRifles {
 pub enum LifeFormHumanSpecificFlameRockets {
     #[default]
     Other = 0,
-    66mmM202Flash = 20,
-    62mmFHJ84 = 30,
-    90mmC90CRFIM = 40,
-    93mmRPOAShmel = 50,
-    93mmRPOZShmel = 51,
-    93mmRPODShmel = 52,
+    _66mmM202Flash = 20,
+    _62mmFHJ84 = 30,
+    _90mmC90CRFIM = 40,
+    _93mmRPOAShmel = 50,
+    _93mmRPOZShmel = 51,
+    _93mmRPODShmel = 52,
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificFlameThrowers [UID 523]
@@ -11301,9 +11296,9 @@ pub enum Class10SupplyCategoryMaterialtoSupportNonMilitaryPrograms {
     Other = 1,
 }
 
-// SISO-REF-010-2023 Class11SupplyCategorySupplies(NonDoctrinal) [UID 611]
+// SISO-REF-010-2023 Class11SupplyCategorySupplies [UID 611]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum Class11SupplyCategorySupplies(NonDoctrinal) {
+pub enum Class11SupplyCategorySupplies {
     #[default]
     Other = 1,
     Pallets = 2,
@@ -11312,9 +11307,9 @@ pub enum Class11SupplyCategorySupplies(NonDoctrinal) {
     Boxes = 5,
 }
 
-// SISO-REF-010-2023 Class12SupplyCategorySlingLoads(NonDoctrinal) [UID 612]
+// SISO-REF-010-2023 Class12SupplyCategorySlingLoads [UID 612]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum Class12SupplyCategorySlingLoads(NonDoctrinal) {
+pub enum Class12SupplyCategorySlingLoads {
     #[default]
     Other = 1,
     SlingLoadBlivet = 2,
@@ -11532,4 +11527,3 @@ pub enum DamageArea {
     DamageArea7 = 6,
     DamageArea8 = 7,
 }
-
