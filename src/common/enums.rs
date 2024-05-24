@@ -186,6 +186,7 @@ pub enum OtherKinds {
 
 // SISO-REF-010-2023 Land Domain Categories [UID 9]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[allow(deprecated)]
 pub enum LandDomainCategories {
     #[default]
     Other = 0,
@@ -215,7 +216,7 @@ pub enum LandDomainCategories {
     TrainEngine,
     TrainCar,
     TrainCaboose,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     CivilianVehicle,
     AirDefenseMissileDefenseUnitEquipment,
     C3ISystem,
@@ -1086,7 +1087,7 @@ pub enum Country {
     WestBank = 235,
     Samoa = 236,
     Yemen = 237,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     SerbiaandMontenegro_ = 240,
     Zaire = 241,
     Zambia = 242,
@@ -1107,9 +1108,9 @@ pub enum Country {
     MidwayIslands = 257,
     Moldova = 258,
     Montenegro = 259,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     Russia_ = 260,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     SerbiaandMontenegro__ = 261,
     Slovenia = 262,
     Tajikistan = 263,
@@ -1230,7 +1231,7 @@ pub enum ArticulatedPartsTypeMetric {
     AzimuthRate = 12,
     Elevation = 13,
     ElevationRate = 14,
-    Rotation = 15,
+    Rotation1 = 15,
     RotationRate = 16,
 }
 
@@ -1681,7 +1682,7 @@ pub enum MunitionDescriptorFuse {
     ProximityInfrared = 3700,
     Command = 4000,
     CommandElectronicRemotelySet = 4100,
-    Altitude = 5000,
+    Altitude1 = 5000,
     AltitudeRadioAltimeter = 5100,
     AltitudeAirBurst = 5200,
     Depth = 6000,
@@ -1922,7 +1923,7 @@ pub enum VariableRecordTypes {
     InteractiveBasicModeS = 5014,
     IOEffect = 5500,
     IOCommunicationsNode = 5501,
-    Identification = 10000,
+    Identification1 = 10000,
     TrainerInitialConditionsFilename = 10010,
     Increment3_1MissionDataLoadName = 10020,
     Increment2MissionDataLoadName = 10030,
@@ -1932,7 +1933,7 @@ pub enum VariableRecordTypes {
     WeaponReload = 10150,
     CESEntitySetClearStatus = 10157,
     ActivateEntity = 10160,
-    DisengageReengage = 10170,
+    DisengageReengage1 = 10170,
     FuelFreeze = 10190,
     FireLaunchDispense = 10250,
     TargetAssignment = 10254,
@@ -1944,8 +1945,8 @@ pub enum VariableRecordTypes {
     DynamicTargeting = 10264,
     ManualJammingOnOverride = 10267,
     SOJAxis = 10268,
-    EmitterOverride = 10280,
-    Shields = 10290,
+    EmitterOverride1 = 10280,
+    Shields1 = 10290,
     CrashOverride = 10300,
     StopBuzzer = 10306,
     TargetLasingOnOff = 10307,
@@ -1959,7 +1960,7 @@ pub enum VariableRecordTypes {
     SignalingDevice = 10316,
     OwnshipID = 10400,
     StateChange = 10600,
-    EntityType = 11000,
+    EntityType1 = 11000,
     Concatenated = 11100,
     Kind = 11110,
     Domain = 11120,
@@ -1968,7 +1969,7 @@ pub enum VariableRecordTypes {
     Subcategory = 11150,
     Specific = 11160,
     Extra = 11170,
-    ForceID = 11180,
+    ForceID1 = 11180,
     ForceID2 = 11200,
     Description = 11300,
     TankerBoomControl = 11500,
@@ -1976,7 +1977,7 @@ pub enum VariableRecordTypes {
     WeatherPost = 11502,
     LocalizerandGlideSlope = 11503,
     TACANNavAids = 11504,
-    AlternativeEntityType = 12000,
+    AlternativeEntityType1 = 12000,
     Kind2 = 12110,
     Domain2 = 12120,
     Country2 = 12130,
@@ -2014,7 +2015,7 @@ pub enum VariableRecordTypes {
     Health = 21200,
     JobAssignment = 21300,
     Fuel = 23000,
-    Quantity = 23100,
+    Quantity1 = 23100,
     Quantity2 = 23105,
     Ammunition = 24000,
     _120mmHEATquantity = 24001,
@@ -2083,13 +2084,13 @@ pub enum VariableRecordTypes {
     X = 31210,
     Y = 31220,
     Z = 31230,
-    Latitude = 31300,
-    Longitude = 31400,
+    Latitude1 = 31300,
+    Longitude1 = 31400,
     LineofSight = 31500,
     X1 = 31510,
     Y1 = 31520,
     Z1 = 31530,
-    Altitude = 31600,
+    Altitude2 = 31600,
     DestinationLatitude = 31700,
     DestinationLongitude = 31800,
     DestinationAltitude = 31900,
@@ -2102,7 +2103,7 @@ pub enum VariableRecordTypes {
     Z2 = 32700,
     Appearance = 33000,
     AmbientLighting = 33100,
-    Lights = 33101,
+    Lights1 = 33101,
     PaintScheme = 33200,
     Smoke = 33300,
     TrailingEffects = 33400,
@@ -2116,14 +2117,14 @@ pub enum VariableRecordTypes {
     Kilometers = 34110,
     Damage = 35000,
     Cause = 35050,
-    MobilityKill = 35100,
+    MobilityKill1 = 35100,
     FirePowerKill = 35200,
     PersonnelCasualties = 35300,
     Velocity = 36000,
     Xvelocity = 36100,
     Yvelocity = 36200,
     Zvelocity = 36300,
-    Speed = 36400,
+    Speed1 = 36400,
     Acceleration = 37000,
     Xacceleration = 37100,
     Yacceleration = 37200,
@@ -2194,7 +2195,7 @@ pub enum VariableRecordTypes {
     METHeartbeatMessage = 50126,
     ContrailsEnable = 50600,
     ContrailAltitudes = 50700,
-    Weather = 51000,
+    Weather1 = 51000,
     WeatherCondition = 51010,
     ThermalCondition = 51100,
     ThermalVisibility1 = 51110,
@@ -2208,7 +2209,7 @@ pub enum VariableRecordTypes {
     CurrentHour = 52310,
     CurrentMinute = 52320,
     CurrentSecond = 52330,
-    Azimuth = 52340,
+    Azimuth1 = 52340,
     MaximumElevation = 52350,
     TimeZone = 52360,
     TimeRate = 52370,
@@ -2247,7 +2248,7 @@ pub enum VariableRecordTypes {
     Visibility1 = 55100,
     Visibility2 = 55101,
     Visibility3 = 55105,
-    Density = 55200,
+    Density1 = 55200,
     Base = 55300,
     ViewLayerfromabove_ = 55401,
     TransitionRange = 55410,
@@ -2280,9 +2281,9 @@ pub enum VariableRecordTypes {
     Humidity = 57200,
     Visibility4 = 57300,
     Winds = 57400,
-    Speed = 57410,
+    Speed2 = 57410,
     WindSpeedKnots = 57411,
-    WindDirection = 57420,
+    WindDirection1 = 57420,
     WindDirectionDegrees = 57421,
     Rainsoak = 57500,
     TideSpeed = 57610,
@@ -2292,7 +2293,7 @@ pub enum VariableRecordTypes {
     Haze = 58000,
     Visibility5 = 58100,
     Visibility6 = 58105,
-    Density = 58200,
+    Density2 = 58200,
     Ceiling5 = 58430,
     Ceiling6 = 58435,
     ContaminantsandObscurants = 59000,
@@ -2340,7 +2341,7 @@ pub enum VariableRecordTypes {
     RadioChannelInitializationComsecKey = 63114,
     RadioChannelInitializationAlpha = 63115,
     AlgorithmParameters = 70000,
-    DeadReckoningAlgorithm = 71000,
+    DeadReckoningAlgorithm1 = 71000,
     DRALocationThreshold = 71100,
     DRAOrientationThreshold = 71200,
     DRATimeThreshold = 71300,
@@ -2360,17 +2361,17 @@ pub enum VariableRecordTypes {
     PositionRate = 90200,
     Extension = 90300,
     ExtensionRate = 90400,
-    X = 90500,
+    X3 = 90500,
     Xrate = 90600,
-    Y = 90700,
+    Y3 = 90700,
     Yrate = 90800,
-    Z = 90900,
+    Z3 = 90900,
     Zrate = 91000,
-    Azimuth = 91100,
+    Azimuth2 = 91100,
     AzimuthRate = 91200,
     Elevation = 91300,
     ElevationRate = 91400,
-    Rotation = 91500,
+    Rotation2 = 91500,
     RotationRate = 91600,
     DRAAngularXVelocity = 100001,
     DRAAngularYVelocity = 100002,
@@ -2382,8 +2383,8 @@ pub enum VariableRecordTypes {
     CapabilityMiscellaneousSupplier = 100011,
     CapabilityRepairProvider = 100012,
     ArticulationParameter = 100014,
-    ArticulationParameterType = 100047,
-    ArticulationParameterValue = 100048,
+    ArticulationParameterType1 = 100047,
+    ArticulationParameterValue1 = 100048,
     TimeofDayScene = 100058,
     LatitudeNorth = 100061,
     LongitudeEast = 100063,
@@ -2396,7 +2397,7 @@ pub enum VariableRecordTypes {
     LongitudeWest = 100164,
     CDROMNumber = 100165,
     DTEDdiskID = 100166,
-    Altitude = 100167,
+    Altitude3 = 100167,
     TacticalSystemStatus = 100169,
     JTIDSStatus = 100170,
     TADILJStatus = 100171,
@@ -2406,8 +2407,8 @@ pub enum VariableRecordTypes {
     Numberofinterceptorsfired = 100206,
     Numberofinterceptordetonations = 100207,
     Numberofmessagebuffersdropped = 100208,
-    Satellitesensorbackground = 100213,
-    Satellitesensorbackground = 100214,
+    Satellitesensorbackground1 = 100213,
+    Satellitesensorbackground2 = 100214,
     ScriptNumber = 100218,
     EntityTrackUpdateData = 100300,
     LocalForceTraining = 100400,
@@ -2486,8 +2487,8 @@ pub enum VariableRecordTypes {
     Link11Operator = 200412,
     ForceTrainingTransmit = 200413,
     ForceTrainingReceive = 200414,
-    InterceptorAmplification = 200415,
-    Consumables = 200416,
+    InterceptorAmplification1 = 200415,
+    Consumables1 = 200416,
     Link11LocalTrackQuality = 200417,
     DLRP = 200418,
     ForceOrder = 200419,
@@ -2510,10 +2511,10 @@ pub enum VariableRecordTypes {
     TrackEligibility = 200436,
     TrainingTrackNotification = 200437,
     TacanData = 200501,
-    InterceptorAmplification = 200502,
+    InterceptorAmplification2 = 200502,
     TacanAssignment = 200503,
     AutopilotStatus = 200504,
-    Consumables = 200505,
+    Consumables2 = 200505,
     Downlink = 200506,
     TINReport = 200507,
     SpecialPointControl = 200508,
@@ -2549,7 +2550,7 @@ pub enum VariableRecordTypes {
     NSSTOwnshipControl = 200613,
     Other = 240000,
     MassOfTheVehicle = 240001,
-    ForceID = 240002,
+    ForceID3 = 240002,
     EntityTypeKind = 240003,
     EntityTypeDomain = 240004,
     EntityTypeCountry = 240005,
@@ -2573,7 +2574,7 @@ pub enum VariableRecordTypes {
     EntityOrientationPsi = 240023,
     EntityOrientationTheta = 240024,
     EntityOrientationPhi = 240025,
-    DeadReckoningAlgorithm = 240026,
+    DeadReckoningAlgorithm2 = 240026,
     DeadReckoningLinearAccelerationX = 240027,
     DeadReckoningLinearAccelerationY = 240028,
     DeadReckoningLinearAccelerationZ = 240029,
@@ -2586,8 +2587,8 @@ pub enum VariableRecordTypes {
     Capability = 240036,
     NumberArticulationParameters = 240037,
     ArticulationParameterID = 240038,
-    ArticulationParameterType = 240039,
-    ArticulationParameterValue = 240040,
+    ArticulationParameterType2 = 240039,
+    ArticulationParameterValue2 = 240040,
     TypeOfStores = 240041,
     QuantityOfStores = 240042,
     FuelQuantity = 240043,
@@ -2614,12 +2615,12 @@ pub enum VariableRecordTypes {
     Frequency = 240064,
     Freeze = 240065,
     Heading = 240066,
-    Identification = 240067,
+    Identification2 = 240067,
     InitialPointData = 240068,
-    Latitude = 240069,
-    Lights = 240070,
+    Latitude2 = 240069,
+    Lights2 = 240070,
     Linear = 240071,
-    Longitude = 240072,
+    Longitude2 = 240072,
     LowAltitude = 240073,
     MfdFormats = 240074,
     Nctr = 240075,
@@ -2627,14 +2628,14 @@ pub enum VariableRecordTypes {
     OperationCode = 240077,
     Pitch = 240078,
     Profiles = 240079,
-    Quantity = 240080,
+    Quantity3 = 240080,
     RadarModes = 240081,
     RadarSearchVolume = 240082,
     Roll = 240083,
     Rotation = 240084,
     ScaleFactorX = 240085,
     ScaleFactorY = 240086,
-    Shields = 240087,
+    Shields2 = 240087,
     Steerpoint = 240088,
     Spare1 = 240089,
     Spare2 = 240090,
@@ -2661,8 +2662,8 @@ pub enum VariableRecordTypes {
     VoidSamHit = 240111,
     WeaponData = 240112,
     WeaponType = 240113,
-    Weather = 240114,
-    WindDirection = 240115,
+    Weather2 = 240114,
+    WindDirection2 = 240115,
     WindSpeed = 240116,
     WingStation = 240117,
     Yaw = 240118,
@@ -2687,8 +2688,8 @@ pub enum VariableRecordTypes {
     DISType = 240137,
     Class = 240138,
     Channel = 240139,
-    EntityType = 240140,
-    AlternativeEntityType = 240141,
+    EntityType2 = 240140,
+    AlternativeEntityType2 = 240141,
     EntityLocation = 240142,
     EntityLinearVelocity = 240143,
     EntityOrientation = 240144,
@@ -2698,9 +2699,9 @@ pub enum VariableRecordTypes {
     RefuelingBoomConnect = 240148,
     AltitudeAGL = 240149,
     CalibratedAirspeed = 240150,
-    TACANChannel = 240151,
-    TACANBand = 240152,
-    TACANMode = 240153,
+    TACANChannel1 = 240151,
+    TACANBand1 = 240152,
+    TACANMode1 = 240153,
     FuelFlowRate = 270115,
     FuelTemperature = 270116,
     FuelPressure = 270117,
@@ -2726,13 +2727,13 @@ pub enum VariableRecordTypes {
     VerticalPositionError = 300002,
     HorizontalVelocityError = 300003,
     VerticalVelocityError = 300004,
-    _4thLowestJammertoSignalRatioforP = 300005,
-    _4thLowestJammertoSignalRatioforP = 300006,
+    _4thLowestJammertoSignalRatioforP1 = 300005,
+    _4thLowestJammertoSignalRatioforP2 = 300006,
     GPSFigureofMerit = 300007,
     WeaponTransferGPSState = 300008,
     WeaponTransferHorizontalPositionError = 300009,
-    WeaponTransferVerticalPositionError = 300010,
-    WeaponTransferVerticalPositionError = 300011,
+    WeaponTransferVerticalPositionError1 = 300010,
+    WeaponTransferVerticalPositionError2 = 300011,
     WeaponTransferHorizontalVelocityError = 300012,
     TimeTransferError = 300013,
     AgeofEphemeris = 300014,
@@ -2867,7 +2868,7 @@ pub enum VariableRecordTypes {
     AIM120MissileQty = 551004,
     AirtoGroundMissileQty = 551005,
     SurfacetoAirMissileQty = 551006,
-    BulletQty = 551007,
+    BulletQty1 = 551007,
     ChaffQty = 552001,
     FlareQty = 552002,
     FuelLevel = 553001,
@@ -2890,13 +2891,13 @@ pub enum VariableRecordTypes {
     LifeFormSignalingDeviceType = 553018,
     LifeFormMovementType = 553019,
     LifeFormInVehicle = 553020,
-    MobilityKill = 553021,
+    MobilityKill2 = 553021,
     FirepowerKill = 553022,
     TankerEnabledDisabled = 553028,
     ThreatStatusTacticOKtoShootDownWeapons = 553029,
-    TACANChannel = 554001,
-    TACANBand = 554002,
-    TACANMode = 554003,
+    TACANChannel2 = 554001,
+    TACANBand2 = 554002,
+    TACANMode2 = 554003,
     RWRStatus = 554004,
     UHFRadioFrequency = 554005,
     EmitJammingStatus = 554006,
@@ -2915,9 +2916,9 @@ pub enum VariableRecordTypes {
     JammerPodNumberofFalseTargets = 554108,
     JammerPodJammerKnob = 554109,
     JammerPodMissileJamming = 554110,
-    EmitterOverride = 555001,
+    EmitterOverride2 = 555001,
     JammerOverride = 555002,
-    DisengageReengage = 555003,
+    DisengageReengage2 = 555003,
     HeadingOverride = 555004,
     AltitudeOverride = 555005,
     SpeedOverride = 555006,
@@ -2941,7 +2942,7 @@ pub enum VariableRecordTypes {
     AirGroundRocketQty = 557007,
     SurfaceAirIRMissileQty = 557008,
     SurfaceAirRadarMissileQty = 557009,
-    BulletQty = 557010,
+    BulletQty2 = 557010,
     PPLIPublishEnabled = 559001,
     SurveillancePublishEnabled = 559002,
     NPG = 559003,
@@ -2966,8 +2967,8 @@ pub enum VariableRecordTypes {
     AirtoAirRefuelingCount = 600219,
     AirToAirRefuelerEntity = 600220,
     FormationLibraryRequest = 600300,
-    TotalNumberFormationLibraryPDUs = 600301,
-    PDUNumberinFormationLibraryResponse = 600302,
+    TotalNumberFormationLibraryPDUs1 = 600301,
+    PDUNumberinFormationLibraryResponse1 = 600302,
     TotalNumberFormationLibraryItemsinPDU = 600303,
     FormationLibraryVariable = 600304,
     CreateRuntimeFormation = 600305,
@@ -3046,8 +3047,8 @@ pub enum VariableRecordTypes {
     GlobalControlDeleteThreatEntities = 615024,
     NetworkStationOwnshipCallsigns = 615025,
     GlobalControlRequestFormationLibraryData = 615026,
-    TotalNumberFormationLibraryPDUs = 615027,
-    PDUNumberinFormationLibraryResponse = 615028,
+    TotalNumberFormationLibraryPDUs2 = 615027,
+    PDUNumberinFormationLibraryResponse2 = 615028,
     TotalNumberFormationLibraryItemsinPDUs = 615029,
     NetworkStationFormationLibraryItem = 615030,
     GlobalControlAddRelativeFormation = 615031,
@@ -3146,14 +3147,39 @@ pub enum AcknowledgeFlag {
     TransferOwnership = 5,
 }
 
+impl AcknowledgeFlag {
+    #[must_use]
+    pub fn from_u8(bit: u8) -> AcknowledgeFlag {
+        match bit {
+            2 => AcknowledgeFlag::RemoveEntity,
+            3 => AcknowledgeFlag::StartResume,
+            4 => AcknowledgeFlag::StopFreeze,
+            5 => AcknowledgeFlag::TransferOwnership,
+            _ => AcknowledgeFlag::CreateEntity,
+        }
+    }
+}
+
 // SISO-REF-010-2023 AcknowledgeResponseFlag [UID 70]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AcknowledgeResponseFlag {
     #[default]
     Other = 0,
-    Abletocomply = 1,
-    Unabletocomply = 2,
+    AbleToComply = 1,
+    UnableToComply = 2,
     PendingOperatorAction = 3,
+}
+
+impl AcknowledgeResponseFlag {
+    #[must_use]
+    pub fn from_u8(byte: u8) -> AcknowledgeResponseFlag {
+        match byte {
+            1 => AcknowledgeResponseFlag::AbleToComply,
+            2 => AcknowledgeResponseFlag::UnableToComply,
+            3 => AcknowledgeResponseFlag::PendingOperatorAction,
+            _ => AcknowledgeResponseFlag::Other,
+        }
+    }
 }
 
 // SISO-REF-010-2023 ActionRequestActionID [UID 71]
@@ -3854,11 +3880,11 @@ pub enum EmitterName {
     APG71 = 7830,
     APN148 = 7875,
     APN227 = 7920,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     APQ113 = 7965,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     APQ120 = 8010,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     APQ148 = 8055,
     APS504V3 = 8100,
     AQUITAINEII = 8102,
@@ -4773,7 +4799,7 @@ pub enum EmitterName {
     LRA900 = 20030,
     TRS2050 = 20040,
     LW01 = 20060,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     LW08 = 20070,
     M1983FCR = 20090,
     M2240 = 20115,
@@ -5370,7 +5396,7 @@ pub enum EmitterName {
     SeaGull = 27405,
     SeaMaster400 = 27430,
     SeaNet = 27450,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     SeaSparrow = 27451,
     SeaSpray = 27495,
     SeaTiger = 27540,
@@ -5498,7 +5524,7 @@ pub enum EmitterName {
     SnoopHalf = 30140,
     SnoopHead = 30150,
     SnoopPair = 30195,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     SnoopPing1 = 30200,
     SnoopPlate = 30240,
     SnoopPing = 30255,
@@ -6077,31 +6103,31 @@ pub enum EmitterSystemFunction {
     GunLayBeacon = 31,
     GroundMapping = 32,
     HarborSurveillance = 33,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     IFF = 34,
     ILS = 35,
     IonosphericSound = 36,
     Interrogator = 37,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     BarrageJamming = 38,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     ClickJamming = 39,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     DeceptiveJamming = 40,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     FrequencySweptJamming = 41,
     Jammer = 42,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     NoiseJamming = 43,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     PulsedJamming = 44,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     RepeaterJamming = 45,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     SpotNoiseJamming = 46,
     MissileAcquisition = 47,
     MissileDownlink = 48,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     Meteorological = 49,
     Space = 50,
     SurfaceSearch = 51,
@@ -6113,17 +6139,17 @@ pub enum EmitterSystemFunction {
     MissileGuidance = 60,
     MissileHoming = 61,
     MissileTracking = 62,
-    #[deprecated]
-    Jammingnoise = 64,
-    #[deprecated]
-    Jammingdeception = 65,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
+    JammingNoise = 64,
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
+    JammingDeception = 65,
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     Decoy = 66,
     NavigationDistanceMeasuringEquipment = 71,
     TerrainFollowing = 72,
     WeatherAvoidance = 73,
     ProximityFuse = 74,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     Instrumentation_ = 75,
     Radiosonde = 76,
     Sonobuoy = 77,
@@ -7206,7 +7232,7 @@ pub enum SignalTDLType {
     OTHGOLD = 18,
     TACELINT = 19,
     WeaponsDataLink = 20,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     AbbreviatedCommandandControl_ = 21,
     EnhancedPositionLocationReportingSystem = 22,
     PositionLocationReportingSystem = 23,
@@ -7748,7 +7774,7 @@ pub enum SignalEncodingType {
     ADPCM = 3,
     _16bitLinearPCM2sComplementBigEndian = 4,
     _8bitLinearPCMUnsigned = 5,
-    #[deprecated]
+    #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     VQ = 6,
     GSMFullRate = 8,
     GSMHalfRate = 9,
