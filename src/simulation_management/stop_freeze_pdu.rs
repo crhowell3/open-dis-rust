@@ -5,6 +5,7 @@ use crate::common::{
     clock_time::ClockTime,
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{FrozenBehavior, Reason},
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
@@ -32,8 +33,10 @@ impl Default for StopFreezePdu {
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
             real_world_time: ClockTime::default(),
-            reason: Reason::Other,
-            frozen_behavior: FrozenBehavior::Frozen,
+            reason: Reason::default(),
+            frozen_behavior: FrozenBehavior::RunSimulationClock
+                | FrozenBehavior::TransmitUpdates
+                | FrozenBehavior::ProcessUpdates,
             padding: 0,
             request_id: 0,
         }
@@ -47,7 +50,7 @@ impl Pdu for StopFreezePdu {
         self.receiving_entity_id.serialize(buf);
         self.real_world_time.serialize(buf);
         buf.put_u8(self.reason as u8);
-        buf.put_u8(self.frozen_behavior as u8);
+        buf.put_u8(self.frozen_behavior.as_u8());
         buf.put_i16(self.padding);
         buf.put_u32(self.request_id);
     }
@@ -61,8 +64,8 @@ impl Pdu for StopFreezePdu {
             let originating_entity_id = EntityId::decode(&mut buffer);
             let receiving_entity_id = EntityId::decode(&mut buffer);
             let real_world_time = ClockTime::decode(&mut buffer);
-            let reason = Reason::from_u8(buffer.get_u8());
-            let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8());
+            let reason = Reason::decode(&mut buffer);
+            let frozen_behavior = FrozenBehavior::decode(&mut buffer);
             let padding = buffer.get_i16();
             let request_id = buffer.get_u32();
 
@@ -95,8 +98,8 @@ impl Pdu for StopFreezePdu {
         let originating_entity_id = EntityId::decode(&mut buffer);
         let receiving_entity_id = EntityId::decode(&mut buffer);
         let real_world_time = ClockTime::decode(&mut buffer);
-        let reason = Reason::from_u8(buffer.get_u8());
-        let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8());
+        let reason = Reason::decode(&mut buffer);
+        let frozen_behavior = FrozenBehavior::decode(&mut buffer);
         let padding = buffer.get_i16();
         let request_id = buffer.get_u32();
 
@@ -110,66 +113,6 @@ impl Pdu for StopFreezePdu {
             padding,
             request_id,
         })
-    }
-}
-
-#[derive(Copy, Clone, Debug, Default)]
-pub enum Reason {
-    #[default]
-    Other = 0,
-    Recess = 1,
-    Termination = 2,
-    SystemFailure = 3,
-    SecurityViolation = 4,
-    EntityReconstitution = 5,
-    StopForReset = 6,
-    StopForRestart = 7,
-    AbortTrainingReturnToTacticalOperations = 8,
-}
-
-impl Reason {
-    #[must_use]
-    pub fn from_u8(bit: u8) -> Reason {
-        match bit {
-            1 => Reason::Recess,
-            2 => Reason::Termination,
-            3 => Reason::SystemFailure,
-            4 => Reason::SecurityViolation,
-            5 => Reason::EntityReconstitution,
-            6 => Reason::StopForReset,
-            7 => Reason::StopForRestart,
-            8 => Reason::AbortTrainingReturnToTacticalOperations,
-            _ => Reason::Other,
-        }
-    }
-}
-
-#[derive(Copy, Clone, Debug, Default)]
-pub enum FrozenBehavior {
-    #[default]
-    Frozen = 0,
-    RunSimClock = 1,
-    TransmitUpdates = 2,
-    TransmitAndRun = 3,
-    ProcessUpdates = 4,
-    ProcessAndRun = 5,
-    ProcessAndTransmit = 6,
-    ProcessTransmitAndRun = 7,
-}
-
-impl FrozenBehavior {
-    #[must_use]
-    pub fn from_u8(bit: u8) -> FrozenBehavior {
-        match bit {
-            1 => FrozenBehavior::RunSimClock,
-            2 => FrozenBehavior::TransmitUpdates,
-            3 => FrozenBehavior::TransmitAndRun,
-            4 => FrozenBehavior::ProcessUpdates,
-            5 => FrozenBehavior::ProcessAndRun,
-            6 => FrozenBehavior::ProcessAndTransmit,
-            7 => FrozenBehavior::ProcessTransmitAndRun,
-            _ => FrozenBehavior::Frozen,
-        }
     }
 }
 

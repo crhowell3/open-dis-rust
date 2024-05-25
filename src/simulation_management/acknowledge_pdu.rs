@@ -4,7 +4,6 @@
 //     Licensed under the BSD-2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
-use serde::Deserialize;
 use std::any::Any;
 
 use crate::common::{
@@ -47,7 +46,7 @@ impl Default for AcknowledgePdu {
             ),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
-            acknowledge_flag: AcknowledgeFlag::CreateEntity,
+            acknowledge_flag: AcknowledgeFlag::default(),
             response_flag: AcknowledgeResponseFlag::default(),
             request_id: 0,
         }
@@ -72,8 +71,8 @@ impl Pdu for AcknowledgePdu {
         if pdu_header.pdu_type == PduType::Acknowledge {
             let originating_entity_id = EntityId::decode(&mut buffer);
             let receiving_entity_id = EntityId::decode(&mut buffer);
-            let acknowledge_flag = AcknowledgeFlag::from_u8(buffer.get_u8());
-            let response_flag = AcknowledgeResponseFlag::from_u8(buffer.get_u8());
+            let acknowledge_flag = AcknowledgeFlag::decode(&mut buffer);
+            let response_flag = AcknowledgeResponseFlag::decode(&mut buffer);
             let request_id = buffer.get_u32();
 
             Ok(AcknowledgePdu {
@@ -102,8 +101,8 @@ impl Pdu for AcknowledgePdu {
     {
         let originating_entity_id = EntityId::decode(&mut buffer);
         let receiving_entity_id = EntityId::decode(&mut buffer);
-        let acknowledge_flag = AcknowledgeFlag::from_u8(buffer.get_u8());
-        let response_flag = AcknowledgeResponseFlag::from_u8(buffer.get_u8());
+        let acknowledge_flag = AcknowledgeFlag::decode(&mut buffer);
+        let response_flag = AcknowledgeResponseFlag::decode(&mut buffer);
         let request_id = buffer.get_u32();
 
         Ok(AcknowledgePdu {

@@ -3,6 +3,8 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+use bitflags::{bitflags, Bits};
+use bytes::{Buf, BytesMut};
 use num_derive::FromPrimitive;
 
 // SISO-REF-010-2023 Protocol Version [UID 3]
@@ -3121,9 +3123,9 @@ pub enum VariableRecordTypes {
     IntentBasedEWMessage = 5507010,
 }
 
-// SISO-REF-010-2023 StopFreezeReason [UID 67]
+// SISO-REF-010-2023 Reason [UID 67]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum StopFreezeReason {
+pub enum Reason {
     #[default]
     Other = 0,
     Recess = 1,
@@ -3131,9 +3133,54 @@ pub enum StopFreezeReason {
     SystemFailure = 3,
     SecurityViolation = 4,
     EntityReconstitution = 5,
-    Stopforreset = 6,
-    Stopforrestart = 7,
-    AbortTrainingReturntoTacticalOperations = 8,
+    StopForReset = 6,
+    StopForRestart = 7,
+    AbortTrainingReturnToTacticalOperations = 8,
+}
+
+impl Reason {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Reason {
+        match buf.get_u8() {
+            1 => Reason::Recess,
+            2 => Reason::Termination,
+            3 => Reason::SystemFailure,
+            4 => Reason::SecurityViolation,
+            5 => Reason::EntityReconstitution,
+            6 => Reason::StopForReset,
+            7 => Reason::StopForRestart,
+            8 => Reason::AbortTrainingReturnToTacticalOperations,
+            _ => Reason::Other,
+        }
+    }
+}
+
+// SISO-REF-010-2023 FrozenBehavior [UID 68]
+bitflags! {
+    #[derive(Copy, Clone, Debug, PartialEq)]
+    pub struct FrozenBehavior: u8 {
+        const RunSimulationClock = 1 << 0;
+        const TransmitUpdates = 1 << 1;
+        const ProcessUpdates = 1 << 2;
+    }
+}
+
+impl Default for FrozenBehavior {
+    fn default() -> FrozenBehavior {
+        FrozenBehavior::RunSimulationClock
+            | FrozenBehavior::TransmitUpdates
+            | FrozenBehavior::ProcessUpdates
+    }
+}
+
+impl FrozenBehavior {
+    pub fn as_u8(&self) -> u8 {
+        self.bits() as u8
+    }
+
+    pub fn decode(buf: &mut BytesMut) -> FrozenBehavior {
+        FrozenBehavior::from_bits_truncate(buf.get_u8())
+    }
 }
 
 // SISO-REF-010-2023 AcknowledgeFlag [UID 69]
@@ -3149,8 +3196,8 @@ pub enum AcknowledgeFlag {
 
 impl AcknowledgeFlag {
     #[must_use]
-    pub fn from_u8(bit: u8) -> AcknowledgeFlag {
-        match bit {
+    pub fn decode(buf: &mut BytesMut) -> AcknowledgeFlag {
+        match buf.get_u8() {
             2 => AcknowledgeFlag::RemoveEntity,
             3 => AcknowledgeFlag::StartResume,
             4 => AcknowledgeFlag::StopFreeze,
@@ -3172,8 +3219,8 @@ pub enum AcknowledgeResponseFlag {
 
 impl AcknowledgeResponseFlag {
     #[must_use]
-    pub fn from_u8(byte: u8) -> AcknowledgeResponseFlag {
-        match byte {
+    pub fn decode(buf: &mut BytesMut) -> AcknowledgeResponseFlag {
+        match buf.get_u8() {
             1 => AcknowledgeResponseFlag::AbleToComply,
             2 => AcknowledgeResponseFlag::UnableToComply,
             3 => AcknowledgeResponseFlag::PendingOperatorAction,
@@ -3249,15 +3296,37 @@ pub enum ActionResponseRequestStatus {
     Executing = 2,
     PartiallyComplete = 3,
     Complete = 4,
-    Requestrejected = 5,
-    Retransmitrequestnow = 6,
-    Retransmitrequestlater = 7,
-    Invalidtimeparameters = 8,
-    Simulationtimeexceeded = 9,
-    Requestdone = 10,
-    TACCSFLOSReplyType1 = 100,
-    TACCSFLOSReplyType2 = 101,
+    RequestRejected = 5,
+    RetransmitRequestNow = 6,
+    RetransmitRequestLater = 7,
+    InvalidTimeParameters = 8,
+    SimulationTimeExceeded = 9,
+    RequestDone = 10,
+    TACCSFLOSReplyTypeOne = 100,
+    TACCSFLOSReplyTypeTwo = 101,
     JoinExerciseRequestRejected = 201,
+}
+
+impl ActionResponseRequestStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> ActionResponseRequestStatus {
+        match buf.get_u32() {
+            1 => ActionResponseRequestStatus::Pending,
+            2 => ActionResponseRequestStatus::Executing,
+            3 => ActionResponseRequestStatus::PartiallyComplete,
+            4 => ActionResponseRequestStatus::Complete,
+            5 => ActionResponseRequestStatus::RequestRejected,
+            6 => ActionResponseRequestStatus::RetransmitRequestNow,
+            7 => ActionResponseRequestStatus::RetransmitRequestLater,
+            8 => ActionResponseRequestStatus::InvalidTimeParameters,
+            9 => ActionResponseRequestStatus::SimulationTimeExceeded,
+            10 => ActionResponseRequestStatus::RequestDone,
+            100 => ActionResponseRequestStatus::TACCSFLOSReplyTypeOne,
+            101 => ActionResponseRequestStatus::TACCSFLOSReplyTypeTwo,
+            201 => ActionResponseRequestStatus::JoinExerciseRequestRejected,
+            _ => ActionResponseRequestStatus::Other,
+        }
+    }
 }
 
 // SISO-REF-010-2023 EventReportEventType [UID 73]
