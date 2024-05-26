@@ -1,6 +1,7 @@
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
+    enums::EventReportEventType,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };

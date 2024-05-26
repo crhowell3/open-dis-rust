@@ -3174,10 +3174,12 @@ impl Default for FrozenBehavior {
 }
 
 impl FrozenBehavior {
+    #[must_use]
     pub fn as_u8(&self) -> u8 {
         self.bits() as u8
     }
 
+    #[must_use]
     pub fn decode(buf: &mut BytesMut) -> FrozenBehavior {
         FrozenBehavior::from_bits_truncate(buf.get_u8())
     }
