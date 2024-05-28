@@ -1,5 +1,4 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//                     (DIS) application protocol v6 and v7
 //     Copyright (C) 2023 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
@@ -110,22 +109,6 @@ impl GeneralAppearance {
             entity_hatch_state: EntityHatchState::from_u8((bytes >> 3) as u8),
             entity_lights: EntityLights::from_u8((bytes >> 3) as u8),
             entity_flaming_effect: EntityFlamingEffect::from_u8((bytes >> 1) as u8),
-        }
-    }
-}
-
-#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Serialize, Deserialize)]
-pub enum EntityPaintScheme {
-    UniformColor = 0,
-    Camouflage = 1,
-}
-
-impl EntityPaintScheme {
-    #[must_use]
-    pub fn from_u8(bit: u8) -> EntityPaintScheme {
-        match bit {
-            1 => EntityPaintScheme::Camouflage,
-            _ => EntityPaintScheme::UniformColor,
         }
     }
 }

@@ -9,6 +9,7 @@ use std::any::Any;
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
+    enums::RepairGroups,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
@@ -39,7 +40,7 @@ impl Default for RepairCompletePdu {
             pdu_header: PduHeader::default(PduType::RepairComplete, ProtocolFamily::Logistics, 56),
             receiving_entity_id: EntityId::default(1),
             repairing_entity_id: EntityId::default(2),
-            repair: RepairGroups::GeneralRepairCodes,
+            repair: RepairGroups::default(),
             padding2: 0,
         }
     }
@@ -62,7 +63,7 @@ impl Pdu for RepairCompletePdu {
         if pdu_header.pdu_type == PduType::RepairComplete {
             let receiving_entity_id = EntityId::decode(&mut buffer);
             let repairing_entity_id = EntityId::decode(&mut buffer);
-            let repair = RepairGroups::from_u8(buffer.get_u8());
+            let repair = RepairGroups::decode(&mut buffer);
             let padding2 = buffer.get_i8();
 
             Ok(RepairCompletePdu {
@@ -90,7 +91,7 @@ impl Pdu for RepairCompletePdu {
     {
         let receiving_entity_id = EntityId::decode(&mut buffer);
         let repairing_entity_id = EntityId::decode(&mut buffer);
-        let repair = RepairGroups::from_u8(buffer.get_u8());
+        let repair = RepairGroups::decode(&mut buffer);
         let padding2 = buffer.get_i8();
 
         Ok(RepairCompletePdu {
@@ -100,39 +101,6 @@ impl Pdu for RepairCompletePdu {
             repair,
             padding2,
         })
-    }
-}
-
-#[derive(Copy, Clone, Debug)]
-/// Implemented according to SISO-REF-010-2020 UID 272
-pub enum RepairGroups {
-    GeneralRepairCodes = 0,
-    DriveTrain = 1,
-    HullAirframeBody = 2,
-    InterfacesWithEnvironment = 3,
-    Weapons = 4,
-    FuelSystems = 5,
-    Electronics = 6,
-    LifeSupportSystems = 7,
-    HydraulicSystemsAndActuators = 8,
-    AuxilliaryCraft = 9,
-}
-
-impl RepairGroups {
-    #[must_use]
-    pub fn from_u8(byte: u8) -> RepairGroups {
-        match byte {
-            1 => RepairGroups::DriveTrain,
-            2 => RepairGroups::HullAirframeBody,
-            3 => RepairGroups::InterfacesWithEnvironment,
-            4 => RepairGroups::Weapons,
-            5 => RepairGroups::FuelSystems,
-            6 => RepairGroups::Electronics,
-            7 => RepairGroups::LifeSupportSystems,
-            8 => RepairGroups::HydraulicSystemsAndActuators,
-            9 => RepairGroups::AuxilliaryCraft,
-            _ => RepairGroups::GeneralRepairCodes,
-        }
     }
 }
 

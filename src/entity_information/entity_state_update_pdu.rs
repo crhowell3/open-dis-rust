@@ -11,6 +11,7 @@ use crate::{
     common::{
         dis_error::DISError,
         entity_id::EntityId,
+        enums::LandPlatformAppearance,
         euler_angles::EulerAngles,
         linear_velocity::LinearVelocity,
         pdu::Pdu,
@@ -19,8 +20,6 @@ use crate::{
     },
     warfare::data_types::variable_parameter::VariableParameter,
 };
-
-use super::entity_appearance::EntityAppearance;
 
 #[derive(Clone, Debug)]
 pub struct EntityStateUpdatePdu {

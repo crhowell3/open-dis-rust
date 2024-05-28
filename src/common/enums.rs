@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bitflags::{bitflags, Bits};
 use bytes::{Buf, BytesMut};
@@ -1135,6 +1136,58 @@ pub enum Country {
     TimorLeste = 280,
     UnitedStatesMinorOutlyingIslands = 281,
     PalestineStateof = 282,
+}
+
+// SISO-REF-010-2023 LandPlatformAppearance [UID 31]
+bitflags! {
+    #[derive(Copy, Clone, Debug, PartialEq)]
+    pub struct LandPlatformAppearance: u32 {
+        const PaintScheme = 1 << 0;
+        const MobilityKilled = 1 << 1;
+        const FirePowerKilled = 1 << 2;
+        const Damage = 1 << 3;
+        const IsSmokeEmanating = 1 << 5;
+        const IsEngineEmittingSmoke = 1 << 6;
+        const TrailingDustCloud = 1 << 7;
+        const PrimaryHatch = 1 << 9;
+        const HeadLightsOn = 1 << 12;
+        const TailLightsOn = 1 << 13;
+        const BrakeLightsOn = 1 << 14;
+        const IsFlaming = 1 << 15;
+        const LauncherOperational = 1 << 16;
+        const CamouflageType = 1 << 17;
+        const ConcealedPosition = 1 << 19;
+        const IsFrozen = 1 << 21;
+        const PowerPlantOn = 1 << 22;
+        const State = 1 << 23;
+        const TentExtended = 1 << 24;
+        const RampExtended = 1 << 25;
+        const BlackoutLightsOn = 1 << 26;
+        const BlackoutBrakeLightsOn = 1 << 27;
+        const SpotSearchLight1On = 1 << 28;
+        const InteriorLightsOn = 1 << 29;
+        const OccupantsSurrendered = 1 << 30;
+        const MaskedCloaked = 1 << 31;
+    }
+}
+
+impl Default for LandPlatformAppearance {
+    fn default() -> LandPlatformAppearance {
+        LandPlatformAppearance::from_bits(Bits::EMPTY)
+            .expect("Couldn't create default LandPlatformAppearance")
+    }
+}
+
+impl LandPlatformAppearance {
+    #[must_use]
+    pub fn as_u32(&self) -> u32 {
+        self.bits() as u32
+    }
+
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> LandPlatformAppearance {
+        LandPlatformAppearance::from_bits_truncate(buf.get_u32())
+    }
 }
 
 // SISO-REF-010-2023 DeadReckoningAlgorithm [UID 44]
@@ -7755,6 +7808,39 @@ pub enum ObjectKind {
     EnvironmentalObject = 8,
 }
 
+// SISO-REF-010-2023 ObjectStateAppearanceGeneral [UID 229]
+bitflags! {
+    #[derive(Copy, Clone, Debug, PartialEq)]
+    pub struct ObjectStateAppearanceGeneral: u16 {
+        const PercentComplete = 1 << 0;
+        const Damage = 1 << 8;
+        const Predistributed = 1 << 10;
+        const State = 1 << 11;
+        const IsSmoking = 1 << 12;
+        const IsFlaming = 1 << 13;
+        const IEDPresent = 1 << 14;
+    }
+}
+
+impl Default for ObjectStateAppearanceGeneral {
+    fn default() -> ObjectStateAppearanceGeneral {
+        ObjectStateAppearanceGeneral::from_bits(Bits::EMPTY)
+            .expect("Couldn't create default ObjectStateAppearanceGeneral")
+    }
+}
+
+impl ObjectStateAppearanceGeneral {
+    #[must_use]
+    pub fn as_u16(&self) -> u16 {
+        self.bits() as u16
+    }
+
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> ObjectStateAppearanceGeneral {
+        ObjectStateAppearanceGeneral::from_bits_truncate(buf.get_u16())
+    }
+}
+
 // SISO-REF-010-2023 GriddedDataFieldNumber [UID 243]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
 pub enum GriddedDataFieldNumber {}
@@ -7862,13 +7948,31 @@ pub enum RepairGroups {
     GeneralRepairCodes = 0,
     DriveTrain = 1,
     HullAirframeBody = 2,
-    InterfaceswithEnvironment = 3,
+    InterfacesWithEnvironment = 3,
     Weapons = 4,
     FuelSystems = 5,
     Electronics = 6,
     LifeSupportSystems = 7,
-    HydraulicSystemsandActuators = 8,
+    HydraulicSystemsAndActuators = 8,
     AuxiliaryCraft = 9,
+}
+
+impl RepairGroups {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> RepairGroups {
+        match buf.get_u8() {
+            1 => RepairGroups::DriveTrain,
+            2 => RepairGroups::HullAirframeBody,
+            3 => RepairGroups::InterfacesWithEnvironment,
+            4 => RepairGroups::Weapons,
+            5 => RepairGroups::FuelSystems,
+            6 => RepairGroups::Electronics,
+            7 => RepairGroups::LifeSupportSystems,
+            8 => RepairGroups::HydraulicSystemsAndActuators,
+            9 => RepairGroups::AuxiliaryCraft,
+            _ => RepairGroups::GeneralRepairCodes,
+        }
+    }
 }
 
 // SISO-REF-010-2023 EnvironmentRecordTypeGroups [UID 273]
@@ -9018,6 +9122,16 @@ pub enum AppearancePaintScheme {
     #[default]
     UniformColor = 0,
     Camouflage = 1,
+}
+
+impl AppearancePaintScheme {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> AppearancePaintScheme {
+        match buf.get_u8() {
+            1 => AppearancePaintScheme::Camouflage,
+            _ => AppearancePaintScheme::UniformColor,
+        }
+    }
 }
 
 // SISO-REF-010-2023 AppearanceDamage [UID 379]
