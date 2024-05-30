@@ -4,9 +4,18 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bitflags::{bitflags, Bits};
+use bitflags::bitflags;
 use bytes::{Buf, BytesMut};
 use num_derive::FromPrimitive;
+
+// Traits for custom bitflag types
+pub trait BitFlagType {
+    type FieldLength;
+    fn decode(buf: &mut BytesMut) -> Option<Self>
+    where
+        Self: Sized;
+    fn as_primitive(&self) -> Self::FieldLength;
+}
 
 // SISO-REF-010-2023 Protocol Version [UID 3]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -1114,7 +1123,7 @@ pub enum Country {
     #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     Russia_ = 260,
     #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
-    SerbiaandMontenegro__ = 261,
+    SerbiaAndMontenegro__ = 261,
     Slovenia = 262,
     Tajikistan = 263,
     Turkmenistan = 264,
@@ -1172,23 +1181,25 @@ bitflags! {
 }
 
 impl Default for LandPlatformAppearance {
-    fn default() -> LandPlatformAppearance {
-        LandPlatformAppearance::from_bits(Bits::EMPTY)
-            .expect("Couldn't create default LandPlatformAppearance")
+    fn default() -> Self {
+        Self::empty()
     }
 }
 
-impl LandPlatformAppearance {
+impl BitFlagType for LandPlatformAppearance {
+    type FieldLength = u32;
     #[must_use]
-    pub fn as_u32(&self) -> u32 {
-        self.bits() as u32
+    fn as_primitive(&self) -> Self::FieldLength {
+        self.bits() as Self::FieldLength
     }
 
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> LandPlatformAppearance {
-        LandPlatformAppearance::from_bits_truncate(buf.get_u32())
+    fn decode(buf: &mut BytesMut) -> Option<Self> {
+        Self::from_bits(buf.get_u32())
     }
 }
+
+// SISO-REF-010-2023 Entity Appearance Custom enumeration
 
 // SISO-REF-010-2023 DeadReckoningAlgorithm [UID 44]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -3219,22 +3230,21 @@ bitflags! {
 }
 
 impl Default for FrozenBehavior {
-    fn default() -> FrozenBehavior {
-        FrozenBehavior::RunSimulationClock
-            | FrozenBehavior::TransmitUpdates
-            | FrozenBehavior::ProcessUpdates
+    fn default() -> Self {
+        Self::empty()
     }
 }
 
-impl FrozenBehavior {
+impl BitFlagType for FrozenBehavior {
+    type FieldLength = u8;
     #[must_use]
-    pub fn as_u8(&self) -> u8 {
-        self.bits() as u8
+    fn as_primitive(&self) -> Self::FieldLength {
+        self.bits() as Self::FieldLength
     }
 
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> FrozenBehavior {
-        FrozenBehavior::from_bits_truncate(buf.get_u8())
+    fn decode(buf: &mut BytesMut) -> Option<Self> {
+        Self::from_bits(buf.get_u8())
     }
 }
 
@@ -7823,21 +7833,21 @@ bitflags! {
 }
 
 impl Default for ObjectStateAppearanceGeneral {
-    fn default() -> ObjectStateAppearanceGeneral {
-        ObjectStateAppearanceGeneral::from_bits(Bits::EMPTY)
-            .expect("Couldn't create default ObjectStateAppearanceGeneral")
+    fn default() -> Self {
+        Self::empty()
     }
 }
 
-impl ObjectStateAppearanceGeneral {
+impl BitFlagType for ObjectStateAppearanceGeneral {
+    type FieldLength = u16;
     #[must_use]
-    pub fn as_u16(&self) -> u16 {
-        self.bits() as u16
+    fn as_primitive(&self) -> Self::FieldLength {
+        self.bits() as Self::FieldLength
     }
 
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> ObjectStateAppearanceGeneral {
-        ObjectStateAppearanceGeneral::from_bits_truncate(buf.get_u16())
+    fn decode(buf: &mut BytesMut) -> Option<Self> {
+        Self::from_bits(buf.get_u16())
     }
 }
 
