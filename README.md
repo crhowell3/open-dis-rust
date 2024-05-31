@@ -80,10 +80,10 @@ cargo run --example udp_server
 
 Then, in another terminal on the same machine, run the client as follows:
 ```shell
-cargo run --example udp_client -- --udp 127.0.0.1:3000
+cargo run --example udp_client
 ```
 
-A PDU will be transmitted from the client to the server, and then the data within the PDU
+An Acknowledge PDU will be transmitted from the client to the server, and then the data within the PDU
 will be echoed back to the client and displayed in the terminal.
 
 <p align="center">
