@@ -21,8 +21,8 @@ pub struct SignalPdu {
     pub encoding_scheme: u16,
     pub tdl_type: u16,
     pub sample_rate: u32,
-    pub data_length: i16,
-    pub samples: i16,
+    pub data_length: u16,
+    pub samples: u16,
     pub data: Vec<u8>,
 }
 
@@ -65,8 +65,8 @@ impl Pdu for SignalPdu {
         buf.put_u16(self.encoding_scheme);
         buf.put_u16(self.tdl_type);
         buf.put_u32(self.sample_rate);
-        buf.put_i16(self.data_length);
-        buf.put_i16(self.samples);
+        buf.put_u16(self.data_length);
+        buf.put_u16(self.samples);
         for i in 0..self.data.len() {
             buf.put_u8(self.data[i]);
         }
@@ -83,10 +83,13 @@ impl Pdu for SignalPdu {
             let encoding_scheme = buffer.get_u16();
             let tdl_type = buffer.get_u16();
             let sample_rate = buffer.get_u32();
-            let data_length = buffer.get_i16();
-            let samples = buffer.get_i16();
+            let data_length = buffer.get_u16();
+            let samples = buffer.get_u16();
             let mut data: Vec<u8> = vec![];
             for _i in 0..data_length {
+                if !buffer.has_remaining() {
+                    break;
+                }
                 data.push(buffer.get_u8());
             }
             Ok(SignalPdu {
@@ -121,10 +124,13 @@ impl Pdu for SignalPdu {
         let encoding_scheme = buffer.get_u16();
         let tdl_type = buffer.get_u16();
         let sample_rate = buffer.get_u32();
-        let data_length = buffer.get_i16();
-        let samples = buffer.get_i16();
+        let data_length = buffer.get_u16();
+        let samples = buffer.get_u16();
         let mut data: Vec<u8> = vec![];
         for _i in 0..data_length {
+            if !buffer.has_remaining() {
+                break;
+            }
             data.push(buffer.get_u8());
         }
         Ok(SignalPdu {
