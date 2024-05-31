@@ -7,16 +7,14 @@ use bytes::{Buf, BufMut, BytesMut};
 
 use crate::{
     common::{euler_angles::EulerAngles, vector3_double::Vector3Double},
-    entity_information::{
-        general_appearance::GeneralAppearance, specific_appearance::SpecificAppearance,
-    },
+    entity_information::specific_appearance::SpecificAppearance,
 };
 
 #[derive(Clone, Debug, Default)]
 pub struct LinearSegmentParameter {
     pub segment_number: u8,
     pub segment_modification: u8,
-    pub general_segment_appearance: GeneralAppearance,
+    pub general_segment_appearance: u32,
     pub specific_segment_appearance: SpecificAppearance,
     pub segment_location: Vector3Double,
     pub segment_orientation: EulerAngles,
@@ -32,7 +30,7 @@ impl LinearSegmentParameter {
     pub fn new(
         segment_number: u8,
         segment_modification: u8,
-        general_segment_appearance: GeneralAppearance,
+        general_segment_appearance: u32,
         specific_segment_appearance: SpecificAppearance,
         segment_location: Vector3Double,
         segment_orientation: EulerAngles,
@@ -58,7 +56,7 @@ impl LinearSegmentParameter {
     pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_u8(self.segment_number);
         buf.put_u8(self.segment_modification);
-        self.general_segment_appearance.serialize(buf);
+        buf.put_u32(self.general_segment_appearance);
         self.specific_segment_appearance.serialize(buf);
         self.segment_location.serialize(buf);
         self.segment_orientation.serialize(buf);
@@ -72,7 +70,7 @@ impl LinearSegmentParameter {
         LinearSegmentParameter {
             segment_number: buf.get_u8(),
             segment_modification: buf.get_u8(),
-            general_segment_appearance: GeneralAppearance::decode(buf),
+            general_segment_appearance: buf.get_u32(),
             specific_segment_appearance: SpecificAppearance::decode(buf),
             segment_location: Vector3Double::decode(buf),
             segment_orientation: EulerAngles::decode(buf),

@@ -34,9 +34,7 @@ impl Default for StopFreezePdu {
             receiving_entity_id: EntityId::default(2),
             real_world_time: ClockTime::default(),
             reason: Reason::default(),
-            frozen_behavior: FrozenBehavior::RunSimulationClock
-                | FrozenBehavior::TransmitUpdates
-                | FrozenBehavior::ProcessUpdates,
+            frozen_behavior: FrozenBehavior::default(),
             padding: 0,
             request_id: 0,
         }
@@ -65,7 +63,7 @@ impl Pdu for StopFreezePdu {
             let receiving_entity_id = EntityId::decode(&mut buffer);
             let real_world_time = ClockTime::decode(&mut buffer);
             let reason = Reason::decode(&mut buffer);
-            let frozen_behavior = FrozenBehavior::decode(&mut buffer);
+            let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
             let padding = buffer.get_i16();
             let request_id = buffer.get_u32();
 
@@ -99,7 +97,7 @@ impl Pdu for StopFreezePdu {
         let receiving_entity_id = EntityId::decode(&mut buffer);
         let real_world_time = ClockTime::decode(&mut buffer);
         let reason = Reason::decode(&mut buffer);
-        let frozen_behavior = FrozenBehavior::decode(&mut buffer);
+        let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
         let padding = buffer.get_i16();
         let request_id = buffer.get_u32();
 

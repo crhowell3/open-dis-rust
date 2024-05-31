@@ -8,15 +8,6 @@ use bitflags::bitflags;
 use bytes::{Buf, BytesMut};
 use num_derive::FromPrimitive;
 
-// Traits for custom bitflag types
-pub trait BitFlagType {
-    type FieldLength;
-    fn decode(buf: &mut BytesMut) -> Option<Self>
-    where
-        Self: Sized;
-    fn as_primitive(&self) -> Self::FieldLength;
-}
-
 // SISO-REF-010-2023 Protocol Version [UID 3]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 #[allow(non_camel_case_types)]
@@ -1186,16 +1177,15 @@ impl Default for LandPlatformAppearance {
     }
 }
 
-impl BitFlagType for LandPlatformAppearance {
-    type FieldLength = u32;
+impl LandPlatformAppearance {
     #[must_use]
-    fn as_primitive(&self) -> Self::FieldLength {
-        self.bits() as Self::FieldLength
+    pub fn as_u32(&self) -> u32 {
+        u32::from(self.bits())
     }
 
     #[must_use]
-    fn decode(buf: &mut BytesMut) -> Option<Self> {
-        Self::from_bits(buf.get_u32())
+    pub fn from_u32(bits: u32) -> Option<Self> {
+        Self::from_bits(bits)
     }
 }
 
@@ -3235,16 +3225,15 @@ impl Default for FrozenBehavior {
     }
 }
 
-impl BitFlagType for FrozenBehavior {
-    type FieldLength = u8;
+impl FrozenBehavior {
     #[must_use]
-    fn as_primitive(&self) -> Self::FieldLength {
-        self.bits() as Self::FieldLength
+    pub fn as_u8(&self) -> u8 {
+        u8::from(self.bits())
     }
 
     #[must_use]
-    fn decode(buf: &mut BytesMut) -> Option<Self> {
-        Self::from_bits(buf.get_u8())
+    pub fn from_u8(bits: u8) -> Option<Self> {
+        Self::from_bits(bits)
     }
 }
 
@@ -7838,16 +7827,15 @@ impl Default for ObjectStateAppearanceGeneral {
     }
 }
 
-impl BitFlagType for ObjectStateAppearanceGeneral {
-    type FieldLength = u16;
+impl ObjectStateAppearanceGeneral {
     #[must_use]
-    fn as_primitive(&self) -> Self::FieldLength {
-        self.bits() as Self::FieldLength
+    pub fn as_u16(&self) -> u16 {
+        u16::from(self.bits())
     }
 
     #[must_use]
-    fn decode(buf: &mut BytesMut) -> Option<Self> {
-        Self::from_bits(buf.get_u16())
+    pub fn from_u16(bits: u16) -> Option<Self> {
+        Self::from_bits(bits)
     }
 }
 

@@ -11,7 +11,7 @@ use crate::{
         dis_error::DISError,
         entity_id::EntityId,
         entity_type::EntityType,
-        enums::{BitFlagType, ObjectStateAppearanceGeneral},
+        enums::ObjectStateAppearanceGeneral,
         pdu::Pdu,
         pdu_header::{PduHeader, PduType, ProtocolFamily},
         simulation_address::SimulationAddress,
@@ -82,7 +82,7 @@ impl Pdu for ArealObjectStatePdu {
         buf.put_u8(self.modifications);
         self.object_type.serialize(buf);
         self.specific_object_appearance.serialize(buf);
-        buf.put_u16(self.general_object_appearance.as_primitive());
+        buf.put_u16(self.general_object_appearance.as_u16());
         buf.put_u16(self.number_of_points);
         self.requester_id.serialize(buf);
         self.receiving_id.serialize(buf);
@@ -104,8 +104,8 @@ impl Pdu for ArealObjectStatePdu {
             let modifications = buffer.get_u8();
             let object_type = EntityType::decode(&mut buffer);
             let specific_object_appearance = SpecificAppearance::decode(&mut buffer);
-            let general_object_appearance = ObjectStateAppearanceGeneral::decode(&mut buffer)
-                .unwrap_or(ObjectStateAppearanceGeneral::empty());
+            let general_object_appearance =
+                ObjectStateAppearanceGeneral::from_u16(buffer.get_u16()).unwrap();
             let number_of_points = buffer.get_u16();
             let requester_id = SimulationAddress::decode(&mut buffer);
             let receiving_id = SimulationAddress::decode(&mut buffer);
@@ -151,8 +151,8 @@ impl Pdu for ArealObjectStatePdu {
         let modifications = buffer.get_u8();
         let object_type = EntityType::decode(&mut buffer);
         let specific_object_appearance = SpecificAppearance::decode(&mut buffer);
-        let general_object_appearance = ObjectStateAppearanceGeneral::decode(&mut buffer)
-            .unwrap_or(ObjectStateAppearanceGeneral::empty());
+        let general_object_appearance =
+            ObjectStateAppearanceGeneral::from_u16(buffer.get_u16()).unwrap();
         let number_of_points = buffer.get_u16();
         let requester_id = SimulationAddress::decode(&mut buffer);
         let receiving_id = SimulationAddress::decode(&mut buffer);

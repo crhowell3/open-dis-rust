@@ -23,8 +23,8 @@ pub struct StopFreezeReliablePdu {
     pub request_id: u32,
 }
 
-impl Default for StopFreezeReliablePdu {
-    fn default() -> Self {
+impl StopFreezeReliablePdu {
+    pub fn default() -> Self {
         StopFreezeReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::StopFreezeReliable,
@@ -35,9 +35,7 @@ impl Default for StopFreezeReliablePdu {
             receiving_entity_id: EntityId::default(2),
             real_world_time: ClockTime::default(),
             reason: Reason::default(),
-            frozen_behavior: FrozenBehavior::RunSimulationClock
-                | FrozenBehavior::TransmitUpdates
-                | FrozenBehavior::ProcessUpdates,
+            frozen_behavior: FrozenBehavior::default(),
             required_reliability_service: 0,
             pad1: 0,
             request_id: 0,
@@ -68,7 +66,7 @@ impl Pdu for StopFreezeReliablePdu {
             let receiving_entity_id = EntityId::decode(&mut buffer);
             let real_world_time = ClockTime::decode(&mut buffer);
             let reason = Reason::decode(&mut buffer);
-            let frozen_behavior = FrozenBehavior::decode(&mut buffer);
+            let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
             let required_reliability_service = buffer.get_u8();
             let pad1 = buffer.get_u8();
             let request_id = buffer.get_u32();
@@ -104,7 +102,7 @@ impl Pdu for StopFreezeReliablePdu {
         let receiving_entity_id = EntityId::decode(&mut buffer);
         let real_world_time = ClockTime::decode(&mut buffer);
         let reason = Reason::decode(&mut buffer);
-        let frozen_behavior = FrozenBehavior::decode(&mut buffer);
+        let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
         let required_reliability_service = buffer.get_u8();
         let pad1 = buffer.get_u8();
         let request_id = buffer.get_u32();
