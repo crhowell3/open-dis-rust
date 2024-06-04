@@ -4,9 +4,12 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+#![allow(deprecated)]
+
 use bitflags::bitflags;
 use bytes::{Buf, BytesMut};
 use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
 // SISO-REF-010-2023 Protocol Version [UID 3]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -189,7 +192,6 @@ pub enum OtherKinds {
 
 // SISO-REF-010-2023 Land Domain Categories [UID 9]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-#[allow(deprecated)]
 pub enum LandDomainCategories {
     #[default]
     Other = 0,
@@ -828,7 +830,6 @@ pub enum ExpendableSubsurfaceCategory {
 
 // SISO-REF-010-2023 SensorEmitterCategory [UID 28]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-#[allow(deprecated)]
 pub enum SensorEmitterCategory {
     #[default]
     Other = 0,
@@ -3194,18 +3195,8 @@ pub enum Reason {
 
 impl Reason {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Reason {
-        match buf.get_u8() {
-            1 => Reason::Recess,
-            2 => Reason::Termination,
-            3 => Reason::SystemFailure,
-            4 => Reason::SecurityViolation,
-            5 => Reason::EntityReconstitution,
-            6 => Reason::StopForReset,
-            7 => Reason::StopForRestart,
-            8 => Reason::AbortTrainingReturnToTacticalOperations,
-            _ => Reason::Other,
-        }
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Reason::from_u8(buf.get_u8()).unwrap_or(Reason::default())
     }
 }
 
@@ -6214,20 +6205,26 @@ pub enum EmitterName {
     ZhukMSE = 45307,
 }
 
+impl EmitterName {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        EmitterName::from_u16(buf.get_u16()).unwrap_or(EmitterName::default())
+    }
+}
+
 // SISO-REF-010-2023 EmitterSystemFunction [UID 76]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-#[allow(deprecated)]
 pub enum EmitterSystemFunction {
     #[default]
     Other = 0,
-    Multifunction = 1,
+    MultiFunction = 1,
     EarlyWarningSurveillance = 2,
     HeightFinder = 3,
     FireControl = 4,
     AcquisitionDetection = 5,
     Tracker = 6,
     GuidanceIllumination = 7,
-    Firingpointlaunchpointlocation = 8,
+    FiringPointLaunchPointLocation = 8,
     RangeOnly = 9,
     RadarAltimeter = 10,
     Imaging = 11,
@@ -6255,7 +6252,7 @@ pub enum EmitterSystemFunction {
     HarborSurveillance = 33,
     #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
     IFF = 34,
-    ILS = 35,
+    InstrumentLandingSystem = 35,
     IonosphericSound = 36,
     Interrogator = 37,
     #[deprecated(note = "Deprecated in SISO-REF-010-2023")]
@@ -6285,7 +6282,7 @@ pub enum EmitterSystemFunction {
     Television = 56,
     Unknown = 57,
     VideoRemoting = 58,
-    ExperimentalorTraining = 59,
+    ExperimentalOrTraining = 59,
     MissileGuidance = 60,
     MissileHoming = 61,
     MissileTracking = 62,
@@ -6308,13 +6305,88 @@ pub enum EmitterSystemFunction {
     DippingSonar = 80,
     TowedAcousticSensor = 81,
     WeaponNonlethal = 96,
-    Weaponlethal = 97,
+    WeaponLethal = 97,
     TestEquipment = 98,
     AcquisitionTrack = 99,
     TrackGuidance = 100,
     GuidanceIlluminationTrackAcquisition = 101,
     SearchAcquisition = 102,
     Dropsonde = 103,
+}
+
+impl EmitterSystemFunction {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> EmitterSystemFunction {
+        match buf.get_u8() {
+            1 => EmitterSystemFunction::MultiFunction,
+            2 => EmitterSystemFunction::EarlyWarningSurveillance,
+            3 => EmitterSystemFunction::HeightFinder,
+            4 => EmitterSystemFunction::FireControl,
+            5 => EmitterSystemFunction::AcquisitionDetection,
+            6 => EmitterSystemFunction::Tracker,
+            7 => EmitterSystemFunction::GuidanceIllumination,
+            8 => EmitterSystemFunction::FiringPointLaunchPointLocation,
+            9 => EmitterSystemFunction::RangeOnly,
+            10 => EmitterSystemFunction::RadarAltimeter,
+            11 => EmitterSystemFunction::Imaging,
+            12 => EmitterSystemFunction::MotionDetection,
+            13 => EmitterSystemFunction::Navigation,
+            14 => EmitterSystemFunction::WeatherMeteorological,
+            15 => EmitterSystemFunction::Instrumentation,
+            16 => EmitterSystemFunction::IdentificationClassification,
+            17 => EmitterSystemFunction::AAAFireControl,
+            18 => EmitterSystemFunction::AirSearchBomb,
+            19 => EmitterSystemFunction::AirIntercept,
+            20 => EmitterSystemFunction::Altimeter,
+            21 => EmitterSystemFunction::AirMapping,
+            22 => EmitterSystemFunction::AirTrafficControl,
+            23 => EmitterSystemFunction::Beacon,
+            24 => EmitterSystemFunction::BattlefieldSurveillance,
+            25 => EmitterSystemFunction::GroundControlApproach,
+            26 => EmitterSystemFunction::GroundControlIntercept,
+            27 => EmitterSystemFunction::CoastalSurveillance,
+            28 => EmitterSystemFunction::DecoyMimic,
+            29 => EmitterSystemFunction::DataTransmission,
+            30 => EmitterSystemFunction::EarthSurveillance,
+            31 => EmitterSystemFunction::GunLayBeacon,
+            32 => EmitterSystemFunction::GroundMapping,
+            33 => EmitterSystemFunction::HarborSurveillance,
+            35 => EmitterSystemFunction::InstrumentLandingSystem,
+            36 => EmitterSystemFunction::IonosphericSound,
+            37 => EmitterSystemFunction::Interrogator,
+            42 => EmitterSystemFunction::Jammer,
+            47 => EmitterSystemFunction::MissileAcquisition,
+            48 => EmitterSystemFunction::MissileDownlink,
+            50 => EmitterSystemFunction::Space,
+            51 => EmitterSystemFunction::SurfaceSearch,
+            52 => EmitterSystemFunction::ShellTracking,
+            56 => EmitterSystemFunction::Television,
+            57 => EmitterSystemFunction::Unknown,
+            58 => EmitterSystemFunction::VideoRemoting,
+            59 => EmitterSystemFunction::ExperimentalOrTraining,
+            60 => EmitterSystemFunction::MissileGuidance,
+            61 => EmitterSystemFunction::MissileHoming,
+            62 => EmitterSystemFunction::MissileTracking,
+            71 => EmitterSystemFunction::NavigationDistanceMeasuringEquipment,
+            72 => EmitterSystemFunction::TerrainFollowing,
+            73 => EmitterSystemFunction::WeatherAvoidance,
+            74 => EmitterSystemFunction::ProximityFuse,
+            76 => EmitterSystemFunction::Radiosonde,
+            77 => EmitterSystemFunction::Sonobuoy,
+            78 => EmitterSystemFunction::BathythermalSensor,
+            79 => EmitterSystemFunction::TowedCounterMeasure,
+            80 => EmitterSystemFunction::DippingSonar,
+            81 => EmitterSystemFunction::TowedAcousticSensor,
+            96 => EmitterSystemFunction::WeaponNonlethal,
+            97 => EmitterSystemFunction::WeaponLethal,
+            98 => EmitterSystemFunction::TestEquipment,
+            99 => EmitterSystemFunction::AcquisitionTrack,
+            100 => EmitterSystemFunction::TrackGuidance,
+            101 => EmitterSystemFunction::GuidanceIlluminationTrackAcquisition,
+            102 => EmitterSystemFunction::SearchAcquisition,
+            _ => EmitterSystemFunction::Other,
+        }
+    }
 }
 
 // SISO-REF-010-2023 ElectromagneticEmissionStateUpdateIndicator [UID 77]
@@ -7358,7 +7430,6 @@ pub enum SignalUserProtocolIdentificationNumber {
 
 // SISO-REF-010-2023 SignalTDLType [UID 178]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-#[allow(deprecated)]
 pub enum SignalTDLType {
     #[default]
     Other = 0,
@@ -7948,7 +8019,6 @@ pub enum SignalEncodingClass {
 
 // SISO-REF-010-2023 SignalEncodingType [UID 271]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-#[allow(deprecated)]
 pub enum SignalEncodingType {
     #[default]
     _8bitmulaw = 1,

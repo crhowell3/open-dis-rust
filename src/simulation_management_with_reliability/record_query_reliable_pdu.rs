@@ -9,11 +9,10 @@ use std::any::Any;
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
+    enums::EventType,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
-
-use super::event_report_reliable_pdu::EventType;
 
 #[derive(Clone, Debug)]
 pub struct RecordQueryReliablePdu {
@@ -44,7 +43,7 @@ impl Default for RecordQueryReliablePdu {
             required_reliability_service: 0,
             pad1: 0,
             pad2: 0,
-            event_type: EventType::Other,
+            event_type: EventType::default(),
             time: 0,
             number_of_records: 0,
             record_ids: vec![],

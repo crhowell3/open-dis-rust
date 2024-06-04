@@ -1,12 +1,11 @@
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
-    enums::EventReportEventType,
+    enums::EventType,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 use bytes::{Buf, BufMut, BytesMut};
-use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 #[derive(Copy, Clone, Debug)]
@@ -32,7 +31,7 @@ impl Default for EventReportReliablePdu {
             ),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
-            event_type: EventType::Other,
+            event_type: EventType::default(),
             padding: 0,
             number_of_fixed_datum_records: 0,
             number_of_variable_datum_records: 0,
@@ -129,56 +128,6 @@ impl Pdu for EventReportReliablePdu {
             fixed_datum_records,
             variable_datum_records,
         })
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-pub enum EventType {
-    #[default]
-    Other = 0,
-    RanOutOfAmmunition = 2,
-    KilledInAction = 3,
-    Damage = 4,
-    MobilityDisabled = 5,
-    FireDisabled = 6,
-    RanOutOfFuel = 7,
-    EntityInitialization = 8,
-    RequestForIndirectFireOrCASMission = 9,
-    IndirectFireOrCASFire = 10,
-    MinefieldEntry = 11,
-    MinefieldDetonation = 12,
-    VehicleMasterPowerOn = 13,
-    VehicleMasterPowerOff = 14,
-    AggregateStateChangeRequested = 15,
-    PreventCollisionDetonation = 16,
-    OwnershipReport = 17,
-    RadarPerception = 18,
-    Detect = 19,
-}
-
-impl EventType {
-    pub fn decode(buf: &mut BytesMut) -> EventType {
-        match buf.get_u32() {
-            2 => EventType::RanOutOfAmmunition,
-            3 => EventType::KilledInAction,
-            4 => EventType::Damage,
-            5 => EventType::MobilityDisabled,
-            6 => EventType::FireDisabled,
-            7 => EventType::RanOutOfFuel,
-            8 => EventType::EntityInitialization,
-            9 => EventType::RequestForIndirectFireOrCASMission,
-            10 => EventType::IndirectFireOrCASFire,
-            11 => EventType::MinefieldEntry,
-            12 => EventType::MinefieldDetonation,
-            13 => EventType::VehicleMasterPowerOn,
-            14 => EventType::VehicleMasterPowerOff,
-            15 => EventType::AggregateStateChangeRequested,
-            16 => EventType::PreventCollisionDetonation,
-            17 => EventType::OwnershipReport,
-            18 => EventType::RadarPerception,
-            19 => EventType::Detect,
-            _ => EventType::Other,
-        }
     }
 }
 
