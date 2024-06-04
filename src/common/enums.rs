@@ -3383,20 +3383,20 @@ impl ActionResponseRequestStatus {
     }
 }
 
-// SISO-REF-010-2023 EventReportEventType [UID 73]
+// SISO-REF-010-2023 EventType [UID 73]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum EventReportEventType {
+pub enum EventType {
     #[default]
     Other = 0,
-    RanOutofAmmunition = 2,
-    KilledinAction = 3,
+    RanOutOfAmmunition = 2,
+    KilledInAction = 3,
     Damage = 4,
     MobilityDisabled = 5,
     FireDisabled = 6,
-    RanOutofFuel = 7,
+    RanOutOfFuel = 7,
     EntityInitialization = 8,
-    RequestforIndirectFireorCASMission = 9,
-    IndirectFireorCASFire = 10,
+    RequestForIndirectFireOrCASMission = 9,
+    IndirectFireOrCASFire = 10,
     MinefieldEntry = 11,
     MinefieldDetonation = 12,
     VehicleMasterPowerOn = 13,
@@ -3406,6 +3406,33 @@ pub enum EventReportEventType {
     OwnershipReport = 17,
     RadarPerception = 18,
     Detect = 19,
+}
+
+impl EventType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> EventType {
+        match buf.get_u32() {
+            2 => EventType::RanOutOfAmmunition,
+            3 => EventType::KilledInAction,
+            4 => EventType::Damage,
+            5 => EventType::MobilityDisabled,
+            6 => EventType::FireDisabled,
+            7 => EventType::RanOutOfFuel,
+            8 => EventType::EntityInitialization,
+            9 => EventType::RequestForIndirectFireOrCASMission,
+            10 => EventType::IndirectFireOrCASFire,
+            11 => EventType::MinefieldEntry,
+            12 => EventType::MinefieldDetonation,
+            13 => EventType::VehicleMasterPowerOn,
+            14 => EventType::VehicleMasterPowerOff,
+            15 => EventType::AggregateStateChangeRequested,
+            16 => EventType::PreventCollisionDetonation,
+            17 => EventType::OwnershipReport,
+            18 => EventType::RadarPerception,
+            19 => EventType::Detect,
+            _ => EventType::Other,
+        }
+    }
 }
 
 // SISO-REF-010-2023 RequiredReliabilityService [UID 74]
