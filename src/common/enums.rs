@@ -3196,7 +3196,7 @@ pub enum Reason {
 impl Reason {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Reason::from_u8(buf.get_u8()).unwrap_or(Reason::default())
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
@@ -3241,14 +3241,8 @@ pub enum AcknowledgeFlag {
 
 impl AcknowledgeFlag {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> AcknowledgeFlag {
-        match buf.get_u8() {
-            2 => AcknowledgeFlag::RemoveEntity,
-            3 => AcknowledgeFlag::StartResume,
-            4 => AcknowledgeFlag::StopFreeze,
-            5 => AcknowledgeFlag::TransferOwnership,
-            _ => AcknowledgeFlag::CreateEntity,
-        }
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
@@ -3264,13 +3258,8 @@ pub enum AcknowledgeResponseFlag {
 
 impl AcknowledgeResponseFlag {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> AcknowledgeResponseFlag {
-        match buf.get_u8() {
-            1 => AcknowledgeResponseFlag::AbleToComply,
-            2 => AcknowledgeResponseFlag::UnableToComply,
-            3 => AcknowledgeResponseFlag::PendingOperatorAction,
-            _ => AcknowledgeResponseFlag::Other,
-        }
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
@@ -3354,23 +3343,8 @@ pub enum ActionResponseRequestStatus {
 
 impl ActionResponseRequestStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> ActionResponseRequestStatus {
-        match buf.get_u32() {
-            1 => ActionResponseRequestStatus::Pending,
-            2 => ActionResponseRequestStatus::Executing,
-            3 => ActionResponseRequestStatus::PartiallyComplete,
-            4 => ActionResponseRequestStatus::Complete,
-            5 => ActionResponseRequestStatus::RequestRejected,
-            6 => ActionResponseRequestStatus::RetransmitRequestNow,
-            7 => ActionResponseRequestStatus::RetransmitRequestLater,
-            8 => ActionResponseRequestStatus::InvalidTimeParameters,
-            9 => ActionResponseRequestStatus::SimulationTimeExceeded,
-            10 => ActionResponseRequestStatus::RequestDone,
-            100 => ActionResponseRequestStatus::TACCSFLOSReplyTypeOne,
-            101 => ActionResponseRequestStatus::TACCSFLOSReplyTypeTwo,
-            201 => ActionResponseRequestStatus::JoinExerciseRequestRejected,
-            _ => ActionResponseRequestStatus::Other,
-        }
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
 
@@ -3401,28 +3375,8 @@ pub enum EventType {
 
 impl EventType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> EventType {
-        match buf.get_u32() {
-            2 => EventType::RanOutOfAmmunition,
-            3 => EventType::KilledInAction,
-            4 => EventType::Damage,
-            5 => EventType::MobilityDisabled,
-            6 => EventType::FireDisabled,
-            7 => EventType::RanOutOfFuel,
-            8 => EventType::EntityInitialization,
-            9 => EventType::RequestForIndirectFireOrCASMission,
-            10 => EventType::IndirectFireOrCASFire,
-            11 => EventType::MinefieldEntry,
-            12 => EventType::MinefieldDetonation,
-            13 => EventType::VehicleMasterPowerOn,
-            14 => EventType::VehicleMasterPowerOff,
-            15 => EventType::AggregateStateChangeRequested,
-            16 => EventType::PreventCollisionDetonation,
-            17 => EventType::OwnershipReport,
-            18 => EventType::RadarPerception,
-            19 => EventType::Detect,
-            _ => EventType::Other,
-        }
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
 
@@ -3432,6 +3386,13 @@ pub enum RequiredReliabilityService {
     #[default]
     Acknowledged = 0,
     Unacknowledged = 1,
+}
+
+impl RequiredReliabilityService {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 EmitterName [UID 75]
@@ -6316,76 +6277,8 @@ pub enum EmitterSystemFunction {
 
 impl EmitterSystemFunction {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> EmitterSystemFunction {
-        match buf.get_u8() {
-            1 => EmitterSystemFunction::MultiFunction,
-            2 => EmitterSystemFunction::EarlyWarningSurveillance,
-            3 => EmitterSystemFunction::HeightFinder,
-            4 => EmitterSystemFunction::FireControl,
-            5 => EmitterSystemFunction::AcquisitionDetection,
-            6 => EmitterSystemFunction::Tracker,
-            7 => EmitterSystemFunction::GuidanceIllumination,
-            8 => EmitterSystemFunction::FiringPointLaunchPointLocation,
-            9 => EmitterSystemFunction::RangeOnly,
-            10 => EmitterSystemFunction::RadarAltimeter,
-            11 => EmitterSystemFunction::Imaging,
-            12 => EmitterSystemFunction::MotionDetection,
-            13 => EmitterSystemFunction::Navigation,
-            14 => EmitterSystemFunction::WeatherMeteorological,
-            15 => EmitterSystemFunction::Instrumentation,
-            16 => EmitterSystemFunction::IdentificationClassification,
-            17 => EmitterSystemFunction::AAAFireControl,
-            18 => EmitterSystemFunction::AirSearchBomb,
-            19 => EmitterSystemFunction::AirIntercept,
-            20 => EmitterSystemFunction::Altimeter,
-            21 => EmitterSystemFunction::AirMapping,
-            22 => EmitterSystemFunction::AirTrafficControl,
-            23 => EmitterSystemFunction::Beacon,
-            24 => EmitterSystemFunction::BattlefieldSurveillance,
-            25 => EmitterSystemFunction::GroundControlApproach,
-            26 => EmitterSystemFunction::GroundControlIntercept,
-            27 => EmitterSystemFunction::CoastalSurveillance,
-            28 => EmitterSystemFunction::DecoyMimic,
-            29 => EmitterSystemFunction::DataTransmission,
-            30 => EmitterSystemFunction::EarthSurveillance,
-            31 => EmitterSystemFunction::GunLayBeacon,
-            32 => EmitterSystemFunction::GroundMapping,
-            33 => EmitterSystemFunction::HarborSurveillance,
-            35 => EmitterSystemFunction::InstrumentLandingSystem,
-            36 => EmitterSystemFunction::IonosphericSound,
-            37 => EmitterSystemFunction::Interrogator,
-            42 => EmitterSystemFunction::Jammer,
-            47 => EmitterSystemFunction::MissileAcquisition,
-            48 => EmitterSystemFunction::MissileDownlink,
-            50 => EmitterSystemFunction::Space,
-            51 => EmitterSystemFunction::SurfaceSearch,
-            52 => EmitterSystemFunction::ShellTracking,
-            56 => EmitterSystemFunction::Television,
-            57 => EmitterSystemFunction::Unknown,
-            58 => EmitterSystemFunction::VideoRemoting,
-            59 => EmitterSystemFunction::ExperimentalOrTraining,
-            60 => EmitterSystemFunction::MissileGuidance,
-            61 => EmitterSystemFunction::MissileHoming,
-            62 => EmitterSystemFunction::MissileTracking,
-            71 => EmitterSystemFunction::NavigationDistanceMeasuringEquipment,
-            72 => EmitterSystemFunction::TerrainFollowing,
-            73 => EmitterSystemFunction::WeatherAvoidance,
-            74 => EmitterSystemFunction::ProximityFuse,
-            76 => EmitterSystemFunction::Radiosonde,
-            77 => EmitterSystemFunction::Sonobuoy,
-            78 => EmitterSystemFunction::BathythermalSensor,
-            79 => EmitterSystemFunction::TowedCounterMeasure,
-            80 => EmitterSystemFunction::DippingSonar,
-            81 => EmitterSystemFunction::TowedAcousticSensor,
-            96 => EmitterSystemFunction::WeaponNonlethal,
-            97 => EmitterSystemFunction::WeaponLethal,
-            98 => EmitterSystemFunction::TestEquipment,
-            99 => EmitterSystemFunction::AcquisitionTrack,
-            100 => EmitterSystemFunction::TrackGuidance,
-            101 => EmitterSystemFunction::GuidanceIlluminationTrackAcquisition,
-            102 => EmitterSystemFunction::SearchAcquisition,
-            _ => EmitterSystemFunction::Other,
-        }
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
@@ -8054,19 +7947,8 @@ pub enum RepairGroups {
 
 impl RepairGroups {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> RepairGroups {
-        match buf.get_u8() {
-            1 => RepairGroups::DriveTrain,
-            2 => RepairGroups::HullAirframeBody,
-            3 => RepairGroups::InterfacesWithEnvironment,
-            4 => RepairGroups::Weapons,
-            5 => RepairGroups::FuelSystems,
-            6 => RepairGroups::Electronics,
-            7 => RepairGroups::LifeSupportSystems,
-            8 => RepairGroups::HydraulicSystemsAndActuators,
-            9 => RepairGroups::AuxiliaryCraft,
-            _ => RepairGroups::GeneralRepairCodes,
-        }
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
@@ -8179,7 +8061,7 @@ pub enum SeparationVPPreEntityIndicator {
     NoStatement = 0,
     EntityIDExistedPriortoSeparationwithoutEntityStatePDU = 1,
     EntityIDExistedPriortoSeparationwithEntityStatePDUIssued = 2,
-    EntityInitiallyCreatedatSeparationEvent = 3,
+    EntityInitiallyCreatedatSelfelfvent = 3,
 }
 
 // SISO-REF-010-2023 IOActionIOWarfareType [UID 285]
@@ -8195,15 +8077,12 @@ pub enum IOActionIOWarfareType {
     PhysicalAttack = 6,
 }
 
-// SISO-REF-010-2023 IOActionIOSimulationSource [UID 286]
+// SISO-REF-010-2023 IOActionIOSimulationSorce [UID 286]
+    EntityInitiallyCreatedatSelfelfvent = 3,
+u
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IOActionIOSimulationSource {
-    #[default]
-    NoStatement = 0,
-}
-
-// SISO-REF-010-2023 IOActionIOActionType [UID 287]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+    Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
 pub enum IOActionIOActionType {
     #[default]
     NoStatement = 0,
@@ -9221,11 +9100,8 @@ pub enum AppearancePaintScheme {
 
 impl AppearancePaintScheme {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> AppearancePaintScheme {
-        match buf.get_u8() {
-            1 => AppearancePaintScheme::Camouflage,
-            _ => AppearancePaintScheme::UniformColor,
-        }
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
