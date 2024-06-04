@@ -139,7 +139,6 @@ impl Pdu for EntityStateUpdatePdu {
 mod tests {
     use super::EntityStateUpdatePdu;
     use crate::common::{
-        enums::LandPlatformAppearance,
         pdu::Pdu,
         pdu_header::{PduHeader, PduType, ProtocolFamily},
     };

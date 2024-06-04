@@ -8061,7 +8061,7 @@ pub enum SeparationVPPreEntityIndicator {
     NoStatement = 0,
     EntityIDExistedPriortoSeparationwithoutEntityStatePDU = 1,
     EntityIDExistedPriortoSeparationwithEntityStatePDUIssued = 2,
-    EntityInitiallyCreatedatSelfelfvent = 3,
+    EntityInitiallyCreatedAtSeparationEvent = 3,
 }
 
 // SISO-REF-010-2023 IOActionIOWarfareType [UID 285]
@@ -8077,12 +8077,15 @@ pub enum IOActionIOWarfareType {
     PhysicalAttack = 6,
 }
 
-// SISO-REF-010-2023 IOActionIOSimulationSorce [UID 286]
-    EntityInitiallyCreatedatSelfelfvent = 3,
-u
+// SISO-REF-010-2023 IOActionIOSimulationSource [UID 286]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IOActionIOSimulationSource {
-    Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    #[default]
+    NoStatement = 0,
+}
+
+// SISO-REF-010-2023 IOActionIOActionType [UID 287]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IOActionIOActionType {
     #[default]
     NoStatement = 0,
