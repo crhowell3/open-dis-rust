@@ -26,6 +26,13 @@ pub enum ProtocolVersion {
     IEEE1278_1_2012 = 7,
 }
 
+impl ProtocolVersion {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PDU Type [UID 4]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PduType {
@@ -105,6 +112,13 @@ pub enum PduType {
     Attribute = 72,
 }
 
+impl PduType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Protocol Family [UID 5]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ProtocolFamily {
@@ -123,6 +137,13 @@ pub enum ProtocolFamily {
     LiveEntityInformationInteraction = 11,
     NonRealTime = 12,
     InformationOperations = 13,
+}
+
+impl ProtocolFamily {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Force ID [UID 6]
@@ -162,6 +183,13 @@ pub enum ForceId {
     Neutral10 = 30,
 }
 
+impl ForceId {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Entity Kind [UID 7]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum EntityKind {
@@ -178,6 +206,13 @@ pub enum EntityKind {
     SensorEmitter = 9,
 }
 
+impl EntityKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Other Kinds [UID 8]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum OtherKinds {
@@ -188,6 +223,13 @@ pub enum OtherKinds {
     Surface = 3,
     Subsurface = 4,
     Space = 5,
+}
+
+impl OtherKinds {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Land Domain Categories [UID 9]
@@ -252,6 +294,13 @@ pub enum LandDomainCategories {
     NonMotorized,
     Trains,
     UtilityEmergencyCar,
+}
+
+impl LandDomainCategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Air Domain Categories [UID 10]
