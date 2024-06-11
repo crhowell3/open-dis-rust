@@ -5,13 +5,13 @@
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
-use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::{Country, EntityType, Kind},
+    enums::ForceId,
     euler_angles::EulerAngles,
     linear_velocity::LinearVelocity,
     pdu::Pdu,
@@ -51,7 +51,7 @@ impl Default for EntityStatePdu {
                 864 / 8,
             ),
             entity_id: EntityId::default(2),
-            force_id: ForceId::Other,
+            force_id: ForceId::default(),
             number_of_articulation_parameters: 0,
             entity_type: EntityType {
                 kind: Kind::Munition,
@@ -177,26 +177,6 @@ impl Pdu for EntityStatePdu {
             entity_capabilities,
             articulation_parameter: 0.0,
         })
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-/// Enum to represent the Force the entity is part of during the simulation.
-pub enum ForceId {
-    Other = 0,
-    Friendly = 1,
-    Opposing = 2,
-    Neutral = 3,
-}
-
-impl ForceId {
-    pub fn decode(buf: &mut BytesMut) -> ForceId {
-        match buf.get_u8() {
-            1 => ForceId::Friendly,
-            2 => ForceId::Opposing,
-            3 => ForceId::Neutral,
-            _ => ForceId::Other,
-        }
     }
 }
 
