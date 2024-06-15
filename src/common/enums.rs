@@ -1257,6 +1257,13 @@ pub enum DeadReckoningAlgorithm {
     DRMSimilartoFVWexceptinBodyCoordinates = 9,
 }
 
+impl DeadReckoningAlgorithm {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 EntityMarkingCharacterSet [UID 45]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum EntityMarkingCharacterSet {

@@ -4,13 +4,12 @@ use std::any::Any;
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
+    enums::DeadReckoningAlgorithm,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
     vector3_double::Vector3Double,
     vector3_float::Vector3Float,
 };
-
-use crate::entity_information::dead_reckoning_parameters::DeadReckoningAlgorithm;
 
 #[derive(Copy, Clone, Debug)]
 pub struct DesignatorPdu {
@@ -45,7 +44,7 @@ impl Default for DesignatorPdu {
             designator_wavelength: 0.0,
             designator_spot_wrt_designated: Vector3Float::new(0.0, 0.0, 0.0),
             designator_spot_location: Vector3Double::new(0.0, 0.0, 0.0),
-            dead_reckoning_algorithm: DeadReckoningAlgorithm::Other,
+            dead_reckoning_algorithm: DeadReckoningAlgorithm::default(),
             padding1: 0,
             padding2: 0,
             entity_linear_acceleration: Vector3Float::new(0.0, 0.0, 0.0),
@@ -84,7 +83,7 @@ impl Pdu for DesignatorPdu {
             let designator_wavelength = buffer.get_f32();
             let designator_spot_wrt_designated = Vector3Float::decode(&mut buffer);
             let designator_spot_location = Vector3Double::decode(&mut buffer);
-            let dead_reckoning_algorithm = DeadReckoningAlgorithm::from_u8(buffer.get_u8());
+            let dead_reckoning_algorithm = DeadReckoningAlgorithm::decode(&mut buffer);
             let padding1 = buffer.get_u8();
             let padding2 = buffer.get_i8();
             let entity_linear_acceleration = Vector3Float::decode(&mut buffer);
@@ -128,7 +127,7 @@ impl Pdu for DesignatorPdu {
         let designator_wavelength = buffer.get_f32();
         let designator_spot_wrt_designated = Vector3Float::decode(&mut buffer);
         let designator_spot_location = Vector3Double::decode(&mut buffer);
-        let dead_reckoning_algorithm = DeadReckoningAlgorithm::from_u8(buffer.get_u8());
+        let dead_reckoning_algorithm = DeadReckoningAlgorithm::decode(&mut buffer);
         let padding1 = buffer.get_u8();
         let padding2 = buffer.get_i8();
         let entity_linear_acceleration = Vector3Float::decode(&mut buffer);
