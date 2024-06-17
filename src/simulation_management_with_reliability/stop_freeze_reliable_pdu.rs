@@ -23,8 +23,9 @@ pub struct StopFreezeReliablePdu {
     pub request_id: u32,
 }
 
-impl StopFreezeReliablePdu {
-    pub fn default() -> Self {
+impl Default for StopFreezeReliablePdu {
+    #[must_use]
+    fn default() -> Self {
         StopFreezeReliablePdu {
             pdu_header: PduHeader::default(
                 PduType::StopFreezeReliable,
