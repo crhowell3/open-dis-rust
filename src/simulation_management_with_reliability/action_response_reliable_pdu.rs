@@ -1,11 +1,11 @@
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
+    enums::ActionResponseRequestStatus,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 use bytes::{Buf, BufMut, BytesMut};
-use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 #[derive(Copy, Clone, Debug)]
@@ -14,7 +14,7 @@ pub struct ActionResponseReliablePdu {
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub request_id: u32,
-    pub request_status: RequestStatus,
+    pub request_status: ActionResponseRequestStatus,
     pub number_of_fixed_datum_records: u32,
     pub number_of_variable_datum_records: u32,
     pub fixed_datum_records: u64,
@@ -32,7 +32,7 @@ impl Default for ActionResponseReliablePdu {
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
             request_id: 0,
-            request_status: RequestStatus::Other,
+            request_status: ActionResponseRequestStatus::default(),
             number_of_fixed_datum_records: 0,
             number_of_variable_datum_records: 0,
             fixed_datum_records: 0,
@@ -63,7 +63,7 @@ impl Pdu for ActionResponseReliablePdu {
             let originating_entity_id = EntityId::decode(&mut buffer);
             let receiving_entity_id = EntityId::decode(&mut buffer);
             let request_id = buffer.get_u32();
-            let request_status = RequestStatus::decode(&mut buffer);
+            let request_status = ActionResponseRequestStatus::decode(&mut buffer);
             let number_of_fixed_datum_records = buffer.get_u32();
             let number_of_variable_datum_records = buffer.get_u32();
             let mut fixed_datum_records: u64 = 0;
@@ -105,7 +105,7 @@ impl Pdu for ActionResponseReliablePdu {
         let originating_entity_id = EntityId::decode(&mut buffer);
         let receiving_entity_id = EntityId::decode(&mut buffer);
         let request_id = buffer.get_u32();
-        let request_status = RequestStatus::decode(&mut buffer);
+        let request_status = ActionResponseRequestStatus::decode(&mut buffer);
         let number_of_fixed_datum_records = buffer.get_u32();
         let number_of_variable_datum_records = buffer.get_u32();
         let mut fixed_datum_records: u64 = 0;
@@ -128,47 +128,6 @@ impl Pdu for ActionResponseReliablePdu {
             fixed_datum_records,
             variable_datum_records,
         })
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-pub enum RequestStatus {
-    #[default]
-    Other = 0,
-    Pending = 1,
-    Executing = 2,
-    PartiallyComplete = 3,
-    Complete = 4,
-    RequestRejected = 5,
-    RetransmitRequestNow = 6,
-    RetransmitRequestLater = 7,
-    InvalidTimeParameters = 8,
-    SimulationTimeExceeded = 9,
-    RequestDone = 10,
-    TACCSFLOSReplyTypeOne = 100,
-    TACCSFLOSReplyTypeTwo = 101,
-    JoinExerciseRequestRejected = 201,
-}
-
-impl RequestStatus {
-    #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> RequestStatus {
-        match buf.get_u32() {
-            1 => RequestStatus::Pending,
-            2 => RequestStatus::Executing,
-            3 => RequestStatus::PartiallyComplete,
-            4 => RequestStatus::Complete,
-            5 => RequestStatus::RequestRejected,
-            6 => RequestStatus::RetransmitRequestNow,
-            7 => RequestStatus::RetransmitRequestLater,
-            8 => RequestStatus::InvalidTimeParameters,
-            9 => RequestStatus::SimulationTimeExceeded,
-            10 => RequestStatus::RequestDone,
-            100 => RequestStatus::TACCSFLOSReplyTypeOne,
-            101 => RequestStatus::TACCSFLOSReplyTypeTwo,
-            201 => RequestStatus::JoinExerciseRequestRejected,
-            _ => RequestStatus::Other,
-        }
     }
 }
 

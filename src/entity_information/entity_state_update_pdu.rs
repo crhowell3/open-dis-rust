@@ -20,8 +20,6 @@ use crate::{
     warfare::data_types::variable_parameter::VariableParameter,
 };
 
-use super::entity_appearance::EntityAppearance;
-
 #[derive(Clone, Debug)]
 pub struct EntityStateUpdatePdu {
     pub pdu_header: PduHeader,
@@ -31,11 +29,12 @@ pub struct EntityStateUpdatePdu {
     pub entity_linear_velocity: LinearVelocity,
     pub entity_location: WorldCoordinate,
     pub entity_orientation: EulerAngles,
-    pub entity_appearance: EntityAppearance,
+    pub entity_appearance: u32,
     pub variable_parameter_records: Vec<VariableParameter>,
 }
 
 impl Default for EntityStateUpdatePdu {
+    #[must_use]
     fn default() -> Self {
         EntityStateUpdatePdu {
             pdu_header: PduHeader::default(
@@ -49,7 +48,7 @@ impl Default for EntityStateUpdatePdu {
             entity_linear_velocity: LinearVelocity::default(),
             entity_location: WorldCoordinate::default(),
             entity_orientation: EulerAngles::default(),
-            entity_appearance: EntityAppearance::default(),
+            entity_appearance: 0,
             variable_parameter_records: vec![],
         }
     }
@@ -64,7 +63,7 @@ impl Pdu for EntityStateUpdatePdu {
         self.entity_linear_velocity.serialize(buf);
         self.entity_location.serialize(buf);
         self.entity_orientation.serialize(buf);
-        self.entity_appearance.serialize(buf);
+        buf.put_u32(self.entity_appearance);
         for i in 0..self.variable_parameter_records.len() {
             self.variable_parameter_records[i].serialize(buf);
         }
@@ -79,7 +78,7 @@ impl Pdu for EntityStateUpdatePdu {
             let entity_linear_velocity = LinearVelocity::decode(&mut buffer);
             let entity_location = WorldCoordinate::decode(&mut buffer);
             let entity_orientation = EulerAngles::decode(&mut buffer);
-            let entity_appearance = EntityAppearance::decode(&mut buffer);
+            let entity_appearance = buffer.get_u32();
             let mut variable_parameter_records: Vec<VariableParameter> = vec![];
             for _i in 0..number_of_variable_parameters {
                 variable_parameter_records.push(VariableParameter::decode(&mut buffer));
@@ -117,7 +116,7 @@ impl Pdu for EntityStateUpdatePdu {
         let entity_linear_velocity = LinearVelocity::decode(&mut buffer);
         let entity_location = WorldCoordinate::decode(&mut buffer);
         let entity_orientation = EulerAngles::decode(&mut buffer);
-        let entity_appearance = EntityAppearance::decode(&mut buffer);
+        let entity_appearance = buffer.get_u32();
         let mut variable_parameter_records: Vec<VariableParameter> = vec![];
         for _i in 0..number_of_variable_parameters {
             variable_parameter_records.push(VariableParameter::decode(&mut buffer));

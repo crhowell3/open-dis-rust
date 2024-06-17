@@ -4,30 +4,19 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-use num_derive::FromPrimitive;
+use bytes::{BufMut, BytesMut};
 
 use crate::common::{
-    angular_velocity_vector::AngularVelocity, linear_acceleration::LinearAcceleration,
+    angular_velocity_vector::AngularVelocity, enums::DeadReckoningAlgorithm,
+    linear_acceleration::LinearAcceleration,
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct DeadReckoningParameters {
     pub dead_reckoning_algorithm: DeadReckoningAlgorithm,
     pub dead_reckoning_other_parameters: u8,
     pub entity_linear_acceleration: LinearAcceleration,
     pub entity_angular_velocity: AngularVelocity,
-}
-
-impl Default for DeadReckoningParameters {
-    fn default() -> Self {
-        DeadReckoningParameters {
-            dead_reckoning_algorithm: DeadReckoningAlgorithm::Static,
-            dead_reckoning_other_parameters: 0,
-            entity_linear_acceleration: LinearAcceleration::default(),
-            entity_angular_velocity: AngularVelocity::default(),
-        }
-    }
 }
 
 impl DeadReckoningParameters {
@@ -54,43 +43,10 @@ impl DeadReckoningParameters {
 
     pub fn decode(buf: &mut BytesMut) -> DeadReckoningParameters {
         DeadReckoningParameters {
-            dead_reckoning_algorithm: DeadReckoningAlgorithm::from_u8(buf.get_u8()),
+            dead_reckoning_algorithm: DeadReckoningAlgorithm::decode(buf),
             dead_reckoning_other_parameters: 0,
             entity_linear_acceleration: LinearAcceleration::decode(buf),
             entity_angular_velocity: AngularVelocity::decode(buf),
-        }
-    }
-}
-
-#[derive(Debug, FromPrimitive, PartialEq, Copy, Clone, Default)]
-pub enum DeadReckoningAlgorithm {
-    #[default]
-    Other = 0,
-    Static = 1,
-    DRMFPW = 2,
-    DRMRPW = 3,
-    DRMRVW = 4,
-    DRMFVW = 5,
-    DRMFPB = 6,
-    DRMRPB = 7,
-    DRMRVB = 8,
-    DRMFVB = 9,
-}
-
-impl DeadReckoningAlgorithm {
-    #[must_use]
-    pub fn from_u8(bit: u8) -> DeadReckoningAlgorithm {
-        match bit {
-            1 => DeadReckoningAlgorithm::Static,
-            2 => DeadReckoningAlgorithm::DRMFPW,
-            3 => DeadReckoningAlgorithm::DRMRPW,
-            4 => DeadReckoningAlgorithm::DRMRVW,
-            5 => DeadReckoningAlgorithm::DRMFVW,
-            6 => DeadReckoningAlgorithm::DRMFPB,
-            7 => DeadReckoningAlgorithm::DRMRPB,
-            8 => DeadReckoningAlgorithm::DRMRVB,
-            9 => DeadReckoningAlgorithm::DRMFVB,
-            _ => DeadReckoningAlgorithm::Other,
         }
     }
 }
