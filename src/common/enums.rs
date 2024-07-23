@@ -9063,6 +9063,13 @@ pub enum AircraftTypeWake {
     NoStatement = 0,
 }
 
+impl AircraftTypeWake {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DataCategory [UID 369]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum DataCategory {
@@ -9070,6 +9077,13 @@ pub enum DataCategory {
     NoStatement = 0,
     FunctionalData = 1,
     TransponderInterrogatorDataLinkMessages = 2,
+}
+
+impl DataCategory {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TILinkType [UID 370]
@@ -9091,6 +9105,13 @@ pub enum TILinkType {
     AutomaticDependentSurveillanceB = 12,
 }
 
+impl TILinkType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AntennaStatus [UID 371]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AntennaStatus {
@@ -9098,6 +9119,13 @@ pub enum AntennaStatus {
     NoStatement = 0,
     NotAbletoEmit = 1,
     AbletoEmit = 2,
+}
+
+impl AntennaStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TransmissionIndicator [UID 372]
@@ -9110,6 +9138,13 @@ pub enum TransmissionIndicator {
     SquitterTransmission = 3,
 }
 
+impl TransmissionIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ReplyAmplification [UID 373]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ReplyAmplification {
@@ -9120,12 +9155,26 @@ pub enum ReplyAmplification {
     UnabletoRespond = 3,
 }
 
+impl ReplyAmplification {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DEFireFlagsStateUpdateFlag [UID 374]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum DEFireFlagsStateUpdateFlag {
     #[default]
     UpdateDuetoHeartbeatTimer = 0,
     StateChange = 1,
+}
+
+impl DEFireFlagsStateUpdateFlag {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 ComponentVisualDamageStatusSmoke [UID 375]
@@ -9138,6 +9187,13 @@ pub enum ComponentVisualDamageStatusSmoke {
     HeavySmoke = 3,
 }
 
+impl ComponentVisualDamageStatusSmoke {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ComponentVisualDamageStatusSurfaceDamage [UID 376]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ComponentVisualDamageStatusSurfaceDamage {
@@ -9148,12 +9204,26 @@ pub enum ComponentVisualDamageStatusSurfaceDamage {
     OneorMoreHolesBurnedCompletelythroughSurface = 3,
 }
 
+impl ComponentVisualDamageStatusSurfaceDamage {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 GridAxisDescriptorAxisType [UID 377]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum GridAxisDescriptorAxisType {
     #[default]
     RegularAxis = 0,
     IrregularAxis = 1,
+}
+
+impl GridAxisDescriptorAxisType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearancePaintScheme [UID 378]
