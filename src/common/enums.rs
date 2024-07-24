@@ -1188,6 +1188,13 @@ pub enum Country {
     PalestineStateof = 282,
 }
 
+impl Country {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LandPlatformAppearance [UID 31]
 bitflags! {
     #[derive(Copy, Clone, Debug, PartialEq)]
@@ -10201,6 +10208,13 @@ pub enum PlatformSurfaceFishingVesselSubcategories {
     MastedFishingVessel = 5,
 }
 
+impl PlatformSurfaceFishingVesselSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformSurfaceOtherVesselsSubcategories [UID 448]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformSurfaceOtherVesselsSubcategories {
@@ -10217,6 +10231,13 @@ pub enum PlatformSurfaceOtherVesselsSubcategories {
     RefugeeRaft = 10,
 }
 
+impl PlatformSurfaceOtherVesselsSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 CryptoKeyIDCryptoMode [UID 449]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum CryptoKeyIDCryptoMode {
@@ -10224,6 +10245,15 @@ pub enum CryptoKeyIDCryptoMode {
     Baseband = 0,
     Diphase = 1,
 }
+
+impl CryptoKeyIDCryptoMode {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
+// TODO(@anyone) Implement bitfields [UID 450 - 462]
 
 // SISO-REF-010-2023 Color [UID 463]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -10387,11 +10417,25 @@ pub enum Color {
     White = 159,
 }
 
+impl Color {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 BuildingPaintScheme [UID 464]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum BuildingPaintScheme {
     #[default]
     Default = 0,
+}
+
+impl BuildingPaintScheme {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Season [UID 465]
@@ -10404,6 +10448,13 @@ pub enum Season {
     Autumn = 3,
 }
 
+impl Season {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Material [UID 466]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Material {
@@ -10414,13 +10465,27 @@ pub enum Material {
     Road = 3,
 }
 
-// SISO-REF-010-2023 Link1111BFidelityLevel [UID 467]
+impl Material {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
+// SISO-REF-010-2023 Link11_11BFidelityLevel [UID 467]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum Link1111BFidelityLevel {
+pub enum Link11_11BFidelityLevel {
     #[default]
     FidelityLevel0 = 0,
     FidelityLevel1 = 1,
     FidelityLevel2 = 2,
+}
+
+impl Link11_11BFidelityLevel {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Link11TerminalMode [UID 468]
@@ -10432,8 +10497,16 @@ pub enum Link11TerminalMode {
     Picket = 2,
 }
 
+impl Link11TerminalMode {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Link11DataTerminalSetIndicator [UID 469]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[deprecated(note = "Enumeration is deprecated and only serves an historical purpose")]
 pub enum Link11DataTerminalSetIndicator {
     #[default]
     NoStatement = 0,
@@ -10444,6 +10517,13 @@ pub enum Link11DataTerminalSetIndicator {
     ReceiveDataError = 5,
     CodeError = 6,
     SynchronizationComplete = 7,
+}
+
+impl Link11DataTerminalSetIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Link11ModeofOperation [UID 470]
@@ -10458,12 +10538,26 @@ pub enum Link11ModeofOperation {
     Broadcast = 5,
 }
 
+impl Link11ModeofOperation {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormsSubcategoryIranianWeapons [UID 471]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormsSubcategoryIranianWeapons {
     #[default]
     Misagh2 = 1,
     RBS70 = 2,
+}
+
+impl LifeFormsSubcategoryIranianWeapons {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormLandCategories [UID 472]
@@ -10499,6 +10593,13 @@ pub enum LifeFormLandCategories {
     Marsupial = 206,
 }
 
+impl LifeFormLandCategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSubcategoryEquipmentClass [UID 473]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSubcategoryEquipmentClass {
@@ -10532,6 +10633,13 @@ pub enum LifeFormHumanSubcategoryEquipmentClass {
     AnimalCompanion = 160,
     PersonalElectronics = 171,
     LogisticsEquipment = 172,
+}
+
+impl LifeFormHumanSubcategoryEquipmentClass {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificAssaultRifles [UID 474]
@@ -10603,6 +10711,13 @@ pub enum LifeFormHumanSpecificAssaultRifles {
     _8mmLebelM16 = 240,
 }
 
+impl LifeFormHumanSpecificAssaultRifles {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificHighPowerRifles [UID 475]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificHighPowerRifles {
@@ -10617,6 +10732,13 @@ pub enum LifeFormHumanSpecificHighPowerRifles {
     _7_62mmHK41716Recce = 16,
     _7_65mmBARM1918 = 50,
     _7_65mmM1Garand = 51,
+}
+
+impl LifeFormHumanSpecificHighPowerRifles {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormCategoriesUS [UID 476]
@@ -10644,6 +10766,13 @@ pub enum LifeFormCategoriesUS {
     CountySheriffPolice = 72,
     MunicipalPolice = 73,
     RedCross = 124,
+}
+
+impl LifeFormCategoriesUS {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormExtraPersonalData [UID 477]
@@ -10690,6 +10819,13 @@ pub enum LifeFormExtraPersonalData {
     ElderlyFemale = 190,
 }
 
+impl LifeFormExtraPersonalData {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormAirCategories [UID 478]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormAirCategories {
@@ -10697,6 +10833,13 @@ pub enum LifeFormAirCategories {
     Bird = 200,
     Insect = 201,
     Mammal = 202,
+}
+
+impl LifeFormAirCategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormSubsurfaceCategories [UID 479]
@@ -10709,6 +10852,15 @@ pub enum LifeFormSubsurfaceCategories {
     Crustacean = 203,
     Insect = 204,
 }
+
+impl LifeFormSubsurfaceCategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
+// TODO(@anyone) Implement bitfield UID 480
 
 // SISO-REF-010-2023 LifeFormHumanSpecificSniper [UID 481]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -10748,6 +10900,13 @@ pub enum LifeFormHumanSpecificSniper {
     _20mmDenelNTW20 = 200,
 }
 
+impl LifeFormHumanSpecificSniper {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificSubMachineGun [UID 482]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificSubMachineGun {
@@ -10767,6 +10926,15 @@ pub enum LifeFormHumanSpecificSubMachineGun {
     _9mmUzi = 69,
 }
 
+impl LifeFormHumanSpecificSubMachineGun {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
+// TODO(@anyone) Implement bitfields [UID 483 - 489]
+
 // SISO-REF-010-2023 AustralianCategoryOverlay [UID 500]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AustralianCategoryOverlay {
@@ -10777,6 +10945,13 @@ pub enum AustralianCategoryOverlay {
     AustralianSpecialOperationsCommand = 30,
     AustralianDepartmentofHomeAffairs = 51,
     AustralianFederalPolice = 52,
+}
+
+impl AustralianCategoryOverlay {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormCategoriesAfghanistan [UID 501]
@@ -10798,6 +10973,13 @@ pub enum LifeFormCategoriesAfghanistan {
     Press = 133,
 }
 
+impl LifeFormCategoriesAfghanistan {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificEquipmentClass [UID 505]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificEquipmentClass {
@@ -10810,19 +10992,45 @@ pub enum LifeFormHumanSpecificEquipmentClass {
     Spotlight = 6,
 }
 
+impl LifeFormHumanSpecificEquipmentClass {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 CivilianSubmarineSubcategories [UID 506]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
 pub enum CivilianSubmarineSubcategories {}
 
+impl CivilianSubmarineSubcategories {
+    pub fn decode(_buf: &mut BytesMut) -> Self {
+        unimplemented!()
+    }
+}
+
 // SISO-REF-010-2023 PlatformSubsurfaceCivilianSubmersibleSubcategories [UID 507]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
 pub enum CivilianSubmersibleSubcategories {}
+
+impl CivilianSubmersibleSubcategories {
+    pub fn decode(_buf: &mut BytesMut) -> Self {
+        unimplemented!()
+    }
+}
 
 // SISO-REF-010-2023 PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories [UID 508]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories {
     #[default]
     NarcoSubmarine = 1,
+}
+
+impl PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LeafCoverage [UID 509]
@@ -10833,6 +11041,13 @@ pub enum LeafCoverage {
     Bare = 1,
 }
 
+impl LeafCoverage {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificAntiMaterielRifles [UID 510]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificAntiMaterielRifles {
@@ -10840,6 +11055,13 @@ pub enum LifeFormHumanSpecificAntiMaterielRifles {
     Other = 0,
     _12_7mmAW50 = 10,
     _12_7mmAW50F = 11,
+}
+
+impl LifeFormHumanSpecificAntiMaterielRifles {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificShotGuns [UID 511]
@@ -10988,6 +11210,13 @@ pub enum LifeFormHumanSpecificShotGuns {
     _18_5mmNorincoHP9112Gauge = 220,
 }
 
+impl LifeFormHumanSpecificShotGuns {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificMortars [UID 512]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificMortars {
@@ -10997,6 +11226,13 @@ pub enum LifeFormHumanSpecificMortars {
     _81mmF2 = 50,
     _81mmL16 = 51,
     _81mmM252 = 52,
+}
+
+impl LifeFormHumanSpecificMortars {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificHandGuns [UID 513]
@@ -11021,6 +11257,13 @@ pub enum LifeFormHumanSpecificHandGuns {
     _10mmGlock20 = 60,
 }
 
+impl LifeFormHumanSpecificHandGuns {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificWeaponNonspecific [UID 514]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificWeaponNonspecific {
@@ -11030,6 +11273,13 @@ pub enum LifeFormHumanSpecificWeaponNonspecific {
     Machete = 50,
     ExplosiveVest = 100,
     M18A1Claymore = 150,
+}
+
+impl LifeFormHumanSpecificWeaponNonspecific {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificGrenadeLaunchers [UID 515]
@@ -11077,6 +11327,13 @@ pub enum LifeFormHumanSpecificGrenadeLaunchers {
     _40x53mmCZW40 = 95,
     _45mmDP64 = 100,
     _20x42mmNeopupPAW20 = 105,
+}
+
+impl LifeFormHumanSpecificGrenadeLaunchers {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificMachineGuns [UID 516]
@@ -11173,6 +11430,13 @@ pub enum LifeFormHumanSpecificMachineGuns {
     _5_56x45mmQBB951LMG = 166,
 }
 
+impl LifeFormHumanSpecificMachineGuns {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificGrenadeLaunchingMachineGun [UID 517]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificGrenadeLaunchingMachineGun {
@@ -11197,6 +11461,13 @@ pub enum LifeFormHumanSpecificGrenadeLaunchingMachineGun {
     _40x53mmDaewooPrecisionIndustriesK4 = 65,
     _25x59mmXM307AdvancedCrewServedWeapon = 70,
     _35x32mmQLZ87 = 80,
+}
+
+impl LifeFormHumanSpecificGrenadeLaunchingMachineGun {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificAntiTankRockets [UID 518]
@@ -11272,6 +11543,13 @@ pub enum LifeFormHumanSpecificAntiTankRockets {
     _90mmMATADORAS = 138,
     _78mmMARAAntiTankRocketLauncher = 140,
     _120mmType98PF98 = 145,
+}
+
+impl LifeFormHumanSpecificAntiTankRockets {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificAntiTankMissiles [UID 519]
@@ -11355,6 +11633,13 @@ pub enum LifeFormHumanSpecificAntiTankMissiles {
     _102mmMathogo = 200,
 }
 
+impl LifeFormHumanSpecificAntiTankMissiles {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificManPortableAirDefenseSystem [UID 520]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificManPortableAirDefenseSystem {
@@ -11383,6 +11668,13 @@ pub enum LifeFormHumanSpecificManPortableAirDefenseSystem {
     _80mmType91KinSAM = 50,
     _80mmKPSAMShunGung = 55,
     _106mmRBS70 = 60,
+}
+
+impl LifeFormHumanSpecificManPortableAirDefenseSystem {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificRecoillessRifles [UID 521]
@@ -11420,6 +11712,13 @@ pub enum LifeFormHumanSpecificRecoillessRifles {
     _105mmLG42 = 97,
 }
 
+impl LifeFormHumanSpecificRecoillessRifles {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificFlameRockets [UID 522]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificFlameRockets {
@@ -11431,6 +11730,13 @@ pub enum LifeFormHumanSpecificFlameRockets {
     _93mmRPOAShmel = 50,
     _93mmRPOZShmel = 51,
     _93mmRPODShmel = 52,
+}
+
+impl LifeFormHumanSpecificFlameRockets {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificFlameThrowers [UID 523]
@@ -11454,6 +11760,13 @@ pub enum LifeFormHumanSpecificFlameThrowers {
     Type100 = 51,
 }
 
+impl LifeFormHumanSpecificFlameThrowers {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificDroneGuns [UID 524]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificDroneGuns {
@@ -11463,6 +11776,13 @@ pub enum LifeFormHumanSpecificDroneGuns {
     DroneGunMKII = 16,
 }
 
+impl LifeFormHumanSpecificDroneGuns {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificLogisticsEQClass [UID 525]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificLogisticsEQClass {
@@ -11470,11 +11790,25 @@ pub enum LifeFormHumanSpecificLogisticsEQClass {
     SlingLoadPendant = 1,
 }
 
+impl LifeFormHumanSpecificLogisticsEQClass {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeFormHumanSpecificPersonalElectronicsClass [UID 526]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeFormHumanSpecificPersonalElectronicsClass {
     #[default]
     CellPhone = 1,
+}
+
+impl LifeFormHumanSpecificPersonalElectronicsClass {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormHumanSpecificLasersClass [UID 527]
@@ -11485,12 +11819,26 @@ pub enum LifeFormHumanSpecificLasersClass {
     GenericLaserPointer = 2,
 }
 
+impl LifeFormHumanSpecificLasersClass {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransmitterDetailSATCOMModulation [UID 589]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransmitterDetailSATCOMModulation {
     #[default]
     Other = 0,
     NoDelay = 1,
+}
+
+impl TransmitterDetailSATCOMModulation {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SupplyDomain [UID 600]
@@ -11512,6 +11860,13 @@ pub enum SupplyDomain {
     Class12SlingLoads = 12,
 }
 
+impl SupplyDomain {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Class1SupplyCategorySubsistence [UID 601]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Class1SupplyCategorySubsistence {
@@ -11522,6 +11877,13 @@ pub enum Class1SupplyCategorySubsistence {
     RRefrigerated = 4,
     SOtherNonRefrigerated = 5,
     WWater = 6,
+}
+
+impl Class1SupplyCategorySubsistence {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Class2SupplyCategoryClothingIndividualEquipmentToolsAdminSupplies [UID 602]
@@ -11538,6 +11900,13 @@ pub enum Class2SupplyCategoryClothingIndividualEquipmentToolsAdminSupplies {
     TIndustrialSupplies = 8,
 }
 
+impl Class2SupplyCategoryClothingIndividualEquipmentToolsAdminSupplies {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Class3SupplyCategoryPetroleumOilsLubricants [UID 603]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Class3SupplyCategoryPetroleumOilsLubricants {
@@ -11546,6 +11915,13 @@ pub enum Class3SupplyCategoryPetroleumOilsLubricants {
     APOLforAirVehicles = 2,
     WPOLforLandVehicles = 3,
     PPackagedPOL = 4,
+}
+
+impl Class3SupplyCategoryPetroleumOilsLubricants {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Class4SupplyCategoryConstructionMaterials [UID 604]
@@ -11557,11 +11933,25 @@ pub enum Class4SupplyCategoryConstructionMaterials {
     BBarrier = 3,
 }
 
+impl Class4SupplyCategoryConstructionMaterials {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Class6SupplyCategoryPersonnelDemandItems [UID 606]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Class6SupplyCategoryPersonnelDemandItems {
     #[default]
     Other = 1,
+}
+
+impl Class6SupplyCategoryPersonnelDemandItems {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Class7SupplyCategoryMajorItems [UID 607]
@@ -11595,6 +11985,13 @@ pub enum Class7SupplyCategoryMajorItems {
     FLIRpod = 33,
 }
 
+impl Class7SupplyCategoryMajorItems {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Class8SupplyCategoryMedicalMaterial [UID 608]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Class8SupplyCategoryMedicalMaterial {
@@ -11602,6 +11999,13 @@ pub enum Class8SupplyCategoryMedicalMaterial {
     Other = 1,
     AMedicalMateriel = 2,
     BBloodFluids = 3,
+}
+
+impl Class8SupplyCategoryMedicalMaterial {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Class9SupplyCategoryRepairPartsandComponents [UID 609]
@@ -11620,11 +12024,25 @@ pub enum Class9SupplyCategoryRepairPartsandComponents {
     XAircraftEngines = 10,
 }
 
+impl Class9SupplyCategoryRepairPartsandComponents {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Class10SupplyCategoryMaterialtoSupportNonMilitaryPrograms [UID 610]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum Class10SupplyCategoryMaterialtoSupportNonMilitaryPrograms {
+pub enum Class10SupplyCategoryMaterialToSupportNonMilitaryPrograms {
     #[default]
     Other = 1,
+}
+
+impl Class10SupplyCategoryMaterialToSupportNonMilitaryPrograms {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Class11SupplyCategorySupplies [UID 611]
@@ -11636,6 +12054,13 @@ pub enum Class11SupplyCategorySupplies {
     FuelTanksDrumsandBladders = 3,
     Chests = 4,
     Boxes = 5,
+}
+
+impl Class11SupplyCategorySupplies {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Class12SupplyCategorySlingLoads [UID 612]
@@ -11656,6 +12081,13 @@ pub enum Class12SupplyCategorySlingLoads {
     SlingLoadConcreteBlock = 12,
 }
 
+impl Class12SupplyCategorySlingLoads {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 LifeSavingEquipment [UID 633]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum LifeSavingEquipment {
@@ -11664,6 +12096,13 @@ pub enum LifeSavingEquipment {
     Liferaft = 2,
     MOBBoat = 3,
     Lifebuoy = 4,
+}
+
+impl LifeSavingEquipment {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IslandSubcategory [UID 715]
@@ -11679,6 +12118,13 @@ pub enum IslandSubcategory {
     Islands100000km2andGreater = 6,
 }
 
+impl IslandSubcategory {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Link11MessageSubType [UID 730]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Link11MessageSubType {
@@ -11688,6 +12134,13 @@ pub enum Link11MessageSubType {
     DataStart = 2,
     Data = 3,
     DataStop = 4,
+}
+
+impl Link11MessageSubType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Link11MessageTypeIdentifier [UID 731]
@@ -11703,6 +12156,13 @@ pub enum Link11MessageTypeIdentifier {
     NetSync = 6,
 }
 
+impl Link11MessageTypeIdentifier {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Link11DataSignallingRate [UID 732]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Link11DataSignallingRate {
@@ -11714,6 +12174,13 @@ pub enum Link11DataSignallingRate {
     _2400bps = 4,
 }
 
+impl Link11DataSignallingRate {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Link11SignalIntegrationInterval [UID 733]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Link11SignalIntegrationInterval {
@@ -11721,6 +12188,13 @@ pub enum Link11SignalIntegrationInterval {
     NoStatement = 0,
     _9ms = 1,
     _18ms = 2,
+}
+
+impl Link11SignalIntegrationInterval {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Link11SignalWaveform [UID 734]
@@ -11732,12 +12206,26 @@ pub enum Link11SignalWaveform {
     SingleToneLinkElevenWaveform = 2,
 }
 
-// SISO-REF-010-2023 Link1111BEncryptionFlag [UID 735]
+impl Link11SignalWaveform {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
+// SISO-REF-010-2023 Link11_11BEncryptionFlag [UID 735]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum Link1111BEncryptionFlag {
+pub enum Link11_11BEncryptionFlag {
     #[default]
     NoEncryptionUsed = 0,
     EncryptionUsed = 1,
+}
+
+impl Link11_11BEncryptionFlag {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SISOSTD002Version [UID 736]
@@ -11746,6 +12234,13 @@ pub enum SISOSTD002Version {
     #[default]
     SISOSTD0022006 = 0,
     SISOSTD0022021 = 1,
+}
+
+impl SISOSTD002Version {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Link11BLinkState [UID 737]
@@ -11759,6 +12254,13 @@ pub enum Link11BLinkState {
     Operational = 4,
 }
 
+impl Link11BLinkState {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Link11BModeofOperation [UID 738]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Link11BModeofOperation {
@@ -11769,6 +12271,13 @@ pub enum Link11BModeofOperation {
     Receiveonly = 3,
 }
 
+impl Link11BModeofOperation {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Link11BMessageSubType [UID 739]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Link11BMessageSubType {
@@ -11776,6 +12285,13 @@ pub enum Link11BMessageSubType {
     NoStatement = 0,
     TransmissionFrame = 1,
     StandbySignal = 2,
+}
+
+impl Link11BMessageSubType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Link11BDataSignalingRate [UID 740]
@@ -11788,6 +12304,13 @@ pub enum Link11BDataSignalingRate {
     _600bps = 5,
 }
 
+impl Link11BDataSignalingRate {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Link11BModulationStandard [UID 741]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 #[allow(non_camel_case_types)]
@@ -11795,6 +12318,13 @@ pub enum Link11BModulationStandard {
     #[default]
     NoStatement = 0,
     CCITTV_23 = 1,
+}
+
+impl Link11BModulationStandard {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 CIGIExtensionPacketID [UID 780]
@@ -11806,6 +12336,13 @@ pub enum CIGIExtensionPacketID {
     StateNotificationRequestPacketID = 4098,
     StateNotificationResponsePacketID = 4099,
     GlobalRefFrameDefPacketID = 5000,
+}
+
+impl CIGIExtensionPacketID {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Link16Version [UID 800]
@@ -11825,12 +12362,26 @@ pub enum Link16Version {
     STANAG5516Ed8 = 108,
 }
 
+impl Link16Version {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AircraftIDSource [UID 801]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AircraftIDSource {
     #[default]
     ModeSAircraftIdentificationFieldValue = 0,
     GICBIFFDataRecordAvailable = 1,
+}
+
+impl AircraftIDSource {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 ClothingIRSignature [UID 802]
@@ -11841,6 +12392,13 @@ pub enum ClothingIRSignature {
     Camouflage = 1,
     ThermalBlanket = 2,
     Other = 3,
+}
+
+impl ClothingIRSignature {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 DamageArea [UID 889]
@@ -11855,4 +12413,11 @@ pub enum DamageArea {
     DamageArea6 = 5,
     DamageArea7 = 6,
     DamageArea8 = 7,
+}
+
+impl DamageArea {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
