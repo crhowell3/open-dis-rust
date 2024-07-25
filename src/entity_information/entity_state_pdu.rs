@@ -5,13 +5,13 @@
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
-use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
-    entity_type::{Country, EntityType, Kind},
+    entity_type::EntityType,
+    enums::{Country, EntityKind, ForceId},
     euler_angles::EulerAngles,
     linear_velocity::LinearVelocity,
     pdu::Pdu,
@@ -20,8 +20,8 @@ use crate::common::{
 };
 
 use super::{
-    dead_reckoning_parameters::DeadReckoningParameters, entity_appearance::EntityAppearance,
-    entity_capabilities::EntityCapabilities, entity_marking::EntityMarking,
+    dead_reckoning_parameters::DeadReckoningParameters, entity_capabilities::EntityCapabilities,
+    entity_marking::EntityMarking,
 };
 
 #[derive(Clone, Debug)]
@@ -35,7 +35,7 @@ pub struct EntityStatePdu {
     pub entity_linear_velocity: LinearVelocity,
     pub entity_location: WorldCoordinate,
     pub entity_orientation: EulerAngles,
-    pub entity_appearance: EntityAppearance,
+    pub entity_appearance: u32,
     pub dead_reckoning_parameters: DeadReckoningParameters,
     pub entity_marking: EntityMarking,
     pub entity_capabilities: EntityCapabilities,
@@ -51,21 +51,21 @@ impl Default for EntityStatePdu {
                 864 / 8,
             ),
             entity_id: EntityId::default(2),
-            force_id: ForceId::Other,
+            force_id: ForceId::default(),
             number_of_articulation_parameters: 0,
             entity_type: EntityType {
-                kind: Kind::Munition,
+                kind: EntityKind::default(),
                 domain: 1,
-                country: Country::Other,
+                country: Country::default(),
                 category: 3,
                 subcategory: 0,
                 specific: 0,
                 extra: 0,
             },
             alternative_entity_type: EntityType {
-                kind: Kind::Munition,
+                kind: EntityKind::default(),
                 domain: 1,
-                country: Country::Other,
+                country: Country::default(),
                 category: 0,
                 subcategory: 0,
                 specific: 0,
@@ -74,7 +74,7 @@ impl Default for EntityStatePdu {
             entity_linear_velocity: LinearVelocity::new(0.0, 0.0, 0.0),
             entity_location: WorldCoordinate::new(0.0, 0.0, 0.0),
             entity_orientation: EulerAngles::new(0.0, 0.0, 0.0),
-            entity_appearance: EntityAppearance::default(),
+            entity_appearance: 0,
             dead_reckoning_parameters: DeadReckoningParameters::default(),
             entity_marking: EntityMarking::default(String::new()),
             entity_capabilities: EntityCapabilities::default(),
@@ -94,7 +94,7 @@ impl Pdu for EntityStatePdu {
         self.entity_linear_velocity.serialize(buf);
         self.entity_location.serialize(buf);
         self.entity_orientation.serialize(buf);
-        self.entity_appearance.serialize(buf);
+        buf.put_u32(self.entity_appearance);
         self.dead_reckoning_parameters.serialize(buf);
         self.entity_marking.serialize(buf);
         self.entity_capabilities.serialize(buf);
@@ -111,7 +111,7 @@ impl Pdu for EntityStatePdu {
             let linear_velocity = LinearVelocity::decode(&mut buffer);
             let world_coordinate = WorldCoordinate::decode(&mut buffer);
             let orientation = EulerAngles::decode(&mut buffer);
-            let appearance = EntityAppearance::decode(&mut buffer);
+            let appearance = buffer.get_u32();
             let dead_reckoning = DeadReckoningParameters::decode(&mut buffer);
             let entity_marking = EntityMarking::decode(&mut buffer);
             let entity_capabilities = EntityCapabilities::decode(&mut buffer);
@@ -156,7 +156,7 @@ impl Pdu for EntityStatePdu {
         let linear_velocity = LinearVelocity::decode(&mut buffer);
         let world_coordinate = WorldCoordinate::decode(&mut buffer);
         let orientation = EulerAngles::decode(&mut buffer);
-        let appearance = EntityAppearance::decode(&mut buffer);
+        let appearance = buffer.get_u32();
         let dead_reckoning_parameters = DeadReckoningParameters::decode(&mut buffer);
         let entity_marking = EntityMarking::decode(&mut buffer);
         let entity_capabilities = EntityCapabilities::decode(&mut buffer);
@@ -177,26 +177,6 @@ impl Pdu for EntityStatePdu {
             entity_capabilities,
             articulation_parameter: 0.0,
         })
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-/// Enum to represent the Force the entity is part of during the simulation.
-pub enum ForceId {
-    Other = 0,
-    Friendly = 1,
-    Opposing = 2,
-    Neutral = 3,
-}
-
-impl ForceId {
-    pub fn decode(buf: &mut BytesMut) -> ForceId {
-        match buf.get_u8() {
-            1 => ForceId::Friendly,
-            2 => ForceId::Opposing,
-            3 => ForceId::Neutral,
-            _ => ForceId::Other,
-        }
     }
 }
 
