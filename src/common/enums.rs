@@ -506,7 +506,7 @@ pub enum MunitionCategory {
     Fixed = 3,
 }
 
-impl MunitionKind {
+impl MunitionCategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -642,7 +642,7 @@ pub enum USWeaponSubcategories {
     MachinegunM2407_62mm = 134,
 }
 
-impl MunitionKind {
+impl USWeaponSubcategories {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -707,7 +707,7 @@ pub enum RussiaWeaponSubcategories {
     Type69RPG = 253,
 }
 
-impl MunitionKind {
+impl RussiaWeaponSubcategories {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -732,7 +732,7 @@ pub enum UKWeaponSubcategories {
     MilanATmissile = 12,
 }
 
-impl MunitionKind {
+impl UKWeaponSubcategories {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -753,7 +753,7 @@ pub enum FrenchWeaponSubcategories {
     FRF1sniperrifle = 8,
 }
 
-impl MunitionKind {
+impl FrenchWeaponSubcategories {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -775,7 +775,7 @@ pub enum LifeFormsSubcategoryGermanWeapons {
     DM29handgrenade = 9,
 }
 
-impl MunitionKind {
+impl LifeFormsSubcategoryGermanWeapons {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -794,7 +794,7 @@ pub enum EnvironmentalSubcategory {
     VeryLarge = 100,
 }
 
-impl MunitionKind {
+impl EnvironmentalSubcategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -851,7 +851,7 @@ pub enum RadioCategory {
     TacticalTargetingNetworkTechnology = 51,
 }
 
-impl MunitionKind {
+impl RadioCategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -924,7 +924,7 @@ pub enum RadioSubcategory {
     JETDSZRCSet4 = 66,
 }
 
-impl MunitionKind {
+impl RadioSubcategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -949,7 +949,7 @@ pub enum ExpendableAirCategory {
     SARBuoy = 14,
 }
 
-impl MunitionKind {
+impl ExpendableAirCategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -969,7 +969,7 @@ pub enum ExpendableSurfaceCategory {
     SARBuoy = 14,
 }
 
-impl MunitionKind {
+impl ExpendableSurfaceCategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -989,7 +989,7 @@ pub enum ExpendableSubsurfaceCategory {
     MultiModeDecoy = 11,
 }
 
-impl MunitionKind {
+impl ExpendableSubsurfaceCategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -1019,7 +1019,7 @@ pub enum SensorEmitterCategory {
     Gravitational = 16,
 }
 
-impl MunitionKind {
+impl SensorEmitterCategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -1372,7 +1372,7 @@ impl LandPlatformAppearance {
     }
 }
 
-// SISO-REF-010-2023 Entity Appearance Custom enumeration
+// TODO(@anyone) Implement bitfields [UID 31 - 43]
 
 // SISO-REF-010-2023 DeadReckoningAlgorithm [UID 44]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -1433,7 +1433,7 @@ pub enum EntityCapabilities {
     SensorEmitterEntityCapabilities = 12,
 }
 
-impl MunitionKind {
+impl EntityCapabilities {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -1451,7 +1451,7 @@ pub enum VariableParameterRecordType {
     EntityAssociation = 4,
 }
 
-impl MunitionKind {
+impl VariableParameterRecordType {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -1479,10 +1479,10 @@ pub enum AttachedParts {
     M2MachineGun = 905,
 }
 
-impl MunitionKind {
+impl AttachedParts {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
 
@@ -1509,7 +1509,7 @@ pub enum ArticulatedPartsTypeMetric {
     RotationRate = 16,
 }
 
-impl MunitionKind {
+impl ArticulatedPartsTypeMetric {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -1780,10 +1780,10 @@ pub enum ArticulatedPartsTypeClass {
     SecondaryGunRecoil = 10144,
 }
 
-impl MunitionKind {
+impl ArticulatedPartsTypeClass {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
 
@@ -1890,10 +1890,10 @@ pub enum MunitionDescriptorWarhead {
     BiologicalToxin = 9500,
 }
 
-impl MunitionKind {
+impl MunitionDescriptorWarhead {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -2010,10 +2010,10 @@ pub enum MunitionDescriptorFuse {
     MechanicalTail = 9620,
 }
 
-impl MunitionKind {
+impl MunitionDescriptorFuse {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -2057,7 +2057,7 @@ pub enum DetonationResult {
     Missduetoflyoutandendgamefailure = 33,
 }
 
-impl MunitionKind {
+impl DetonationResult {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -2075,7 +2075,7 @@ pub enum ServiceRequestServiceTypeRequested {
     AerialRefuelingLowFidelity = 4,
 }
 
-impl MunitionKind {
+impl ServiceRequestServiceTypeRequested {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -2172,10 +2172,10 @@ pub enum RepairCompleteRepair {
     Ejectionseats = 10020,
 }
 
-impl MunitionKind {
+impl RepairCompleteRepair {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -2190,7 +2190,7 @@ pub enum RepairResponseRepairResult {
     ServiceCanceledByTheSupplier = 4,
 }
 
-impl MunitionKind {
+impl RepairResponseRepairResult {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -3451,10 +3451,10 @@ pub enum VariableRecordTypes {
     IntentBasedEWMessage = 5_507_010,
 }
 
-impl MunitionKind {
+impl VariableRecordTypes {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
 
@@ -3522,7 +3522,7 @@ pub enum AcknowledgeFlag {
 impl AcknowledgeFlag {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -3539,7 +3539,7 @@ pub enum AcknowledgeResponseFlag {
 impl AcknowledgeResponseFlag {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -3601,10 +3601,10 @@ pub enum ActionRequestActionID {
     AirmountInformationRequest = 4305,
 }
 
-impl MunitionKind {
+impl ActionRequestActionID {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
 
@@ -6577,7 +6577,7 @@ pub enum ElectromagneticEmissionStateUpdateIndicator {
     ChangedDataUpdate = 1,
 }
 
-impl MunitionKind {
+impl ElectromagneticEmissionStateUpdateIndicator {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6614,7 +6614,7 @@ pub enum ElectromagneticEmissionBeamFunction {
     TimeSharedJamming = 25,
 }
 
-impl MunitionKind {
+impl ElectromagneticEmissionBeamFunction {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6629,7 +6629,7 @@ pub enum HighDensityTrackJam {
     Selected = 1,
 }
 
-impl MunitionKind {
+impl HighDensityTrackJam {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6745,24 +6745,25 @@ pub enum DesignatorSystemName {
     TPN1M4923EOS = 11400,
 }
 
-impl MunitionKind {
+impl DesignatorSystemName {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
-// SISO-REF-010-2023 DesignatorDesignatorCode [UID 81]
+// SISO-REF-010-2023 DesignatorCode [UID 81]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DesignatorDesignatorCode {
+#[deprecated(note = "Enumeration is deprecated and only serves an historical purpose")]
+pub enum DesignatorCode {
     #[default]
     Other = 0,
 }
 
-impl MunitionKind {
+impl DesignatorCode {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -6787,10 +6788,10 @@ pub enum IFFSystemType {
     TCASACASTransceiver = 14,
 }
 
-impl MunitionKind {
+impl IFFSystemType {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -6819,10 +6820,10 @@ pub enum IFFSystemName {
     GenericMarkXSIF = 18,
 }
 
-impl MunitionKind {
+impl IFFSystemName {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -6838,7 +6839,7 @@ pub enum IFFSystemMode {
     LoworLowSensitivity = 5,
 }
 
-impl MunitionKind {
+impl IFFSystemMode {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6852,7 +6853,7 @@ pub enum IFFLayerSpecificInformation {
     NoLayerSpecificInformationIsPresent = 0,
 }
 
-impl MunitionKind {
+impl IFFLayerSpecificInformation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6870,7 +6871,7 @@ pub enum IFFAlternateMode4ChallengeReply {
     UnabletoVerify = 4,
 }
 
-impl MunitionKind {
+impl IFFAlternateMode4ChallengeReply {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6884,7 +6885,7 @@ pub enum IFFSystemType1OperationalParameter1 {
     NoOperationalParameter1Data = 0,
 }
 
-impl MunitionKind {
+impl IFFSystemType1OperationalParameter1 {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6898,7 +6899,7 @@ pub enum IFFSystemType1OperationalParameter2 {
     NoOperationalParameter2Data = 0,
 }
 
-impl MunitionKind {
+impl IFFSystemType1OperationalParameter2 {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6940,7 +6941,7 @@ pub enum SubcategoriesforLandCategory200Mammal {
     Rat = 200,
 }
 
-impl MunitionKind {
+impl SubcategoriesforLandCategory200Mammal {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6976,7 +6977,7 @@ pub enum SubcategoriesforLandCategory201Reptile {
     AustralianFreshwaterCrocodile = 122,
 }
 
-impl MunitionKind {
+impl SubcategoriesforLandCategory201Reptile {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -6993,7 +6994,7 @@ pub enum SubcategoriesforLandCategory202Amphibian {
     Caecilian = 230,
 }
 
-impl MunitionKind {
+impl SubcategoriesforLandCategory202Amphibian {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7013,7 +7014,7 @@ pub enum SubcategoriesforLandCategory203Insect {
     Centipede = 100,
 }
 
-impl MunitionKind {
+impl SubcategoriesforLandCategory203Insect {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7031,7 +7032,7 @@ pub enum SubcategoriesforLandCategory204Arachnid {
     Mite = 50,
 }
 
-impl MunitionKind {
+impl SubcategoriesforLandCategory204Arachnid {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7046,7 +7047,7 @@ pub enum SubcategoriesforLandCategory205Mollusk {
     Slug = 50,
 }
 
-impl MunitionKind {
+impl SubcategoriesforLandCategory205Mollusk {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7071,7 +7072,7 @@ pub enum SubcategoriesforLandCategory206Marsupial {
     SugarGlider = 211,
 }
 
-impl MunitionKind {
+impl SubcategoriesforLandCategory206Marsupial {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7111,7 +7112,7 @@ pub enum SubcategoriesforAirCategory200Bird {
     Kite = 80,
 }
 
-impl MunitionKind {
+impl SubcategoriesforAirCategory200Bird {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7133,7 +7134,7 @@ pub enum SubcategoriesforAirCategory201Insect {
     Locust = 80,
 }
 
-impl MunitionKind {
+impl SubcategoriesforAirCategory201Insect {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7149,7 +7150,7 @@ pub enum SubcategoriesforAirCategory202Mammal {
     GlidingPossum = 20,
 }
 
-impl MunitionKind {
+impl SubcategoriesforAirCategory202Mammal {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7189,7 +7190,7 @@ pub enum SubcategoriesforSubsurfaceCategory200Fish {
     Swordfish = 201,
 }
 
-impl MunitionKind {
+impl SubcategoriesforSubsurfaceCategory200Fish {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7261,7 +7262,7 @@ pub enum SubcategoriesforSubsurfaceCategory201Mammal {
     PolarBear = 200,
 }
 
-impl MunitionKind {
+impl SubcategoriesforSubsurfaceCategory201Mammal {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7283,7 +7284,7 @@ pub enum SubcategoriesforSubsurfaceCategory202Mollusk {
     Scallop = 80,
 }
 
-impl MunitionKind {
+impl SubcategoriesforSubsurfaceCategory202Mollusk {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7301,7 +7302,7 @@ pub enum SubcategoriesforSubsurfaceCategory203Crustacean {
     Crab = 30,
 }
 
-impl MunitionKind {
+impl SubcategoriesforSubsurfaceCategory203Crustacean {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7316,7 +7317,7 @@ pub enum SubcategoriesforSubsurfaceCategory204Insect {
     WaterBeetle = 2,
 }
 
-impl MunitionKind {
+impl SubcategoriesforSubsurfaceCategory204Insect {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7343,7 +7344,7 @@ pub enum AnimalLifeformGroupSizeRangeEnumerationforallDomains {
     Numberofanimalsrangegreaterthan50000 = 220,
 }
 
-impl MunitionKind {
+impl AnimalLifeformGroupSizeRangeEnumerationforallDomains {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7362,7 +7363,7 @@ pub enum SpecificDimensionEnumerationsforLandAreaSize {
     LargeAreaDense = 227,
 }
 
-impl MunitionKind {
+impl SpecificDimensionEnumerationsforLandAreaSize {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7381,7 +7382,7 @@ pub enum SpecificDimensionEnumerationsforAirAreaSize {
     LargeFlockSwarmDense = 227,
 }
 
-impl MunitionKind {
+impl SpecificDimensionEnumerationsforAirAreaSize {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7400,7 +7401,7 @@ pub enum AddSpecificDimensionEnumerationsforSubsurfaceAreaSize {
     LargeSchoolDense = 227,
 }
 
-impl MunitionKind {
+impl AddSpecificDimensionEnumerationsforSubsurfaceAreaSize {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7419,7 +7420,7 @@ pub enum AddVariantsforLandCategory200Mammal {
     AnimalHarnessedtoaCart = 6,
 }
 
-impl MunitionKind {
+impl AddVariantsforLandCategory200Mammal {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7437,7 +7438,7 @@ pub enum VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids {
     Brown = 5,
 }
 
-impl MunitionKind {
+impl VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7454,7 +7455,7 @@ pub enum VariantsforAirCategory200Bird {
     IrregularFlockShape = 4,
 }
 
-impl MunitionKind {
+impl VariantsforAirCategory200Bird {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7470,7 +7471,7 @@ pub enum AddVariantsforAirCategory201Insect {
     IrregularShapedInsectSwarm = 3,
 }
 
-impl MunitionKind {
+impl AddVariantsforAirCategory201Insect {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7491,7 +7492,7 @@ pub enum AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect {
     Grey = 8,
 }
 
-impl MunitionKind {
+impl AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7506,7 +7507,7 @@ pub enum VariantsforSubsurfaceCategory201Mammal {
     Spouting = 2,
 }
 
-impl MunitionKind {
+impl VariantsforSubsurfaceCategory201Mammal {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7521,7 +7522,7 @@ pub enum UAStateChangeUpdateIndicator {
     ChangedDataUpdate = 1,
 }
 
-impl MunitionKind {
+impl UAStateChangeUpdateIndicator {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7544,10 +7545,10 @@ pub enum UAAcousticSystemName {
     ANAQS902 = 9,
 }
 
-impl MunitionKind {
+impl UAAcousticSystemName {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7562,7 +7563,7 @@ pub enum UAAcousticEmitterSystemFunction {
     Weaponsearchdetecttrackdetect = 4,
 }
 
-impl MunitionKind {
+impl UAAcousticEmitterSystemFunction {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7576,10 +7577,10 @@ pub enum UAActiveEmissionParameterIndex {
     Other = 0,
 }
 
-impl MunitionKind {
+impl UAActiveEmissionParameterIndex {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7595,10 +7596,10 @@ pub enum UAScanPattern {
     Continuoussearch = 5,
 }
 
-impl MunitionKind {
+impl UAScanPattern {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7609,10 +7610,10 @@ pub enum UAPassiveParameterIndex {
     Other = 0,
 }
 
-impl MunitionKind {
+impl UAPassiveParameterIndex {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7623,10 +7624,10 @@ pub enum UAAdditionalPassiveActivityParameterIndex {
     Other = 0,
 }
 
-impl MunitionKind {
+impl UAAdditionalPassiveActivityParameterIndex {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7645,10 +7646,10 @@ pub enum TransmitterMajorModulation {
     SATCOM = 8,
 }
 
-impl MunitionKind {
+impl TransmitterMajorModulation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7669,10 +7670,10 @@ pub enum TransmitterDetailAmplitudeModulation {
     VSB = 10,
 }
 
-impl MunitionKind {
+impl TransmitterDetailAmplitudeModulation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7684,16 +7685,16 @@ pub enum TransmitterDetailAmplitudeandAngleModulation {
     AmplitudeandAngle = 1,
 }
 
-impl MunitionKind {
+impl TransmitterDetailAmplitudeandAngleModulation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
-// SISO-REF-010-2023 TransmitterDetailAnglemodulation [UID 158]
+// SISO-REF-010-2023 TransmitterDetailAngleModulation [UID 158]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum TransmitterDetailAnglemodulation {
+pub enum TransmitterDetailAngleModulation {
     #[default]
     Other = 0,
     FM = 1,
@@ -7702,10 +7703,10 @@ pub enum TransmitterDetailAnglemodulation {
     MSK = 4,
 }
 
-impl MunitionKind {
+impl TransmitterDetailAngleModulation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7717,10 +7718,10 @@ pub enum TransmitterDetailCombinationModulation {
     AmplitudeAnglePulse = 1,
 }
 
-impl MunitionKind {
+impl TransmitterDetailCombinationModulation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7734,10 +7735,10 @@ pub enum TransmitterDetailPulseModulation {
     YBandTACANPulse = 3,
 }
 
-impl MunitionKind {
+impl TransmitterDetailPulseModulation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7749,10 +7750,10 @@ pub enum TransmitterDetailUnmodulatedModulation {
     ContinuousWaveemissionofanunmodulatedcarrier = 1,
 }
 
-impl MunitionKind {
+impl TransmitterDetailUnmodulatedModulation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7763,10 +7764,10 @@ pub enum TransmitterDetailCarrierPhaseShiftModulation {
     Other = 0,
 }
 
-impl MunitionKind {
+impl TransmitterDetailCarrierPhaseShiftModulation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7790,10 +7791,10 @@ pub enum TransmitterModulationTypeSystem {
     NavigationAid = 13,
 }
 
-impl MunitionKind {
+impl TransmitterModulationTypeSystem {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7806,7 +7807,7 @@ pub enum TransmitterTransmitState {
     Onandtransmitting = 2,
 }
 
-impl MunitionKind {
+impl TransmitterTransmitState {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7834,7 +7835,7 @@ pub enum TransmitterInputSource {
     SATCOMUplinkJammer = 14,
 }
 
-impl MunitionKind {
+impl TransmitterInputSource {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7862,10 +7863,10 @@ pub enum TransmitterCryptoSystem {
     TacticalSecureVoice = 14,
 }
 
-impl MunitionKind {
+impl TransmitterCryptoSystem {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7881,10 +7882,10 @@ pub enum TransmitterAntennaPatternType {
     Omnidirectional = 6,
 }
 
-impl MunitionKind {
+impl TransmitterAntennaPatternType {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -7896,7 +7897,7 @@ pub enum TransmitterAntennaPatternReferenceSystem {
     EntityCoordinates = 2,
 }
 
-impl MunitionKind {
+impl TransmitterAntennaPatternReferenceSystem {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7911,7 +7912,7 @@ pub enum CCTTSINCGARSStartofMessage {
     StartofMessage = 1,
 }
 
-impl MunitionKind {
+impl CCTTSINCGARSStartofMessage {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7926,7 +7927,7 @@ pub enum CCTTSINCGARSClearChannel {
     Clearchannel = 1,
 }
 
-impl MunitionKind {
+impl CCTTSINCGARSClearChannel {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7944,7 +7945,7 @@ pub enum TimeSlotAllocationLevel {
     HighFidelityLevel4 = 4,
 }
 
-impl MunitionKind {
+impl TimeSlotAllocationLevel {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7959,7 +7960,7 @@ pub enum JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode {
     JTIDSUnitParticipant = 2,
 }
 
-impl MunitionKind {
+impl JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7976,7 +7977,7 @@ pub enum JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode {
     SecondaryNavigationController = 3,
 }
 
-impl MunitionKind {
+impl JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -7994,7 +7995,7 @@ pub enum JTIDSMIDSModulationParametersSynchronizationState {
     SynchronizationMaintenance = 4,
 }
 
-impl MunitionKind {
+impl JTIDSMIDSModulationParametersSynchronizationState {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8015,7 +8016,7 @@ pub enum MessageTypeIdentifier {
     VMF = 7,
 }
 
-impl MunitionKind {
+impl MessageTypeIdentifier {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8063,10 +8064,10 @@ pub enum SignalUserProtocolIdentificationNumber {
     TacticalVideoRegenerationData = 7050,
 }
 
-impl MunitionKind {
+impl SignalUserProtocolIdentificationNumber {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
 
@@ -8174,10 +8175,10 @@ pub enum SignalTDLType {
     TacticalTargetingNetworkTechnologyApplication = 127,
 }
 
-impl MunitionKind {
+impl SignalTDLType {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8190,10 +8191,10 @@ pub enum ReceiverReceiverState {
     Onandreceiving = 2,
 }
 
-impl MunitionKind {
+impl ReceiverReceiverState {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8209,7 +8210,7 @@ pub enum IntercomControlControlType {
     NackRequestDenied = 5,
 }
 
-impl MunitionKind {
+impl IntercomControlControlType {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8227,7 +8228,7 @@ pub enum IntercomControlCommunicationsType {
     ConnectionHDX = 4,
 }
 
-impl MunitionKind {
+impl IntercomControlCommunicationsType {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8247,7 +8248,7 @@ pub enum IntercomControlCommand {
     Off = 6,
 }
 
-impl MunitionKind {
+impl IntercomControlCommand {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8263,7 +8264,7 @@ pub enum IntercomControlTransmitLineState {
     Transmitting = 2,
 }
 
-impl MunitionKind {
+impl IntercomControlTransmitLineState {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8280,7 +8281,7 @@ pub enum IntercomControlDestinationLineStateCommand {
     ReturntoLocalLineStateControl = 3,
 }
 
-impl MunitionKind {
+impl IntercomControlDestinationLineStateCommand {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8296,10 +8297,10 @@ pub enum IntercomControlRecordType {
     GroupAssignmentrecord = 3,
 }
 
-impl MunitionKind {
+impl IntercomControlRecordType {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8309,10 +8310,10 @@ pub enum CollisionType {
     #[default]
     Inelastic = 0,
     Elastic = 1,
-    Boomnozzlehasclearedthereceiversrefuelingreceptacle = 55,
+    BoomNozzleHasClearedTheReceiversRefuelingReceptacle = 55,
 }
 
-impl MunitionKind {
+impl CollisionType {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8334,7 +8335,7 @@ pub enum MinefieldSensorTypes {
     Multispectral = 8,
 }
 
-impl MunitionKind {
+impl MinefieldSensorTypes {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8359,10 +8360,10 @@ pub enum MinefieldSensorTypesOptical {
     TrackedvehicleoccupantopenhatchNotActivelySearching = 11,
 }
 
-impl MunitionKind {
+impl MinefieldSensorTypesOptical {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8382,10 +8383,10 @@ pub enum MinefieldSensorTypesFLIR {
     COBRA812 = 9,
 }
 
-impl MunitionKind {
+impl MinefieldSensorTypesFLIR {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8401,10 +8402,10 @@ pub enum MinefieldSensorTypesRADAR {
     HSTAMIDSII = 5,
 }
 
-impl MunitionKind {
+impl MinefieldSensorTypesRADAR {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8418,10 +8419,10 @@ pub enum MinefieldSensorTypesMagnetic {
     GSTAMIDS = 3,
 }
 
-impl MunitionKind {
+impl MinefieldSensorTypesMagnetic {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8433,10 +8434,10 @@ pub enum MinefieldSensorTypesLaser {
     ASTAMIDS = 1,
 }
 
-impl MunitionKind {
+impl MinefieldSensorTypesLaser {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8447,10 +8448,10 @@ pub enum MinefieldSensorTypesSONAR {
     Generic = 0,
 }
 
-impl MunitionKind {
+impl MinefieldSensorTypesSONAR {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8459,14 +8460,14 @@ impl MunitionKind {
 pub enum MinefieldSensorTypesPhysical {
     #[default]
     GenericProbe = 0,
-    Probemetalcontent = 1,
-    Probenometalcontent = 2,
+    ProbeMetalContent = 1,
+    ProbeNoMetalContent = 2,
 }
 
-impl MunitionKind {
+impl MinefieldSensorTypesPhysical {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8477,10 +8478,10 @@ pub enum MinefieldSensorTypesMultispectral {
     Generic = 0,
 }
 
-impl MunitionKind {
+impl MinefieldSensorTypesMultispectral {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8496,7 +8497,7 @@ pub enum AggregateStateAggregateState {
     Partiallydisaggregated = 5,
 }
 
-impl MunitionKind {
+impl AggregateStateAggregateState {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8515,10 +8516,10 @@ pub enum AggregateStateFormation {
     Column = 5,
 }
 
-impl MunitionKind {
+impl AggregateStateFormation {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
 
@@ -8534,7 +8535,7 @@ pub enum AggregateStateAggregateKind {
     CommonLocation = 5,
 }
 
-impl MunitionKind {
+impl AggregateStateAggregateKind {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8570,7 +8571,7 @@ pub enum AggregateStateSubcategory {
     Tankonly = 22,
 }
 
-impl MunitionKind {
+impl AggregateStateSubcategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8585,7 +8586,7 @@ pub enum AggregateStateSpecific {
     Yesaggregateunitcontainsaheadquarters = 1,
 }
 
-impl MunitionKind {
+impl AggregateStateSpecific {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8609,10 +8610,10 @@ pub enum IsPartOfNature {
     Teammemberinformationwith = 10,
 }
 
-impl MunitionKind {
+impl IsPartOfNature {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8625,10 +8626,10 @@ pub enum IsPartOfPosition {
     Insideof = 2,
 }
 
-impl MunitionKind {
+impl IsPartOfPosition {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8661,10 +8662,10 @@ pub enum IsPartOfStationName {
     AirRefuelingProbe = 22,
 }
 
-impl MunitionKind {
+impl IsPartOfStationName {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 
@@ -8684,7 +8685,7 @@ pub enum IsGroupOfGroupedEntityCategory {
     GroundLogisticsVehicle = 9,
 }
 
-impl MunitionKind {
+impl IsGroupOfGroupedEntityCategory {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8706,7 +8707,7 @@ pub enum IsGroupOfRestStatus {
     Fullyrested = 8,
 }
 
-impl MunitionKind {
+impl IsGroupOfRestStatus {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8728,7 +8729,7 @@ pub enum TransferControlTransferType {
     RemoveEntity = 10,
 }
 
-impl MunitionKind {
+impl TransferControlTransferType {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -8750,7 +8751,7 @@ pub enum ObjectKind {
     EnvironmentalObject = 8,
 }
 
-impl MunitionKind {
+impl ObjectKind {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())

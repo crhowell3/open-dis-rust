@@ -42,7 +42,7 @@ impl Default for AcknowledgePdu {
             pdu_header: PduHeader::default(
                 PduType::Acknowledge,
                 ProtocolFamily::SimulationManagement,
-                56,
+                32,
             ),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
@@ -58,8 +58,8 @@ impl Pdu for AcknowledgePdu {
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
-        buf.put_u8(self.acknowledge_flag as u8);
-        buf.put_u8(self.response_flag as u8);
+        buf.put_u16(self.acknowledge_flag as u16);
+        buf.put_u16(self.response_flag as u16);
         buf.put_u32(self.request_id);
     }
 
@@ -131,7 +131,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::Acknowledge,
             ProtocolFamily::SimulationManagement,
-            448 / 8,
+            32,
         );
 
         assert_eq!(
