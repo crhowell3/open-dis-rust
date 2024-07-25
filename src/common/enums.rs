@@ -343,6 +343,13 @@ pub enum AirDomainCategories {
     CivilianLighterthanAirAirship = 101,
 }
 
+impl AirDomainCategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Surface Domain Categories [UID 11]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SurfaceDomainCategories {
@@ -397,6 +404,13 @@ pub enum SurfaceDomainCategories {
     LifeSavingEquipment = 101,
 }
 
+impl SurfaceDomainCategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Subsurface Domain Categories [UID 12]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubsurfaceDomainCategories {
@@ -423,6 +437,13 @@ pub enum SubsurfaceDomainCategories {
     CivilianSemiSubmersibleBoats = 82,
 }
 
+impl SubsurfaceDomainCategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SpaceDomainCategories [UID 13]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SpaceDomainCategories {
@@ -440,6 +461,13 @@ pub enum SpaceDomainCategories {
     SatelliteEarthObservation = 16,
     SatelliteSpaceSurveillance = 17,
     SatelliteAstronomy = 18,
+}
+
+impl SpaceDomainCategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MunitionKind [UID 14]
@@ -461,6 +489,13 @@ pub enum MunitionKind {
     DirectedEnergyWeapon = 12,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MunitionCategory [UID 15]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MunitionCategory {
@@ -469,6 +504,13 @@ pub enum MunitionCategory {
     Guided = 1,
     Ballistic = 2,
     Fixed = 3,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 USWeaponSubcategories [UID 16]
@@ -600,6 +642,13 @@ pub enum USWeaponSubcategories {
     MachinegunM2407_62mm = 134,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 RussiaWeaponSubcategories [UID 17]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum RussiaWeaponSubcategories {
@@ -658,6 +707,13 @@ pub enum RussiaWeaponSubcategories {
     Type69RPG = 253,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 UKWeaponSubcategories [UID 18]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum UKWeaponSubcategories {
@@ -676,6 +732,13 @@ pub enum UKWeaponSubcategories {
     MilanATmissile = 12,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 FrenchWeaponSubcategories [UID 19]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum FrenchWeaponSubcategories {
@@ -688,6 +751,13 @@ pub enum FrenchWeaponSubcategories {
     AA52machinegun = 6,
     _58mmriflegrenade = 7,
     FRF1sniperrifle = 8,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LifeFormsSubcategoryGermanWeapons [UID 20]
@@ -705,6 +775,13 @@ pub enum LifeFormsSubcategoryGermanWeapons {
     DM29handgrenade = 9,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 EnvironmentalSubcategory [UID 21]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum EnvironmentalSubcategory {
@@ -715,6 +792,13 @@ pub enum EnvironmentalSubcategory {
     Medium = 60,
     Large = 80,
     VeryLarge = 100,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 RadioCategory [UID 22]
@@ -765,6 +849,13 @@ pub enum RadioCategory {
     EmergencyPositionIndicatingRadioBeacons = 42,
     ElectronicAttackSystems = 50,
     TacticalTargetingNetworkTechnology = 51,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 RadioSubcategory [UID 23]
@@ -833,6 +924,13 @@ pub enum RadioSubcategory {
     JETDSZRCSet4 = 66,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ExpendableAirCategory [UID 25]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ExpendableAirCategory {
@@ -851,6 +949,13 @@ pub enum ExpendableAirCategory {
     SARBuoy = 14,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ExpendableSurfaceCategory [UID 26]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ExpendableSurfaceCategory {
@@ -864,6 +969,13 @@ pub enum ExpendableSurfaceCategory {
     SARBuoy = 14,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ExpendableSubsurfaceCategory [UID 27]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ExpendableSubsurfaceCategory {
@@ -875,6 +987,13 @@ pub enum ExpendableSubsurfaceCategory {
     NoiseMakerDecoy = 9,
     BubbleMakerDecoy = 10,
     MultiModeDecoy = 11,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SensorEmitterCategory [UID 28]
@@ -898,6 +1017,13 @@ pub enum SensorEmitterCategory {
     ParticleRadiation = 14,
     Magnetic = 15,
     Gravitational = 16,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Country [UID 29]
@@ -1307,6 +1433,13 @@ pub enum EntityCapabilities {
     SensorEmitterEntityCapabilities = 12,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 VariableParameterRecordType [UID 56]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum VariableParameterRecordType {
@@ -1316,6 +1449,13 @@ pub enum VariableParameterRecordType {
     Separation = 2,
     EntityType = 3,
     EntityAssociation = 4,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AttachedParts [UID 57]
@@ -1339,6 +1479,13 @@ pub enum AttachedParts {
     M2MachineGun = 905,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ArticulatedPartsTypeMetric [UID 58]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ArticulatedPartsTypeMetric {
@@ -1360,6 +1507,13 @@ pub enum ArticulatedPartsTypeMetric {
     ElevationRate = 14,
     Rotation1 = 15,
     RotationRate = 16,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 ArticulatedPartsTypeClass [UID 59]
@@ -1626,6 +1780,13 @@ pub enum ArticulatedPartsTypeClass {
     SecondaryGunRecoil = 10144,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MunitionDescriptorWarhead [UID 60]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MunitionDescriptorWarhead {
@@ -1727,6 +1888,13 @@ pub enum MunitionDescriptorWarhead {
     BiologicalRickettsia = 9300,
     BiologicalGeneticallyModifiedMicroorganisms = 9400,
     BiologicalToxin = 9500,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MunitionDescriptorFuse [UID 61]
@@ -1842,6 +2010,13 @@ pub enum MunitionDescriptorFuse {
     MechanicalTail = 9620,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DetonationResult [UID 62]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum DetonationResult {
@@ -1882,6 +2057,13 @@ pub enum DetonationResult {
     Missduetoflyoutandendgamefailure = 33,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ServiceRequestServiceTypeRequested [UID 63]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ServiceRequestServiceTypeRequested {
@@ -1891,6 +2073,13 @@ pub enum ServiceRequestServiceTypeRequested {
     Repair = 2,
     AerialRefuelingHighFidelity = 3,
     AerialRefuelingLowFidelity = 4,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 RepairCompleteRepair [UID 64]
@@ -1983,6 +2172,13 @@ pub enum RepairCompleteRepair {
     Ejectionseats = 10020,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 RepairResponseRepairResult [UID 65]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum RepairResponseRepairResult {
@@ -1992,6 +2188,13 @@ pub enum RepairResponseRepairResult {
     InvalidRepair = 2,
     RepairInterrupted = 3,
     ServiceCanceledByTheSupplier = 4,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 VariableRecordTypes [UID 66]
@@ -3248,6 +3451,13 @@ pub enum VariableRecordTypes {
     IntentBasedEWMessage = 5_507_010,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Reason [UID 67]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Reason {
@@ -3389,6 +3599,13 @@ pub enum ActionRequestActionID {
     AirmountMountRequest = 4303,
     AirmountDismountRequest = 4304,
     AirmountInformationRequest = 4305,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 ActionResponseRequestStatus [UID 72]
@@ -6360,6 +6577,13 @@ pub enum ElectromagneticEmissionStateUpdateIndicator {
     ChangedDataUpdate = 1,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ElectromagneticEmissionBeamFunction [UID 78]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ElectromagneticEmissionBeamFunction {
@@ -6390,12 +6614,26 @@ pub enum ElectromagneticEmissionBeamFunction {
     TimeSharedJamming = 25,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 HighDensityTrackJam [UID 79]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum HighDensityTrackJam {
     #[default]
     NotSelected = 0,
     Selected = 1,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 DesignatorSystemName [UID 80]
@@ -6507,11 +6745,25 @@ pub enum DesignatorSystemName {
     TPN1M4923EOS = 11400,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DesignatorDesignatorCode [UID 81]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum DesignatorDesignatorCode {
     #[default]
     Other = 0,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IFFSystemType [UID 82]
@@ -6533,6 +6785,13 @@ pub enum IFFSystemType {
     MarkXIIACombinedInterrogatorTransponder = 12,
     MarkXIICombinedInterrogatorTransponder = 13,
     TCASACASTransceiver = 14,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IFFSystemName [UID 83]
@@ -6560,6 +6819,13 @@ pub enum IFFSystemName {
     GenericMarkXSIF = 18,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IFFSystemMode [UID 84]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IFFSystemMode {
@@ -6572,11 +6838,25 @@ pub enum IFFSystemMode {
     LoworLowSensitivity = 5,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IFFLayerSpecificInformation [UID 87]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IFFLayerSpecificInformation {
     #[default]
     NoLayerSpecificInformationIsPresent = 0,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IFFAlternateMode4ChallengeReply [UID 96]
@@ -6590,6 +6870,13 @@ pub enum IFFAlternateMode4ChallengeReply {
     UnabletoVerify = 4,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IFFSystemType1OperationalParameter1 [UID 97]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IFFSystemType1OperationalParameter1 {
@@ -6597,11 +6884,25 @@ pub enum IFFSystemType1OperationalParameter1 {
     NoOperationalParameter1Data = 0,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IFFSystemType1OperationalParameter2 [UID 98]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IFFSystemType1OperationalParameter2 {
     #[default]
     NoOperationalParameter2Data = 0,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory200Mammal [UID 100]
@@ -6639,6 +6940,13 @@ pub enum SubcategoriesforLandCategory200Mammal {
     Rat = 200,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SubcategoriesforLandCategory201Reptile [UID 101]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubcategoriesforLandCategory201Reptile {
@@ -6668,6 +6976,13 @@ pub enum SubcategoriesforLandCategory201Reptile {
     AustralianFreshwaterCrocodile = 122,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SubcategoriesforLandCategory202Amphibian [UID 102]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubcategoriesforLandCategory202Amphibian {
@@ -6676,6 +6991,13 @@ pub enum SubcategoriesforLandCategory202Amphibian {
     Toad = 2,
     Salamander = 170,
     Caecilian = 230,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory203Insect [UID 103]
@@ -6691,6 +7013,13 @@ pub enum SubcategoriesforLandCategory203Insect {
     Centipede = 100,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SubcategoriesforLandCategory204Arachnid [UID 104]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubcategoriesforLandCategory204Arachnid {
@@ -6702,12 +7031,26 @@ pub enum SubcategoriesforLandCategory204Arachnid {
     Mite = 50,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SubcategoriesforLandCategory205Mollusk [UID 105]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubcategoriesforLandCategory205Mollusk {
     #[default]
     Snail = 1,
     Slug = 50,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory206Marsupial [UID 106]
@@ -6726,6 +7069,13 @@ pub enum SubcategoriesforLandCategory206Marsupial {
     SouthernHairyNosedWombat = 205,
     BrushtailPossum = 210,
     SugarGlider = 211,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SubcategoriesforAirCategory200Bird [UID 110]
@@ -6761,6 +7111,13 @@ pub enum SubcategoriesforAirCategory200Bird {
     Kite = 80,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SubcategoriesforAirCategory201Insect [UID 111]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubcategoriesforAirCategory201Insect {
@@ -6776,6 +7133,13 @@ pub enum SubcategoriesforAirCategory201Insect {
     Locust = 80,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SubcategoriesforAirCategory202Mammal [UID 112]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubcategoriesforAirCategory202Mammal {
@@ -6783,6 +7147,13 @@ pub enum SubcategoriesforAirCategory202Mammal {
     Bat = 1,
     FlyingSquirrel = 10,
     GlidingPossum = 20,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory200Fish [UID 120]
@@ -6816,6 +7187,13 @@ pub enum SubcategoriesforSubsurfaceCategory200Fish {
     Eel = 190,
     Marlin = 200,
     Swordfish = 201,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory201Mammal [UID 121]
@@ -6883,6 +7261,13 @@ pub enum SubcategoriesforSubsurfaceCategory201Mammal {
     PolarBear = 200,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory202Mollusk [UID 122]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubcategoriesforSubsurfaceCategory202Mollusk {
@@ -6898,6 +7283,13 @@ pub enum SubcategoriesforSubsurfaceCategory202Mollusk {
     Scallop = 80,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory203Crustacean [UID 123]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubcategoriesforSubsurfaceCategory203Crustacean {
@@ -6909,12 +7301,26 @@ pub enum SubcategoriesforSubsurfaceCategory203Crustacean {
     Crab = 30,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory204Insect [UID 124]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SubcategoriesforSubsurfaceCategory204Insect {
     #[default]
     SeaSkater = 1,
     WaterBeetle = 2,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AnimalLifeformGroupSizeRangeEnumerationforallDomains [UID 130]
@@ -6937,6 +7343,13 @@ pub enum AnimalLifeformGroupSizeRangeEnumerationforallDomains {
     Numberofanimalsrangegreaterthan50000 = 220,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SpecificDimensionEnumerationsforLandAreaSize [UID 131]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SpecificDimensionEnumerationsforLandAreaSize {
@@ -6947,6 +7360,13 @@ pub enum SpecificDimensionEnumerationsforLandAreaSize {
     MediumAreaDense = 225,
     LargeArea = 226,
     LargeAreaDense = 227,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SpecificDimensionEnumerationsforAirAreaSize [UID 132]
@@ -6961,6 +7381,13 @@ pub enum SpecificDimensionEnumerationsforAirAreaSize {
     LargeFlockSwarmDense = 227,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AddSpecificDimensionEnumerationsforSubsurfaceAreaSize [UID 133]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AddSpecificDimensionEnumerationsforSubsurfaceAreaSize {
@@ -6971,6 +7398,13 @@ pub enum AddSpecificDimensionEnumerationsforSubsurfaceAreaSize {
     MediumSchoolDense = 225,
     LargeSchool = 226,
     LargeSchoolDense = 227,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AddVariantsforLandCategory200Mammal [UID 134]
@@ -6985,6 +7419,13 @@ pub enum AddVariantsforLandCategory200Mammal {
     AnimalHarnessedtoaCart = 6,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids [UID 135]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids {
@@ -6994,6 +7435,13 @@ pub enum VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids {
     Spotted = 3,
     Red = 4,
     Brown = 5,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 VariantsforAirCategory200Bird [UID 136]
@@ -7006,6 +7454,13 @@ pub enum VariantsforAirCategory200Bird {
     IrregularFlockShape = 4,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AddVariantsforAirCategory201Insect [UID 137]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AddVariantsforAirCategory201Insect {
@@ -7013,6 +7468,13 @@ pub enum AddVariantsforAirCategory201Insect {
     VerticalShapedInsectSwarm = 1,
     CircularShapedInsectSwarm = 2,
     IrregularShapedInsectSwarm = 3,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect [UID 138]
@@ -7029,6 +7491,13 @@ pub enum AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect {
     Grey = 8,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 VariantsforSubsurfaceCategory201Mammal [UID 139]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum VariantsforSubsurfaceCategory201Mammal {
@@ -7037,12 +7506,26 @@ pub enum VariantsforSubsurfaceCategory201Mammal {
     Spouting = 2,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 UAStateChangeUpdateIndicator [UID 143]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum UAStateChangeUpdateIndicator {
     #[default]
     StateUpdate = 0,
     ChangedDataUpdate = 1,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 UAAcousticSystemName [UID 144]
@@ -7061,6 +7544,13 @@ pub enum UAAcousticSystemName {
     ANAQS902 = 9,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 UAAcousticEmitterSystemFunction [UID 145]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum UAAcousticEmitterSystemFunction {
@@ -7072,11 +7562,25 @@ pub enum UAAcousticEmitterSystemFunction {
     Weaponsearchdetecttrackdetect = 4,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 UAActiveEmissionParameterIndex [UID 146]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum UAActiveEmissionParameterIndex {
     #[default]
     Other = 0,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 UAScanPattern [UID 147]
@@ -7091,6 +7595,13 @@ pub enum UAScanPattern {
     Continuoussearch = 5,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 UAPassiveParameterIndex [UID 148]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum UAPassiveParameterIndex {
@@ -7098,11 +7609,25 @@ pub enum UAPassiveParameterIndex {
     Other = 0,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 UAAdditionalPassiveActivityParameterIndex [UID 150]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum UAAdditionalPassiveActivityParameterIndex {
     #[default]
     Other = 0,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TransmitterMajorModulation [UID 155]
@@ -7118,6 +7643,13 @@ pub enum TransmitterMajorModulation {
     Unmodulated = 6,
     CarrierPhaseShiftModulation = 7,
     SATCOM = 8,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TransmitterDetailAmplitudeModulation [UID 156]
@@ -7137,12 +7669,26 @@ pub enum TransmitterDetailAmplitudeModulation {
     VSB = 10,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransmitterDetailAmplitudeandAngleModulation [UID 157]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransmitterDetailAmplitudeandAngleModulation {
     #[default]
     Other = 0,
     AmplitudeandAngle = 1,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TransmitterDetailAnglemodulation [UID 158]
@@ -7156,12 +7702,26 @@ pub enum TransmitterDetailAnglemodulation {
     MSK = 4,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransmitterDetailCombinationModulation [UID 159]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransmitterDetailCombinationModulation {
     #[default]
     Other = 0,
     AmplitudeAnglePulse = 1,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TransmitterDetailPulseModulation [UID 160]
@@ -7174,6 +7734,13 @@ pub enum TransmitterDetailPulseModulation {
     YBandTACANPulse = 3,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransmitterDetailUnmodulatedModulation [UID 161]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransmitterDetailUnmodulatedModulation {
@@ -7182,11 +7749,25 @@ pub enum TransmitterDetailUnmodulatedModulation {
     ContinuousWaveemissionofanunmodulatedcarrier = 1,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransmitterDetailCarrierPhaseShiftModulation [UID 162]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransmitterDetailCarrierPhaseShiftModulation {
     #[default]
     Other = 0,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TransmitterModulationTypeSystem [UID 163]
@@ -7209,6 +7790,13 @@ pub enum TransmitterModulationTypeSystem {
     NavigationAid = 13,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransmitterTransmitState [UID 164]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransmitterTransmitState {
@@ -7216,6 +7804,13 @@ pub enum TransmitterTransmitState {
     Off = 0,
     Onbutnottransmitting = 1,
     Onandtransmitting = 2,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TransmitterInputSource [UID 165]
@@ -7239,6 +7834,13 @@ pub enum TransmitterInputSource {
     SATCOMUplinkJammer = 14,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransmitterCryptoSystem [UID 166]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransmitterCryptoSystem {
@@ -7260,6 +7862,13 @@ pub enum TransmitterCryptoSystem {
     TacticalSecureVoice = 14,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransmitterAntennaPatternType [UID 167]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransmitterAntennaPatternType {
@@ -7272,12 +7881,26 @@ pub enum TransmitterAntennaPatternType {
     Omnidirectional = 6,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransmitterAntennaPatternReferenceSystem [UID 168]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransmitterAntennaPatternReferenceSystem {
     #[default]
     WorldCoordinates = 1,
     EntityCoordinates = 2,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 CCTTSINCGARSStartofMessage [UID 170]
@@ -7288,12 +7911,26 @@ pub enum CCTTSINCGARSStartofMessage {
     StartofMessage = 1,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 CCTTSINCGARSClearChannel [UID 171]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum CCTTSINCGARSClearChannel {
     #[default]
     Notclearchannel = 0,
     Clearchannel = 1,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TimeSlotAllocationLevel [UID 172]
@@ -7307,12 +7944,26 @@ pub enum TimeSlotAllocationLevel {
     HighFidelityLevel4 = 4,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode [UID 173]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode {
     #[default]
     NTR = 1,
     JTIDSUnitParticipant = 2,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode [UID 174]
@@ -7325,6 +7976,13 @@ pub enum JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode {
     SecondaryNavigationController = 3,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 JTIDSMIDSModulationParametersSynchronizationState [UID 175]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum JTIDSMIDSModulationParametersSynchronizationState {
@@ -7334,6 +7992,13 @@ pub enum JTIDSMIDSModulationParametersSynchronizationState {
     CoarseSynchronization = 2,
     FineSynchronization = 3,
     SynchronizationMaintenance = 4,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MessageTypeIdentifier [UID 176]
@@ -7348,6 +8013,13 @@ pub enum MessageTypeIdentifier {
     JTIDSVoiceLPC12 = 5,
     JTIDSLET = 6,
     VMF = 7,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SignalUserProtocolIdentificationNumber [UID 177]
@@ -7389,6 +8061,13 @@ pub enum SignalUserProtocolIdentificationNumber {
     ImageFileTransferMessage = 7030,
     GeotagDataMessage = 7040,
     TacticalVideoRegenerationData = 7050,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SignalTDLType [UID 178]
@@ -7495,6 +8174,13 @@ pub enum SignalTDLType {
     TacticalTargetingNetworkTechnologyApplication = 127,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ReceiverReceiverState [UID 179]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ReceiverReceiverState {
@@ -7502,6 +8188,13 @@ pub enum ReceiverReceiverState {
     Off = 0,
     Onbutnotreceiving = 1,
     Onandreceiving = 2,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IntercomControlControlType [UID 180]
@@ -7516,6 +8209,13 @@ pub enum IntercomControlControlType {
     NackRequestDenied = 5,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IntercomControlCommunicationsType [UID 181]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IntercomControlCommunicationsType {
@@ -7525,6 +8225,13 @@ pub enum IntercomControlCommunicationsType {
     ConnectionHDXDestinationisReceiveOnly = 2,
     ConnectionHDXDestinationisTransmitOnly = 3,
     ConnectionHDX = 4,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IntercomControlCommand [UID 182]
@@ -7540,6 +8247,13 @@ pub enum IntercomControlCommand {
     Off = 6,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IntercomControlTransmitLineState [UID 183]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IntercomControlTransmitLineState {
@@ -7547,6 +8261,13 @@ pub enum IntercomControlTransmitLineState {
     TransmitLineStatenotapplicable = 0,
     NotTransmitting = 1,
     Transmitting = 2,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IntercomControlDestinationLineStateCommand [UID 184]
@@ -7559,6 +8280,13 @@ pub enum IntercomControlDestinationLineStateCommand {
     ReturntoLocalLineStateControl = 3,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IntercomControlRecordType [UID 185]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IntercomControlRecordType {
@@ -7568,6 +8296,13 @@ pub enum IntercomControlRecordType {
     GroupAssignmentrecord = 3,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 CollisionType [UID 189]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum CollisionType {
@@ -7575,6 +8310,13 @@ pub enum CollisionType {
     Inelastic = 0,
     Elastic = 1,
     Boomnozzlehasclearedthereceiversrefuelingreceptacle = 55,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MinefieldSensorTypes [UID 193]
@@ -7590,6 +8332,13 @@ pub enum MinefieldSensorTypes {
     SONAR = 6,
     Physical = 7,
     Multispectral = 8,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MinefieldSensorTypesOptical [UID 194]
@@ -7610,6 +8359,13 @@ pub enum MinefieldSensorTypesOptical {
     TrackedvehicleoccupantopenhatchNotActivelySearching = 11,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MinefieldSensorTypesFLIR [UID 195]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MinefieldSensorTypesFLIR {
@@ -7626,6 +8382,13 @@ pub enum MinefieldSensorTypesFLIR {
     COBRA812 = 9,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MinefieldSensorTypesRADAR [UID 196]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MinefieldSensorTypesRADAR {
@@ -7638,6 +8401,13 @@ pub enum MinefieldSensorTypesRADAR {
     HSTAMIDSII = 5,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MinefieldSensorTypesMagnetic [UID 197]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MinefieldSensorTypesMagnetic {
@@ -7648,6 +8418,13 @@ pub enum MinefieldSensorTypesMagnetic {
     GSTAMIDS = 3,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MinefieldSensorTypesLaser [UID 198]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MinefieldSensorTypesLaser {
@@ -7656,11 +8433,25 @@ pub enum MinefieldSensorTypesLaser {
     ASTAMIDS = 1,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MinefieldSensorTypesSONAR [UID 199]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MinefieldSensorTypesSONAR {
     #[default]
     Generic = 0,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MinefieldSensorTypesPhysical [UID 200]
@@ -7672,11 +8463,25 @@ pub enum MinefieldSensorTypesPhysical {
     Probenometalcontent = 2,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MinefieldSensorTypesMultispectral [UID 201]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MinefieldSensorTypesMultispectral {
     #[default]
     Generic = 0,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AggregateStateAggregateState [UID 204]
@@ -7691,6 +8496,13 @@ pub enum AggregateStateAggregateState {
     Partiallydisaggregated = 5,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AggregateStateFormation [UID 205]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AggregateStateFormation {
@@ -7703,6 +8515,13 @@ pub enum AggregateStateFormation {
     Column = 5,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AggregateStateAggregateKind [UID 206]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AggregateStateAggregateKind {
@@ -7713,6 +8532,13 @@ pub enum AggregateStateAggregateKind {
     CommonMission = 3,
     SimilarCapabilities = 4,
     CommonLocation = 5,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AggregateStateSubcategory [UID 208]
@@ -7744,12 +8570,26 @@ pub enum AggregateStateSubcategory {
     Tankonly = 22,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AggregateStateSpecific [UID 209]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AggregateStateSpecific {
     #[default]
     Noheadquarters = 0,
     Yesaggregateunitcontainsaheadquarters = 1,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IsPartOfNature [UID 210]
@@ -7769,6 +8609,13 @@ pub enum IsPartOfNature {
     Teammemberinformationwith = 10,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IsPartOfPosition [UID 211]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IsPartOfPosition {
@@ -7776,6 +8623,13 @@ pub enum IsPartOfPosition {
     Other = 0,
     Ontopof = 1,
     Insideof = 2,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IsPartOfStationName [UID 212]
@@ -7807,6 +8661,13 @@ pub enum IsPartOfStationName {
     AirRefuelingProbe = 22,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IsGroupOfGroupedEntityCategory [UID 213]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IsGroupOfGroupedEntityCategory {
@@ -7821,6 +8682,13 @@ pub enum IsGroupOfGroupedEntityCategory {
     BasicFixedWingAircraft = 7,
     EnhancedFixedWingAircraft = 8,
     GroundLogisticsVehicle = 9,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IsGroupOfRestStatus [UID 214]
@@ -7838,6 +8706,13 @@ pub enum IsGroupOfRestStatus {
     Fullyrested = 8,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TransferControlTransferType [UID 224]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransferControlTransferType {
@@ -7853,6 +8728,13 @@ pub enum TransferControlTransferType {
     RemoveEntity = 10,
 }
 
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ObjectKind [UID 225]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ObjectKind {
@@ -7866,6 +8748,13 @@ pub enum ObjectKind {
     ObstacleMarker = 6,
     ObstacleBreach = 7,
     EnvironmentalObject = 8,
+}
+
+impl MunitionKind {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 ObjectStateAppearanceGeneral [UID 229]
@@ -7904,6 +8793,13 @@ impl ObjectStateAppearanceGeneral {
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq)]
 pub enum GriddedDataFieldNumber {}
 
+impl GriddedDataFieldNumber {
+    #[must_use]
+    pub fn decode(_buf: &mut BytesMut) -> Self {
+        unimplemented!()
+    }
+}
+
 // SISO-REF-010-2023 GriddedDataCoordinateSystem [UID 244]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum GriddedDataCoordinateSystem {
@@ -7914,6 +8810,13 @@ pub enum GriddedDataCoordinateSystem {
     LatitudeLongitudeDepth = 3,
 }
 
+impl GriddedDataCoordinateSystem {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 GriddedDataConstantGrid [UID 245]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum GriddedDataConstantGrid {
@@ -7922,11 +8825,25 @@ pub enum GriddedDataConstantGrid {
     Updatedgrid = 1,
 }
 
+impl GriddedDataConstantGrid {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 GriddedDataSampleType [UID 246]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum GriddedDataSampleType {
     #[default]
     NotSpecified = 0,
+}
+
+impl GriddedDataSampleType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 GriddedDataDataRepresentation [UID 247]
@@ -7938,11 +8855,25 @@ pub enum GriddedDataDataRepresentation {
     Type2 = 2,
 }
 
+impl GriddedDataDataRepresentation {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 EnvironmentalProcessModelType [UID 248]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum EnvironmentalProcessModelType {
     #[default]
     NoStatement = 0,
+}
+
+impl EnvironmentalProcessModelType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 EnvironmentalProcessRecordType [UID 250]
@@ -7970,6 +8901,13 @@ pub enum EnvironmentalProcessRecordType {
     GaussianPuffRecord = 1_879_048_192,
 }
 
+impl EnvironmentalProcessRecordType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SignalEncodingClass [UID 270]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SignalEncodingClass {
@@ -7978,6 +8916,13 @@ pub enum SignalEncodingClass {
     RawBinaryData = 1,
     ApplicationSpecificData = 2,
     Databaseindex = 3,
+}
+
+impl SignalEncodingClass {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SignalEncodingType [UID 271]
@@ -7997,6 +8942,13 @@ pub enum SignalEncodingType {
     Opus = 11,
     LPC10 = 12,
     _16bitLinearPCM2sComplementLittleEndian = 100,
+}
+
+impl SignalEncodingType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 RepairGroups [UID 272]
@@ -8030,6 +8982,13 @@ pub enum EnvironmentRecordTypeGroups {
     Geometry = 1,
 }
 
+impl EnvironmentRecordTypeGroups {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories [UID 274]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories {
@@ -8041,6 +9000,13 @@ pub enum PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories {
     PoweredParachute = 5,
 }
 
+impl PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformAirCivilianUltralightRigidWingAircraftSubcategories [UID 275]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformAirCivilianUltralightRigidWingAircraftSubcategories {
@@ -8049,12 +9015,26 @@ pub enum PlatformAirCivilianUltralightRigidWingAircraftSubcategories {
     Controlsurfacecontrol = 2,
 }
 
+impl PlatformAirCivilianUltralightRigidWingAircraftSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformAirCivilianGliderSubcategories [UID 276]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformAirCivilianGliderSubcategories {
     #[default]
     SailPlane = 1,
     MotorGlider = 2,
+}
+
+impl PlatformAirCivilianGliderSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformAirCivilianFixedWingAircraftSubcategories [UID 277]
@@ -8071,6 +9051,13 @@ pub enum PlatformAirCivilianFixedWingAircraftSubcategories {
     FourEngineJet = 34,
 }
 
+impl PlatformAirCivilianFixedWingAircraftSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformAirCivilianHelicopterSubcategories [UID 278]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformAirCivilianHelicopterSubcategories {
@@ -8084,6 +9071,13 @@ pub enum PlatformAirCivilianHelicopterSubcategories {
     IntermeshingRotor = 23,
 }
 
+impl PlatformAirCivilianHelicopterSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformAirCivilianLighterthanAirBalloonSubcategories [UID 279]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformAirCivilianLighterthanAirBalloonSubcategories {
@@ -8093,6 +9087,13 @@ pub enum PlatformAirCivilianLighterthanAirBalloonSubcategories {
     HotAir = 3,
     RoziereBalloon = 4,
     Helikite = 5,
+}
+
+impl PlatformAirCivilianLighterthanAirBalloonSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformAirCivilianLighterthanAirAirshipSubcategories [UID 280]
@@ -8105,6 +9106,13 @@ pub enum PlatformAirCivilianLighterthanAirAirshipSubcategories {
     Hybrid = 4,
 }
 
+impl PlatformAirCivilianLighterthanAirAirshipSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 APAParameterIndexAPAStatus [UID 281]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum APAParameterIndexAPAStatus {
@@ -8113,6 +9121,13 @@ pub enum APAParameterIndexAPAStatus {
     APAValueChangeOnly = 1,
     StateChange = 2,
     RecordActivation = 3,
+}
+
+impl APAParameterIndexAPAStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SeparationVPReasonforSeparation [UID 282]
@@ -8124,6 +9139,13 @@ pub enum SeparationVPReasonforSeparation {
     SubmunitionSeparation = 2,
 }
 
+impl SeparationVPReasonforSeparation {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SeparationVPPreEntityIndicator [UID 283]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SeparationVPPreEntityIndicator {
@@ -8132,6 +9154,13 @@ pub enum SeparationVPPreEntityIndicator {
     EntityIDExistedPriortoSeparationwithoutEntityStatePDU = 1,
     EntityIDExistedPriortoSeparationwithEntityStatePDUIssued = 2,
     EntityInitiallyCreatedAtSeparationEvent = 3,
+}
+
+impl SeparationVPPreEntityIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IOActionIOWarfareType [UID 285]
@@ -8147,11 +9176,25 @@ pub enum IOActionIOWarfareType {
     PhysicalAttack = 6,
 }
 
+impl IOActionIOWarfareType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IOActionIOSimulationSource [UID 286]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IOActionIOSimulationSource {
     #[default]
     NoStatement = 0,
+}
+
+impl IOActionIOSimulationSource {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IOActionIOActionType [UID 287]
@@ -8163,6 +9206,13 @@ pub enum IOActionIOActionType {
     IOAttackComputedEffects = 2,
     IntentBasedEW = 3,
     IntentBasedEWComputedEffects = 4,
+}
+
+impl IOActionIOActionType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IOActionIOActionPhase [UID 288]
@@ -8178,6 +9228,13 @@ pub enum IOActionIOActionPhase {
     ContinueAttackEffectswithChanges = 6,
 }
 
+impl IOActionIOActionPhase {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IOReportIOReportType [UID 289]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IOReportIOReportType {
@@ -8186,6 +9243,13 @@ pub enum IOReportIOReportType {
     InitialReport = 1,
     UpdateReport = 2,
     FinalReport = 3,
+}
+
+impl IOReportIOReportType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IOEffectsRecordIOStatus [UID 290]
@@ -8202,6 +9266,13 @@ pub enum IOEffectsRecordIOStatus {
     EffectonSenderReceiverandMessage = 7,
 }
 
+impl IOEffectsRecordIOStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IOEffectsRecordIOLinkType [UID 291]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IOEffectsRecordIOLinkType {
@@ -8210,6 +9281,13 @@ pub enum IOEffectsRecordIOLinkType {
     LogicalLink = 1,
     PhysicalNode = 2,
     PhysicalLink = 3,
+}
+
+impl IOEffectsRecordIOLinkType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IOEffectsRecordIOEffect [UID 292]
@@ -8223,11 +9301,25 @@ pub enum IOEffectsRecordIOEffect {
     TerminateEffect = 255,
 }
 
+impl IOEffectsRecordIOEffect {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IOEffectsRecordIOProcess [UID 293]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IOEffectsRecordIOProcess {
     #[default]
     NoStatement = 0,
+}
+
+impl IOEffectsRecordIOProcess {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IOCommsNodeRecordCommsNodeType [UID 294]
@@ -8240,11 +9332,25 @@ pub enum IOCommsNodeRecordCommsNodeType {
     SenderReceiverNodeID = 3,
 }
 
+impl IOCommsNodeRecordCommsNodeType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DISAttributeActionCode [UID 295]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum DISAttributeActionCode {
     #[default]
     NoStatement = 0,
+}
+
+impl DISAttributeActionCode {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 DRParametersType [UID 296]
@@ -8256,12 +9362,26 @@ pub enum DRParametersType {
     WorldOrientationQuaternion = 2,
 }
 
+impl DRParametersType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 HighFidelityHAVEQUICKTODTransmitIndicator [UID 297]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum HighFidelityHAVEQUICKTODTransmitIndicator {
     #[default]
     NoTODIsBeingTransmitted = 0,
     TODTransmissioninProgress = 1,
+}
+
+impl HighFidelityHAVEQUICKTODTransmitIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 NETIDRecordMode [UID 298]
@@ -8271,6 +9391,13 @@ pub enum NETIDRecordMode {
     AHAVEQUICKIorHAVEQUICKIICOMBAT = 1,
     BSATURNCOMBAT = 2,
     TTRAINING = 3,
+}
+
+impl NETIDRecordMode {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 NETIDRecordFrequencyTable [UID 299]
@@ -8283,6 +9410,13 @@ pub enum NETIDRecordFrequencyTable {
     SATURNOperations = 3,
 }
 
+impl NETIDRecordFrequencyTable {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 EEAttributeStateIndicator [UID 300]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum EEAttributeStateIndicator {
@@ -8292,12 +9426,26 @@ pub enum EEAttributeStateIndicator {
     HasCeased = 2,
 }
 
+impl EEAttributeStateIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DISPDUStatusTransferredEntityIndicator(TEI) [UID 301]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TransferredEntityIndicator {
     #[default]
     NoDifference = 0,
     Difference = 1,
+}
+
+impl TransferredEntityIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 LVCIndicator [UID 302]
@@ -8310,6 +9458,13 @@ pub enum LVCIndicator {
     Constructive = 3,
 }
 
+impl LVCIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DISPDUStatusCoupledExtensionIndicator(CEI) [UID 303]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum CoupledExtensionIndicator {
@@ -8318,12 +9473,26 @@ pub enum CoupledExtensionIndicator {
     Coupled = 1,
 }
 
+impl CoupledExtensionIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DISPDUStatusFireTypeIndicator(FTI) [UID 304]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum FireTypeIndicator {
     #[default]
     Munition = 0,
     Expendable = 1,
+}
+
+impl FireTypeIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 DISPDUStatusDetonationTypeIndicator(DTI) [UID 305]
@@ -8335,6 +9504,13 @@ pub enum DetonationTypeIndicator {
     NonmunitionExplosion = 2,
 }
 
+impl DetonationTypeIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 RadioAttachedIndicator [UID 306]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum RadioAttachedIndicator {
@@ -8342,6 +9518,13 @@ pub enum RadioAttachedIndicator {
     NoStatement = 0,
     Unattached = 1,
     Attached = 2,
+}
+
+impl RadioAttachedIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IntercomAttachedIndicator(IAI) [UID 307]
@@ -8353,12 +9536,26 @@ pub enum IntercomAttachedIndicator {
     Attached = 2,
 }
 
+impl IntercomAttachedIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PDUStatusIFFSimulationMode [UID 308]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PDUStatusIFFSimulationMode {
     #[default]
     Regeneration = 0,
     Interactive = 1,
+}
+
+impl PDUStatusIFFSimulationMode {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 ExplosiveMaterialGroups [UID 309]
@@ -8372,6 +9569,13 @@ pub enum ExplosiveMaterialGroups {
     Solid = 4,
     Gaseous = 5,
     DustMaterial = 6,
+}
+
+impl ExplosiveMaterialGroups {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 ExplosiveMaterialCategories [UID 310]
@@ -8425,6 +9629,13 @@ pub enum ExplosiveMaterialCategories {
     SugarDust = 804,
 }
 
+impl ExplosiveMaterialCategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DEPrecisionAimpointBeamSpotType [UID 311]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum DEPrecisionAimpointBeamSpotType {
@@ -8432,6 +9643,13 @@ pub enum DEPrecisionAimpointBeamSpotType {
     Other = 0,
     Gaussian = 1,
     TopHat = 2,
+}
+
+impl DEPrecisionAimpointBeamSpotType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 DEFirePulseShape [UID 312]
@@ -8442,6 +9660,13 @@ pub enum DEFirePulseShape {
     SquareWave = 1,
     ContinuousWave = 2,
     Gaussian = 3,
+}
+
+impl DEFirePulseShape {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 EntityDamageStatusComponentIdentification [UID 314]
@@ -8460,6 +9685,13 @@ pub enum EntityDamageStatusComponentIdentification {
     FuelTankSolidRocketMotor = 9,
 }
 
+impl EntityDamageStatusComponentIdentification {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DEDamageDescriptionComponentDamageStatus [UID 315]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum DEDamageDescriptionComponentDamageStatus {
@@ -8469,6 +9701,13 @@ pub enum DEDamageDescriptionComponentDamageStatus {
     MediumDamage = 2,
     MajorDamage = 3,
     Destroyed = 4,
+}
+
+impl DEDamageDescriptionComponentDamageStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 DEDamageDescriptionComponentVisualSmokeColor [UID 316]
@@ -8481,12 +9720,26 @@ pub enum DEDamageDescriptionComponentVisualSmokeColor {
     Black = 3,
 }
 
+impl DEDamageDescriptionComponentVisualSmokeColor {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 BeamStatusBeamState [UID 318]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum BeamStatusBeamState {
     #[default]
     Active = 0,
     Deactivated = 1,
+}
+
+impl BeamStatusBeamState {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 EntityAssociationAssociationStatus [UID 319]
@@ -8502,12 +9755,26 @@ pub enum EntityAssociationAssociationStatus {
     FunctionalAssociationObject2 = 6,
 }
 
+impl EntityAssociationAssociationStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 EntityVPRecordChangeIndicator [UID 320]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum EntityVPRecordChangeIndicator {
     #[default]
     InitialReportorNoChangeSinceLastIssuance = 0,
     ChangeSinceLastIssuance = 1,
+}
+
+impl EntityVPRecordChangeIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 EntityAssociationGroupMemberType [UID 321]
@@ -8523,6 +9790,13 @@ pub enum EntityAssociationGroupMemberType {
     ConvoyMember = 6,
 }
 
+impl EntityAssociationGroupMemberType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PhysicalAssociationTypeGroups [UID 322]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PhysicalAssociationTypeGroups {
@@ -8532,6 +9806,13 @@ pub enum PhysicalAssociationTypeGroups {
     Restrained = 2,
     Mission = 3,
     OtherConnections = 4,
+}
+
+impl PhysicalAssociationTypeGroups {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 EntityAssociationPhysicalAssociationType [UID 323]
@@ -8568,6 +9849,13 @@ pub enum EntityAssociationPhysicalAssociationType {
     TopSurface = 93,
 }
 
+impl EntityAssociationPhysicalAssociationType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 EntityAssociationPhysicalConnectionType [UID 324]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum EntityAssociationPhysicalConnectionType {
@@ -8587,11 +9875,25 @@ pub enum EntityAssociationPhysicalConnectionType {
     FastRope = 12,
 }
 
+impl EntityAssociationPhysicalConnectionType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SensorRecordSensorTypeOtherActiveSensors [UID 325]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SensorRecordSensorTypeOtherActiveSensors {
     #[default]
     Undefined = 0,
+}
+
+impl SensorRecordSensorTypeOtherActiveSensors {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SensorRecordSensorTypePassiveSensors [UID 326]
@@ -8670,6 +9972,13 @@ pub enum SensorRecordSensorTypePassiveSensors {
     SafranVampir_MB = 60068,
 }
 
+impl SensorRecordSensorTypePassiveSensors {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MunitionExpendableStatus [UID 327]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MunitionExpendableStatus {
@@ -8677,6 +9986,13 @@ pub enum MunitionExpendableStatus {
     Other = 0,
     Ready = 1,
     Inventory = 2,
+}
+
+impl MunitionExpendableStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 FuelMeasurementUnits [UID 328]
@@ -8688,11 +10004,25 @@ pub enum FuelMeasurementUnits {
     Kilogram = 2,
 }
 
+impl FuelMeasurementUnits {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 FuelLocation [UID 329]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum FuelLocation {
     #[default]
     Other = 0,
+}
+
+impl FuelLocation {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 EntityAssociationAssociationType [UID 330]
@@ -8716,12 +10046,26 @@ pub enum EntityAssociationAssociationType {
     EntityHeadedtowardstoJoinUpWith = 14,
 }
 
+impl EntityAssociationAssociationType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SensorOnOffStatus [UID 331]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SensorOnOffStatus {
     #[default]
     Off = 0,
     On = 1,
+}
+
+impl SensorOnOffStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 OwnershipStatus [UID 332]
@@ -8737,11 +10081,25 @@ pub enum OwnershipStatus {
     LocalEntityCancelledRemoveEntityTCRReceived = 6,
 }
 
+impl OwnershipStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 RecordREventType [UID 333]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum RecordREventType {
     #[default]
     Other = 0,
+}
+
+impl RecordREventType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 RecordQueryREventType [UID 334]
@@ -8750,6 +10108,13 @@ pub enum RecordQueryREventType {
     #[default]
     Periodic = 0,
     InternalEntityStateData = 1,
+}
+
+impl RecordQueryREventType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 UAPropulsionPlantConfigurationConfiguration [UID 335]
@@ -8765,12 +10130,26 @@ pub enum UAPropulsionPlantConfigurationConfiguration {
     GasTurbine = 7,
 }
 
+impl UAPropulsionPlantConfigurationConfiguration {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MinefieldStateProtocolMode [UID 336]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MinefieldStateProtocolMode {
     #[default]
     HeartbeatMode = 0,
     QRPMode = 1,
+}
+
+impl MinefieldStateProtocolMode {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TransponderInterrogatorIndicator [UID 337]
@@ -8781,12 +10160,26 @@ pub enum TransponderInterrogatorIndicator {
     Interrogator = 1,
 }
 
+impl TransponderInterrogatorIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IFFSimulationMode [UID 338]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IFFSimulationMode {
     #[default]
     Regeneration = 0,
     Interactive = 1,
+}
+
+impl IFFSimulationMode {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IFFApplicableModes [UID 339]
@@ -8797,12 +10190,26 @@ pub enum IFFApplicableModes {
     AllModes = 1,
 }
 
+impl IFFApplicableModes {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ModeCAltitudeIndicator [UID 340]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ModeCAltitudeIndicator {
     #[default]
     PositiveAltitudeAboveMSL = 0,
     NegativeAltitudeBelowMSLUseAlternateModeCAltitude = 1,
+}
+
+impl ModeCAltitudeIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TCASACASBasicAdvancedIndicator [UID 341]
@@ -8813,12 +10220,26 @@ pub enum TCASACASBasicAdvancedIndicator {
     Advanced = 1,
 }
 
+impl TCASACASBasicAdvancedIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TCASACASIndicator [UID 342]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TCASACASIndicator {
     #[default]
     TCAS = 0,
     ACAS = 1,
+}
+
+impl TCASACASIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 TCASACASSoftwareVersion [UID 343]
@@ -8830,6 +10251,13 @@ pub enum TCASACASSoftwareVersion {
     _7_0 = 2,
 }
 
+impl TCASACASSoftwareVersion {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TCASACASType [UID 344]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TCASACASType {
@@ -8839,12 +10267,26 @@ pub enum TCASACASType {
     ACASII = 2,
 }
 
+impl TCASACASType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TCASIIIType [UID 345]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TCASIIIType {
     #[default]
     TCASI = 0,
     TCASII = 1,
+}
+
+impl TCASIIIType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Mode5IFFMission [UID 346]
@@ -8860,6 +10302,13 @@ pub enum Mode5IFFMission {
     GroundtoGround = 6,
 }
 
+impl Mode5IFFMission {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ModeSInterrogatorStatusTransmitState [UID 347]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ModeSInterrogatorStatusTransmitState {
@@ -8872,6 +10321,13 @@ pub enum ModeSInterrogatorStatusTransmitState {
     IntermittentLockout = 5,
 }
 
+impl ModeSInterrogatorStatusTransmitState {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ModeSInterrogatorIdentifierICType [UID 348]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ModeSInterrogatorIdentifierICType {
@@ -8880,12 +10336,26 @@ pub enum ModeSInterrogatorIdentifierICType {
     SI = 1,
 }
 
+impl ModeSInterrogatorIdentifierICType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ISLSAntennaType [UID 349]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ISLSAntennaType {
     #[default]
     NoStatement = 0,
     MonopulseAntenna = 1,
+}
+
+impl ISLSAntennaType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Mode5Reply [UID 350]
@@ -8898,6 +10368,13 @@ pub enum Mode5Reply {
     UnabletoVerify = 3,
 }
 
+impl Mode5Reply {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AntennaSelection [UID 351]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AntennaSelection {
@@ -8906,6 +10383,13 @@ pub enum AntennaSelection {
     Top = 1,
     Bottom = 2,
     Diversity = 3,
+}
+
+impl AntennaSelection {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Mode5SquitterType [UID 352]
@@ -8917,12 +10401,26 @@ pub enum Mode5SquitterType {
     Extended = 2,
 }
 
+impl Mode5SquitterType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Level2SquitterStatus [UID 353]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Level2SquitterStatus {
     #[default]
     Disabled = 0,
     Enabled = 1,
+}
+
+impl Level2SquitterStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 ModeSSquitterType [UID 354]
@@ -8935,12 +10433,26 @@ pub enum ModeSSquitterType {
     Short = 3,
 }
 
+impl ModeSSquitterType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 ModeSSquitterRecordSource [UID 355]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum ModeSSquitterRecordSource {
     #[default]
     Layer4IFFDataRecords = 0,
     Layer5GICBIFFDataRecords = 1,
+}
+
+impl ModeSSquitterRecordSource {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AircraftPresentDomain [UID 356]
@@ -8952,6 +10464,13 @@ pub enum AircraftPresentDomain {
     OnGroundSurface = 2,
 }
 
+impl AircraftPresentDomain {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AircraftIdentificationType [UID 357]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AircraftIdentificationType {
@@ -8959,6 +10478,13 @@ pub enum AircraftIdentificationType {
     NoStatement = 0,
     FlightNumber = 1,
     TailNumber = 2,
+}
+
+impl AircraftIdentificationType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 CapabilityReport [UID 358]
@@ -8973,6 +10499,13 @@ pub enum CapabilityReport {
     NoStatement = 255,
 }
 
+impl CapabilityReport {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 NavigationSource [UID 359]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum NavigationSource {
@@ -8983,12 +10516,26 @@ pub enum NavigationSource {
     INSGPS = 3,
 }
 
+impl NavigationSource {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 IFFDataRecordAvailable [UID 360]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum IFFDataRecordAvailable {
     #[default]
     ComputeLocally = 0,
     IFFDataRecordAvailable = 1,
+}
+
+impl IFFDataRecordAvailable {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Mode5SAltitudeResolution [UID 361]
@@ -8999,12 +10546,26 @@ pub enum Mode5SAltitudeResolution {
     _25foot = 1,
 }
 
+impl Mode5SAltitudeResolution {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DeltaMode5SAltitudePositiveNegativeIndicator [UID 362]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum DeltaMode5SAltitudePositiveNegativeIndicator {
     #[default]
     Positive = 0,
     Negative = 1,
+}
+
+impl DeltaMode5SAltitudePositiveNegativeIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 FormatType [UID 363]
@@ -9027,12 +10588,26 @@ pub enum FormatType {
     AirborneFormat100meterRNPGPSHeight = 16,
 }
 
+impl FormatType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AircraftAddressSource [UID 364]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AircraftAddressSource {
     #[default]
     ModeSAircraftAddressFieldValue = 0,
     GICBIFFDataRecordAvailable = 1,
+}
+
+impl AircraftAddressSource {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SurveillanceStatus [UID 365]
@@ -9045,6 +10620,13 @@ pub enum SurveillanceStatus {
     ATCRBSCodeChange = 3,
 }
 
+impl SurveillanceStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TurnRateSource [UID 366]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TurnRateSource {
@@ -9054,6 +10636,13 @@ pub enum TurnRateSource {
     _1DegreeorGreaterTurnRate = 2,
 }
 
+impl TurnRateSource {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 TimeTypeSource [UID 367]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum TimeTypeSource {
@@ -9061,6 +10650,13 @@ pub enum TimeTypeSource {
     ComputeLocally = 0,
     EvenSecond = 1,
     OddSecond = 2,
+}
+
+impl TimeTypeSource {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AircraftTypeWake [UID 368]
@@ -9258,12 +10854,26 @@ pub enum AppearanceDamage {
     Destroyed = 3,
 }
 
+impl AppearanceDamage {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Mode5MessageFormatsStatus [UID 380]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Mode5MessageFormatsStatus {
     #[default]
     Capability = 0,
     ActiveInterrogation = 1,
+}
+
+impl Mode5MessageFormatsStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceTrailingEffects [UID 381]
@@ -9274,6 +10884,13 @@ pub enum AppearanceTrailingEffects {
     Small = 1,
     Medium = 2,
     Large = 3,
+}
+
+impl AppearanceTrailingEffects {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceHatch [UID 382]
@@ -9288,12 +10905,26 @@ pub enum AppearanceHatch {
     OpenandPersonIsVisible = 5,
 }
 
+impl AppearanceHatch {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceLauncherOperational [UID 383]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceLauncherOperational {
     #[default]
     NotRaisedNotOperational = 0,
     RaisedOperational = 1,
+}
+
+impl AppearanceLauncherOperational {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceCamouflageType [UID 384]
@@ -9306,6 +10937,13 @@ pub enum AppearanceCamouflageType {
     Other = 3,
 }
 
+impl AppearanceCamouflageType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceConcealedPosition [UID 385]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceConcealedPosition {
@@ -9314,12 +10952,26 @@ pub enum AppearanceConcealedPosition {
     PreparedConcealedPosition = 1,
 }
 
+impl AppearanceConcealedPosition {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceEntityorObjectState [UID 386]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceEntityorObjectState {
     #[default]
     Active = 0,
     Deactivated = 1,
+}
+
+impl AppearanceEntityorObjectState {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceCanopy [UID 387]
@@ -9335,6 +10987,13 @@ pub enum AppearanceCanopy {
     FrontandRearCanopyLeftandRightTroopDoorOpen = 6,
 }
 
+impl AppearanceCanopy {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceSubsurfaceHatch [UID 388]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceSubsurfaceHatch {
@@ -9342,6 +11001,13 @@ pub enum AppearanceSubsurfaceHatch {
     NotApplicable = 0,
     HatchIsClosed = 1,
     HatchIsOpen = 4,
+}
+
+impl AppearanceSubsurfaceHatch {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 DISPDUStatusActiveInterrogationIndicator(AII) [UID 389]
@@ -9352,6 +11018,13 @@ pub enum ActiveInterrogationIndicator {
     Active = 1,
 }
 
+impl ActiveInterrogationIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceLifeformHealth [UID 390]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceLifeformHealth {
@@ -9360,6 +11033,13 @@ pub enum AppearanceLifeformHealth {
     SlightInjury = 1,
     ModerateInjury = 2,
     FatalInjury = 3,
+}
+
+impl AppearanceLifeformHealth {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceLifeFormComplianceStatus [UID 391]
@@ -9384,6 +11064,13 @@ pub enum AppearanceLifeFormComplianceStatus {
     UsingNonLethalWeapon6 = 15,
 }
 
+impl AppearanceLifeFormComplianceStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceLifeFormPosture [UID 392]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceLifeFormPosture {
@@ -9406,6 +11093,13 @@ pub enum AppearanceLifeFormPosture {
     Detained = 15,
 }
 
+impl AppearanceLifeFormPosture {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceLifeFormWeaponImplement [UID 393]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceLifeFormWeaponImplement {
@@ -9416,12 +11110,26 @@ pub enum AppearanceLifeFormWeaponImplement {
     FiringPositionInUse = 3,
 }
 
+impl AppearanceLifeFormWeaponImplement {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceConcealedMovement [UID 394]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceConcealedMovement {
     #[default]
     OpenMovement = 0,
     RushesBetweenCoveredPositions = 1,
+}
+
+impl AppearanceConcealedMovement {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceEnvironmentalDensity [UID 395]
@@ -9435,12 +11143,26 @@ pub enum AppearanceEnvironmentalDensity {
     Opaque = 4,
 }
 
+impl AppearanceEnvironmentalDensity {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Mode5PlatformType [UID 396]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Mode5PlatformType {
     #[default]
     GroundVehicle = 0,
     AirVehicle = 1,
+}
+
+impl Mode5PlatformType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceAntiCollisionDayNight [UID 397]
@@ -9451,12 +11173,26 @@ pub enum AppearanceAntiCollisionDayNight {
     Night = 1,
 }
 
+impl AppearanceAntiCollisionDayNight {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceNavigationPositionBrightness [UID 398]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceNavigationPositionBrightness {
     #[default]
     Dim = 0,
     Bright = 1,
+}
+
+impl AppearanceNavigationPositionBrightness {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceSupplyDeployed [UID 399]
@@ -9469,12 +11205,26 @@ pub enum AppearanceSupplyDeployed {
     DeployedandActive = 3,
 }
 
+impl AppearanceSupplyDeployed {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceNVGMode [UID 400]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceNVGMode {
     #[default]
     OvertLighting = 0,
     CovertLighting = 1,
+}
+
+impl AppearanceNVGMode {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 Parachute [UID 401]
@@ -9487,6 +11237,13 @@ pub enum Parachute {
     MalfunctionStreamer = 3,
 }
 
+impl Parachute {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 FlareSmokeColor [UID 402]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum FlareSmokeColor {
@@ -9495,6 +11252,13 @@ pub enum FlareSmokeColor {
     Red = 1,
     Green = 2,
     IR = 3,
+}
+
+impl FlareSmokeColor {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 FlareSmokeStatus [UID 403]
@@ -9506,6 +11270,13 @@ pub enum FlareSmokeStatus {
     BurnedOut = 2,
 }
 
+impl FlareSmokeStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SpotChaffStatus [UID 404]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SpotChaffStatus {
@@ -9513,6 +11284,13 @@ pub enum SpotChaffStatus {
     None = 0,
     Deployed = 1,
     Malfunction = 2,
+}
+
+impl SpotChaffStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceObjectGeneralDamage [UID 405]
@@ -9524,12 +11302,26 @@ pub enum AppearanceObjectGeneralDamage {
     Destroyed = 2,
 }
 
+impl AppearanceObjectGeneralDamage {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceObjectGeneralPredistributed [UID 406]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceObjectGeneralPredistributed {
     #[default]
     ObjectCreatedDuringtheExercise = 0,
     ObjectPredistributedPriortoExerciseStart = 1,
+}
+
+impl AppearanceObjectGeneralPredistributed {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceObjectSpecificBreachState [UID 407]
@@ -9539,6 +11331,13 @@ pub enum AppearanceObjectSpecificBreachState {
     NoBreaching = 0,
     Breached = 1,
     Cleared = 2,
+}
+
+impl AppearanceObjectSpecificBreachState {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceObjectSpecificChemicalType [UID 408]
@@ -9551,6 +11350,13 @@ pub enum AppearanceObjectSpecificChemicalType {
     RedPhosphorous = 3,
 }
 
+impl AppearanceObjectSpecificChemicalType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceLinearObjectTankDitchBreach [UID 409]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceLinearObjectTankDitchBreach {
@@ -9561,6 +11367,13 @@ pub enum AppearanceLinearObjectTankDitchBreach {
     Cleared = 3,
 }
 
+impl AppearanceLinearObjectTankDitchBreach {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AppearanceLinearObjectLaneMarkerVisible [UID 410]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AppearanceLinearObjectLaneMarkerVisible {
@@ -9568,6 +11381,13 @@ pub enum AppearanceLinearObjectLaneMarkerVisible {
     LeftSideIsVisible = 0,
     RightSideIsVisible = 1,
     BothSidesAreVisible = 2,
+}
+
+impl AppearanceLinearObjectLaneMarkerVisible {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 AppearanceObjectGeneralIEDPresent [UID 411]
@@ -9580,12 +11400,26 @@ pub enum AppearanceObjectGeneralIEDPresent {
     CompletelyHidden = 3,
 }
 
+impl AppearanceObjectGeneralIEDPresent {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Mode5LevelSelection [UID 412]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Mode5LevelSelection {
     #[default]
     Mode5Level1 = 0,
     Mode5Level2 = 1,
+}
+
+impl Mode5LevelSelection {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 SupplyFuelType [UID 413]
@@ -9605,6 +11439,13 @@ pub enum SupplyFuelType {
     TS1 = 10,
 }
 
+impl SupplyFuelType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 SensorTypeSource [UID 414]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum SensorTypeSource {
@@ -9617,12 +11458,26 @@ pub enum SensorTypeSource {
     Lasers = 5,
 }
 
+impl SensorTypeSource {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 AttachedPartDetachedIndicator [UID 415]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AttachedPartDetachedIndicator {
     #[default]
     Attached = 0,
     Detached = 1,
+}
+
+impl AttachedPartDetachedIndicator {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 IntercomControlCommunicationsClass [UID 416]
@@ -9633,11 +11488,25 @@ pub enum IntercomControlCommunicationsClass {
     SimulationSupportCommunicationsChannel = 1,
 }
 
+impl IntercomControlCommunicationsClass {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 DISLiveEntitySubprotocolNumber [UID 417]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum DISLiveEntitySubprotocolNumber {
     #[default]
     NoSubprotocol = 0,
+}
+
+impl DISLiveEntitySubprotocolNumber {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MinefieldAppearanceMinefieldType [UID 418]
@@ -9649,12 +11518,26 @@ pub enum MinefieldAppearanceMinefieldType {
     PureAntiTankMinefield = 2,
 }
 
+impl MinefieldAppearanceMinefieldType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MinefieldAppearanceActiveStatus [UID 419]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MinefieldAppearanceActiveStatus {
     #[default]
     Active = 0,
     Inactive = 1,
+}
+
+impl MinefieldAppearanceActiveStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MinefieldAppearanceLane [UID 420]
@@ -9665,12 +11548,26 @@ pub enum MinefieldAppearanceLane {
     MinefieldHasanInactiveLane = 1,
 }
 
+impl MinefieldAppearanceLane {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 MinefieldAppearanceState [UID 421]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum MinefieldAppearanceState {
     #[default]
     Active = 0,
     Deactivated = 1,
+}
+
+impl MinefieldAppearanceState {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MinefieldFusingFuseType [UID 422]
@@ -9686,12 +11583,26 @@ pub enum MinefieldFusingFuseType {
     TripWire = 6,
 }
 
+impl MinefieldFusingFuseType {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 Mode5LocationErrors [UID 423]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum Mode5LocationErrors {
     #[default]
     NoLocationErrors = 0,
     IFFDataRecordPresent = 1,
+}
+
+impl Mode5LocationErrors {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MinefieldPaintSchemeAlgae [UID 424]
@@ -9702,6 +11613,13 @@ pub enum MinefieldPaintSchemeAlgae {
     Light = 1,
     Moderate = 2,
     Heavy = 3,
+}
+
+impl MinefieldPaintSchemeAlgae {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 MinefieldPaintSchemePaintScheme [UID 425]
@@ -9729,6 +11647,13 @@ pub enum MinefieldPaintSchemePaintScheme {
     Brown = 18,
 }
 
+impl MinefieldPaintSchemePaintScheme {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 CoverShroudStatus [UID 426]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum CoverShroudStatus {
@@ -9737,6 +11662,13 @@ pub enum CoverShroudStatus {
     Opening = 1,
     CoverShroudBlownDetached = 2,
     OpenAttached = 3,
+}
+
+impl CoverShroudStatus {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformLandMotorcycleSubcategories [UID 427]
@@ -9752,6 +11684,15 @@ pub enum PlatformLandMotorcycleSubcategories {
     Touring = 6,
     DualPurpose = 7,
 }
+
+impl PlatformLandMotorcycleSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
+// HERE
 
 // SISO-REF-010-2023 PlatformLandCarSubcategories [UID 428]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -9803,6 +11744,13 @@ pub enum PlatformLandCarSubcategories {
     SportsUtilityVehicleOversize = 115,
 }
 
+impl PlatformLandCarSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformLandBusSubcategories [UID 429]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformLandBusSubcategories {
@@ -9826,6 +11774,13 @@ pub enum PlatformLandBusSubcategories {
     Trolley = 16,
     AirportTransport = 17,
     Articulated = 18,
+}
+
+impl PlatformLandBusSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformLandSingleUnitCargoTruckSubcategories [UID 430]
@@ -9864,6 +11819,13 @@ pub enum PlatformLandSingleUnitCargoTruckSubcategories {
     RefrigeratedTruckSmall = 108,
     RefrigeratedTruckMedium = 109,
     RefrigeratedTruckLarge = 110,
+}
+
+impl PlatformLandSingleUnitCargoTruckSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformLandSingleUnitUtilityEmergencyTruckSubcategories [UID 431]
@@ -9917,6 +11879,13 @@ pub enum PlatformLandSingleUnitUtilityEmergencyTruckSubcategories {
     AutoRickshaw = 150,
 }
 
+impl PlatformLandSingleUnitUtilityEmergencyTruckSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformLandMultipleUnitCargoTruckSubcategories [UID 432]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformLandMultipleUnitCargoTruckSubcategories {
@@ -9926,12 +11895,26 @@ pub enum PlatformLandMultipleUnitCargoTruckSubcategories {
     Tanker = 2,
 }
 
+impl PlatformLandMultipleUnitCargoTruckSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformLandMultipleUnitUtilityEmergencyTruckSubcategories [UID 433]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformLandMultipleUnitUtilityEmergencyTruckSubcategories {
     #[default]
     Other = 0,
     FireEngineHookAndLadder = 1,
+}
+
+impl PlatformLandMultipleUnitUtilityEmergencyTruckSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformLandConstructionSpecialtyVehicleSubcategories [UID 434]
@@ -9996,6 +11979,13 @@ pub enum PlatformLandConstructionSpecialtyVehicleSubcategories {
     CraneConstruction = 55,
 }
 
+impl PlatformLandConstructionSpecialtyVehicleSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformLandFarmSpecialtyVehicleSubcategories [UID 435]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformLandFarmSpecialtyVehicleSubcategories {
@@ -10009,6 +11999,13 @@ pub enum PlatformLandFarmSpecialtyVehicleSubcategories {
     LawnMowerRiding = 6,
     LawnMowerStanding = 7,
     LawnMowerPush = 8,
+}
+
+impl PlatformLandFarmSpecialtyVehicleSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformLandTrailerSubcategories [UID 436]
@@ -10045,6 +12042,13 @@ pub enum PlatformLandTrailerSubcategories {
     TrailerHeavyEquipment = 27,
 }
 
+impl PlatformLandTrailerSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformLandRecreationalSubcategories [UID 437]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformLandRecreationalSubcategories {
@@ -10064,6 +12068,13 @@ pub enum PlatformLandRecreationalSubcategories {
     RecreationalVehicleTypeBMotorhome = 12,
     RecreationalVehicleTypeCMotorhome = 13,
     ConversionVan = 14,
+}
+
+impl PlatformLandRecreationalSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformLandNonmotorizedSubcategories [UID 438]
@@ -10097,6 +12108,13 @@ pub enum PlatformLandNonmotorizedSubcategories {
     Wheelchair = 24,
 }
 
+impl PlatformLandNonmotorizedSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformLandTrainsSubcategories [UID 439]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformLandTrainsSubcategories {
@@ -10111,6 +12129,13 @@ pub enum PlatformLandTrainsSubcategories {
     Hopper = 7,
 }
 
+impl PlatformLandTrainsSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformLandUtilityEmergencyCarSubcategories [UID 440]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformLandUtilityEmergencyCarSubcategories {
@@ -10121,6 +12146,13 @@ pub enum PlatformLandUtilityEmergencyCarSubcategories {
     PoliceChief = 3,
     Hearse = 4,
     Taxi = 5,
+}
+
+impl PlatformLandUtilityEmergencyCarSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformSurfacePassengerVesselSubcategories [UID 441]
@@ -10134,6 +12166,13 @@ pub enum PlatformSurfacePassengerVesselSubcategories {
     OceanLiner = 5,
 }
 
+impl PlatformSurfacePassengerVesselSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformSurfaceDryCargoShipSubcategories [UID 442]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformSurfaceDryCargoShipSubcategories {
@@ -10145,6 +12184,13 @@ pub enum PlatformSurfaceDryCargoShipSubcategories {
     RoRoShip = 5,
     Barge = 6,
     HeavyLiftShip = 7,
+}
+
+impl PlatformSurfaceDryCargoShipSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformSurfaceTankerSubcategories [UID 443]
@@ -10162,6 +12208,13 @@ pub enum PlatformSurfaceTankerSubcategories {
     CondensateStorageTanker = 9,
 }
 
+impl PlatformSurfaceTankerSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformSurfaceSupportVesselSubcategories [UID 444]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformSurfaceSupportVesselSubcategories {
@@ -10177,6 +12230,13 @@ pub enum PlatformSurfaceSupportVesselSubcategories {
     EmergencyResponseandRescueVessel = 9,
 }
 
+impl PlatformSurfaceSupportVesselSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformSurfacePrivateMotorboatSubcategories [UID 445]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformSurfacePrivateMotorboatSubcategories {
@@ -10187,6 +12247,13 @@ pub enum PlatformSurfacePrivateMotorboatSubcategories {
     VeryLargeMotorboat = 4,
 }
 
+impl PlatformSurfacePrivateMotorboatSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
 // SISO-REF-010-2023 PlatformSurfacePrivateSailboatSubcategories [UID 446]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum PlatformSurfacePrivateSailboatSubcategories {
@@ -10195,6 +12262,13 @@ pub enum PlatformSurfacePrivateSailboatSubcategories {
     MediumSailboat = 2,
     LargeSailboat = 3,
     VeryLargeSailboat = 4,
+}
+
+impl PlatformSurfacePrivateSailboatSubcategories {
+    #[must_use]
+    pub fn decode(buf: &mut BytesMut) -> Self {
+        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
 }
 
 // SISO-REF-010-2023 PlatformSurfaceFishingVesselSubcategories [UID 447]
