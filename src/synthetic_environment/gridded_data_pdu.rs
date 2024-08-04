@@ -10,6 +10,7 @@ use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::EntityType,
+    enums::{GriddedDataConstantGrid, GriddedDataCoordinateSystem},
     euler_angles::EulerAngles,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
@@ -25,9 +26,9 @@ pub struct GriddedDataPdu {
     pub field_number: u16,
     pub pdu_number: u16,
     pub pdu_total: u16,
-    pub coordinate_system: u16,
+    pub coordinate_system: GriddedDataCoordinateSystem,
     pub number_of_grid_axes: u8,
-    pub constant_grid: u8,
+    pub constant_grid: GriddedDataConstantGrid,
     pub environment_type: EntityType,
     pub orientation: EulerAngles,
     pub sample_time: u64,
@@ -54,15 +55,15 @@ impl Default for GriddedDataPdu {
             pdu_header: PduHeader::default(
                 PduType::GriddedData,
                 ProtocolFamily::SyntheticEnvironment,
-                56,
+                64,
             ),
             environmental_simulation_application_id: EntityId::default(0),
             field_number: 0,
             pdu_number: 0,
             pdu_total: 0,
-            coordinate_system: 0,
+            coordinate_system: GriddedDataCoordinateSystem::default(),
             number_of_grid_axes: 0,
-            constant_grid: 0,
+            constant_grid: GriddedDataConstantGrid::default(),
             environment_type: EntityType::default(),
             orientation: EulerAngles::default(),
             sample_time: 0,
@@ -82,9 +83,9 @@ impl Pdu for GriddedDataPdu {
         buf.put_u16(self.field_number);
         buf.put_u16(self.pdu_number);
         buf.put_u16(self.pdu_total);
-        buf.put_u16(self.coordinate_system);
+        buf.put_u16(self.coordinate_system as u16);
         buf.put_u8(self.number_of_grid_axes);
-        buf.put_u8(self.constant_grid);
+        buf.put_u8(self.constant_grid as u8);
         self.environment_type.serialize(buf);
         self.orientation.serialize(buf);
         buf.put_u64(self.sample_time);
@@ -107,9 +108,9 @@ impl Pdu for GriddedDataPdu {
             let field_number = buffer.get_u16();
             let pdu_number = buffer.get_u16();
             let pdu_total = buffer.get_u16();
-            let coordinate_system = buffer.get_u16();
+            let coordinate_system = GriddedDataCoordinateSystem::decode(&mut buffer);
             let number_of_grid_axes = buffer.get_u8();
-            let constant_grid = buffer.get_u8();
+            let constant_grid = GriddedDataConstantGrid::decode(&mut buffer);
             let environment_type = EntityType::decode(&mut buffer);
             let orientation = EulerAngles::decode(&mut buffer);
             let sample_time = buffer.get_u64();
@@ -159,9 +160,9 @@ impl Pdu for GriddedDataPdu {
         let field_number = buffer.get_u16();
         let pdu_number = buffer.get_u16();
         let pdu_total = buffer.get_u16();
-        let coordinate_system = buffer.get_u16();
+        let coordinate_system = GriddedDataCoordinateSystem::decode(&mut buffer);
         let number_of_grid_axes = buffer.get_u8();
-        let constant_grid = buffer.get_u8();
+        let constant_grid = GriddedDataConstantGrid::decode(&mut buffer);
         let environment_type = EntityType::decode(&mut buffer);
         let orientation = EulerAngles::decode(&mut buffer);
         let sample_time = buffer.get_u64();
@@ -209,7 +210,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::GriddedData,
             ProtocolFamily::SyntheticEnvironment,
-            448 / 8,
+            64,
         );
 
         assert_eq!(
@@ -237,5 +238,15 @@ mod tests {
 
         let new_gridded_data_pdu = GriddedDataPdu::deserialize(buffer).unwrap();
         assert_eq!(new_gridded_data_pdu.pdu_header, gridded_data_pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_pdu_size() {
+        let gridded_data_pdu = GriddedDataPdu::default();
+
+        assert_eq!(
+            gridded_data_pdu.pdu_header.length,
+            gridded_data_pdu.pdu_header.length
+        );
     }
 }

@@ -8805,8 +8805,8 @@ impl GriddedDataFieldNumber {
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum GriddedDataCoordinateSystem {
     #[default]
-    RighthandedCartesian = 0,
-    LefthandedCartesian = 1,
+    RightHandedCartesian = 0,
+    LeftHandedCartesian = 1,
     LatitudeLongitudeHeight = 2,
     LatitudeLongitudeDepth = 3,
 }
