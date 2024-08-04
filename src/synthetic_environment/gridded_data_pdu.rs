@@ -16,13 +16,15 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
-use super::data_types::grid_data_record::GridDataRecord;
+use super::data_types::{
+    grid_axis_descriptor::GridAxisDescriptor, grid_data_record::GridDataRecord,
+};
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.11.2.3
 pub struct GriddedDataPdu {
     pub pdu_header: PduHeader,
-    pub environmental_simulation_application_id: EntityId,
+    pub environmental_simulation_id: EntityId,
     pub field_number: u16,
     pub pdu_number: u16,
     pub pdu_total: u16,
@@ -34,8 +36,9 @@ pub struct GriddedDataPdu {
     pub sample_time: u64,
     pub total_values: u32,
     pub vector_dimension: u8,
-    pub padding1: u16,
-    pub padding2: u8,
+    pub padding1: u8,
+    pub padding2: u16,
+    pub grid_axis_descriptors: Vec<GridAxisDescriptor>,
     pub grid_data_list: Vec<GridDataRecord>,
 }
 
@@ -55,9 +58,9 @@ impl Default for GriddedDataPdu {
             pdu_header: PduHeader::default(
                 PduType::GriddedData,
                 ProtocolFamily::SyntheticEnvironment,
-                64,
+                112,
             ),
-            environmental_simulation_application_id: EntityId::default(0),
+            environmental_simulation_id: EntityId::default(0),
             field_number: 0,
             pdu_number: 0,
             pdu_total: 0,
@@ -71,6 +74,7 @@ impl Default for GriddedDataPdu {
             vector_dimension: 0,
             padding1: 0,
             padding2: 0,
+            grid_axis_descriptors: vec![],
             grid_data_list: vec![],
         }
     }
@@ -79,7 +83,7 @@ impl Default for GriddedDataPdu {
 impl Pdu for GriddedDataPdu {
     fn serialize(&self, buf: &mut BytesMut) {
         self.pdu_header.serialize(buf);
-        self.environmental_simulation_application_id.serialize(buf);
+        self.environmental_simulation_id.serialize(buf);
         buf.put_u16(self.field_number);
         buf.put_u16(self.pdu_number);
         buf.put_u16(self.pdu_total);
@@ -91,8 +95,11 @@ impl Pdu for GriddedDataPdu {
         buf.put_u64(self.sample_time);
         buf.put_u32(self.total_values);
         buf.put_u8(self.vector_dimension);
-        buf.put_u16(self.padding1);
-        buf.put_u8(self.padding2);
+        buf.put_u8(self.padding1);
+        buf.put_u16(self.padding2);
+        for i in 0..self.grid_axis_descriptors.len() {
+            self.grid_axis_descriptors[i].serialize(buf);
+        }
         for i in 0..self.grid_data_list.len() {
             self.grid_data_list[i].serialize(buf);
         }
@@ -104,7 +111,7 @@ impl Pdu for GriddedDataPdu {
     {
         let pdu_header = PduHeader::decode(&mut buffer);
         if pdu_header.pdu_type == PduType::GriddedData {
-            let environmental_simulation_application_id = EntityId::decode(&mut buffer);
+            let environmental_simulation_id = EntityId::decode(&mut buffer);
             let field_number = buffer.get_u16();
             let pdu_number = buffer.get_u16();
             let pdu_total = buffer.get_u16();
@@ -116,15 +123,20 @@ impl Pdu for GriddedDataPdu {
             let sample_time = buffer.get_u64();
             let total_values = buffer.get_u32();
             let vector_dimension = buffer.get_u8();
-            let padding1 = buffer.get_u16();
-            let padding2 = buffer.get_u8();
+            let padding1 = buffer.get_u8();
+            let padding2 = buffer.get_u16();
+            let mut grid_axis_descriptors: Vec<GridAxisDescriptor> = vec![];
+            for _ in 0..number_of_grid_axes {
+                grid_axis_descriptors.push(GridAxisDescriptor::decode(&mut buffer));
+            }
             let mut grid_data_list: Vec<GridDataRecord> = vec![];
-            for _i in 0..number_of_grid_axes {
+            while buffer.has_remaining() {
                 grid_data_list.push(GridDataRecord::decode(&mut buffer));
             }
+
             Ok(GriddedDataPdu {
                 pdu_header,
-                environmental_simulation_application_id,
+                environmental_simulation_id,
                 field_number,
                 pdu_number,
                 pdu_total,
@@ -138,6 +150,7 @@ impl Pdu for GriddedDataPdu {
                 vector_dimension,
                 padding1,
                 padding2,
+                grid_axis_descriptors,
                 grid_data_list,
             })
         } else {
@@ -156,7 +169,7 @@ impl Pdu for GriddedDataPdu {
     where
         Self: Sized,
     {
-        let environmental_simulation_application_id = EntityId::decode(&mut buffer);
+        let environmental_simulation_id = EntityId::decode(&mut buffer);
         let field_number = buffer.get_u16();
         let pdu_number = buffer.get_u16();
         let pdu_total = buffer.get_u16();
@@ -168,15 +181,19 @@ impl Pdu for GriddedDataPdu {
         let sample_time = buffer.get_u64();
         let total_values = buffer.get_u32();
         let vector_dimension = buffer.get_u8();
-        let padding1 = buffer.get_u16();
-        let padding2 = buffer.get_u8();
+        let padding1 = buffer.get_u8();
+        let padding2 = buffer.get_u16();
+        let mut grid_axis_descriptors: Vec<GridAxisDescriptor> = vec![];
+        for _ in 0..number_of_grid_axes {
+            grid_axis_descriptors.push(GridAxisDescriptor::decode(&mut buffer));
+        }
         let mut grid_data_list: Vec<GridDataRecord> = vec![];
-        for _i in 0..number_of_grid_axes {
+        while buffer.has_remaining() {
             grid_data_list.push(GridDataRecord::decode(&mut buffer));
         }
         Ok(GriddedDataPdu {
             pdu_header,
-            environmental_simulation_application_id,
+            environmental_simulation_id,
             field_number,
             pdu_number,
             pdu_total,
@@ -190,6 +207,7 @@ impl Pdu for GriddedDataPdu {
             vector_dimension,
             padding1,
             padding2,
+            grid_axis_descriptors,
             grid_data_list,
         })
     }
@@ -210,7 +228,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::GriddedData,
             ProtocolFamily::SyntheticEnvironment,
-            64,
+            112,
         );
 
         assert_eq!(

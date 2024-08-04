@@ -8814,7 +8814,7 @@ pub enum GriddedDataCoordinateSystem {
 impl GriddedDataCoordinateSystem {
     #[must_use]
     pub fn decode(buf: &mut BytesMut) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
 

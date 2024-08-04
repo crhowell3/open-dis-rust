@@ -97,12 +97,68 @@ impl GridDataRecord {
         }
     }
 
-    // pub fn decode(buf: &mut BytesMut) -> GridDataRecord {
-    //     let sample_type = GriddedDataSampleType::decode(buf);
-    //     let data_representation = GriddedDataDataRepresentation::decode(buf);
-    //     GridDataRecord {
-    //         sample_type,
-    //         data_representation,
-    //     }
-    // }
+    pub fn decode(buf: &mut BytesMut) -> GridDataRecord {
+        let sample_type = GriddedDataSampleType::decode(buf);
+        let data_representation = GriddedDataDataRepresentation::decode(buf);
+        let data = match data_representation {
+            GriddedDataDataRepresentation::Type0 => {
+                let number_of_octets = buf.get_u16();
+                let mut data_values: Vec<u8> = vec![];
+                for _ in 0..number_of_octets {
+                    data_values.push(buf.get_u8());
+                }
+                let mut padding: Vec<u8> = vec![];
+                while buf.has_remaining() {
+                    padding.push(buf.get_u8());
+                }
+
+                DataRepresentationType::Type0 {
+                    number_of_octets,
+                    data_values,
+                    padding,
+                }
+            }
+            GriddedDataDataRepresentation::Type1 => {
+                let field_scale = buf.get_f32();
+                let field_offset = buf.get_f32();
+                let number_of_values = buf.get_u16();
+                let mut data_values: Vec<u16> = vec![];
+                for _ in 0..number_of_values {
+                    data_values.push(buf.get_u16());
+                }
+                let mut padding: Vec<u8> = vec![];
+                while buf.has_remaining() {
+                    padding.push(buf.get_u8());
+                }
+
+                DataRepresentationType::Type1 {
+                    field_scale,
+                    field_offset,
+                    number_of_values,
+                    data_values,
+                    padding,
+                }
+            }
+            GriddedDataDataRepresentation::Type2 => {
+                let number_of_values = buf.get_u16();
+                let padding = buf.get_u16();
+                let mut data_values: Vec<f32> = vec![];
+                for _ in 0..number_of_values {
+                    data_values.push(buf.get_f32());
+                }
+
+                DataRepresentationType::Type2 {
+                    number_of_values,
+                    padding,
+                    data_values,
+                }
+            }
+        };
+
+        GridDataRecord {
+            sample_type,
+            data_representation,
+            data,
+        }
+    }
 }
