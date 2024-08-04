@@ -44,7 +44,7 @@ impl Default for ElectromagneticEmissionsPdu {
             pdu_header: PduHeader::default(
                 PduType::ElectromagneticEmission,
                 ProtocolFamily::DistributedEmissionRegeneration,
-                56,
+                28,
             ),
             emitting_entity_id: EntityId::default(1),
             event_id: EventId::default(1),
