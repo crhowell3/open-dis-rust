@@ -81,7 +81,9 @@ impl Default for GriddedDataPdu {
 }
 
 impl Pdu for GriddedDataPdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.environmental_simulation_id.serialize(buf);
         buf.put_u16(self.field_number);
@@ -250,7 +252,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let gridded_data_pdu = GriddedDataPdu::default();
+        let mut gridded_data_pdu = GriddedDataPdu::default();
         let mut buffer = BytesMut::new();
         gridded_data_pdu.serialize(&mut buffer);
 

@@ -58,7 +58,9 @@ impl Default for EntityDamageStatusPdu {
 }
 
 impl Pdu for EntityDamageStatusPdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.firing_entity_id.serialize(buf);
         self.target_entity_id.serialize(buf);
@@ -176,7 +178,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let entity_damage_status_pdu = EntityDamageStatusPdu::default();
+        let mut entity_damage_status_pdu = EntityDamageStatusPdu::default();
         let mut buffer = BytesMut::new();
         entity_damage_status_pdu.serialize(&mut buffer);
 
