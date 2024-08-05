@@ -47,7 +47,9 @@ impl Default for SetRecordReliablePdu {
 }
 
 impl Pdu for SetRecordReliablePdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
@@ -175,7 +177,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let set_record_reliable_pdu = SetRecordReliablePdu::default();
+        let mut set_record_reliable_pdu = SetRecordReliablePdu::default();
         let mut buffer = BytesMut::new();
         set_record_reliable_pdu.serialize(&mut buffer);
 

@@ -56,7 +56,9 @@ impl Default for ResupplyReceivedPdu {
 }
 
 impl Pdu for ResupplyReceivedPdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         self.supplying_entity_id.serialize(buf);
