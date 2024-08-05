@@ -138,7 +138,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let start_resume_pdu = StartResumePdu::default();
+        let mut start_resume_pdu = StartResumePdu::default();
         let mut buffer = BytesMut::new();
         start_resume_pdu.serialize(&mut buffer);
 

@@ -174,7 +174,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let transfer_ownership_pdu = TransferOwnershipPdu::default();
+        let mut transfer_ownership_pdu = TransferOwnershipPdu::default();
         let mut buffer = BytesMut::new();
         transfer_ownership_pdu.serialize(&mut buffer);
 

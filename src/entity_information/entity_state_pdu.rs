@@ -215,7 +215,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let entity_state_pdu = EntityStatePdu::default();
+        let mut entity_state_pdu = EntityStatePdu::default();
         let mut buffer = BytesMut::new();
         entity_state_pdu.serialize(&mut buffer);
 

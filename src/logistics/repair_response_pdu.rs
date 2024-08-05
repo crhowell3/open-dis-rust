@@ -146,7 +146,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let repair_response_pdu = RepairResponsePdu::default();
+        let mut repair_response_pdu = RepairResponsePdu::default();
         let mut buffer = BytesMut::new();
         repair_response_pdu.serialize(&mut buffer);
 

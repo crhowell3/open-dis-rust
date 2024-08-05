@@ -166,7 +166,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let set_data_pdu = SetDataPdu::default();
+        let mut set_data_pdu = SetDataPdu::default();
         let mut buffer = BytesMut::new();
         set_data_pdu.serialize(&mut buffer);
 

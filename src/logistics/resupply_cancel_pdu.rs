@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let resupply_cancel_pdu = ResupplyCancelPdu::default();
+        let mut resupply_cancel_pdu = ResupplyCancelPdu::default();
         let mut buffer = BytesMut::new();
         resupply_cancel_pdu.serialize(&mut buffer);
 

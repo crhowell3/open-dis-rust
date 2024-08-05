@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let record_query_reliable_pdu = RecordQueryReliablePdu::default();
+        let mut record_query_reliable_pdu = RecordQueryReliablePdu::default();
         let mut buffer = BytesMut::new();
         record_query_reliable_pdu.serialize(&mut buffer);
 

@@ -123,7 +123,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let remove_entity_pdu = RemoveEntityPdu::default();
+        let mut remove_entity_pdu = RemoveEntityPdu::default();
         let mut buffer = BytesMut::new();
         remove_entity_pdu.serialize(&mut buffer);
 

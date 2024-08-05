@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let remove_entity_reliable_pdu = RemoveEntityReliablePdu::default();
+        let mut remove_entity_reliable_pdu = RemoveEntityReliablePdu::default();
         let mut buffer = BytesMut::new();
         remove_entity_reliable_pdu.serialize(&mut buffer);
 

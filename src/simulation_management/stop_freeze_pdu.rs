@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let stop_freeze_pdu = StopFreezePdu::default();
+        let mut stop_freeze_pdu = StopFreezePdu::default();
         let mut buffer = BytesMut::new();
         stop_freeze_pdu.serialize(&mut buffer);
 

@@ -226,7 +226,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let intercom_control_pdu = IntercomControlPdu::default();
+        let mut intercom_control_pdu = IntercomControlPdu::default();
         let mut buffer = BytesMut::new();
         intercom_control_pdu.serialize(&mut buffer);
 

@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let resupply_offer_pdu = ResupplyOfferPdu::default();
+        let mut resupply_offer_pdu = ResupplyOfferPdu::default();
         let mut buffer = BytesMut::new();
         resupply_offer_pdu.serialize(&mut buffer);
 

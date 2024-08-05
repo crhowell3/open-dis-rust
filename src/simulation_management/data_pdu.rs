@@ -159,7 +159,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let data_pdu = DataPdu::default();
+        let mut data_pdu = DataPdu::default();
         let mut buffer = BytesMut::new();
         data_pdu.serialize(&mut buffer);
 

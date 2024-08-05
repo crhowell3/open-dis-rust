@@ -183,7 +183,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let data_reliable_pdu = DataReliablePdu::default();
+        let mut data_reliable_pdu = DataReliablePdu::default();
         let mut buffer = BytesMut::new();
         data_reliable_pdu.serialize(&mut buffer);
 

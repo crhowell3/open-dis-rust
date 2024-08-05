@@ -179,7 +179,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let event_report_reliable_pdu = EventReportReliablePdu::default();
+        let mut event_report_reliable_pdu = EventReportReliablePdu::default();
         let mut buffer = BytesMut::new();
         event_report_reliable_pdu.serialize(&mut buffer);
 

@@ -155,7 +155,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let acknowledge_pdu = AcknowledgePdu::default();
+        let mut acknowledge_pdu = AcknowledgePdu::default();
         let mut buffer = BytesMut::new();
         acknowledge_pdu.serialize(&mut buffer);
 

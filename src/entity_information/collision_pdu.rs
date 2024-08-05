@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let collision_pdu = CollisionPdu::default();
+        let mut collision_pdu = CollisionPdu::default();
         let mut buffer = BytesMut::new();
         collision_pdu.serialize(&mut buffer);
 

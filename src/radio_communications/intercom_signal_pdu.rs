@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let intercom_signal_pdu = IntercomSignalPdu::default();
+        let mut intercom_signal_pdu = IntercomSignalPdu::default();
         let mut buffer = BytesMut::new();
         intercom_signal_pdu.serialize(&mut buffer);
 

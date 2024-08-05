@@ -283,7 +283,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let transmitter_pdu = TransmitterPdu::default();
+        let mut transmitter_pdu = TransmitterPdu::default();
         let mut buffer = BytesMut::new();
         transmitter_pdu.serialize(&mut buffer);
 

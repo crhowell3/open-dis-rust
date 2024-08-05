@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let service_request_pdu = ServiceRequestPdu::default();
+        let mut service_request_pdu = ServiceRequestPdu::default();
         let mut buffer = BytesMut::new();
         service_request_pdu.serialize(&mut buffer);
 

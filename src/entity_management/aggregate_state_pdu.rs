@@ -309,7 +309,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let aggregate_state_pdu = AggregateStatePdu::default();
+        let mut aggregate_state_pdu = AggregateStatePdu::default();
         let mut buffer = BytesMut::new();
         aggregate_state_pdu.serialize(&mut buffer);
 

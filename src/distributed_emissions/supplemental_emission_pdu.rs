@@ -186,7 +186,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let supplemental_emission_pdu = SupplementalEmissionPdu::default();
+        let mut supplemental_emission_pdu = SupplementalEmissionPdu::default();
         let mut buffer = BytesMut::new();
         supplemental_emission_pdu.serialize(&mut buffer);
 

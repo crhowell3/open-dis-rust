@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let is_group_of_pdu = IsGroupOfPdu::default();
+        let mut is_group_of_pdu = IsGroupOfPdu::default();
         let mut buffer = BytesMut::new();
         is_group_of_pdu.serialize(&mut buffer);
 

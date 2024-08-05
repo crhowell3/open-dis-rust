@@ -180,7 +180,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let signal_pdu = SignalPdu::default();
+        let mut signal_pdu = SignalPdu::default();
         let mut buffer = BytesMut::new();
         signal_pdu.serialize(&mut buffer);
 

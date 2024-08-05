@@ -155,7 +155,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let is_part_of_pdu = IsPartOfPdu::default();
+        let mut is_part_of_pdu = IsPartOfPdu::default();
         let mut buffer = BytesMut::new();
         is_part_of_pdu.serialize(&mut buffer);
 
