@@ -15,8 +15,8 @@ env:
 
 jobs:
   build_and_test:
-    name: Rust project - latest
-    runs-on: ubuntu-latest
+    name: Build and test
+    runs-on: self-hosted
     strategy:
       matrix:
         toolchain:
@@ -63,10 +63,11 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@miri
-      - run: rustup override set nightly
-      - run: cargo miri setup
-      - run: cargo miri test
-        env:
-          MIRIFLAGS: "-Zmiri-strict-provenance -Zmiri-disable-isolation"
+      - uses: actions/checkout@v3
+      - name: Install Miri
+        run: |
+          rustup toolchain install nightly --component miri
+          rustup override set nightly
+          cargo miri setup
+      - name: Test with Miri
+        run: cargo miri test
