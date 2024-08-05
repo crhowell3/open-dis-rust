@@ -59,7 +59,9 @@ impl Default for EnvironmentalProcessPdu {
 }
 
 impl Pdu for EnvironmentalProcessPdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.environmental_process_id.serialize(buf);
         self.environment_type.serialize(buf);
@@ -183,7 +185,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let environmental_process_pdu = EnvironmentalProcessPdu::default();
+        let mut environmental_process_pdu = EnvironmentalProcessPdu::default();
         let mut buffer = BytesMut::new();
         environmental_process_pdu.serialize(&mut buffer);
 

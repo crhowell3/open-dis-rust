@@ -42,7 +42,9 @@ impl Default for ResupplyCancelPdu {
 }
 
 impl Pdu for ResupplyCancelPdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         self.supplying_entity_id.serialize(buf);
@@ -123,7 +125,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let resupply_cancel_pdu = ResupplyCancelPdu::default();
+        let mut resupply_cancel_pdu = ResupplyCancelPdu::default();
         let mut buffer = BytesMut::new();
         resupply_cancel_pdu.serialize(&mut buffer);
 

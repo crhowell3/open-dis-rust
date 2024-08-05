@@ -8,10 +8,7 @@ use bytes::BytesMut;
 use std::any::Any;
 
 pub trait Pdu {
-    fn serialize(&self, buf: &mut BytesMut);
-    /// # Errors
-    ///
-    /// Will return `DISError` if the PDU header within the Byte Array is invalid
+    fn serialize(&mut self, buf: &mut BytesMut);
     fn deserialize(buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized;

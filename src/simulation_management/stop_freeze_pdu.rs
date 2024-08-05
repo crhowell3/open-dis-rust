@@ -28,7 +28,7 @@ impl Default for StopFreezePdu {
             pdu_header: PduHeader::default(
                 PduType::StopFreeze,
                 ProtocolFamily::SimulationManagement,
-                56,
+                40,
             ),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
@@ -42,7 +42,9 @@ impl Default for StopFreezePdu {
 }
 
 impl Pdu for StopFreezePdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
@@ -129,7 +131,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::StopFreeze,
             ProtocolFamily::SimulationManagement,
-            56,
+            40,
         );
 
         assert_eq!(
@@ -151,7 +153,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let stop_freeze_pdu = StopFreezePdu::default();
+        let mut stop_freeze_pdu = StopFreezePdu::default();
         let mut buffer = BytesMut::new();
         stop_freeze_pdu.serialize(&mut buffer);
 

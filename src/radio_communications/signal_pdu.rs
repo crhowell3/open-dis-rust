@@ -43,7 +43,7 @@ impl Default for SignalPdu {
             pdu_header: PduHeader::default(
                 PduType::Signal,
                 ProtocolFamily::RadioCommunications,
-                56,
+                256,
             ),
             entity_id: EntityId::default(1),
             radio_id: 0,
@@ -58,7 +58,9 @@ impl Default for SignalPdu {
 }
 
 impl Pdu for SignalPdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.entity_id.serialize(buf);
         buf.put_u16(self.radio_id);
@@ -159,11 +161,8 @@ mod tests {
     #[test]
     fn create_header() {
         let signal_pdu = SignalPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::Signal,
-            ProtocolFamily::RadioCommunications,
-            448 / 8,
-        );
+        let pdu_header =
+            PduHeader::default(PduType::Signal, ProtocolFamily::RadioCommunications, 256);
 
         assert_eq!(
             pdu_header.protocol_version,
@@ -181,7 +180,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let signal_pdu = SignalPdu::default();
+        let mut signal_pdu = SignalPdu::default();
         let mut buffer = BytesMut::new();
         signal_pdu.serialize(&mut buffer);
 

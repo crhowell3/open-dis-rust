@@ -56,7 +56,9 @@ impl Default for ReceiverPdu {
 }
 
 impl Pdu for ReceiverPdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.entity_id.serialize(buf);
         buf.put_u16(self.radio_id);
@@ -160,7 +162,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let receiver_pdu = ReceiverPdu::default();
+        let mut receiver_pdu = ReceiverPdu::default();
         let mut buffer = BytesMut::new();
         receiver_pdu.serialize(&mut buffer);
 

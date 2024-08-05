@@ -14,42 +14,21 @@ env:
   RUSTFLAGS: -Dwarnings
 
 jobs:
-  test:
-    name: Tests
-    runs-on: self-hosted
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
-      - run: cargo test
-  
-  stable:
-    name: Rust ${{matrix.rust}}
+  build_and_test:
+    name: Build and test
     runs-on: self-hosted
     strategy:
-      fail-fast: false
       matrix:
-        rust: [stable, beta]
-    timeout-minutes: 45
+        toolchain:
+          - stable
+          - beta
+          - nightly
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{matrix.rust}}
-      - run: cargo build --no-default-features
+      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - run: cargo build --verbose
+      - run: cargo test --verbose  
 
-  nightly:
-    name: Rust nightly
-    runs-on: self-hosted
-    strategy:
-      fail-fast: false
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
-      - run: cargo build
-      - run: cargo build --no-default-features
-  
   doc:
     name: Documentation
     runs-on: self-hosted
@@ -84,10 +63,13 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@miri
-      - run: rustup override set nightly
-      - run: cargo miri setup
-      - run: cargo miri test
+      - uses: actions/checkout@v3
+      - name: Install Miri
+        run: |
+          rustup toolchain install nightly --component miri
+          rustup override set nightly
+          cargo miri setup
         env:
           MIRIFLAGS: "-Zmiri-strict-provenance -Zmiri-disable-isolation"
+      - name: Test with Miri
+        run: cargo miri test

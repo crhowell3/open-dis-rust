@@ -58,7 +58,9 @@ impl Default for IFFPdu {
 }
 
 impl Pdu for IFFPdu {
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&mut self, buf: &mut BytesMut) {
+        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
+            .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.emitting_entity_id.serialize(buf);
         self.event_id.serialize(buf);
@@ -198,7 +200,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let designator_pdu = IFFPdu::default();
+        let mut designator_pdu = IFFPdu::default();
         let mut buffer = BytesMut::new();
         designator_pdu.serialize(&mut buffer);
 
