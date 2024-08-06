@@ -9,7 +9,7 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
-use super::{
+use super::data_types::{
     acoustic_emitter_system::AcousticEmitterSystem, apa_data::ApaData, shaft_rpms::ShaftRPMs,
 };
 

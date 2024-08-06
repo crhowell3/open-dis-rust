@@ -11,7 +11,7 @@ use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::EntityType,
-    enums::{Country, EntityKind, ForceId},
+    enums::{Country, EntityCapabilities, EntityKind, ForceId},
     euler_angles::EulerAngles,
     linear_velocity::LinearVelocity,
     pdu::Pdu,
@@ -19,9 +19,8 @@ use crate::common::{
     world_coordinate::WorldCoordinate,
 };
 
-use super::{
-    dead_reckoning_parameters::DeadReckoningParameters, entity_capabilities::EntityCapabilities,
-    entity_marking::EntityMarking,
+use super::data_types::{
+    dead_reckoning_parameters::DeadReckoningParameters, entity_marking::EntityMarking,
 };
 
 #[derive(Clone, Debug)]
@@ -99,7 +98,7 @@ impl Pdu for EntityStatePdu {
         buf.put_u32(self.entity_appearance);
         self.dead_reckoning_parameters.serialize(buf);
         self.entity_marking.serialize(buf);
-        self.entity_capabilities.serialize(buf);
+        buf.put_u8(self.entity_capabilities as u8);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<EntityStatePdu, DISError> {

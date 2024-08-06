@@ -13,7 +13,7 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
-use super::supply_quantity::SupplyQuantity;
+use super::data_types::supply_quantity::SupplyQuantity;
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.5.10

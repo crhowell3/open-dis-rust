@@ -4,14 +4,12 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+pub mod data_types;
 #[allow(clippy::module_name_repetitions)]
 pub mod minefield_data_pdu;
-#[allow(clippy::module_name_repetitions)]
-pub mod minefield_identifier;
 #[allow(clippy::module_name_repetitions)]
 pub mod minefield_query_pdu;
 #[allow(clippy::module_name_repetitions)]
 pub mod minefield_response_nack_pdu;
 #[allow(clippy::module_name_repetitions)]
 pub mod minefield_state_pdu;
-pub mod point;

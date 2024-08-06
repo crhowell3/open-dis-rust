@@ -6,7 +6,7 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use super::electromagnetic_emission_system_data::ElectromagneticEmissionSystemData;
+use super::data_types::electromagnetic_emission_system_data::ElectromagneticEmissionSystemData;
 
 use crate::common::{
     dis_error::DISError,

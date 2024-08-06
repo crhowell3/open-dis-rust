@@ -17,7 +17,7 @@ use crate::common::{
     vector3_float::Vector3Float,
 };
 
-use super::{aggregate_id::AggregateId, aggregate_marking::AggregateMarking};
+use super::data_types::{aggregate_id::AggregateId, aggregate_marking::AggregateMarking};
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.9.2.2

@@ -14,7 +14,9 @@ use crate::common::{
     simulation_address::SimulationAddress,
 };
 
-use super::{linear_segment_parameter::LinearSegmentParameter, object_type::ObjectType};
+use super::data_types::{
+    linear_segment_parameter::LinearSegmentParameter, object_type::ObjectType,
+};
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.11.3.3

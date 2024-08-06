@@ -9,7 +9,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use super::{minefield_identifier::MinefieldIdentifier, point::Point};
+use super::data_types::{minefield_identifier::MinefieldIdentifier, point::Point};
 
 #[derive(Clone, Debug)]
 pub struct MinefieldStatePdu {

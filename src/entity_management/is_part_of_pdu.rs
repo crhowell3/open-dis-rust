@@ -15,7 +15,7 @@ use crate::common::{
     vector3_float::Vector3Float,
 };
 
-use super::{named_location::NamedLocation, relationship::Relationship};
+use super::data_types::{named_location::NamedLocation, relationship::Relationship};
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.9.5
