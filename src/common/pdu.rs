@@ -9,6 +9,9 @@ use std::any::Any;
 
 pub trait Pdu {
     fn serialize(&mut self, buf: &mut BytesMut);
+    /// # Errors
+    ///
+    /// Will return `DISError` if the PDU header provided is invalid
     fn deserialize(buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized;
