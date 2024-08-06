@@ -6,18 +6,15 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use crate::{
-    common::{
-        dis_error::DISError,
-        entity_id::EntityId,
-        entity_type::EntityType,
-        enums::ObjectStateAppearanceGeneral,
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-        simulation_address::SimulationAddress,
-        vector3_double::Vector3Double,
-    },
-    entity_information::specific_appearance::SpecificAppearance,
+use crate::common::{
+    dis_error::DISError,
+    entity_id::EntityId,
+    entity_type::EntityType,
+    enums::ObjectStateAppearanceGeneral,
+    pdu::Pdu,
+    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    simulation_address::SimulationAddress,
+    vector3_double::Vector3Double,
 };
 
 #[derive(Clone, Debug)]
@@ -30,7 +27,7 @@ pub struct ArealObjectStatePdu {
     pub force_id: u8,
     pub modifications: u8,
     pub object_type: EntityType,
-    pub specific_object_appearance: SpecificAppearance,
+    pub specific_object_appearance: u32, // TODO(@anyone) Implement Specific Object Appearance
     pub general_object_appearance: ObjectStateAppearanceGeneral,
     pub number_of_points: u16,
     pub requester_id: SimulationAddress,
@@ -62,7 +59,7 @@ impl Default for ArealObjectStatePdu {
             force_id: 0,
             modifications: 0,
             object_type: EntityType::default(),
-            specific_object_appearance: SpecificAppearance::default(),
+            specific_object_appearance: 0,
             general_object_appearance: ObjectStateAppearanceGeneral::default(),
             number_of_points: 0,
             requester_id: SimulationAddress::default(),
@@ -83,7 +80,7 @@ impl Pdu for ArealObjectStatePdu {
         buf.put_u8(self.force_id);
         buf.put_u8(self.modifications);
         self.object_type.serialize(buf);
-        self.specific_object_appearance.serialize(buf);
+        buf.put_u32(self.specific_object_appearance);
         buf.put_u16(self.general_object_appearance.as_u16());
         buf.put_u16(self.number_of_points);
         self.requester_id.serialize(buf);
@@ -105,7 +102,7 @@ impl Pdu for ArealObjectStatePdu {
             let force_id = buffer.get_u8();
             let modifications = buffer.get_u8();
             let object_type = EntityType::decode(&mut buffer);
-            let specific_object_appearance = SpecificAppearance::decode(&mut buffer);
+            let specific_object_appearance = buffer.get_u32();
             let general_object_appearance =
                 ObjectStateAppearanceGeneral::from_u16(buffer.get_u16()).unwrap();
             let number_of_points = buffer.get_u16();
@@ -152,7 +149,7 @@ impl Pdu for ArealObjectStatePdu {
         let force_id = buffer.get_u8();
         let modifications = buffer.get_u8();
         let object_type = EntityType::decode(&mut buffer);
-        let specific_object_appearance = SpecificAppearance::decode(&mut buffer);
+        let specific_object_appearance = buffer.get_u32();
         let general_object_appearance =
             ObjectStateAppearanceGeneral::from_u16(buffer.get_u16()).unwrap();
         let number_of_points = buffer.get_u16();

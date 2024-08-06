@@ -8,7 +8,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use super::point::Point;
+use super::data_types::point::Point;
 
 #[derive(Clone, Debug)]
 pub struct MinefieldQueryPdu {

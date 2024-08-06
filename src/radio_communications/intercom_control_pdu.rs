@@ -3,7 +3,7 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use super::intercom_communications_parameters::IntercomCommunicationsParameters;
+use super::data_types::intercom_communications_parameters::IntercomCommunicationsParameters;
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,

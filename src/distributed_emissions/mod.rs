@@ -4,22 +4,9 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-pub mod acoustic_beam_data;
-pub mod acoustic_beam_fundamental_parameter;
-pub mod acoustic_emitter_system;
-pub mod acoustic_emitter_system_data;
-pub mod apa_data;
 pub mod data_types;
 pub mod designator_pdu;
-pub mod electromagnetic_emission_beam_data;
-pub mod electromagnetic_emission_system_data;
 pub mod electromagnetic_emissions_pdu;
-pub mod emitter_system;
-pub mod fundamental_parameter_data;
 pub mod iff_pdu;
-pub mod propulsion_system_data;
-pub mod shaft_rpms;
 pub mod supplemental_emission_pdu;
-pub mod track_jam_target;
 pub mod underwater_acoustic_pdu;
-pub mod vectoring_nozzle_system_data;

@@ -4,13 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-pub mod aggregate_id;
-pub mod aggregate_marking;
 pub mod aggregate_state_pdu;
+pub mod data_types;
 pub mod is_group_of_pdu;
 pub mod is_part_of_pdu;
-pub mod named_location;
-pub mod record_specification;
-pub mod record_specification_element;
-pub mod relationship;
 pub mod transfer_ownership_pdu;

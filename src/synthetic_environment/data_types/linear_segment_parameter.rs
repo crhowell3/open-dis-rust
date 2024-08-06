@@ -5,17 +5,14 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::{
-    common::{euler_angles::EulerAngles, vector3_double::Vector3Double},
-    entity_information::specific_appearance::SpecificAppearance,
-};
+use crate::common::{euler_angles::EulerAngles, vector3_double::Vector3Double};
 
 #[derive(Clone, Debug, Default)]
 pub struct LinearSegmentParameter {
     pub segment_number: u8,
     pub segment_modification: u8,
     pub general_segment_appearance: u32,
-    pub specific_segment_appearance: SpecificAppearance,
+    pub specific_segment_appearance: u32, // TODO(@anyone) Implement Specific Object Appearance
     pub segment_location: Vector3Double,
     pub segment_orientation: EulerAngles,
     pub segment_length: u16,
@@ -31,7 +28,7 @@ impl LinearSegmentParameter {
         segment_number: u8,
         segment_modification: u8,
         general_segment_appearance: u32,
-        specific_segment_appearance: SpecificAppearance,
+        specific_segment_appearance: u32,
         segment_location: Vector3Double,
         segment_orientation: EulerAngles,
         segment_length: u16,
@@ -57,7 +54,7 @@ impl LinearSegmentParameter {
         buf.put_u8(self.segment_number);
         buf.put_u8(self.segment_modification);
         buf.put_u32(self.general_segment_appearance);
-        self.specific_segment_appearance.serialize(buf);
+        buf.put_u32(self.specific_segment_appearance);
         self.segment_location.serialize(buf);
         self.segment_orientation.serialize(buf);
         buf.put_u16(self.segment_length);
@@ -71,7 +68,7 @@ impl LinearSegmentParameter {
             segment_number: buf.get_u8(),
             segment_modification: buf.get_u8(),
             general_segment_appearance: buf.get_u32(),
-            specific_segment_appearance: SpecificAppearance::decode(buf),
+            specific_segment_appearance: buf.get_u32(),
             segment_location: Vector3Double::decode(buf),
             segment_orientation: EulerAngles::decode(buf),
             segment_length: buf.get_u16(),

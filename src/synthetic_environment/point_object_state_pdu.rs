@@ -16,7 +16,7 @@ use crate::common::{
     vector3_double::Vector3Double,
 };
 
-use super::object_type::ObjectType;
+use super::data_types::object_type::ObjectType;
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.11.3.2

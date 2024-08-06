@@ -8,7 +8,7 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
-use super::{
+use super::data_types::{
     propulsion_system_data::PropulsionSystemData,
     vectoring_nozzle_system_data::VectoringNozzleSystemData,
 };

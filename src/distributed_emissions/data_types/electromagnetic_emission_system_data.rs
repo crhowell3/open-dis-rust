@@ -1,8 +1,10 @@
-use super::electromagnetic_emission_beam_data::ElectromagneticEmissionBeamData;
+use super::{
+    electromagnetic_emission_beam_data::ElectromagneticEmissionBeamData,
+    emitter_system::EmitterSystem,
+};
 use bytes::{Buf, BufMut, BytesMut};
 
 use crate::common::vector3_float::Vector3Float;
-use crate::distributed_emissions::emitter_system::EmitterSystem;
 
 #[derive(Clone, Debug, Default)]
 pub struct ElectromagneticEmissionSystemData {

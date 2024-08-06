@@ -14,7 +14,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use super::{modulation_type::ModulationType, radio_entity_type::RadioEntityType};
+use super::data_types::{modulation_type::ModulationType, radio_entity_type::RadioEntityType};
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.8.3

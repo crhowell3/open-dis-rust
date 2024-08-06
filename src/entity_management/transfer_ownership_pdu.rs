@@ -14,7 +14,7 @@ use crate::common::{
     simulation_address::SimulationAddress,
 };
 
-use super::record_specification::RecordSpecification;
+use super::data_types::record_specification::RecordSpecification;
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.9.2.2

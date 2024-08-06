@@ -14,7 +14,7 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
-use super::environment::Environment;
+use super::data_types::environment::Environment;
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §5.11.2.2
