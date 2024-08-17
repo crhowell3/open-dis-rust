@@ -34,7 +34,7 @@ impl Default for AcknowledgePdu {
     /// Initializing an Acknowledge PDU:
     /// ```
     /// use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
-    /// let acknowledge_pdu = AcknowledgePdu::default();
+    /// let mut acknowledge_pdu = AcknowledgePdu::default();
     /// ```
     ///
     fn default() -> Self {

@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -17,7 +18,7 @@ use crate::common::{
 };
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.7.3
+/// Implemented according to IEEE 1278.1-2012 §7.6.2
 pub struct ElectromagneticEmissionsPdu {
     pub pdu_header: PduHeader,
     pub emitting_entity_id: EntityId,
@@ -29,19 +30,18 @@ pub struct ElectromagneticEmissionsPdu {
 }
 
 impl Default for ElectromagneticEmissionsPdu {
-    /// Creates a default Electromagnetic Emissions PDU with arbitrary data
+    /// Creates a default-initialized Electromagnetic Emissions PDU
     ///
     /// # Examples
     ///
     /// Initializing an Electromagnetic Emissions PDU:
     /// ```
     /// use open_dis_rust::distributed_emissions::electromagnetic_emissions_pdu::ElectromagneticEmissionsPdu;
-    /// let electromagnetic_emissions_pdu = ElectromagneticEmissionsPdu::default();
+    /// let mut electromagnetic_emissions_pdu = ElectromagneticEmissionsPdu::default();
     /// ```
     ///
     fn default() -> Self {
         ElectromagneticEmissionsPdu {
-            // The default size of an EE PDU is 864 bits, or 108 bytes
             pdu_header: PduHeader::default(
                 PduType::ElectromagneticEmission,
                 ProtocolFamily::DistributedEmissionRegeneration,
@@ -58,6 +58,7 @@ impl Default for ElectromagneticEmissionsPdu {
 }
 
 impl Pdu for ElectromagneticEmissionsPdu {
+    /// Serialize contents of ElectromagneticEmissionsPdu into BytesMut buffer
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -72,6 +73,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
         }
     }
 
+    /// Deserialize bytes from BytesMut buffer and interpret and interpret as ElectromagneticEmissionsPdu
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
@@ -102,10 +104,12 @@ impl Pdu for ElectromagneticEmissionsPdu {
         }
     }
 
+    /// Treat ElectromagneticEmissionsPdu as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
+    /// Deserialize bytes from BytesMut buffer, but assume PDU header exists already
     fn deserialize_without_header(
         mut buffer: BytesMut,
         pdu_header: PduHeader,
@@ -132,5 +136,71 @@ impl Pdu for ElectromagneticEmissionsPdu {
             padding_for_emissions_pdu,
             systems,
         })
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::ElectromagneticEmissionsPdu;
+    use crate::common::{
+        pdu::Pdu,
+        pdu_header::{PduHeader, PduType, ProtocolFamily},
+    };
+    use bytes::BytesMut;
+
+    #[test]
+    fn create_header() {
+        let electromagnetic_emissions_pdu = ElectromagneticEmissionsPdu::default();
+        let pdu_header = PduHeader::default(
+            PduType::ElectromagneticEmission,
+            ProtocolFamily::DistributedEmissionRegeneration,
+            88,
+        );
+
+        assert_eq!(
+            pdu_header.protocol_version,
+            electromagnetic_emissions_pdu.pdu_header.protocol_version
+        );
+        assert_eq!(
+            pdu_header.exercise_id,
+            electromagnetic_emissions_pdu.pdu_header.exercise_id
+        );
+        assert_eq!(
+            pdu_header.pdu_type,
+            electromagnetic_emissions_pdu.pdu_header.pdu_type
+        );
+        assert_eq!(
+            pdu_header.protocol_family,
+            electromagnetic_emissions_pdu.pdu_header.protocol_family
+        );
+        assert_eq!(
+            pdu_header.length,
+            electromagnetic_emissions_pdu.pdu_header.length
+        );
+        assert_eq!(
+            pdu_header.padding,
+            electromagnetic_emissions_pdu.pdu_header.padding
+        );
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let electromagnetic_emissions_pdu = ElectromagneticEmissionsPdu::default();
+        let any_pdu = electromagnetic_emissions_pdu.as_any();
+
+        assert!(any_pdu.is::<ElectromagneticEmissionsPdu>());
+    }
+
+    #[test]
+    fn deserialize_header() {
+        let mut electromagnetic_emissions_pdu = ElectromagneticEmissionsPdu::default();
+        let mut buffer = BytesMut::new();
+        electromagnetic_emissions_pdu.serialize(&mut buffer);
+
+        let new_electromagnetic_emissions_pdu =
+            ElectromagneticEmissionsPdu::deserialize(buffer).unwrap();
+        assert_eq!(
+            new_electromagnetic_emissions_pdu.pdu_header,
+            electromagnetic_emissions_pdu.pdu_header
+        );
     }
 }
