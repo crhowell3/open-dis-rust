@@ -1,3 +1,9 @@
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2023 Cameron Howell
+//
+//     Licensed under the BSD 2-Clause License
+
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
@@ -14,6 +20,7 @@ use super::data_types::{
 };
 
 #[derive(Clone, Debug)]
+/// Implemented according to IEEE 1278.1-2012
 pub struct UnderwaterAcousticPdu {
     pub pdu_header: PduHeader,
     pub emitting_entity_id: EntityId,
@@ -31,6 +38,16 @@ pub struct UnderwaterAcousticPdu {
 }
 
 impl Default for UnderwaterAcousticPdu {
+    /// Creates a default-initialized Underwater Acoustic PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing a Underwater Acoustic PDU:
+    /// ```
+    /// use open_dis_rust::distributed_emissions::underwater_acoustic_pdu::UnderwaterAcousticPdu;
+    /// let mut underwater_acoustic_pdu = UnderwaterAcousticPdu::default();
+    /// ```
+    ///
     fn default() -> Self {
         UnderwaterAcousticPdu {
             pdu_header: PduHeader::default(
@@ -55,6 +72,7 @@ impl Default for UnderwaterAcousticPdu {
 }
 
 impl Pdu for UnderwaterAcousticPdu {
+    /// Serialize contents of UnderwaterAcousticPdu into BytesMut buffer
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -79,6 +97,7 @@ impl Pdu for UnderwaterAcousticPdu {
         }
     }
 
+    /// Deserialize bytes from BytesMut buffer and interpret as UnderwaterAcousticPdu
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
@@ -126,10 +145,12 @@ impl Pdu for UnderwaterAcousticPdu {
         }
     }
 
+    /// Treat UnderwaterAcousticPdu as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
+    /// Deserialize bytes from BytesMut buffer, but assume PDU header exists already
     fn deserialize_without_header(
         mut buffer: BytesMut,
         pdu_header: PduHeader,
@@ -218,6 +239,14 @@ mod tests {
             pdu_header.padding,
             supplemental_emission_pdu.pdu_header.padding
         );
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let udnerwater_acoustic_pdu = UnderwaterAcousticPdu::default();
+        let any_pdu = udnerwater_acoustic_pdu.as_any();
+
+        assert!(any_pdu.is::<UnderwaterAcousticPdu>());
     }
 
     #[test]

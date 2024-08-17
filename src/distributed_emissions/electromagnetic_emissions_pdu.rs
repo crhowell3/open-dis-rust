@@ -73,7 +73,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
         }
     }
 
-    /// Deserialize bytes from BytesMut buffer and interpret and interpret as ElectromagneticEmissionsPdu
+    /// Deserialize bytes from BytesMut buffer and interpret as ElectromagneticEmissionsPdu
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
@@ -153,7 +153,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::ElectromagneticEmission,
             ProtocolFamily::DistributedEmissionRegeneration,
-            88,
+            28,
         );
 
         assert_eq!(

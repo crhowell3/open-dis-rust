@@ -1,3 +1,9 @@
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2023 Cameron Howell
+//
+//     Licensed under the BSD 2-Clause License
+
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
@@ -14,6 +20,7 @@ use super::data_types::{
 };
 
 #[derive(Clone, Debug)]
+/// Implemented according to IEEE 1278.1-2012
 pub struct SupplementalEmissionPdu {
     pub pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
@@ -27,6 +34,16 @@ pub struct SupplementalEmissionPdu {
 }
 
 impl Default for SupplementalEmissionPdu {
+    /// Creates a default-initialized Supplemental Emission PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing a Supplemental Emission PDU:
+    /// ```
+    /// use open_dis_rust::distributed_emissions::supplemental_emission_pdu::SupplementalEmissionPdu;
+    /// let mut supplemental_emission_pdu = SupplementalEmissionPdu::default();
+    /// ```
+    ///
     fn default() -> Self {
         SupplementalEmissionPdu {
             pdu_header: PduHeader::default(
@@ -47,6 +64,7 @@ impl Default for SupplementalEmissionPdu {
 }
 
 impl Pdu for SupplementalEmissionPdu {
+    /// Serialize contents of DesignatorPdu into BytesMut buffer
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -65,6 +83,7 @@ impl Pdu for SupplementalEmissionPdu {
         }
     }
 
+    /// Deserialize bytes from BytesMut buffer and interpret as SupplementalEmissionPdu
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
@@ -101,10 +120,12 @@ impl Pdu for SupplementalEmissionPdu {
         }
     }
 
+    /// Treat SupplementalPdu as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
+    /// Deserialize bytes from BytesMut buffer, but assume PDU header exists already
     fn deserialize_without_header(
         mut buffer: BytesMut,
         pdu_header: PduHeader,
@@ -182,6 +203,14 @@ mod tests {
             pdu_header.padding,
             supplemental_emission_pdu.pdu_header.padding
         );
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let supplemental_emission_pdu = SupplementalEmissionPdu::default();
+        let any_pdu = supplemental_emission_pdu.as_any();
+
+        assert!(any_pdu.is::<SupplementalEmissionPdu>());
     }
 
     #[test]

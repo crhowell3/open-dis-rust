@@ -1,3 +1,9 @@
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2023 Cameron Howell
+//
+//     Licensed under the BSD 2-Clause License
+
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
@@ -17,6 +23,7 @@ use super::data_types::{
 };
 
 #[derive(Clone, Debug)]
+/// Implemented according to IEEE 1278.1-2012 §7.6.
 pub struct IFFPdu {
     pub pdu_header: PduHeader,
     pub emitting_entity_id: EntityId,
@@ -34,6 +41,16 @@ pub struct IFFPdu {
 }
 
 impl Default for IFFPdu {
+    /// Creates a default-initialized IFF PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing an IFF PDU:
+    /// ```
+    /// use open_dis_rust::distributed_emissions::iff_pdu::IFFPdu;
+    /// let mut iff_pdu = IFFPdu::default();
+    /// ```
+    ///
     fn default() -> Self {
         IFFPdu {
             pdu_header: PduHeader::default(
@@ -58,6 +75,7 @@ impl Default for IFFPdu {
 }
 
 impl Pdu for IFFPdu {
+    /// Serialize contents of ElectromagneticEmissionsPdu into BytesMut buffer
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -78,6 +96,7 @@ impl Pdu for IFFPdu {
         }
     }
 
+    /// Deserialize bytes from BytesMut buffer and interpret as IFFPdu
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
@@ -119,10 +138,12 @@ impl Pdu for IFFPdu {
         }
     }
 
+    /// Treat IFFPdu as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
+    /// Deserialize bytes from BytesMut buffer, but assume PDU header exists already
     fn deserialize_without_header(
         mut buffer: BytesMut,
         pdu_header: PduHeader,
@@ -174,7 +195,7 @@ mod tests {
 
     #[test]
     fn create_header() {
-        let designator_pdu = IFFPdu::default();
+        let iff_pdu = IFFPdu::default();
         let pdu_header = PduHeader::default(
             PduType::IFF,
             ProtocolFamily::DistributedEmissionRegeneration,
@@ -183,28 +204,33 @@ mod tests {
 
         assert_eq!(
             pdu_header.protocol_version,
-            designator_pdu.pdu_header.protocol_version
+            iff_pdu.pdu_header.protocol_version
         );
-        assert_eq!(
-            pdu_header.exercise_id,
-            designator_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, designator_pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.exercise_id, iff_pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, iff_pdu.pdu_header.pdu_type);
         assert_eq!(
             pdu_header.protocol_family,
-            designator_pdu.pdu_header.protocol_family
+            iff_pdu.pdu_header.protocol_family
         );
-        assert_eq!(pdu_header.length, designator_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, designator_pdu.pdu_header.padding);
+        assert_eq!(pdu_header.length, iff_pdu.pdu_header.length);
+        assert_eq!(pdu_header.padding, iff_pdu.pdu_header.padding);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let iff_pdu = IFFPdu::default();
+        let any_pdu = iff_pdu.as_any();
+
+        assert!(any_pdu.is::<IFFPdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut designator_pdu = IFFPdu::default();
+        let mut iff_pdu = IFFPdu::default();
         let mut buffer = BytesMut::new();
-        designator_pdu.serialize(&mut buffer);
+        iff_pdu.serialize(&mut buffer);
 
-        let new_designator_pdu = IFFPdu::deserialize(buffer).unwrap();
-        assert_eq!(new_designator_pdu.pdu_header, designator_pdu.pdu_header);
+        let new_iff_pdu = IFFPdu::deserialize(buffer).unwrap();
+        assert_eq!(new_iff_pdu.pdu_header, iff_pdu.pdu_header);
     }
 }
