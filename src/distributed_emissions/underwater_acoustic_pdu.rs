@@ -42,7 +42,7 @@ impl Default for UnderwaterAcousticPdu {
     ///
     /// # Examples
     ///
-    /// Initializing a Underwater Acoustic PDU:
+    /// Initializing an Underwater Acoustic PDU:
     /// ```
     /// use open_dis_rust::distributed_emissions::underwater_acoustic_pdu::UnderwaterAcousticPdu;
     /// let mut underwater_acoustic_pdu = UnderwaterAcousticPdu::default();

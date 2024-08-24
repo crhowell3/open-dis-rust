@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -15,7 +16,7 @@ use crate::common::{
 };
 
 #[derive(Copy, Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.6.5.6
+/// Implemented according to IEEE 1278.1-2012 §7.5.6
 pub struct AcknowledgePdu {
     pub pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
@@ -26,8 +27,7 @@ pub struct AcknowledgePdu {
 }
 
 impl Default for AcknowledgePdu {
-    /// Creates a default Acknowledge PDU with arbitrary originating and receiving
-    /// entity IDs
+    /// Creates a default-initialized Acknowledge PDU
     ///
     /// # Examples
     ///
@@ -151,6 +151,14 @@ mod tests {
         );
         assert_eq!(pdu_header.length, acknowledge_pdu.pdu_header.length);
         assert_eq!(pdu_header.padding, acknowledge_pdu.pdu_header.padding);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let acknowledge_pdu = AcknowledgePdu::default();
+        let any_pdu = acknowledge_pdu.as_any();
+
+        assert!(any_pdu.is::<AcknowledgePdu>());
     }
 
     #[test]
