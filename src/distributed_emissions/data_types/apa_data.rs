@@ -1,11 +1,13 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Copy, Clone, Debug, Default)]
+/// Implemented according to IEEE 1278.1-2012 §7.6.4 Table 163
 pub struct ApaData {
     pub parameter_index: u16,
     pub parameter_value: i16,
