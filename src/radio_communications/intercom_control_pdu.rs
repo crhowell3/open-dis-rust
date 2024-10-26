@@ -14,7 +14,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.8.7
+/// Implemented according to IEEE 1278.1-2012 §7.7.6
 pub struct IntercomControlPdu {
     pub pdu_header: PduHeader,
     pub entity_id: EntityId,

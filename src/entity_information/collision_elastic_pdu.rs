@@ -18,6 +18,7 @@ use crate::common::{
 };
 
 #[derive(Clone, Debug)]
+/// Implemented according to IEEE 1278.1-2012 §7.2.4
 pub struct CollisionElasticPdu {
     pub pdu_header: PduHeader,
     pub issuing_entity_id: EntityId,

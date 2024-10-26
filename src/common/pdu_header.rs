@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 use chrono::{Timelike, Utc};
@@ -9,19 +10,19 @@ use num_derive::FromPrimitive;
 
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct PduHeader {
-    // The version of the protocol
+    /// The version of the protocol
     pub protocol_version: ProtocolVersion,
-    // Exercise ID
+    /// Exercise ID
     pub exercise_id: u8,
-    // Type of PDU, unique for each PDU class
+    /// Type of PDU, unique for each PDU class
     pub pdu_type: PduType,
-    // Value that refers to the protocol family
+    /// Value that refers to the protocol family
     pub protocol_family: ProtocolFamily,
-    // Timestamp value
+    /// Timestamp value
     pub timestamp: u32,
-    // Length, in bytes, of the PDU
+    /// Length, in bytes, of the PDU
     pub length: u16,
-    // Zero-filled array of padding
+    /// Zero-filled array of padding
     pub padding: u16,
 }
 

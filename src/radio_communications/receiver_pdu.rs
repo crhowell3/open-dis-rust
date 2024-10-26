@@ -13,7 +13,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.8.5
+/// Implemented according to IEEE 1278.1-2012 §7.7.4
 pub struct ReceiverPdu {
     pub pdu_header: PduHeader,
     pub entity_id: EntityId,

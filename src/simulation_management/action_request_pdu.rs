@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -14,6 +15,7 @@ use crate::common::{
 };
 
 #[derive(Copy, Clone, Debug)]
+/// Implemented according to IEEE 1278.1-2012 §7.5.7
 pub struct ActionRequestPdu {
     pub pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
@@ -27,6 +29,16 @@ pub struct ActionRequestPdu {
 }
 
 impl Default for ActionRequestPdu {
+    /// Creates a default-initialized Action Request PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing an Action Request PDU:
+    /// ```
+    /// use open_dis_rust::simulation_management::action_request_pdu::ActionRequestPdu;
+    /// let mut action_request_pdu = ActionRequestPdu::default();
+    /// ```
+    ///
     fn default() -> Self {
         ActionRequestPdu {
             pdu_header: PduHeader::default(
@@ -141,7 +153,11 @@ impl Pdu for ActionRequestPdu {
 #[cfg(test)]
 mod tests {
     use super::ActionRequestPdu;
-    use crate::common::pdu_header::{PduHeader, PduType, ProtocolFamily};
+    use crate::common::{
+        pdu::Pdu,
+        pdu_header::{PduHeader, PduType, ProtocolFamily},
+    };
+    use bytes::BytesMut;
 
     #[test]
     fn create_header() {
@@ -167,5 +183,26 @@ mod tests {
         );
         assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
         assert_eq!(pdu_header.padding, action_request_pdu.pdu_header.padding);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let action_request_pdu = ActionRequestPdu::default();
+        let any_pdu = action_request_pdu.as_any();
+
+        assert!(any_pdu.is::<ActionRequestPdu>());
+    }
+
+    #[test]
+    fn deserialize_header() {
+        let mut action_request_pdu = ActionRequestPdu::default();
+        let mut buffer = BytesMut::new();
+        action_request_pdu.serialize(&mut buffer);
+
+        let new_action_request_pdu = ActionRequestPdu::deserialize(buffer).unwrap();
+        assert_eq!(
+            new_action_request_pdu.pdu_header,
+            action_request_pdu.pdu_header
+        );
     }
 }

@@ -17,7 +17,7 @@ use std::any::Any;
 use super::data_types::{modulation_type::ModulationType, radio_entity_type::RadioEntityType};
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.8.3
+/// Implemented according to IEEE 1278.1-2012 §7.7.2
 pub struct TransmitterPdu {
     pub pdu_header: PduHeader,
     pub entity_id: EntityId,

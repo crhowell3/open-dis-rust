@@ -1,3 +1,9 @@
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2023 Cameron Howell
+//
+//     Licensed under the BSD 2-Clause License
+
 use crate::common::{
     dis_error::DISError,
     entity_type::EntityType,
@@ -12,6 +18,7 @@ use std::any::Any;
 use super::data_types::{minefield_identifier::MinefieldIdentifier, point::Point};
 
 #[derive(Clone, Debug)]
+/// Implemented according to IEEE 1278.1-2012 §7.9.2
 pub struct MinefieldStatePdu {
     pub pdu_header: PduHeader,
     pub minefield_id: MinefieldIdentifier,

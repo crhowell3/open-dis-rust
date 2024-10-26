@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -14,7 +15,7 @@ use crate::common::{
 };
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.9.3
+/// Implemented according to IEEE 1278.1-2012 §7.8.3
 pub struct IsGroupOfPdu {
     pub pdu_header: PduHeader,
     pub group_entity_id: EntityId,

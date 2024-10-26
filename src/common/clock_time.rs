@@ -1,13 +1,17 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Copy, Clone, Debug, Default)]
+/// Implemented according to IEEE 1278.1-2012 §6.2.14
 pub struct ClockTime {
+    /// The hours since 0000h 1 January 1970 UTC (The Epoch)
     pub hour: u32,
+    /// Time past the hour indicated in the hour field
     pub time_past_hour: u32,
 }
 

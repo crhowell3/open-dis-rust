@@ -1,14 +1,19 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Copy, Clone, Debug, Default)]
+/// Custom vector type containing 3 double precision fields
 pub struct Vector3Double {
+    /// The first value within the vector
     pub x: f64,
+    /// The second value within the vector
     pub y: f64,
+    /// The third value within the vector
     pub z: f64,
 }
 

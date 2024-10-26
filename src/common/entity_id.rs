@@ -1,15 +1,19 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use super::simulation_address::SimulationAddress;
 use bytes::{Buf, BufMut, BytesMut};
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+/// Implemented according to IEEE 1278.1-2012 §6.2.28
 pub struct EntityId {
+    /// The simulation's designation associated with all object identifiers
     pub simulation_address: SimulationAddress,
+    /// The unique identification number of the entity
     pub entity_id: u16,
 }
 

@@ -4,8 +4,5 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-#[derive(Debug)]
-/// Enumeration for describing types of errors that may occur related to PDUs
-pub enum DISError {
-    InvalidDISHeader,
-}
+pub mod information_operations_action_pdu;
+pub mod information_operations_report_pdu;
