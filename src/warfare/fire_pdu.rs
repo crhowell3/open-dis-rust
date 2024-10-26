@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -19,7 +20,7 @@ use crate::common::{
 use super::data_types::munition_descriptor::MunitionDescriptor;
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.11.3.4
+/// Implemented according to IEEE 1278.1-2012 §7.3.2
 pub struct FirePdu {
     pub pdu_header: PduHeader,
     pub firing_entity_id: EntityId,

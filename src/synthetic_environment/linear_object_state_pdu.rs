@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -19,7 +20,7 @@ use super::data_types::{
 };
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §5.11.3.3
+/// Implemented according to IEEE 1278.1-2012 §7.10.5
 pub struct LinearObjectStatePdu {
     pub pdu_header: PduHeader,
     pub object_id: EntityId,
