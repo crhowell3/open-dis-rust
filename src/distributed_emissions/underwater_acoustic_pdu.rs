@@ -20,7 +20,7 @@ use super::data_types::{
 };
 
 #[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012
+/// Implemented according to IEEE 1278.1-2012 §7.6.4
 pub struct UnderwaterAcousticPdu {
     pub pdu_header: PduHeader,
     pub emitting_entity_id: EntityId,

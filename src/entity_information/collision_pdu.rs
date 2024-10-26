@@ -17,6 +17,7 @@ use crate::common::{
 };
 
 #[derive(Clone, Debug)]
+/// Implemented according to IEEE 1278.1-2012 §7.2.3
 pub struct CollisionPdu {
     pub pdu_header: PduHeader,
     pub issuing_entity_id: EntityId,

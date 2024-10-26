@@ -21,6 +21,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug)]
+/// Implemented according to IEEE 1278.1-2012 §7.2.5
 pub struct EntityStateUpdatePdu {
     pub pdu_header: PduHeader,
     pub entity_id: EntityId,
