@@ -70,7 +70,7 @@ impl Default for DesignatorPdu {
 }
 
 impl Pdu for DesignatorPdu {
-    /// Serialize contents of DesignatorPdu into BytesMut buffer
+    /// Serialize contents of `DesignatorPdu` into `BytesMut` buffer
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -89,7 +89,7 @@ impl Pdu for DesignatorPdu {
         self.entity_linear_acceleration.serialize(buf);
     }
 
-    /// Deserialize bytes from BytesMut buffer and interpret as DesignatorPdu
+    /// Deserialize bytes from `BytesMut` buffer and interpret as `DesignatorPdu`
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
@@ -129,12 +129,12 @@ impl Pdu for DesignatorPdu {
         }
     }
 
-    /// Treat DesignatorPdu as Any type
+    /// Treat `DesignatorPdu` as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    /// Deserialize bytes from BytesMut buffer, but assume PDU header exists already
+    /// Deserialize bytes from `BytesMut` buffer, but assume PDU header exists already
     fn deserialize_without_header(
         mut buffer: BytesMut,
         pdu_header: PduHeader,

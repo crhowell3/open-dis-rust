@@ -75,7 +75,7 @@ impl Default for IFFPdu {
 }
 
 impl Pdu for IFFPdu {
-    /// Serialize contents of ElectromagneticEmissionsPdu into BytesMut buffer
+    /// Serialize contents of `IFFPdu` into `BytesMut` buffer
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -96,7 +96,7 @@ impl Pdu for IFFPdu {
         }
     }
 
-    /// Deserialize bytes from BytesMut buffer and interpret as IFFPdu
+    /// Deserialize bytes from `BytesMut` buffer and interpret as `IFFPdu`
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
@@ -138,12 +138,12 @@ impl Pdu for IFFPdu {
         }
     }
 
-    /// Treat IFFPdu as Any type
+    /// Treat `IFFPdu` as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    /// Deserialize bytes from BytesMut buffer, but assume PDU header exists already
+    /// Deserialize bytes from `BytesMut` buffer, but assume PDU header exists already
     fn deserialize_without_header(
         mut buffer: BytesMut,
         pdu_header: PduHeader,
