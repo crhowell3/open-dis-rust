@@ -59,7 +59,7 @@ impl Default for DirectedEnergyFirePdu {
 }
 
 impl Pdu for DirectedEnergyFirePdu {
-    /// Serialize contents of DirectedEnergyFirePdu into BytesMut buffer
+    /// Serialize contents of `DirectedEnergyFirePdu` into `BytesMut` buffer
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -75,7 +75,7 @@ impl Pdu for DirectedEnergyFirePdu {
         }
     }
 
-    /// Deserialize bytes from BytesMut buffer and interpret as DirectedEnergyFirePdu
+    /// Deserialize bytes from `BytesMut` buffer and interpret as `DirectedEnergyFirePdu`
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
@@ -104,7 +104,7 @@ impl Pdu for DirectedEnergyFirePdu {
         }
     }
 
-    /// Treat DirectedEnergyFirePdu as Any type
+    /// Treat `DirectedEnergyFirePdu` as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }

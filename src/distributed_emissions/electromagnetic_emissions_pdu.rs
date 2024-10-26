@@ -58,7 +58,7 @@ impl Default for ElectromagneticEmissionsPdu {
 }
 
 impl Pdu for ElectromagneticEmissionsPdu {
-    /// Serialize contents of ElectromagneticEmissionsPdu into BytesMut buffer
+    /// Serialize contents of `ElectromagneticEmissionsPdu` into `BytesMut` buffer
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -73,7 +73,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
         }
     }
 
-    /// Deserialize bytes from BytesMut buffer and interpret as ElectromagneticEmissionsPdu
+    /// Deserialize bytes from `BytesMut` buffer and interpret as `ElectromagneticEmissionsPdu`
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
     where
         Self: Sized,
@@ -104,12 +104,12 @@ impl Pdu for ElectromagneticEmissionsPdu {
         }
     }
 
-    /// Treat ElectromagneticEmissionsPdu as Any type
+    /// Treat `ElectromagneticEmissionsPdu` as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    /// Deserialize bytes from BytesMut buffer, but assume PDU header exists already
+    /// Deserialize bytes from `BytesMut` buffer, but assume PDU header exists already
     fn deserialize_without_header(
         mut buffer: BytesMut,
         pdu_header: PduHeader,

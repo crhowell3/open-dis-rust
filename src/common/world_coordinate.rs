@@ -18,11 +18,11 @@ pub struct WorldCoordinate {
 }
 
 impl WorldCoordinate {
-    /// Create a new WorldCoordinate
+    /// Create a new `WorldCoordinate`
     ///
     /// # Examples
     ///
-    /// Instantiating a new WorldCoordinate:
+    /// Instantiating a new `WorldCoordinate`:
     /// ```
     /// use open_dis_rust::common::world_coordinate::WorldCoordinate;
     /// let mut world_coordinate = WorldCoordinate::default();
