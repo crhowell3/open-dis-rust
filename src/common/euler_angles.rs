@@ -1,14 +1,19 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2023 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Copy, Clone, Debug, Default)]
+/// Implemented according to IEEE 1278.1-2012 §6.2.32
 pub struct EulerAngles {
+    /// Angle of rotation about the Z-axis
     pub psi: f32,
+    /// Angle of rotation about the Y-axis
     pub theta: f32,
+    /// Angle of rotation about the X-axis
     pub phi: f32,
 }
 

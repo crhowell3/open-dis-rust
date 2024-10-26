@@ -7,10 +7,14 @@
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Copy, Clone, Debug, Default)]
-/// Implemented according to IEEE 1278.1-2012
+/// Implemented according to IEEE 1278.1-2012 §6.2.7
+/// For all fields, assume right-hand rule for directionality
 pub struct AngularVelocity {
+    /// The angular velocity in radians/second about the entity's X-axis
     pub rate_about_x_axis: f32,
+    /// The angular velocity in radians/second about the entity's Y-axis
     pub rate_about_y_axis: f32,
+    /// The angular velocity in radians/second about the entity's Z-axis
     pub rate_about_z_axis: f32,
 }
 
