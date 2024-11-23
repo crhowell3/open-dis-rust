@@ -5,7 +5,6 @@ multilingual = false
 src = "src"
 
 [output.html]
-cname = "open-dis-rust.crhowell3.org"
 default-theme = "monokai"
 preferred-dark-theme = "monokai"
 git-repository-url = "https://github.com/crhowell3/open-dis-rust"
