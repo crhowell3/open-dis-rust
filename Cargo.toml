@@ -8,7 +8,7 @@ license = "BSD-2-Clause"
 readme = "README.md"
 repository = "https://github.com/crhowell3/open-dis-rust"
 keywords = ["DIS", "IEEE", "Simulation"]
-rust-version = "1.74"
+rust-version = "1.82"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
