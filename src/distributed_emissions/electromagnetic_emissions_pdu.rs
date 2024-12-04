@@ -25,7 +25,7 @@ pub struct ElectromagneticEmissionsPdu {
     pub event_id: EventId,
     pub state_update_indicator: u8,
     pub number_of_systems: u8,
-    pub padding_for_emissions_pdu: u8,
+    pub padding_for_emissions_pdu: u16,
     pub systems: Vec<ElectromagneticEmissionSystemData>,
 }
 
@@ -45,7 +45,7 @@ impl Default for ElectromagneticEmissionsPdu {
             pdu_header: PduHeader::default(
                 PduType::ElectromagneticEmission,
                 ProtocolFamily::DistributedEmissionRegeneration,
-                28,
+                31,
             ),
             emitting_entity_id: EntityId::default(1),
             event_id: EventId::default(1),
@@ -67,7 +67,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
         self.event_id.serialize(buf);
         buf.put_u8(self.state_update_indicator);
         buf.put_u8(self.number_of_systems);
-        buf.put_u8(self.padding_for_emissions_pdu);
+        buf.put_u16(self.padding_for_emissions_pdu);
         for i in 0..self.number_of_systems {
             self.systems[i as usize].serialize(buf);
         }
@@ -84,7 +84,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
             let event_id = EventId::decode(&mut buffer);
             let state_update_indicator = buffer.get_u8();
             let number_of_systems = buffer.get_u8();
-            let padding_for_emissions_pdu = buffer.get_u8();
+            let padding_for_emissions_pdu = buffer.get_u16();
             let mut systems: Vec<ElectromagneticEmissionSystemData> = vec![];
             for _i in 0..number_of_systems {
                 systems.push(ElectromagneticEmissionSystemData::decode(&mut buffer));
@@ -121,7 +121,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
         let event_id = EventId::decode(&mut buffer);
         let state_update_indicator = buffer.get_u8();
         let number_of_systems = buffer.get_u8();
-        let padding_for_emissions_pdu = buffer.get_u8();
+        let padding_for_emissions_pdu = buffer.get_u16();
         let mut systems: Vec<ElectromagneticEmissionSystemData> = vec![];
         for _i in 0..number_of_systems {
             systems.push(ElectromagneticEmissionSystemData::decode(&mut buffer));
@@ -153,7 +153,7 @@ mod tests {
         let pdu_header = PduHeader::default(
             PduType::ElectromagneticEmission,
             ProtocolFamily::DistributedEmissionRegeneration,
-            28,
+            31,
         );
 
         assert_eq!(
