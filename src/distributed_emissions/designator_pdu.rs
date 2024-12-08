@@ -10,7 +10,7 @@ use std::any::Any;
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
-    enums::DeadReckoningAlgorithm,
+    enums::{DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName},
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
     vector3_double::Vector3Double,
@@ -22,16 +22,16 @@ use crate::common::{
 pub struct DesignatorPdu {
     pub pdu_header: PduHeader,
     pub designating_entity_id: EntityId,
-    pub code_name: u8,
+    pub code_name: DesignatorSystemName,
     pub designated_entity_id: EntityId,
-    pub designator_code: u8,
+    pub designator_code: DesignatorCode,
     pub designator_power: f32,
     pub designator_wavelength: f32,
     pub designator_spot_wrt_designated: Vector3Float,
     pub designator_spot_location: Vector3Double,
     pub dead_reckoning_algorithm: DeadReckoningAlgorithm,
     pub padding1: u8,
-    pub padding2: i8,
+    pub padding2: u16,
     pub entity_linear_acceleration: Vector3Float,
 }
 
@@ -54,9 +54,9 @@ impl Default for DesignatorPdu {
                 88,
             ),
             designating_entity_id: EntityId::default(1),
-            code_name: 0,
+            code_name: DesignatorSystemName::default(),
             designated_entity_id: EntityId::default(2),
-            designator_code: 0,
+            designator_code: DesignatorCode::default(),
             designator_power: 0.0,
             designator_wavelength: 0.0,
             designator_spot_wrt_designated: Vector3Float::new(0.0, 0.0, 0.0),
@@ -76,16 +76,16 @@ impl Pdu for DesignatorPdu {
             .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.designating_entity_id.serialize(buf);
-        buf.put_u8(self.code_name);
+        buf.put_u16(self.designator_code as u16);
         self.designated_entity_id.serialize(buf);
-        buf.put_u8(self.designator_code);
+        buf.put_u16(self.designator_code as u16);
         buf.put_f32(self.designator_power);
         buf.put_f32(self.designator_wavelength);
         self.designator_spot_wrt_designated.serialize(buf);
         self.designator_spot_location.serialize(buf);
         buf.put_u8(self.dead_reckoning_algorithm as u8);
         buf.put_u8(self.padding1);
-        buf.put_i8(self.padding2);
+        buf.put_u16(self.padding2);
         self.entity_linear_acceleration.serialize(buf);
     }
 
@@ -97,16 +97,16 @@ impl Pdu for DesignatorPdu {
         let pdu_header = PduHeader::decode(&mut buffer);
         if pdu_header.pdu_type == PduType::Designator {
             let designating_entity_id = EntityId::decode(&mut buffer);
-            let code_name = buffer.get_u8();
+            let code_name = DesignatorSystemName::decode(&mut buffer);
             let designated_entity_id = EntityId::decode(&mut buffer);
-            let designator_code = buffer.get_u8();
+            let designator_code = DesignatorCode::decode(&mut buffer);
             let designator_power = buffer.get_f32();
             let designator_wavelength = buffer.get_f32();
             let designator_spot_wrt_designated = Vector3Float::decode(&mut buffer);
             let designator_spot_location = Vector3Double::decode(&mut buffer);
             let dead_reckoning_algorithm = DeadReckoningAlgorithm::decode(&mut buffer);
             let padding1 = buffer.get_u8();
-            let padding2 = buffer.get_i8();
+            let padding2 = buffer.get_u16();
             let entity_linear_acceleration = Vector3Float::decode(&mut buffer);
 
             Ok(DesignatorPdu {
@@ -143,16 +143,16 @@ impl Pdu for DesignatorPdu {
         Self: Sized,
     {
         let designating_entity_id = EntityId::decode(&mut buffer);
-        let code_name = buffer.get_u8();
+        let code_name = DesignatorSystemName::decode(&mut buffer);
         let designated_entity_id = EntityId::decode(&mut buffer);
-        let designator_code = buffer.get_u8();
+        let designator_code = DesignatorCode::decode(&mut buffer);
         let designator_power = buffer.get_f32();
         let designator_wavelength = buffer.get_f32();
         let designator_spot_wrt_designated = Vector3Float::decode(&mut buffer);
         let designator_spot_location = Vector3Double::decode(&mut buffer);
         let dead_reckoning_algorithm = DeadReckoningAlgorithm::decode(&mut buffer);
         let padding1 = buffer.get_u8();
-        let padding2 = buffer.get_i8();
+        let padding2 = buffer.get_u16();
         let entity_linear_acceleration = Vector3Float::decode(&mut buffer);
 
         Ok(DesignatorPdu {

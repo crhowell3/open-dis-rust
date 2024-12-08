@@ -5,11 +5,13 @@
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
+use futures::stream::Buffered;
 use std::any::Any;
 
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{UAPassiveParameterIndex, UAStateChangeUpdateIndicator},
     event_id::EventId,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
@@ -25,9 +27,9 @@ pub struct UnderwaterAcousticPdu {
     pub pdu_header: PduHeader,
     pub emitting_entity_id: EntityId,
     pub event_id: EventId,
-    pub state_change_indicator: i8,
-    pub pad: i8,
-    pub passive_parameter_index: u16,
+    pub state_change_indicator: UAStateChangeUpdateIndicator,
+    pub pad: u8,
+    pub passive_parameter_index: UAPassiveParameterIndex,
     pub propulsion_plant_configuration: u8,
     pub number_of_shafts: u8,
     pub number_of_apas: u8,
@@ -57,9 +59,9 @@ impl Default for UnderwaterAcousticPdu {
             ),
             emitting_entity_id: EntityId::default(1),
             event_id: EventId::default(1),
-            state_change_indicator: 0,
+            state_change_indicator: UAStateChangeUpdateIndicator::default(),
             pad: 0,
-            passive_parameter_index: 0,
+            passive_parameter_index: UAPassiveParameterIndex::default(),
             propulsion_plant_configuration: 0,
             number_of_shafts: 0,
             number_of_apas: 0,
@@ -79,9 +81,9 @@ impl Pdu for UnderwaterAcousticPdu {
         self.pdu_header.serialize(buf);
         self.emitting_entity_id.serialize(buf);
         self.event_id.serialize(buf);
-        buf.put_i8(self.state_change_indicator);
-        buf.put_i8(self.pad);
-        buf.put_u16(self.passive_parameter_index);
+        buf.put_u8(self.state_change_indicator as u8);
+        buf.put_u8(self.pad);
+        buf.put_u16(self.passive_parameter_index as u16);
         buf.put_u8(self.propulsion_plant_configuration);
         buf.put_u8(self.number_of_shafts);
         buf.put_u8(self.number_of_apas);
@@ -106,9 +108,9 @@ impl Pdu for UnderwaterAcousticPdu {
         if pdu_header.pdu_type == PduType::UnderwaterAcoustic {
             let emitting_entity_id = EntityId::decode(&mut buffer);
             let event_id = EventId::decode(&mut buffer);
-            let state_change_indicator = buffer.get_i8();
-            let pad = buffer.get_i8();
-            let passive_parameter_index = buffer.get_u16();
+            let state_change_indicator = UAStateChangeUpdateIndicator::decode(&mut buffer);
+            let pad = buffer.get_u8();
+            let passive_parameter_index = UAPassiveParameterIndex::decode(&mut buffer);
             let propulsion_plant_configuration = buffer.get_u8();
             let number_of_shafts = buffer.get_u8();
             let number_of_apas = buffer.get_u8();
@@ -160,9 +162,9 @@ impl Pdu for UnderwaterAcousticPdu {
     {
         let emitting_entity_id = EntityId::decode(&mut buffer);
         let event_id = EventId::decode(&mut buffer);
-        let state_change_indicator = buffer.get_i8();
-        let pad = buffer.get_i8();
-        let passive_parameter_index = buffer.get_u16();
+        let state_change_indicator = UAStateChangeUpdateIndicator::decode(&mut buffer);
+        let pad = buffer.get_u8();
+        let passive_parameter_index = UAPassiveParameterIndex::decode(&mut buffer);
         let propulsion_plant_configuration = buffer.get_u8();
         let number_of_shafts = buffer.get_u8();
         let number_of_apas = buffer.get_u8();
