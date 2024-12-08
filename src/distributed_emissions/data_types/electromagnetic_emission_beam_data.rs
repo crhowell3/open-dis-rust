@@ -8,7 +8,7 @@ use super::{
 pub struct ElectromagneticEmissionBeamData {
     pub beam_data_length: u8,
     pub beam_id_number: u8,
-    pub beam_parameter_index: u8,
+    pub beam_parameter_index: u16,
     pub fundamental_parameter_data: FundamentalParameterData,
     pub beam_function: u8,
     pub number_of_track_jam_targets: u8,
@@ -22,7 +22,7 @@ impl ElectromagneticEmissionBeamData {
     pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_u8(self.beam_data_length);
         buf.put_u8(self.beam_id_number);
-        buf.put_u8(self.beam_parameter_index);
+        buf.put_u16(self.beam_parameter_index);
         self.fundamental_parameter_data.serialize(buf);
         buf.put_u8(self.beam_function);
         buf.put_u8(self.number_of_track_jam_targets);
@@ -37,7 +37,7 @@ impl ElectromagneticEmissionBeamData {
     pub fn decode(buf: &mut BytesMut) -> ElectromagneticEmissionBeamData {
         let beam_data_length = buf.get_u8();
         let beam_id_number = buf.get_u8();
-        let beam_parameter_index = buf.get_u8();
+        let beam_parameter_index = buf.get_u16();
         let fundamental_parameter_data = FundamentalParameterData::decode(buf);
         let beam_function = buf.get_u8();
         let number_of_track_jam_targets = buf.get_u8();
