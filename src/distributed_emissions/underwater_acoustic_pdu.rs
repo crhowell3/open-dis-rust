@@ -5,7 +5,6 @@
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
-use futures::stream::Buffered;
 use std::any::Any;
 
 use crate::common::{
