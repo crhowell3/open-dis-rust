@@ -2,7 +2,7 @@
 
 [Open DIS Rust](README.md)
 
-- [Installation](installation.md)
+- [Acquiring](acquiring.md)
 - [Getting Started](guides/getting-started.md)
 - [Get In Touch](get-in-touch.md)
 
