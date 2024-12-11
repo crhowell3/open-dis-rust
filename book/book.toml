@@ -5,7 +5,8 @@ multilingual = false
 src = "src"
 
 [output.html]
-default-theme = "monokai"
-preferred-dark-theme = "monokai"
+default-theme = "ferra"
+preferred-dark-theme = "ferra"
 git-repository-url = "https://github.com/crhowell3/open-dis-rust"
 edit-url-template = "https://github.com/crhowell3/open-dis-rust/edit/main/book/{path}"
+additional-css = ["custom.css"]
