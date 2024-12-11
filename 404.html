@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" class="monokai sidebar-visible" dir="ltr">
+<html lang="en" class="ferra sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -30,12 +30,13 @@
         <link rel="stylesheet" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="custom.css">
 
 
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "monokai" : "monokai";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "ferra" : "ferra";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc.js"></script>
@@ -64,7 +65,7 @@
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
-            html.classList.remove('monokai')
+            html.classList.remove('ferra')
             html.classList.add(theme);
             html.classList.add("js");
         </script>
