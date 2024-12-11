@@ -9,4 +9,5 @@
 # Guides
 
 - [Creating a PDU](guides/creating-a-pdu.md)
-- [Setting Up UDP](guides/setting-up-udp.md)
+- [Sending PDUs](guides/sending-pdus.md)
+- [Receiving PDUs](guides/receiving-pdus.md)
