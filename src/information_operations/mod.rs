@@ -4,5 +4,7 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! The Information Operations protocol family
+
 pub mod information_operations_action_pdu;
 pub mod information_operations_report_pdu;

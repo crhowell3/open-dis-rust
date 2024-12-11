@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! The Distributed Emission Regeneration protocol family
+
 pub mod data_types;
 pub mod designator_pdu;
 pub mod electromagnetic_emissions_pdu;
