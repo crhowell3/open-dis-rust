@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! All commonly used non-PDU data types
+
 pub mod angular_velocity_vector;
 pub mod clock_time;
 pub mod dis_error;

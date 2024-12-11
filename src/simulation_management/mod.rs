@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! The Simulation Management (SIMAN) protocol family
+
 pub mod acknowledge_pdu;
 pub mod action_request_pdu;
 pub mod action_response_pdu;

@@ -4,6 +4,29 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! # open_dis_rust crate
+//!
+//! This is a library that implements the IEEE 1278.1-2012 Distributed Interactive Simulation
+//! application protocol.
+//!
+//! For more information on this standard, you may view the publication from the
+//! [IEEE website](https://ieee.org/).
+//!
+//! ## Example usage
+//!
+//! ```rust
+//! use open_dis_rust::common::pdu::Pdu;
+//! use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+//! use bytes::BytesMut;
+//!
+//! // Create new mutable byte array
+//! let mut bytes = BytesMut::new();
+//! // Create a pre-populated AcknowledgePdu
+//! let mut ack_pdu = AcknowledgePdu::default();
+//! // Serialize the PDU into the byte array, which can then be sent over UDP
+//! ack_pdu.serialize(&mut bytes);
+//! ```
+
 pub mod common;
 pub mod distributed_emissions;
 pub mod entity_information;

@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! The Minefield protocol family
+
 pub mod data_types;
 #[allow(clippy::module_name_repetitions)]
 pub mod minefield_data_pdu;

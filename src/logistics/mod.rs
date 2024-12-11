@@ -3,6 +3,8 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+//! The Logistics protocol family
+
 pub mod data_types;
 pub mod repair_complete_pdu;
 pub mod repair_response_pdu;

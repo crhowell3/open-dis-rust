@@ -3,6 +3,8 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+//! The Warfare protocol family
+
 pub mod data_types;
 pub mod detonation_pdu;
 pub mod directed_energy_fire_pdu;

@@ -36,7 +36,7 @@ jobs:
     env:
       RUSTDOCFLAGS: -Dwarnings
     steps:
-      - run: cargo test --doc --release --workspace
+      - run: cargo test --doc --release
       
   clippy:
     name: Clippy

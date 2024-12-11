@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! The Synthetic Environment protocol family
+
 pub mod areal_object_state_pdu;
 pub mod data_types;
 pub mod environmental_process_pdu;

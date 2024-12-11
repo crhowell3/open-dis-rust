@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! The Entity Information / Interaction protocol family
+
 pub mod collision_elastic_pdu;
 pub mod collision_pdu;
 pub mod data_types;

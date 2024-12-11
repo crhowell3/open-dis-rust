@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! The Entity Management protocol family
+
 pub mod aggregate_state_pdu;
 pub mod data_types;
 pub mod is_group_of_pdu;
