@@ -4,7 +4,7 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-//! # open_dis_rust crate
+//! # `open_dis_rust` crate
 //!
 //! This is a library that implements the IEEE 1278.1-2012 Distributed Interactive Simulation
 //! application protocol.
