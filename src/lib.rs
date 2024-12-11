@@ -15,6 +15,7 @@
 //! ## Example usage
 //!
 //! ```rust
+//! use open_dis_rust::common::pdu::Pdu;
 //! use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
 //! use bytes::BytesMut;
 //!
@@ -22,8 +23,6 @@
 //! let mut bytes = BytesMut::new();
 //! // Create a pre-populated AcknowledgePdu
 //! let mut ack_pdu = AcknowledgePdu::default();
-//! // Edit some of the data within the PDU
-//! ack_pdu.simulation_address.application_id = 12;
 //! // Serialize the PDU into the byte array, which can then be sent over UDP
 //! ack_pdu.serialize(&mut bytes);
 //! ```
