@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Getting Started</title>
+        <title>Receiving PDUs</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/crhowell3/open-dis-rust" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/crhowell3/open-dis-rust/edit/main/book/src/guides/getting-started.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/crhowell3/open-dis-rust/edit/main/book/src/guides/receiving-pdus.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,19 +158,52 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+                        <h1 id="receiving-pdus"><a class="header" href="#receiving-pdus">Receiving PDUs</a></h1>
+<p>The same dependencies are required as listed in the previous section.</p>
+<h2 id="receiving-and-parsing-a-pdu"><a class="header" href="#receiving-and-parsing-a-pdu">Receiving and Parsing a PDU</a></h2>
+<p>Using the same UDP socket that we created in the previous section, we
+can receive a PDU and decode it from the byte array.</p>
+<pre><pre class="playground"><code class="language-rust">use bytes::BytesMut;
+use std::net::SocketAddr;
+use std::io;
+use tokio::net::UdpSocket;
+
+use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+
+#[tokio::main]
+async fn main() -&gt; io::Result&lt;()&gt; {
+    let socket = UdpSocket::bind("0.0.0.0:3000").await?;
+    let remote_addr = "127.0.0.1:3000";
+
+    socket.connect(remote_addr).await?;
+
+    let mut buf = vec![0; 1204];
+    let n = socket.recv(&amp;mut buf[..]).await?;
+    loop {
+        if n &gt; 0 {
+          dbg!(AcknowledgePdu::deserialize(BytesMut::from(buf.as_slice())).unwrap());
+          break;
+        }
+    }
+    Ok(())
+}</code></pre></pre>
+<p>In most cases, the receiver is going to be listening for a particular PDU or range of
+PDUs. Using the above code as an example, if the data received is not able to be
+deserialized into an AcknowledgePdu, an error will be returned. This can be further
+handled by the user.</p>
+<p>There are other ways to determine what type of PDU the data represents, such as reading
+the raw byte array and finding the byte that represents the <code>pdu_type</code> field in the header.
+Then, the user could set up a match tree to attempt to parse the PDU, if they are expected
+to handle it, of course.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../acquiring.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../guides/sending-pdus.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../get-in-touch.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -178,13 +211,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../acquiring.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../guides/sending-pdus.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../get-in-touch.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>
