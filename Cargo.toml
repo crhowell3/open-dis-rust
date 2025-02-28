@@ -1,6 +1,6 @@
 [package]
 name = "open-dis-rust"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Cameron Howell <jango.djarin@proton.me>"]
 description = "A Rust implementation of the IEEE 1278.1-2012 DIS Standard."
 edition = "2024"
