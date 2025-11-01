@@ -15,3 +15,8 @@ pub mod minefield_query_pdu;
 pub mod minefield_response_nack_pdu;
 #[allow(clippy::module_name_repetitions)]
 pub mod minefield_state_pdu;
+
+pub use minefield_data_pdu::MinefieldDataPdu;
+pub use minefield_query_pdu::MinefieldQueryPdu;
+pub use minefield_response_nack_pdu::MinefieldResponseNackPdu;
+pub use minefield_state_pdu::MinefieldStatePdu;

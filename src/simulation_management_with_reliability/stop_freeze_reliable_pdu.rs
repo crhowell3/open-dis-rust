@@ -31,7 +31,7 @@ pub struct StopFreezeReliablePdu {
 }
 
 impl Default for StopFreezeReliablePdu {
-    #[must_use]
+    
     fn default() -> Self {
         StopFreezeReliablePdu {
             pdu_header: PduHeader::default(

@@ -12,3 +12,9 @@ pub mod electromagnetic_emissions_pdu;
 pub mod iff_pdu;
 pub mod supplemental_emission_pdu;
 pub mod underwater_acoustic_pdu;
+
+pub use designator_pdu::DesignatorPdu;
+pub use electromagnetic_emissions_pdu::ElectromagneticEmissionsPdu;
+pub use iff_pdu::IFFPdu;
+pub use supplemental_emission_pdu::SupplementalEmissionPdu;
+pub use underwater_acoustic_pdu::UnderwaterAcousticPdu;

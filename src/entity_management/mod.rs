@@ -11,3 +11,8 @@ pub mod data_types;
 pub mod is_group_of_pdu;
 pub mod is_part_of_pdu;
 pub mod transfer_ownership_pdu;
+
+pub use aggregate_state_pdu::AggregateStatePdu;
+pub use is_group_of_pdu::IsGroupOfPdu;
+pub use is_part_of_pdu::IsPartOfPdu;
+pub use transfer_ownership_pdu::TransferOwnershipPdu;

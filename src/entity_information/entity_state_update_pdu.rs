@@ -35,7 +35,7 @@ pub struct EntityStateUpdatePdu {
 }
 
 impl Default for EntityStateUpdatePdu {
-    #[must_use]
+    
     fn default() -> Self {
         EntityStateUpdatePdu {
             pdu_header: PduHeader::default(
