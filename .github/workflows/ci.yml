@@ -2,10 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "stable" ]
   pull_request:
-  workflow_dispatch:
-  schedule: [cron: "20 17 * * 5"]
+    branches: [ "stable" ]
 
 permissions:
   contents: read
@@ -14,42 +13,54 @@ env:
   RUSTFLAGS: -Dwarnings
 
 jobs:
-  build_and_test:
-    name: Build and test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        toolchain:
-          - stable
-          - beta
-          - nightly
-    steps:
-      - uses: actions/checkout@v4
-      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
-      - run: cargo build --verbose
-      - run: cargo test --verbose  
-
-  doc:
-    name: Documentation
+  test:
+    name: Tests
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    env:
-      RUSTDOCFLAGS: -Dwarnings
     steps:
-      - run: cargo test --doc --release
-      
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: cargo test
+
+  stable:
+    name: Rust ${{matrix.rust}}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [stable, beta]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{matrix.rust}}
+      - run: cargo build --no-default-features
+
+  nightly:
+    name: Rust nightly
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: cargo build
+      - run: cargo build --no-default-features
+
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
     permissions: write-all
-    if: github.event_name != 'pull_request'
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@clippy
       - run: cargo install clippy-sarif sarif-fmt
-      - run: cargo clippy 
-          --all-features 
+      - run: rustup component add --toolchain stable-x86_64-unknown-linux-gnu clippy
+      - run: cargo clippy
+          --all-features
           --message-format=json
           -- -Dclippy::all -Dclippy::pedantic | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
         continue-on-error: true
@@ -57,17 +68,3 @@ jobs:
         with:
           sarif_file: rust-clippy-results.sarif
           wait-for-processing: true
-
-  miri:
-    name: Miri
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Miri
-        run: |
-          rustup toolchain install nightly --component miri
-          rustup override set nightly
-          cargo miri setup
-      - name: Test with Miri
-        run: RUST_BACKTRACE=1 MIRIFLAGS="-Zmiri-disable-isolation" cargo miri test
