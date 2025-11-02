@@ -119,6 +119,7 @@ impl DISError {
         }
     }
 
+    #[must_use]
     /// Create a new `BufferUnderflow` error
     pub fn buffer_underflow(attempted: usize, available: usize) -> Self {
         DISError::BufferUnderflow {
@@ -127,6 +128,7 @@ impl DISError {
         }
     }
 
+    #[must_use]
     /// Create a new `PduSizeExceeded` error
     pub const fn pdu_size_exceeded(size: usize, max_size: usize) -> Self {
         DISError::PduSizeExceeded { size, max_size }
