@@ -106,7 +106,13 @@ impl Pdu for RecordQueryReliablePdu {
                 record_ids,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type RecordQueryReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

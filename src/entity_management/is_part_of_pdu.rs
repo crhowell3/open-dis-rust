@@ -89,7 +89,10 @@ impl Pdu for IsPartOfPdu {
                 part_entity_type,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type IsPartOf, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 

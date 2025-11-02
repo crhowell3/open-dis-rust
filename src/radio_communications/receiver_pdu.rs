@@ -93,7 +93,10 @@ impl Pdu for ReceiverPdu {
                 transmitter_radio_id,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type Receiver, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 

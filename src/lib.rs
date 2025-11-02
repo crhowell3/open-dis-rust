@@ -15,7 +15,7 @@
 //! ## Example usage
 //!
 //! ```rust
-//! use open_dis_rust::common::pdu::Pdu;
+//! use open_dis_rust::common::Pdu;
 //! use open_dis_rust::simulation_management::AcknowledgePdu;
 //! use bytes::BytesMut;
 //!

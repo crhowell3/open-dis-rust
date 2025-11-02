@@ -79,7 +79,13 @@ impl Pdu for MinefieldResponseNackPdu {
                 missing_pdu_sequence_numbers,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type MinefieldResponseNack, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

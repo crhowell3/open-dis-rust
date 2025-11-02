@@ -66,7 +66,13 @@ impl Pdu for ResupplyCancelPdu {
                 supplying_entity_id,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type ResupplyCancel, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

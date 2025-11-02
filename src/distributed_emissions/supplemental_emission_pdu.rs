@@ -102,7 +102,8 @@ impl Pdu for SupplementalEmissionPdu {
             }
             let mut vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData> = vec![];
             for _i in 0..number_of_vectoring_nozzle_systems {
-                vectoring_nozzle_system_data.push(VectoringNozzleSystemData::deserialize(&mut buffer));
+                vectoring_nozzle_system_data
+                    .push(VectoringNozzleSystemData::deserialize(&mut buffer));
             }
             Ok(SupplementalEmissionPdu {
                 pdu_header,
@@ -116,7 +117,13 @@ impl Pdu for SupplementalEmissionPdu {
                 vectoring_nozzle_system_data,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type SupplementalEmission, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

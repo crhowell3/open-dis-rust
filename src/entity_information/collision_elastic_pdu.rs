@@ -125,7 +125,13 @@ impl Pdu for CollisionElasticPdu {
                 coefficient_of_restitution,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type CollisionElastic, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

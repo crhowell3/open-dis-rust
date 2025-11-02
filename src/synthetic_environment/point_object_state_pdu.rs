@@ -124,7 +124,13 @@ impl Pdu for PointObjectStatePdu {
                 pad2,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type PointObjectState, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

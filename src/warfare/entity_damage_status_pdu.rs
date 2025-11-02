@@ -98,7 +98,13 @@ impl Pdu for EntityDamageStatusPdu {
                 damage_descriptions,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type EntityDamageStatus, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

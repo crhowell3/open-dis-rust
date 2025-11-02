@@ -195,7 +195,13 @@ impl Pdu for AggregateStatePdu {
                 variable_datum_list,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type AggregateState, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

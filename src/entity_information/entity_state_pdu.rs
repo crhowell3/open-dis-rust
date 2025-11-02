@@ -135,7 +135,13 @@ impl Pdu for EntityStatePdu {
                 articulation_parameter: 0.0,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type EntityState, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

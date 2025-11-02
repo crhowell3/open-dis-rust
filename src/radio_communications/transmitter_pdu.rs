@@ -177,7 +177,13 @@ impl Pdu for TransmitterPdu {
                 antenna_pattern_list,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type Transmitter, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

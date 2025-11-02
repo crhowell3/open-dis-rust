@@ -108,7 +108,13 @@ impl Pdu for MinefieldQueryPdu {
                 sensor_types,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type MinefieldQuery, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

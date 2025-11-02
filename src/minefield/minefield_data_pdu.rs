@@ -127,7 +127,13 @@ impl Pdu for MinefieldDataPdu {
                 mine_location,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type MinefieldData, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

@@ -106,7 +106,10 @@ impl Pdu for SignalPdu {
                 data,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type Signal, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 

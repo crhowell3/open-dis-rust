@@ -114,7 +114,13 @@ impl Pdu for LinearObjectStatePdu {
                 linear_segment_parameters,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type LinearObjectState, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

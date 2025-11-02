@@ -35,7 +35,6 @@ pub struct EntityStateUpdatePdu {
 }
 
 impl Default for EntityStateUpdatePdu {
-    
     fn default() -> Self {
         EntityStateUpdatePdu {
             pdu_header: PduHeader::default(
@@ -98,7 +97,13 @@ impl Pdu for EntityStateUpdatePdu {
                 variable_parameter_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type EntityStateUpdate, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

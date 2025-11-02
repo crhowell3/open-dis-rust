@@ -114,7 +114,8 @@ impl Pdu for IntercomControlPdu {
             let intercom_parameters_length = buffer.get_u32();
             let mut intercom_parameters: Vec<IntercomCommunicationsParameters> = vec![];
             for _i in 0..intercom_parameters_length {
-                intercom_parameters.push(IntercomCommunicationsParameters::deserialize(&mut buffer));
+                intercom_parameters
+                    .push(IntercomCommunicationsParameters::deserialize(&mut buffer));
             }
             Ok(IntercomControlPdu {
                 pdu_header,
@@ -134,7 +135,13 @@ impl Pdu for IntercomControlPdu {
                 intercom_parameters,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type IntercomControl, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

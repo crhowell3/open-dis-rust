@@ -127,7 +127,13 @@ impl Pdu for DesignatorPdu {
                 entity_linear_acceleration,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type Designator, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

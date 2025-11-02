@@ -100,7 +100,13 @@ impl Pdu for ElectromagneticEmissionsPdu {
                 systems,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type ElectromagneticEmissions, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

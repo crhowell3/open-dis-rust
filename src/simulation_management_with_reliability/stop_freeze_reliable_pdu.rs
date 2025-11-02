@@ -31,7 +31,6 @@ pub struct StopFreezeReliablePdu {
 }
 
 impl Default for StopFreezeReliablePdu {
-    
     fn default() -> Self {
         StopFreezeReliablePdu {
             pdu_header: PduHeader::default(
@@ -93,7 +92,13 @@ impl Pdu for StopFreezeReliablePdu {
                 request_id,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type StopFreezeReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

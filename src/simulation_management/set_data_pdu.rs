@@ -95,7 +95,10 @@ impl Pdu for SetDataPdu {
                 variable_datum_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type SetData, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 

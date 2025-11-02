@@ -99,7 +99,10 @@ impl Pdu for IsGroupOfPdu {
                 grouped_entity_descriptions,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type IsGroupOf, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 

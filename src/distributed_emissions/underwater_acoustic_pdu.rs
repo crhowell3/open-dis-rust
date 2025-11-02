@@ -142,7 +142,13 @@ impl Pdu for UnderwaterAcousticPdu {
                 emitter_systems,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type UnderwaterAcoustic, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

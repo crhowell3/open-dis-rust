@@ -95,7 +95,13 @@ impl Pdu for SetRecordReliablePdu {
                 record_ids,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type SetRecordReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

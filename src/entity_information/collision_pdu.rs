@@ -88,7 +88,10 @@ impl Pdu for CollisionPdu {
                 location_wrt_entity,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type Collision, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 

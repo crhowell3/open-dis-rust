@@ -97,7 +97,13 @@ impl Pdu for ResupplyReceivedPdu {
                 supplies,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type ResupplyReceived, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 

@@ -102,7 +102,13 @@ impl Pdu for EnvironmentalProcessPdu {
                 environment_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type EnvironmentalProcess, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
