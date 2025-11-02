@@ -75,19 +75,19 @@ impl Pdu for MinefieldQueryPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::MinefieldQuery {
-            let minefield_id = EntityId::decode(&mut buffer);
-            let requesting_entity_id = EntityId::decode(&mut buffer);
+            let minefield_id = EntityId::deserialize(&mut buffer);
+            let requesting_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u8();
             let number_of_perimeter_points = buffer.get_u8();
             let pad2 = buffer.get_u8();
             let number_of_sensor_types = buffer.get_u8();
             let data_filter = buffer.get_u32();
-            let requested_mine_type = EntityType::decode(&mut buffer);
+            let requested_mine_type = EntityType::deserialize(&mut buffer);
             let mut requested_perimeter_points: Vec<Point> = vec![];
             for _i in 0..number_of_perimeter_points as usize {
-                requested_perimeter_points.push(Point::decode(&mut buffer));
+                requested_perimeter_points.push(Point::deserialize(&mut buffer));
             }
             let mut sensor_types: Vec<u16> = vec![];
             for _i in 0..number_of_sensor_types as usize {
@@ -123,17 +123,17 @@ impl Pdu for MinefieldQueryPdu {
     where
         Self: Sized,
     {
-        let minefield_id = EntityId::decode(&mut buffer);
-        let requesting_entity_id = EntityId::decode(&mut buffer);
+        let minefield_id = EntityId::deserialize(&mut buffer);
+        let requesting_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u8();
         let number_of_perimeter_points = buffer.get_u8();
         let pad2 = buffer.get_u8();
         let number_of_sensor_types = buffer.get_u8();
         let data_filter = buffer.get_u32();
-        let requested_mine_type = EntityType::decode(&mut buffer);
+        let requested_mine_type = EntityType::deserialize(&mut buffer);
         let mut requested_perimeter_points: Vec<Point> = vec![];
         for _i in 0..number_of_perimeter_points as usize {
-            requested_perimeter_points.push(Point::decode(&mut buffer));
+            requested_perimeter_points.push(Point::deserialize(&mut buffer));
         }
         let mut sensor_types: Vec<u16> = vec![];
         for _i in 0..number_of_sensor_types as usize {

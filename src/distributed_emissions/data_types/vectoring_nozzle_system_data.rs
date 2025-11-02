@@ -25,7 +25,7 @@ impl VectoringNozzleSystemData {
         buf.put_f32(self.vertical_deflection_angle);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> VectoringNozzleSystemData {
+    pub fn deserialize(buf: &mut BytesMut) -> VectoringNozzleSystemData {
         VectoringNozzleSystemData {
             horizontal_deflection_angle: buf.get_f32(),
             vertical_deflection_angle: buf.get_f32(),

@@ -68,12 +68,12 @@ impl Pdu for ActionResponsePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::ActionResponse {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
-            let request_status = ActionResponseRequestStatus::decode(&mut buffer);
+            let request_status = ActionResponseRequestStatus::deserialize(&mut buffer);
             let number_of_fixed_datum_records = buffer.get_u32();
             let number_of_variable_datum_records = buffer.get_u32();
             let mut fixed_datum_records: u64 = 0;
@@ -112,10 +112,10 @@ impl Pdu for ActionResponsePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
-        let request_status = ActionResponseRequestStatus::decode(&mut buffer);
+        let request_status = ActionResponseRequestStatus::deserialize(&mut buffer);
         let number_of_fixed_datum_records = buffer.get_u32();
         let number_of_variable_datum_records = buffer.get_u32();
         let mut fixed_datum_records: u64 = 0;

@@ -28,7 +28,7 @@ impl AggregateId {
         buf.put_u16(self.aggregate_id);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> AggregateId {
+    pub fn deserialize(buf: &mut BytesMut) -> AggregateId {
         AggregateId {
             site: buf.get_u16(),
             application: buf.get_u16(),

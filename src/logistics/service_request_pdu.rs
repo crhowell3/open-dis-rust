@@ -71,16 +71,16 @@ impl Pdu for ServiceRequestPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::ServiceRequest {
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let servicing_entity_id = EntityId::decode(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let servicing_entity_id = EntityId::deserialize(&mut buffer);
             let service_type_requested = buffer.get_u8();
             let number_of_supply_types = buffer.get_u8();
             let padding1 = buffer.get_i16();
             let mut supplies: Vec<SupplyQuantity> = vec![];
             for _i in 0..number_of_supply_types {
-                supplies.push(SupplyQuantity::decode(&mut buffer));
+                supplies.push(SupplyQuantity::deserialize(&mut buffer));
             }
 
             Ok(ServiceRequestPdu {
@@ -108,14 +108,14 @@ impl Pdu for ServiceRequestPdu {
     where
         Self: Sized,
     {
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let servicing_entity_id = EntityId::decode(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let servicing_entity_id = EntityId::deserialize(&mut buffer);
         let service_type_requested = buffer.get_u8();
         let number_of_supply_types = buffer.get_u8();
         let padding1 = buffer.get_i16();
         let mut supplies: Vec<SupplyQuantity> = vec![];
         for _i in 0..number_of_supply_types {
-            supplies.push(SupplyQuantity::decode(&mut buffer));
+            supplies.push(SupplyQuantity::deserialize(&mut buffer));
         }
 
         Ok(ServiceRequestPdu {

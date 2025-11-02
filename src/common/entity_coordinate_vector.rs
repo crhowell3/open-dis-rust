@@ -33,7 +33,7 @@ impl EntityCoordinateVector {
         buf.put_f32(self.z_coordinate);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> EntityCoordinateVector {
+    pub fn deserialize(buf: &mut BytesMut) -> EntityCoordinateVector {
         EntityCoordinateVector {
             x_coordinate: buf.get_f32(),
             y_coordinate: buf.get_f32(),

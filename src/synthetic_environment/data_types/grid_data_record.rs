@@ -97,9 +97,9 @@ impl GridDataRecord {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> GridDataRecord {
-        let sample_type = GriddedDataSampleType::decode(buf);
-        let data_representation = GriddedDataDataRepresentation::decode(buf);
+    pub fn deserialize(buf: &mut BytesMut) -> GridDataRecord {
+        let sample_type = GriddedDataSampleType::deserialize(buf);
+        let data_representation = GriddedDataDataRepresentation::deserialize(buf);
         let data = match data_representation {
             GriddedDataDataRepresentation::Type0 => {
                 let number_of_octets = buf.get_u16();

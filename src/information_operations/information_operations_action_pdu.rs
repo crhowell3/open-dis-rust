@@ -96,20 +96,20 @@ impl Pdu for InformationOperationsActionPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::InformationOperationsAction {
-            let originating_simulation_id = EntityId::decode(&mut buffer);
-            let receiving_simulation_id = EntityId::decode(&mut buffer);
+            let originating_simulation_id = EntityId::deserialize(&mut buffer);
+            let receiving_simulation_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
-            let io_warfare_type = IOActionIOWarfareType::decode(&mut buffer);
-            let io_simulation_source = IOActionIOSimulationSource::decode(&mut buffer);
-            let io_action_type = IOActionIOActionType::decode(&mut buffer);
-            let io_action_phase = IOActionIOActionPhase::decode(&mut buffer);
+            let io_warfare_type = IOActionIOWarfareType::deserialize(&mut buffer);
+            let io_simulation_source = IOActionIOSimulationSource::deserialize(&mut buffer);
+            let io_action_type = IOActionIOActionType::deserialize(&mut buffer);
+            let io_action_phase = IOActionIOActionPhase::deserialize(&mut buffer);
             let padding1 = buffer.get_u32();
-            let io_attacker_entity_id = EntityId::decode(&mut buffer);
-            let io_primary_target_entity_id = EntityId::decode(&mut buffer);
+            let io_attacker_entity_id = EntityId::deserialize(&mut buffer);
+            let io_primary_target_entity_id = EntityId::deserialize(&mut buffer);
             let padding2 = buffer.get_u16();
-            let io_records = StandardVariableSpecification::decode(&mut buffer);
+            let io_records = StandardVariableSpecification::deserialize(&mut buffer);
             Ok(InformationOperationsActionPdu {
                 pdu_header,
                 originating_simulation_id,
@@ -141,18 +141,18 @@ impl Pdu for InformationOperationsActionPdu {
     where
         Self: Sized,
     {
-        let originating_simulation_id = EntityId::decode(&mut buffer);
-        let receiving_simulation_id = EntityId::decode(&mut buffer);
+        let originating_simulation_id = EntityId::deserialize(&mut buffer);
+        let receiving_simulation_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
-        let io_warfare_type = IOActionIOWarfareType::decode(&mut buffer);
-        let io_simulation_source = IOActionIOSimulationSource::decode(&mut buffer);
-        let io_action_type = IOActionIOActionType::decode(&mut buffer);
-        let io_action_phase = IOActionIOActionPhase::decode(&mut buffer);
+        let io_warfare_type = IOActionIOWarfareType::deserialize(&mut buffer);
+        let io_simulation_source = IOActionIOSimulationSource::deserialize(&mut buffer);
+        let io_action_type = IOActionIOActionType::deserialize(&mut buffer);
+        let io_action_phase = IOActionIOActionPhase::deserialize(&mut buffer);
         let padding1 = buffer.get_u32();
-        let io_attacker_entity_id = EntityId::decode(&mut buffer);
-        let io_primary_target_entity_id = EntityId::decode(&mut buffer);
+        let io_attacker_entity_id = EntityId::deserialize(&mut buffer);
+        let io_primary_target_entity_id = EntityId::deserialize(&mut buffer);
         let padding2 = buffer.get_u16();
-        let io_records = StandardVariableSpecification::decode(&mut buffer);
+        let io_records = StandardVariableSpecification::deserialize(&mut buffer);
         Ok(InformationOperationsActionPdu {
             pdu_header,
             originating_simulation_id,

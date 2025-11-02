@@ -31,7 +31,7 @@ impl ObjectType {
         buf.put_u8(self.subcategory);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> ObjectType {
+    pub fn deserialize(buf: &mut BytesMut) -> ObjectType {
         ObjectType {
             domain: buf.get_u8(),
             object_kind: buf.get_u8(),

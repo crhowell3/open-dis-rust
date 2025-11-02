@@ -69,12 +69,12 @@ impl Pdu for AcknowledgePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Acknowledge {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let acknowledge_flag = AcknowledgeFlag::decode(&mut buffer);
-            let response_flag = AcknowledgeResponseFlag::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let acknowledge_flag = AcknowledgeFlag::deserialize(&mut buffer);
+            let response_flag = AcknowledgeResponseFlag::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
 
             Ok(AcknowledgePdu {
@@ -101,10 +101,10 @@ impl Pdu for AcknowledgePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let acknowledge_flag = AcknowledgeFlag::decode(&mut buffer);
-        let response_flag = AcknowledgeResponseFlag::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let acknowledge_flag = AcknowledgeFlag::deserialize(&mut buffer);
+        let response_flag = AcknowledgeResponseFlag::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
 
         Ok(AcknowledgePdu {

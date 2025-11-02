@@ -28,7 +28,7 @@ impl VelocityVector {
         buf.put_f32(self.third_vector_component);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> VelocityVector {
+    pub fn deserialize(buf: &mut BytesMut) -> VelocityVector {
         VelocityVector {
             first_vector_component: buf.get_f32(),
             second_vector_component: buf.get_f32(),

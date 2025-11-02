@@ -28,7 +28,7 @@ impl LinearAcceleration {
         buf.put_f32(self.third_vector_component);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> LinearAcceleration {
+    pub fn deserialize(buf: &mut BytesMut) -> LinearAcceleration {
         LinearAcceleration {
             first_vector_component: buf.get_f32(),
             second_vector_component: buf.get_f32(),

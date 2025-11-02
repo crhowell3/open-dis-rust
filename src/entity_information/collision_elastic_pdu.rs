@@ -89,22 +89,22 @@ impl Pdu for CollisionElasticPdu {
 
     #[allow(clippy::similar_names)]
     fn deserialize(mut buffer: BytesMut) -> Result<CollisionElasticPdu, DISError> {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::CollisionElastic {
-            let issuing_entity_id = EntityId::decode(&mut buffer);
-            let colliding_entity_id = EntityId::decode(&mut buffer);
-            let event_id = EventId::decode(&mut buffer);
+            let issuing_entity_id = EntityId::deserialize(&mut buffer);
+            let colliding_entity_id = EntityId::deserialize(&mut buffer);
+            let event_id = EventId::deserialize(&mut buffer);
             let padding = buffer.get_u16();
-            let contact_velocity = LinearVelocity::decode(&mut buffer);
+            let contact_velocity = LinearVelocity::deserialize(&mut buffer);
             let mass = buffer.get_f32();
-            let location_of_impact = EntityCoordinateVector::decode(&mut buffer);
+            let location_of_impact = EntityCoordinateVector::deserialize(&mut buffer);
             let collision_intermediate_result_xx = buffer.get_f32();
             let collision_intermediate_result_xy = buffer.get_f32();
             let collision_intermediate_result_xz = buffer.get_f32();
             let collision_intermediate_result_yy = buffer.get_f32();
             let collision_intermediate_result_yz = buffer.get_f32();
             let collision_intermediate_result_zz = buffer.get_f32();
-            let unit_surface_normal = EntityCoordinateVector::decode(&mut buffer);
+            let unit_surface_normal = EntityCoordinateVector::deserialize(&mut buffer);
             let coefficient_of_restitution = buffer.get_f32();
             Ok(CollisionElasticPdu {
                 pdu_header,
@@ -141,20 +141,20 @@ impl Pdu for CollisionElasticPdu {
     where
         Self: Sized,
     {
-        let issuing_entity_id = EntityId::decode(&mut buffer);
-        let colliding_entity_id = EntityId::decode(&mut buffer);
-        let event_id = EventId::decode(&mut buffer);
+        let issuing_entity_id = EntityId::deserialize(&mut buffer);
+        let colliding_entity_id = EntityId::deserialize(&mut buffer);
+        let event_id = EventId::deserialize(&mut buffer);
         let padding = buffer.get_u16();
-        let contact_velocity = LinearVelocity::decode(&mut buffer);
+        let contact_velocity = LinearVelocity::deserialize(&mut buffer);
         let mass = buffer.get_f32();
-        let location_of_impact = EntityCoordinateVector::decode(&mut buffer);
+        let location_of_impact = EntityCoordinateVector::deserialize(&mut buffer);
         let collision_intermediate_result_xx = buffer.get_f32();
         let collision_intermediate_result_xy = buffer.get_f32();
         let collision_intermediate_result_xz = buffer.get_f32();
         let collision_intermediate_result_yy = buffer.get_f32();
         let collision_intermediate_result_yz = buffer.get_f32();
         let collision_intermediate_result_zz = buffer.get_f32();
-        let unit_surface_normal = EntityCoordinateVector::decode(&mut buffer);
+        let unit_surface_normal = EntityCoordinateVector::deserialize(&mut buffer);
         let coefficient_of_restitution = buffer.get_f32();
         Ok(CollisionElasticPdu {
             pdu_header,

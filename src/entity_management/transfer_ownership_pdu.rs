@@ -77,15 +77,15 @@ impl Pdu for TransferOwnershipPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::TransferOwnership {
-            let originating_id = SimulationAddress::decode(&mut buffer);
-            let receiving_id = SimulationAddress::decode(&mut buffer);
+            let originating_id = SimulationAddress::deserialize(&mut buffer);
+            let receiving_id = SimulationAddress::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
             let required_reliability_service = buffer.get_u8();
             let transfer_type = buffer.get_u8();
-            let transfer_entity_id = EntityId::decode(&mut buffer);
-            let record_information = RecordSpecification::decode(&mut buffer);
+            let transfer_entity_id = EntityId::deserialize(&mut buffer);
+            let record_information = RecordSpecification::deserialize(&mut buffer);
             Ok(TransferOwnershipPdu {
                 pdu_header,
                 originating_id,
@@ -112,13 +112,13 @@ impl Pdu for TransferOwnershipPdu {
     where
         Self: Sized,
     {
-        let originating_id = SimulationAddress::decode(&mut buffer);
-        let receiving_id = SimulationAddress::decode(&mut buffer);
+        let originating_id = SimulationAddress::deserialize(&mut buffer);
+        let receiving_id = SimulationAddress::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
         let required_reliability_service = buffer.get_u8();
         let transfer_type = buffer.get_u8();
-        let transfer_entity_id = EntityId::decode(&mut buffer);
-        let record_information = RecordSpecification::decode(&mut buffer);
+        let transfer_entity_id = EntityId::deserialize(&mut buffer);
+        let record_information = RecordSpecification::deserialize(&mut buffer);
         Ok(TransferOwnershipPdu {
             pdu_header,
             originating_id,

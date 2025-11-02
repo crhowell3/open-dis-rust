@@ -64,10 +64,10 @@ impl Pdu for RepairResponsePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::RepairResponse {
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let repairing_entity_id = EntityId::decode(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let repairing_entity_id = EntityId::deserialize(&mut buffer);
             let repair_result = buffer.get_u8();
             let padding1 = buffer.get_i16();
             let padding2 = buffer.get_i8();
@@ -96,8 +96,8 @@ impl Pdu for RepairResponsePdu {
     where
         Self: Sized,
     {
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let repairing_entity_id = EntityId::decode(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let repairing_entity_id = EntityId::deserialize(&mut buffer);
         let repair_result = buffer.get_u8();
         let padding1 = buffer.get_i16();
         let padding2 = buffer.get_i8();

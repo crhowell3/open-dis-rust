@@ -27,9 +27,9 @@ impl MinefieldIdentifier {
         buf.put_u16(self.minefield_number);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> MinefieldIdentifier {
+    pub fn deserialize(buf: &mut BytesMut) -> MinefieldIdentifier {
         MinefieldIdentifier {
-            simulation_address: SimulationAddress::decode(buf),
+            simulation_address: SimulationAddress::deserialize(buf),
             minefield_number: buf.get_u16(),
         }
     }

@@ -61,7 +61,7 @@ impl FundamentalOperationalData {
         buf.put_u8(self.parameter6);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> FundamentalOperationalData {
+    pub fn deserialize(buf: &mut BytesMut) -> FundamentalOperationalData {
         FundamentalOperationalData {
             system_status: buf.get_u8(),
             data_field1: buf.get_u8(),

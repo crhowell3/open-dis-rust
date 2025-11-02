@@ -43,7 +43,7 @@ impl SimulationAddress {
         buf.put_u16(self.application_id);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> SimulationAddress {
+    pub fn deserialize(buf: &mut BytesMut) -> SimulationAddress {
         SimulationAddress {
             site_id: buf.get_u16(),
             application_id: buf.get_u16(),

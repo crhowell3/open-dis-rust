@@ -76,9 +76,9 @@ impl Pdu for IsGroupOfPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::IsGroupOf {
-            let group_entity_id = EntityId::decode(&mut buffer);
+            let group_entity_id = EntityId::deserialize(&mut buffer);
             let grouped_entity_category = buffer.get_u8();
             let number_of_grouped_entities = buffer.get_u8();
             let pad2 = buffer.get_u32();
@@ -114,7 +114,7 @@ impl Pdu for IsGroupOfPdu {
     where
         Self: Sized,
     {
-        let group_entity_id = EntityId::decode(&mut buffer);
+        let group_entity_id = EntityId::deserialize(&mut buffer);
         let grouped_entity_category = buffer.get_u8();
         let number_of_grouped_entities = buffer.get_u8();
         let pad2 = buffer.get_u32();

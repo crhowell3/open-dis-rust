@@ -101,22 +101,22 @@ impl Pdu for IFFPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::IFF {
-            let emitting_entity_id = EntityId::decode(&mut buffer);
-            let event_id = EventId::decode(&mut buffer);
-            let relative_antenna_location = Vector3Float::decode(&mut buffer);
+            let emitting_entity_id = EntityId::deserialize(&mut buffer);
+            let event_id = EventId::deserialize(&mut buffer);
+            let relative_antenna_location = Vector3Float::deserialize(&mut buffer);
             let number_of_iff_parameters = buffer.get_u32();
-            let system_id = SystemId::decode(&mut buffer);
+            let system_id = SystemId::deserialize(&mut buffer);
             let system_designator = buffer.get_u8();
             let system_specific_data = buffer.get_u8();
-            let fundamental_operational_data = FundamentalOperationalData::decode(&mut buffer);
-            let layer_header = LayerHeader::decode(&mut buffer);
-            let beam_data = BeamData::decode(&mut buffer);
-            let secondary_operational_data = SecondaryOperationalData::decode(&mut buffer);
+            let fundamental_operational_data = FundamentalOperationalData::deserialize(&mut buffer);
+            let layer_header = LayerHeader::deserialize(&mut buffer);
+            let beam_data = BeamData::deserialize(&mut buffer);
+            let secondary_operational_data = SecondaryOperationalData::deserialize(&mut buffer);
             let mut iff_parameters: Vec<IFFFundamentalParameterData> = vec![];
             for _i in 0..number_of_iff_parameters {
-                iff_parameters.push(IFFFundamentalParameterData::decode(&mut buffer));
+                iff_parameters.push(IFFFundamentalParameterData::deserialize(&mut buffer));
             }
             Ok(IFFPdu {
                 pdu_header,
@@ -151,20 +151,20 @@ impl Pdu for IFFPdu {
     where
         Self: Sized,
     {
-        let emitting_entity_id = EntityId::decode(&mut buffer);
-        let event_id = EventId::decode(&mut buffer);
-        let relative_antenna_location = Vector3Float::decode(&mut buffer);
+        let emitting_entity_id = EntityId::deserialize(&mut buffer);
+        let event_id = EventId::deserialize(&mut buffer);
+        let relative_antenna_location = Vector3Float::deserialize(&mut buffer);
         let number_of_iff_parameters = buffer.get_u32();
-        let system_id = SystemId::decode(&mut buffer);
+        let system_id = SystemId::deserialize(&mut buffer);
         let system_designator = buffer.get_u8();
         let system_specific_data = buffer.get_u8();
-        let fundamental_operational_data = FundamentalOperationalData::decode(&mut buffer);
-        let layer_header = LayerHeader::decode(&mut buffer);
-        let beam_data = BeamData::decode(&mut buffer);
-        let secondary_operational_data = SecondaryOperationalData::decode(&mut buffer);
+        let fundamental_operational_data = FundamentalOperationalData::deserialize(&mut buffer);
+        let layer_header = LayerHeader::deserialize(&mut buffer);
+        let beam_data = BeamData::deserialize(&mut buffer);
+        let secondary_operational_data = SecondaryOperationalData::deserialize(&mut buffer);
         let mut iff_parameters: Vec<IFFFundamentalParameterData> = vec![];
         for _i in 0..number_of_iff_parameters {
-            iff_parameters.push(IFFFundamentalParameterData::decode(&mut buffer));
+            iff_parameters.push(IFFFundamentalParameterData::deserialize(&mut buffer));
         }
         Ok(IFFPdu {
             pdu_header,

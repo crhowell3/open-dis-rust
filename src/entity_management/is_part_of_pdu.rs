@@ -71,14 +71,14 @@ impl Pdu for IsPartOfPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::IsPartOf {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let relationship = Relationship::decode(&mut buffer);
-            let part_location = Vector3Float::decode(&mut buffer);
-            let named_location_id = NamedLocation::decode(&mut buffer);
-            let part_entity_type = EntityType::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let relationship = Relationship::deserialize(&mut buffer);
+            let part_location = Vector3Float::deserialize(&mut buffer);
+            let named_location_id = NamedLocation::deserialize(&mut buffer);
+            let part_entity_type = EntityType::deserialize(&mut buffer);
             Ok(IsPartOfPdu {
                 pdu_header,
                 originating_entity_id,
@@ -104,12 +104,12 @@ impl Pdu for IsPartOfPdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let relationship = Relationship::decode(&mut buffer);
-        let part_location = Vector3Float::decode(&mut buffer);
-        let named_location_id = NamedLocation::decode(&mut buffer);
-        let part_entity_type = EntityType::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let relationship = Relationship::deserialize(&mut buffer);
+        let part_location = Vector3Float::deserialize(&mut buffer);
+        let named_location_id = NamedLocation::deserialize(&mut buffer);
+        let part_entity_type = EntityType::deserialize(&mut buffer);
         Ok(IsPartOfPdu {
             pdu_header,
             originating_entity_id,

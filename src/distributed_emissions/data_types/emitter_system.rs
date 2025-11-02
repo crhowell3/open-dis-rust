@@ -40,10 +40,10 @@ impl EmitterSystem {
     }
 
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> EmitterSystem {
+    pub fn deserialize(buf: &mut BytesMut) -> EmitterSystem {
         EmitterSystem {
-            emitter_name: EmitterName::decode(buf),
-            function: EmitterSystemFunction::decode(buf),
+            emitter_name: EmitterName::deserialize(buf),
+            function: EmitterSystemFunction::deserialize(buf),
             emitter_id_number: buf.get_u8(),
         }
     }

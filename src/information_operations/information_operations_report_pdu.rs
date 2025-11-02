@@ -84,17 +84,17 @@ impl Pdu for InformationOperationsReportPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::InformationOperationsReport {
-            let originating_simulation_id = EntityId::decode(&mut buffer);
-            let io_simulation_source = IOActionIOSimulationSource::decode(&mut buffer);
-            let io_report_type = IOReportIOReportType::decode(&mut buffer);
+            let originating_simulation_id = EntityId::deserialize(&mut buffer);
+            let io_simulation_source = IOActionIOSimulationSource::deserialize(&mut buffer);
+            let io_report_type = IOReportIOReportType::deserialize(&mut buffer);
             let padding1 = buffer.get_u8();
-            let io_attacker_entity_id = EntityId::decode(&mut buffer);
-            let primary_target_entity_id = EntityId::decode(&mut buffer);
+            let io_attacker_entity_id = EntityId::deserialize(&mut buffer);
+            let primary_target_entity_id = EntityId::deserialize(&mut buffer);
             let padding2 = buffer.get_u16();
             let padding3 = buffer.get_u16();
-            let io_records = StandardVariableSpecification::decode(&mut buffer);
+            let io_records = StandardVariableSpecification::deserialize(&mut buffer);
             Ok(InformationOperationsReportPdu {
                 pdu_header,
                 originating_simulation_id,
@@ -123,15 +123,15 @@ impl Pdu for InformationOperationsReportPdu {
     where
         Self: Sized,
     {
-        let originating_simulation_id = EntityId::decode(&mut buffer);
-        let io_simulation_source = IOActionIOSimulationSource::decode(&mut buffer);
-        let io_report_type = IOReportIOReportType::decode(&mut buffer);
+        let originating_simulation_id = EntityId::deserialize(&mut buffer);
+        let io_simulation_source = IOActionIOSimulationSource::deserialize(&mut buffer);
+        let io_report_type = IOReportIOReportType::deserialize(&mut buffer);
         let padding1 = buffer.get_u8();
-        let io_attacker_entity_id = EntityId::decode(&mut buffer);
-        let primary_target_entity_id = EntityId::decode(&mut buffer);
+        let io_attacker_entity_id = EntityId::deserialize(&mut buffer);
+        let primary_target_entity_id = EntityId::deserialize(&mut buffer);
         let padding2 = buffer.get_u16();
         let padding3 = buffer.get_u16();
-        let io_records = StandardVariableSpecification::decode(&mut buffer);
+        let io_records = StandardVariableSpecification::deserialize(&mut buffer);
         Ok(InformationOperationsReportPdu {
             pdu_header,
             originating_simulation_id,

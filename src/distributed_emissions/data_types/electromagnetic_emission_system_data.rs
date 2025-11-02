@@ -28,15 +28,15 @@ impl ElectromagneticEmissionSystemData {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> ElectromagneticEmissionSystemData {
+    pub fn deserialize(buf: &mut BytesMut) -> ElectromagneticEmissionSystemData {
         let system_data_length = buf.get_u8();
         let number_of_beams = buf.get_u8();
         let emissions_padding2 = buf.get_u16();
-        let emitter_system = EmitterSystem::decode(buf);
-        let location = Vector3Float::decode(buf);
+        let emitter_system = EmitterSystem::deserialize(buf);
+        let location = Vector3Float::deserialize(buf);
         let mut beam_data_records: Vec<ElectromagneticEmissionBeamData> = vec![];
         for _i in 0..number_of_beams {
-            beam_data_records.push(ElectromagneticEmissionBeamData::decode(buf));
+            beam_data_records.push(ElectromagneticEmissionBeamData::deserialize(buf));
         }
 
         ElectromagneticEmissionSystemData {

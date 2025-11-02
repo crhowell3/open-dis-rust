@@ -68,12 +68,12 @@ impl Pdu for StartResumeReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::StartResumeReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let real_world_time = ClockTime::decode(&mut buffer);
-            let simulation_time = ClockTime::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let real_world_time = ClockTime::deserialize(&mut buffer);
+            let simulation_time = ClockTime::deserialize(&mut buffer);
             let required_reliability_service = buffer.get_u8();
             let pad1 = buffer.get_u16();
             let pad2 = buffer.get_u8();
@@ -106,10 +106,10 @@ impl Pdu for StartResumeReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let real_world_time = ClockTime::decode(&mut buffer);
-        let simulation_time = ClockTime::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let real_world_time = ClockTime::deserialize(&mut buffer);
+        let simulation_time = ClockTime::deserialize(&mut buffer);
         let required_reliability_service = buffer.get_u8();
         let pad1 = buffer.get_u16();
         let pad2 = buffer.get_u8();

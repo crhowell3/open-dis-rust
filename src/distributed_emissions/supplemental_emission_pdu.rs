@@ -88,9 +88,9 @@ impl Pdu for SupplementalEmissionPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::SupplementalEmission {
-            let originating_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
             let infrared_signature_representation_index = buffer.get_u16();
             let acoustic_signature_representation_index = buffer.get_u16();
             let radar_cross_section_signature_representation_index = buffer.get_u16();
@@ -98,11 +98,11 @@ impl Pdu for SupplementalEmissionPdu {
             let number_of_vectoring_nozzle_systems = buffer.get_u16();
             let mut propulsion_system_data: Vec<PropulsionSystemData> = vec![];
             for _i in 0..number_of_propulsion_systems {
-                propulsion_system_data.push(PropulsionSystemData::decode(&mut buffer));
+                propulsion_system_data.push(PropulsionSystemData::deserialize(&mut buffer));
             }
             let mut vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData> = vec![];
             for _i in 0..number_of_vectoring_nozzle_systems {
-                vectoring_nozzle_system_data.push(VectoringNozzleSystemData::decode(&mut buffer));
+                vectoring_nozzle_system_data.push(VectoringNozzleSystemData::deserialize(&mut buffer));
             }
             Ok(SupplementalEmissionPdu {
                 pdu_header,
@@ -133,7 +133,7 @@ impl Pdu for SupplementalEmissionPdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
         let infrared_signature_representation_index = buffer.get_u16();
         let acoustic_signature_representation_index = buffer.get_u16();
         let radar_cross_section_signature_representation_index = buffer.get_u16();
@@ -141,11 +141,11 @@ impl Pdu for SupplementalEmissionPdu {
         let number_of_vectoring_nozzle_systems = buffer.get_u16();
         let mut propulsion_system_data: Vec<PropulsionSystemData> = vec![];
         for _i in 0..number_of_propulsion_systems {
-            propulsion_system_data.push(PropulsionSystemData::decode(&mut buffer));
+            propulsion_system_data.push(PropulsionSystemData::deserialize(&mut buffer));
         }
         let mut vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData> = vec![];
         for _i in 0..number_of_vectoring_nozzle_systems {
-            vectoring_nozzle_system_data.push(VectoringNozzleSystemData::decode(&mut buffer));
+            vectoring_nozzle_system_data.push(VectoringNozzleSystemData::deserialize(&mut buffer));
         }
         Ok(SupplementalEmissionPdu {
             pdu_header,

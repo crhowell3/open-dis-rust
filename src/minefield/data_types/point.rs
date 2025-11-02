@@ -22,7 +22,7 @@ impl Point {
         buf.put_f32(self.y);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> Point {
+    pub fn deserialize(buf: &mut BytesMut) -> Point {
         Point {
             x: buf.get_f32(),
             y: buf.get_f32(),

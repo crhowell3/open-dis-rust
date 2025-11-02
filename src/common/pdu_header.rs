@@ -83,7 +83,7 @@ impl PduHeader {
         buf.put_u16(self.padding);
     }
 
-    fn decode_protocol_version(data: u8) -> ProtocolVersion {
+    fn deserialize_protocol_version(data: u8) -> ProtocolVersion {
         match data {
             1 => ProtocolVersion::DIS_PDUv1,
             2 => ProtocolVersion::IEEE1278_1993,
@@ -96,12 +96,12 @@ impl PduHeader {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> PduHeader {
+    pub fn deserialize(buf: &mut BytesMut) -> PduHeader {
         PduHeader {
-            protocol_version: PduHeader::decode_protocol_version(buf.get_u8()),
+            protocol_version: PduHeader::deserialize_protocol_version(buf.get_u8()),
             exercise_id: buf.get_u8(),
-            pdu_type: PduHeader::decode_pdu_type(buf.get_u8()),
-            protocol_family: PduHeader::decode_protocol_family(buf.get_u8()),
+            pdu_type: PduHeader::deserialize_pdu_type(buf.get_u8()),
+            protocol_family: PduHeader::deserialize_protocol_family(buf.get_u8()),
             timestamp: buf.get_u32(),
             length: buf.get_u16(),
             padding: buf.get_u16(),
@@ -109,7 +109,7 @@ impl PduHeader {
     }
 
     #[must_use]
-    pub fn decode_pdu_type(data: u8) -> PduType {
+    pub fn deserialize_pdu_type(data: u8) -> PduType {
         match data {
             1 => PduType::EntityState,
             2 => PduType::Fire,
@@ -188,7 +188,7 @@ impl PduHeader {
     }
 
     #[must_use]
-    fn decode_protocol_family(data: u8) -> ProtocolFamily {
+    fn deserialize_protocol_family(data: u8) -> ProtocolFamily {
         match data {
             1 => ProtocolFamily::EntityInformation,
             2 => ProtocolFamily::Warfare,

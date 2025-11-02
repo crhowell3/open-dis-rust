@@ -73,14 +73,14 @@ impl Pdu for ReceiverPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Receiver {
-            let entity_id = EntityId::decode(&mut buffer);
+            let entity_id = EntityId::deserialize(&mut buffer);
             let radio_id = buffer.get_u16();
             let receiver_state = buffer.get_u16();
             let padding1 = buffer.get_u16();
             let received_power = buffer.get_f32();
-            let transmitter_entity_id = EntityId::decode(&mut buffer);
+            let transmitter_entity_id = EntityId::deserialize(&mut buffer);
             let transmitter_radio_id = buffer.get_u16();
             Ok(ReceiverPdu {
                 pdu_header,
@@ -108,12 +108,12 @@ impl Pdu for ReceiverPdu {
     where
         Self: Sized,
     {
-        let entity_id = EntityId::decode(&mut buffer);
+        let entity_id = EntityId::deserialize(&mut buffer);
         let radio_id = buffer.get_u16();
         let receiver_state = buffer.get_u16();
         let padding1 = buffer.get_u16();
         let received_power = buffer.get_f32();
-        let transmitter_entity_id = EntityId::decode(&mut buffer);
+        let transmitter_entity_id = EntityId::deserialize(&mut buffer);
         let transmitter_radio_id = buffer.get_u16();
         Ok(ReceiverPdu {
             pdu_header,

@@ -63,14 +63,14 @@ impl LinearSegmentParameter {
         buf.put_u16(self.segment_depth);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> LinearSegmentParameter {
+    pub fn deserialize(buf: &mut BytesMut) -> LinearSegmentParameter {
         LinearSegmentParameter {
             segment_number: buf.get_u8(),
             segment_modification: buf.get_u8(),
             general_segment_appearance: buf.get_u32(),
             specific_segment_appearance: buf.get_u32(),
-            segment_location: Vector3Double::decode(buf),
-            segment_orientation: EulerAngles::decode(buf),
+            segment_location: Vector3Double::deserialize(buf),
+            segment_orientation: EulerAngles::deserialize(buf),
             segment_length: buf.get_u16(),
             segment_width: buf.get_u16(),
             segment_height: buf.get_u16(),

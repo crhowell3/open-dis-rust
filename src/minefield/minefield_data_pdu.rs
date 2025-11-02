@@ -86,10 +86,10 @@ impl Pdu for MinefieldDataPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::MinefieldData {
-            let minefield_id = EntityId::decode(&mut buffer);
-            let requesting_entity_id = EntityId::decode(&mut buffer);
+            let minefield_id = EntityId::deserialize(&mut buffer);
+            let requesting_entity_id = EntityId::deserialize(&mut buffer);
             let minefield_sequence_number = buffer.get_u16();
             let request_id = buffer.get_u8();
             let pdu_sequence_number = buffer.get_u8();
@@ -98,7 +98,7 @@ impl Pdu for MinefieldDataPdu {
             let number_of_sensor_types = buffer.get_u8();
             let pad2 = buffer.get_u8();
             let data_filter = buffer.get_u32();
-            let mine_type = EntityType::decode(&mut buffer);
+            let mine_type = EntityType::deserialize(&mut buffer);
             let mut sensor_types: Vec<u16> = vec![];
             for _i in 0..number_of_sensor_types as usize {
                 sensor_types.push(buffer.get_u16());
@@ -106,7 +106,7 @@ impl Pdu for MinefieldDataPdu {
             let pad3 = buffer.get_u8();
             let mut mine_location: Vec<Vector3Float> = vec![];
             for _i in 0..number_of_mines_in_this_pdu as usize {
-                mine_location.push(Vector3Float::decode(&mut buffer));
+                mine_location.push(Vector3Float::deserialize(&mut buffer));
             }
 
             Ok(MinefieldDataPdu {
@@ -142,8 +142,8 @@ impl Pdu for MinefieldDataPdu {
     where
         Self: Sized,
     {
-        let minefield_id = EntityId::decode(&mut buffer);
-        let requesting_entity_id = EntityId::decode(&mut buffer);
+        let minefield_id = EntityId::deserialize(&mut buffer);
+        let requesting_entity_id = EntityId::deserialize(&mut buffer);
         let minefield_sequence_number = buffer.get_u16();
         let request_id = buffer.get_u8();
         let pdu_sequence_number = buffer.get_u8();
@@ -152,7 +152,7 @@ impl Pdu for MinefieldDataPdu {
         let number_of_sensor_types = buffer.get_u8();
         let pad2 = buffer.get_u8();
         let data_filter = buffer.get_u32();
-        let mine_type = EntityType::decode(&mut buffer);
+        let mine_type = EntityType::deserialize(&mut buffer);
         let mut sensor_types: Vec<u16> = vec![];
         for _i in 0..number_of_sensor_types as usize {
             sensor_types.push(buffer.get_u16());
@@ -160,7 +160,7 @@ impl Pdu for MinefieldDataPdu {
         let pad3 = buffer.get_u8();
         let mut mine_location: Vec<Vector3Float> = vec![];
         for _i in 0..number_of_mines_in_this_pdu as usize {
-            mine_location.push(Vector3Float::decode(&mut buffer));
+            mine_location.push(Vector3Float::deserialize(&mut buffer));
         }
 
         Ok(MinefieldDataPdu {

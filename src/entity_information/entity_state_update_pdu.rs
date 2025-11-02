@@ -73,18 +73,18 @@ impl Pdu for EntityStateUpdatePdu {
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<EntityStateUpdatePdu, DISError> {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::EntityStateUpdate {
-            let entity_id = EntityId::decode(&mut buffer);
+            let entity_id = EntityId::deserialize(&mut buffer);
             let padding = buffer.get_u8();
             let number_of_variable_parameters = buffer.get_u8();
-            let entity_linear_velocity = LinearVelocity::decode(&mut buffer);
-            let entity_location = WorldCoordinate::decode(&mut buffer);
-            let entity_orientation = EulerAngles::decode(&mut buffer);
+            let entity_linear_velocity = LinearVelocity::deserialize(&mut buffer);
+            let entity_location = WorldCoordinate::deserialize(&mut buffer);
+            let entity_orientation = EulerAngles::deserialize(&mut buffer);
             let entity_appearance = buffer.get_u32();
             let mut variable_parameter_records: Vec<VariableParameter> = vec![];
             for _i in 0..number_of_variable_parameters {
-                variable_parameter_records.push(VariableParameter::decode(&mut buffer));
+                variable_parameter_records.push(VariableParameter::deserialize(&mut buffer));
             }
             Ok(EntityStateUpdatePdu {
                 pdu_header,
@@ -113,16 +113,16 @@ impl Pdu for EntityStateUpdatePdu {
     where
         Self: Sized,
     {
-        let entity_id = EntityId::decode(&mut buffer);
+        let entity_id = EntityId::deserialize(&mut buffer);
         let padding = buffer.get_u8();
         let number_of_variable_parameters = buffer.get_u8();
-        let entity_linear_velocity = LinearVelocity::decode(&mut buffer);
-        let entity_location = WorldCoordinate::decode(&mut buffer);
-        let entity_orientation = EulerAngles::decode(&mut buffer);
+        let entity_linear_velocity = LinearVelocity::deserialize(&mut buffer);
+        let entity_location = WorldCoordinate::deserialize(&mut buffer);
+        let entity_orientation = EulerAngles::deserialize(&mut buffer);
         let entity_appearance = buffer.get_u32();
         let mut variable_parameter_records: Vec<VariableParameter> = vec![];
         for _i in 0..number_of_variable_parameters {
-            variable_parameter_records.push(VariableParameter::decode(&mut buffer));
+            variable_parameter_records.push(VariableParameter::deserialize(&mut buffer));
         }
         Ok(EntityStateUpdatePdu {
             pdu_header,

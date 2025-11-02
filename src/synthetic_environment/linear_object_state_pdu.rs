@@ -87,19 +87,19 @@ impl Pdu for LinearObjectStatePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::LinearObjectState {
-            let object_id = EntityId::decode(&mut buffer);
-            let referenced_object_id = EntityId::decode(&mut buffer);
+            let object_id = EntityId::deserialize(&mut buffer);
+            let referenced_object_id = EntityId::deserialize(&mut buffer);
             let update_number = buffer.get_u16();
             let force_id = buffer.get_u8();
             let number_of_segments = buffer.get_u8();
-            let requester_id = SimulationAddress::decode(&mut buffer);
-            let receiving_id = SimulationAddress::decode(&mut buffer);
-            let object_type = ObjectType::decode(&mut buffer);
+            let requester_id = SimulationAddress::deserialize(&mut buffer);
+            let receiving_id = SimulationAddress::deserialize(&mut buffer);
+            let object_type = ObjectType::deserialize(&mut buffer);
             let mut linear_segment_parameters: Vec<LinearSegmentParameter> = vec![];
             for _i in 0..number_of_segments {
-                linear_segment_parameters.push(LinearSegmentParameter::decode(&mut buffer));
+                linear_segment_parameters.push(LinearSegmentParameter::deserialize(&mut buffer));
             }
             Ok(LinearObjectStatePdu {
                 pdu_header,
@@ -129,17 +129,17 @@ impl Pdu for LinearObjectStatePdu {
     where
         Self: Sized,
     {
-        let object_id = EntityId::decode(&mut buffer);
-        let referenced_object_id = EntityId::decode(&mut buffer);
+        let object_id = EntityId::deserialize(&mut buffer);
+        let referenced_object_id = EntityId::deserialize(&mut buffer);
         let update_number = buffer.get_u16();
         let force_id = buffer.get_u8();
         let number_of_segments = buffer.get_u8();
-        let requester_id = SimulationAddress::decode(&mut buffer);
-        let receiving_id = SimulationAddress::decode(&mut buffer);
-        let object_type = ObjectType::decode(&mut buffer);
+        let requester_id = SimulationAddress::deserialize(&mut buffer);
+        let receiving_id = SimulationAddress::deserialize(&mut buffer);
+        let object_type = ObjectType::deserialize(&mut buffer);
         let mut linear_segment_parameters: Vec<LinearSegmentParameter> = vec![];
         for _i in 0..number_of_segments {
-            linear_segment_parameters.push(LinearSegmentParameter::decode(&mut buffer));
+            linear_segment_parameters.push(LinearSegmentParameter::deserialize(&mut buffer));
         }
         Ok(LinearObjectStatePdu {
             pdu_header,

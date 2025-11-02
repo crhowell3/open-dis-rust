@@ -41,12 +41,12 @@ impl DeadReckoningParameters {
         self.entity_angular_velocity.serialize(buf);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> DeadReckoningParameters {
+    pub fn deserialize(buf: &mut BytesMut) -> DeadReckoningParameters {
         DeadReckoningParameters {
-            dead_reckoning_algorithm: DeadReckoningAlgorithm::decode(buf),
+            dead_reckoning_algorithm: DeadReckoningAlgorithm::deserialize(buf),
             dead_reckoning_other_parameters: 0,
-            entity_linear_acceleration: LinearAcceleration::decode(buf),
-            entity_angular_velocity: AngularVelocity::decode(buf),
+            entity_linear_acceleration: LinearAcceleration::deserialize(buf),
+            entity_angular_velocity: AngularVelocity::deserialize(buf),
         }
     }
 }

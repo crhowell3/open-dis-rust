@@ -82,25 +82,25 @@ impl Pdu for MinefieldStatePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::MinefieldState {
-            let minefield_id = MinefieldIdentifier::decode(&mut buffer);
+            let minefield_id = MinefieldIdentifier::deserialize(&mut buffer);
             let minefield_sequence = buffer.get_u16();
             let force_id = buffer.get_u8();
             let number_of_perimeter_points = buffer.get_u8();
-            let minefield_type = EntityType::decode(&mut buffer);
+            let minefield_type = EntityType::deserialize(&mut buffer);
             let number_of_mine_types = buffer.get_u16();
-            let minefield_location = Vector3Double::decode(&mut buffer);
-            let minefield_orientation = EulerAngles::decode(&mut buffer);
+            let minefield_location = Vector3Double::deserialize(&mut buffer);
+            let minefield_orientation = EulerAngles::deserialize(&mut buffer);
             let appearance = buffer.get_u16();
             let protocol_mode = buffer.get_u16();
             let mut perimeter_points: Vec<Point> = vec![];
             for _i in 0..number_of_perimeter_points {
-                perimeter_points.push(Point::decode(&mut buffer));
+                perimeter_points.push(Point::deserialize(&mut buffer));
             }
             let mut mine_type: Vec<EntityType> = vec![];
             for _i in 0..number_of_mine_types {
-                mine_type.push(EntityType::decode(&mut buffer));
+                mine_type.push(EntityType::deserialize(&mut buffer));
             }
 
             Ok(MinefieldStatePdu {
@@ -134,23 +134,23 @@ impl Pdu for MinefieldStatePdu {
     where
         Self: Sized,
     {
-        let minefield_id = MinefieldIdentifier::decode(&mut buffer);
+        let minefield_id = MinefieldIdentifier::deserialize(&mut buffer);
         let minefield_sequence = buffer.get_u16();
         let force_id = buffer.get_u8();
         let number_of_perimeter_points = buffer.get_u8();
-        let minefield_type = EntityType::decode(&mut buffer);
+        let minefield_type = EntityType::deserialize(&mut buffer);
         let number_of_mine_types = buffer.get_u16();
-        let minefield_location = Vector3Double::decode(&mut buffer);
-        let minefield_orientation = EulerAngles::decode(&mut buffer);
+        let minefield_location = Vector3Double::deserialize(&mut buffer);
+        let minefield_orientation = EulerAngles::deserialize(&mut buffer);
         let appearance = buffer.get_u16();
         let protocol_mode = buffer.get_u16();
         let mut perimeter_points: Vec<Point> = vec![];
         for _i in 0..number_of_perimeter_points {
-            perimeter_points.push(Point::decode(&mut buffer));
+            perimeter_points.push(Point::deserialize(&mut buffer));
         }
         let mut mine_type: Vec<EntityType> = vec![];
         for _i in 0..number_of_mine_types {
-            mine_type.push(EntityType::decode(&mut buffer));
+            mine_type.push(EntityType::deserialize(&mut buffer));
         }
 
         Ok(MinefieldStatePdu {

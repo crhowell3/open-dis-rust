@@ -80,11 +80,11 @@ impl Pdu for DirectedEnergyFirePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::DirectedEnergyFire {
-            let firing_entity_id = EntityId::decode(&mut buffer);
-            let target_entity_id = EntityId::decode(&mut buffer);
-            let damaged_entity_id = EntityId::decode(&mut buffer);
+            let firing_entity_id = EntityId::deserialize(&mut buffer);
+            let target_entity_id = EntityId::deserialize(&mut buffer);
+            let damaged_entity_id = EntityId::deserialize(&mut buffer);
             let padding1 = buffer.get_u16();
             let padding2 = buffer.get_u16();
             let number_of_damage_descriptions = buffer.get_u16();
@@ -117,9 +117,9 @@ impl Pdu for DirectedEnergyFirePdu {
     where
         Self: Sized,
     {
-        let firing_entity_id = EntityId::decode(&mut buffer);
-        let target_entity_id = EntityId::decode(&mut buffer);
-        let damaged_entity_id = EntityId::decode(&mut buffer);
+        let firing_entity_id = EntityId::deserialize(&mut buffer);
+        let target_entity_id = EntityId::deserialize(&mut buffer);
+        let damaged_entity_id = EntityId::deserialize(&mut buffer);
         let padding1 = buffer.get_u16();
         let padding2 = buffer.get_u16();
         let number_of_damage_descriptions = buffer.get_u16();

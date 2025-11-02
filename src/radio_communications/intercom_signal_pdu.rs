@@ -81,9 +81,9 @@ impl Pdu for IntercomSignalPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::IntercomSignal {
-            let entity_id = EntityId::decode(&mut buffer);
+            let entity_id = EntityId::deserialize(&mut buffer);
             let radio_id = buffer.get_u16();
             let communications_device_id = buffer.get_u16();
             let encoding_scheme = buffer.get_u16();
@@ -123,7 +123,7 @@ impl Pdu for IntercomSignalPdu {
     where
         Self: Sized,
     {
-        let entity_id = EntityId::decode(&mut buffer);
+        let entity_id = EntityId::deserialize(&mut buffer);
         let radio_id = buffer.get_u16();
         let communications_device_id = buffer.get_u16();
         let encoding_scheme = buffer.get_u16();

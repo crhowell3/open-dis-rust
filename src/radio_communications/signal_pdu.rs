@@ -78,9 +78,9 @@ impl Pdu for SignalPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Signal {
-            let entity_id = EntityId::decode(&mut buffer);
+            let entity_id = EntityId::deserialize(&mut buffer);
             let radio_id = buffer.get_u16();
             let encoding_scheme = buffer.get_u16();
             let tdl_type = buffer.get_u16();
@@ -121,7 +121,7 @@ impl Pdu for SignalPdu {
     where
         Self: Sized,
     {
-        let entity_id = EntityId::decode(&mut buffer);
+        let entity_id = EntityId::deserialize(&mut buffer);
         let radio_id = buffer.get_u16();
         let encoding_scheme = buffer.get_u16();
         let tdl_type = buffer.get_u16();

@@ -28,7 +28,7 @@ impl IntercomCommunicationsParameters {
         buf.put_u32(self.record_specific_field);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> IntercomCommunicationsParameters {
+    pub fn deserialize(buf: &mut BytesMut) -> IntercomCommunicationsParameters {
         IntercomCommunicationsParameters {
             record_type: buf.get_u16(),
             record_length: buf.get_u16(),

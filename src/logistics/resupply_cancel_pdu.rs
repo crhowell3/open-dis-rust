@@ -55,10 +55,10 @@ impl Pdu for ResupplyCancelPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::ResupplyCancel {
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let supplying_entity_id = EntityId::decode(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let supplying_entity_id = EntityId::deserialize(&mut buffer);
 
             Ok(ResupplyCancelPdu {
                 pdu_header,
@@ -81,8 +81,8 @@ impl Pdu for ResupplyCancelPdu {
     where
         Self: Sized,
     {
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let supplying_entity_id = EntityId::decode(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let supplying_entity_id = EntityId::deserialize(&mut buffer);
 
         Ok(ResupplyCancelPdu {
             pdu_header,

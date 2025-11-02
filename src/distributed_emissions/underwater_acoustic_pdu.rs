@@ -103,28 +103,28 @@ impl Pdu for UnderwaterAcousticPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::UnderwaterAcoustic {
-            let emitting_entity_id = EntityId::decode(&mut buffer);
-            let event_id = EventId::decode(&mut buffer);
-            let state_change_indicator = UAStateChangeUpdateIndicator::decode(&mut buffer);
+            let emitting_entity_id = EntityId::deserialize(&mut buffer);
+            let event_id = EventId::deserialize(&mut buffer);
+            let state_change_indicator = UAStateChangeUpdateIndicator::deserialize(&mut buffer);
             let pad = buffer.get_u8();
-            let passive_parameter_index = UAPassiveParameterIndex::decode(&mut buffer);
+            let passive_parameter_index = UAPassiveParameterIndex::deserialize(&mut buffer);
             let propulsion_plant_configuration = buffer.get_u8();
             let number_of_shafts = buffer.get_u8();
             let number_of_apas = buffer.get_u8();
             let number_of_ua_emitter_systems = buffer.get_u8();
             let mut shaft_rpms: Vec<ShaftRPMs> = vec![];
             for _i in 0..number_of_shafts {
-                shaft_rpms.push(ShaftRPMs::decode(&mut buffer));
+                shaft_rpms.push(ShaftRPMs::deserialize(&mut buffer));
             }
             let mut apa_data: Vec<ApaData> = vec![];
             for _i in 0..number_of_apas {
-                apa_data.push(ApaData::decode(&mut buffer));
+                apa_data.push(ApaData::deserialize(&mut buffer));
             }
             let mut emitter_systems: Vec<AcousticEmitterSystem> = vec![];
             for _i in 0..number_of_ua_emitter_systems {
-                emitter_systems.push(AcousticEmitterSystem::decode(&mut buffer));
+                emitter_systems.push(AcousticEmitterSystem::deserialize(&mut buffer));
             }
             Ok(UnderwaterAcousticPdu {
                 pdu_header,
@@ -159,26 +159,26 @@ impl Pdu for UnderwaterAcousticPdu {
     where
         Self: Sized,
     {
-        let emitting_entity_id = EntityId::decode(&mut buffer);
-        let event_id = EventId::decode(&mut buffer);
-        let state_change_indicator = UAStateChangeUpdateIndicator::decode(&mut buffer);
+        let emitting_entity_id = EntityId::deserialize(&mut buffer);
+        let event_id = EventId::deserialize(&mut buffer);
+        let state_change_indicator = UAStateChangeUpdateIndicator::deserialize(&mut buffer);
         let pad = buffer.get_u8();
-        let passive_parameter_index = UAPassiveParameterIndex::decode(&mut buffer);
+        let passive_parameter_index = UAPassiveParameterIndex::deserialize(&mut buffer);
         let propulsion_plant_configuration = buffer.get_u8();
         let number_of_shafts = buffer.get_u8();
         let number_of_apas = buffer.get_u8();
         let number_of_ua_emitter_systems = buffer.get_u8();
         let mut shaft_rpms: Vec<ShaftRPMs> = vec![];
         for _i in 0..number_of_shafts {
-            shaft_rpms.push(ShaftRPMs::decode(&mut buffer));
+            shaft_rpms.push(ShaftRPMs::deserialize(&mut buffer));
         }
         let mut apa_data: Vec<ApaData> = vec![];
         for _i in 0..number_of_apas {
-            apa_data.push(ApaData::decode(&mut buffer));
+            apa_data.push(ApaData::deserialize(&mut buffer));
         }
         let mut emitter_systems: Vec<AcousticEmitterSystem> = vec![];
         for _i in 0..number_of_ua_emitter_systems {
-            emitter_systems.push(AcousticEmitterSystem::decode(&mut buffer));
+            emitter_systems.push(AcousticEmitterSystem::deserialize(&mut buffer));
         }
         Ok(UnderwaterAcousticPdu {
             pdu_header,

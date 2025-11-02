@@ -70,12 +70,12 @@ impl Pdu for StopFreezeReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::StopFreezeReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let real_world_time = ClockTime::decode(&mut buffer);
-            let reason = Reason::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let real_world_time = ClockTime::deserialize(&mut buffer);
+            let reason = Reason::deserialize(&mut buffer);
             let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
             let required_reliability_service = buffer.get_u8();
             let pad1 = buffer.get_u8();
@@ -108,10 +108,10 @@ impl Pdu for StopFreezeReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let real_world_time = ClockTime::decode(&mut buffer);
-        let reason = Reason::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let real_world_time = ClockTime::deserialize(&mut buffer);
+        let reason = Reason::deserialize(&mut buffer);
         let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
         let required_reliability_service = buffer.get_u8();
         let pad1 = buffer.get_u8();

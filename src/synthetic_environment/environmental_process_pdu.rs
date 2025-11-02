@@ -79,17 +79,17 @@ impl Pdu for EnvironmentalProcessPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::EnvironmentalProcess {
-            let environmental_process_id = EntityId::decode(&mut buffer);
-            let environment_type = EntityType::decode(&mut buffer);
+            let environmental_process_id = EntityId::deserialize(&mut buffer);
+            let environment_type = EntityType::deserialize(&mut buffer);
             let model_type = buffer.get_u8();
             let environment_status = buffer.get_u8();
             let number_of_environment_records = buffer.get_u8();
             let sequence_number = buffer.get_u8();
             let mut environment_records: Vec<Environment> = vec![];
             for _i in 0..number_of_environment_records {
-                environment_records.push(Environment::decode(&mut buffer));
+                environment_records.push(Environment::deserialize(&mut buffer));
             }
             Ok(EnvironmentalProcessPdu {
                 pdu_header,
@@ -117,15 +117,15 @@ impl Pdu for EnvironmentalProcessPdu {
     where
         Self: Sized,
     {
-        let environmental_process_id = EntityId::decode(&mut buffer);
-        let environment_type = EntityType::decode(&mut buffer);
+        let environmental_process_id = EntityId::deserialize(&mut buffer);
+        let environment_type = EntityType::deserialize(&mut buffer);
         let model_type = buffer.get_u8();
         let environment_status = buffer.get_u8();
         let number_of_environment_records = buffer.get_u8();
         let sequence_number = buffer.get_u8();
         let mut environment_records: Vec<Environment> = vec![];
         for _i in 0..number_of_environment_records {
-            environment_records.push(Environment::decode(&mut buffer));
+            environment_records.push(Environment::deserialize(&mut buffer));
         }
         Ok(EnvironmentalProcessPdu {
             pdu_header,

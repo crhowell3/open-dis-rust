@@ -78,16 +78,16 @@ impl Pdu for ElectromagneticEmissionsPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::ElectromagneticEmission {
-            let emitting_entity_id = EntityId::decode(&mut buffer);
-            let event_id = EventId::decode(&mut buffer);
+            let emitting_entity_id = EntityId::deserialize(&mut buffer);
+            let event_id = EventId::deserialize(&mut buffer);
             let state_update_indicator = buffer.get_u8();
             let number_of_systems = buffer.get_u8();
             let padding_for_emissions_pdu = buffer.get_u16();
             let mut systems: Vec<ElectromagneticEmissionSystemData> = vec![];
             for _i in 0..number_of_systems {
-                systems.push(ElectromagneticEmissionSystemData::decode(&mut buffer));
+                systems.push(ElectromagneticEmissionSystemData::deserialize(&mut buffer));
             }
 
             Ok(ElectromagneticEmissionsPdu {
@@ -117,14 +117,14 @@ impl Pdu for ElectromagneticEmissionsPdu {
     where
         Self: Sized,
     {
-        let emitting_entity_id = EntityId::decode(&mut buffer);
-        let event_id = EventId::decode(&mut buffer);
+        let emitting_entity_id = EntityId::deserialize(&mut buffer);
+        let event_id = EventId::deserialize(&mut buffer);
         let state_update_indicator = buffer.get_u8();
         let number_of_systems = buffer.get_u8();
         let padding_for_emissions_pdu = buffer.get_u16();
         let mut systems: Vec<ElectromagneticEmissionSystemData> = vec![];
         for _i in 0..number_of_systems {
-            systems.push(ElectromagneticEmissionSystemData::decode(&mut buffer));
+            systems.push(ElectromagneticEmissionSystemData::deserialize(&mut buffer));
         }
 
         Ok(ElectromagneticEmissionsPdu {

@@ -22,7 +22,7 @@ impl Relationship {
         buf.put_u16(self.position);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> Relationship {
+    pub fn deserialize(buf: &mut BytesMut) -> Relationship {
         Relationship {
             nature: buf.get_u16(),
             position: buf.get_u16(),
