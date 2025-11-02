@@ -5,7 +5,7 @@ The same dependencies are required as listed in the previous section.
 ## Receiving and Parsing a PDU
 
 Using the same UDP socket that we created in the previous section, we 
-can receive a PDU and decode it from the byte array.
+can receive a PDU and deserialize it from the byte array.
 
 ```rust
 use bytes::BytesMut;
