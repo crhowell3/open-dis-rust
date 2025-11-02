@@ -77,7 +77,7 @@ pub enum DISError {
 }
 
 impl DISError {
-    /// Create a new InvalidHeader error with optional source error
+    /// Create a new `InvalidHeader` error with optional source error
     pub fn invalid_header<S: Into<String>>(
         reason: S,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
@@ -88,7 +88,7 @@ impl DISError {
         }
     }
 
-    /// Create a new DeserializationError with optional source error
+    /// Create a new `DeserializationError` with optional source error
     pub fn deserialization_error<S: Into<String>>(
         msg: S,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
@@ -99,7 +99,7 @@ impl DISError {
         }
     }
 
-    /// Create a new SerializationError with optional source error
+    /// Create a new `SerializationError` with optional source error
     pub fn serialization_error<S: Into<String>>(
         msg: S,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
@@ -110,7 +110,7 @@ impl DISError {
         }
     }
 
-    /// Create a new InvalidFieldValue error
+    /// Create a new `InvalidFieldValue` error
     pub fn invalid_field<S: Into<String>>(field: S, value: S, reason: S) -> Self {
         DISError::InvalidFieldValue {
             field: field.into(),
@@ -119,7 +119,7 @@ impl DISError {
         }
     }
 
-    /// Create a new BufferUnderflow error
+    /// Create a new `BufferUnderflow` error
     pub fn buffer_underflow(attempted: usize, available: usize) -> Self {
         DISError::BufferUnderflow {
             attempted,
@@ -127,7 +127,7 @@ impl DISError {
         }
     }
 
-    /// Create a new PduSizeExceeded error
+    /// Create a new `PduSizeExceeded` error
     pub const fn pdu_size_exceeded(size: usize, max_size: usize) -> Self {
         DISError::PduSizeExceeded { size, max_size }
     }

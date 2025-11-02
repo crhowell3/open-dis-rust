@@ -23,21 +23,25 @@ pub const PROTOCOL_VERSION_1995: u8 = 3;
 pub const PROTOCOL_VERSION_1998: u8 = 4;
 pub const PROTOCOL_VERSION_2012: u8 = 7;
 
+#[must_use]
 /// Compile-time PDU size validation
 pub const fn validate_pdu_size(size: usize) -> bool {
     size <= MAX_PDU_SIZE
 }
 
+#[must_use]
 /// Compile-time calculation of PDU size including header
 pub const fn total_pdu_size(payload_size: usize) -> usize {
     PDU_HEADER_SIZE + payload_size
 }
 
+#[must_use]
 /// Compile-time string length validation for entity marking
 pub const fn validate_marking_length(len: usize) -> bool {
     len <= MAX_ENTITY_MARKING_LENGTH
 }
 
+#[must_use]
 /// Compile-time protocol version validation
 pub const fn is_valid_protocol_version(version: u8) -> bool {
     matches!(
