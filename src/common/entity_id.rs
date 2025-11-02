@@ -6,9 +6,8 @@
 
 use super::simulation_address::SimulationAddress;
 use bytes::{Buf, BufMut, BytesMut};
-use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.28
 pub struct EntityId {
     /// The simulation's designation associated with all object identifiers
