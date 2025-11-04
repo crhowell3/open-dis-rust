@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+#![allow(clippy::must_use_candidate)]
+
 use bytes::{Buf, BufMut, BytesMut};
 use chrono::{Timelike, Utc};
 use modular_bitfield::prelude::*;
@@ -16,7 +18,6 @@ use crate::common::enums::{
 };
 
 #[bitfield(bits = 8)]
-#[must_use]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct PduStatusRecord {
     pub tei: TransferredEntityIndicator,
