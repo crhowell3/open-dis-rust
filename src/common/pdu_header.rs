@@ -16,6 +16,7 @@ use crate::common::enums::{
 };
 
 #[bitfield(bits = 8)]
+#[must_use]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct PduStatusRecord {
     pub tei: TransferredEntityIndicator,
