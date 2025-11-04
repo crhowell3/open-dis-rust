@@ -59,7 +59,7 @@ impl PduStatusRecord {
 
     /// Get bit 4 as Fire Type Indicator
     pub fn get_fti(&self) -> FireTypeIndicator {
-        let bit4 = (self.bit4_5() >> 0) & 0b01;
+        let bit4 = self.bit4_5() & 0b01;
         if bit4 == 0 {
             FireTypeIndicator::Munition
         } else {
