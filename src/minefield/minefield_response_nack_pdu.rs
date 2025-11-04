@@ -155,8 +155,8 @@ mod tests {
             minefield_response_nack_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            minefield_response_nack_pdu.pdu_header.padding
+            pdu_header.status_record,
+            minefield_response_nack_pdu.pdu_header.status_record
         );
     }
 }

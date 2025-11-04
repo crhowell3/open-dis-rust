@@ -194,7 +194,10 @@ mod tests {
             set_data_reliable_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, set_data_reliable_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, set_data_reliable_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            set_data_reliable_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

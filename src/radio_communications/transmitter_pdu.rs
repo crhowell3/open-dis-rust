@@ -284,7 +284,10 @@ mod tests {
             transmitter_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, transmitter_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, transmitter_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            transmitter_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

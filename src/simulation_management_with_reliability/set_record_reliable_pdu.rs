@@ -178,8 +178,8 @@ mod tests {
         );
         assert_eq!(pdu_header.length, set_record_reliable_pdu.pdu_header.length);
         assert_eq!(
-            pdu_header.padding,
-            set_record_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            set_record_reliable_pdu.pdu_header.status_record
         );
     }
 

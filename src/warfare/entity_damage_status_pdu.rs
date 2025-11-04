@@ -178,8 +178,8 @@ mod tests {
             entity_damage_status_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            entity_damage_status_pdu.pdu_header.padding
+            pdu_header.status_record,
+            entity_damage_status_pdu.pdu_header.status_record
         );
     }
 

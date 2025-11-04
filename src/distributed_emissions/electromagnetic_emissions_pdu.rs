@@ -183,8 +183,8 @@ mod tests {
             electromagnetic_emissions_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            electromagnetic_emissions_pdu.pdu_header.padding
+            pdu_header.status_record,
+            electromagnetic_emissions_pdu.pdu_header.status_record
         );
     }
 

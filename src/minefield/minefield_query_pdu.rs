@@ -187,6 +187,9 @@ mod tests {
             minefield_query_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, minefield_query_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, minefield_query_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            minefield_query_pdu.pdu_header.status_record
+        );
     }
 }

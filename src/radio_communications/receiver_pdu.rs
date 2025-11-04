@@ -160,7 +160,10 @@ mod tests {
             receiver_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, receiver_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, receiver_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            receiver_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

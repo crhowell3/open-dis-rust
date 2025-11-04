@@ -162,6 +162,9 @@ mod tests {
             comment_reliable_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, comment_reliable_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, comment_reliable_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            comment_reliable_pdu.pdu_header.status_record
+        );
     }
 }

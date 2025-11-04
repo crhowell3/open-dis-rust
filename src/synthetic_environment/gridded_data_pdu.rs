@@ -254,7 +254,10 @@ mod tests {
             gridded_data_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, gridded_data_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, gridded_data_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            gridded_data_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

@@ -178,7 +178,10 @@ mod tests {
             signal_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, signal_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, signal_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            signal_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

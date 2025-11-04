@@ -8,6 +8,7 @@
 
 use bitflags::bitflags;
 use bytes::{Buf, BytesMut};
+use modular_bitfield::Specifier;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -9435,7 +9436,8 @@ impl EEAttributeStateIndicator {
 }
 
 // SISO-REF-010-2023 DISPDUStatusTransferredEntityIndicator(TEI) [UID 301]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
 pub enum TransferredEntityIndicator {
     #[default]
     NoDifference = 0,
@@ -9450,7 +9452,8 @@ impl TransferredEntityIndicator {
 }
 
 // SISO-REF-010-2023 LVCIndicator [UID 302]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 2]
 pub enum LVCIndicator {
     #[default]
     NoStatement = 0,
@@ -9467,7 +9470,8 @@ impl LVCIndicator {
 }
 
 // SISO-REF-010-2023 DISPDUStatusCoupledExtensionIndicator(CEI) [UID 303]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
 pub enum CoupledExtensionIndicator {
     #[default]
     NotCoupled = 0,
@@ -9482,7 +9486,8 @@ impl CoupledExtensionIndicator {
 }
 
 // SISO-REF-010-2023 DISPDUStatusFireTypeIndicator(FTI) [UID 304]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
 pub enum FireTypeIndicator {
     #[default]
     Munition = 0,
@@ -9497,12 +9502,29 @@ impl FireTypeIndicator {
 }
 
 // SISO-REF-010-2023 DISPDUStatusDetonationTypeIndicator(DTI) [UID 305]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 2]
 pub enum DetonationTypeIndicator {
     #[default]
     Munition = 0,
     Expendable = 1,
-    NonmunitionExplosion = 2,
+    NonMunitionExplosion = 2,
+}
+
+impl From<u8> for DetonationTypeIndicator {
+    fn from(value: u8) -> Self {
+        match value & 0b11 {
+            1 => Self::Expendable,
+            2 => Self::NonMunitionExplosion,
+            _ => Self::Munition,
+        }
+    }
+}
+
+impl From<DetonationTypeIndicator> for u8 {
+    fn from(value: DetonationTypeIndicator) -> Self {
+        value as u8
+    }
 }
 
 impl DetonationTypeIndicator {
@@ -9513,12 +9535,29 @@ impl DetonationTypeIndicator {
 }
 
 // SISO-REF-010-2023 RadioAttachedIndicator [UID 306]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 2]
 pub enum RadioAttachedIndicator {
     #[default]
     NoStatement = 0,
     Unattached = 1,
     Attached = 2,
+}
+
+impl From<u8> for RadioAttachedIndicator {
+    fn from(value: u8) -> Self {
+        match value & 0b11 {
+            1 => Self::Unattached,
+            2 => Self::Attached,
+            _ => Self::NoStatement,
+        }
+    }
+}
+
+impl From<RadioAttachedIndicator> for u8 {
+    fn from(value: RadioAttachedIndicator) -> Self {
+        value as u8
+    }
 }
 
 impl RadioAttachedIndicator {
@@ -9529,12 +9568,29 @@ impl RadioAttachedIndicator {
 }
 
 // SISO-REF-010-2023 IntercomAttachedIndicator(IAI) [UID 307]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 2]
 pub enum IntercomAttachedIndicator {
     #[default]
     NoStatement = 0,
     Unattached = 1,
     Attached = 2,
+}
+
+impl From<u8> for IntercomAttachedIndicator {
+    fn from(value: u8) -> Self {
+        match value & 0b11 {
+            1 => Self::Unattached,
+            2 => Self::Attached,
+            _ => Self::NoStatement,
+        }
+    }
+}
+
+impl From<IntercomAttachedIndicator> for u8 {
+    fn from(value: IntercomAttachedIndicator) -> Self {
+        value as u8
+    }
 }
 
 impl IntercomAttachedIndicator {
@@ -9544,15 +9600,16 @@ impl IntercomAttachedIndicator {
     }
 }
 
-// SISO-REF-010-2023 PDUStatusIFFSimulationMode [UID 308]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum PDUStatusIFFSimulationMode {
+// SISO-REF-010-2023 PduStatusIFFSimulationMode [UID 308]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
+pub enum PduStatusIFFSimulationMode {
     #[default]
     Regeneration = 0,
     Interactive = 1,
 }
 
-impl PDUStatusIFFSimulationMode {
+impl PduStatusIFFSimulationMode {
     #[must_use]
     pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
@@ -11012,7 +11069,8 @@ impl AppearanceSubsurfaceHatch {
 }
 
 // SISO-REF-010-2023 DISPDUStatusActiveInterrogationIndicator(AII) [UID 389]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
 pub enum ActiveInterrogationIndicator {
     #[default]
     NotActive = 0,

@@ -181,8 +181,8 @@ mod tests {
             action_response_reliable_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            action_response_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            action_response_reliable_pdu.pdu_header.status_record
         );
     }
 }

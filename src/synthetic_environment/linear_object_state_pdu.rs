@@ -198,8 +198,8 @@ mod tests {
         );
         assert_eq!(pdu_header.length, linear_object_state_pdu.pdu_header.length);
         assert_eq!(
-            pdu_header.padding,
-            linear_object_state_pdu.pdu_header.padding
+            pdu_header.status_record,
+            linear_object_state_pdu.pdu_header.status_record
         );
     }
 

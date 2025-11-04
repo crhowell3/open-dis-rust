@@ -182,8 +182,8 @@ mod tests {
             directed_energy_fire_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            directed_energy_fire_pdu.pdu_header.padding
+            pdu_header.status_record,
+            directed_energy_fire_pdu.pdu_header.status_record
         );
     }
 

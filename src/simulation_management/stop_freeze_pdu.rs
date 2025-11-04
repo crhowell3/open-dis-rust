@@ -161,7 +161,10 @@ mod tests {
             stop_freeze_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, stop_freeze_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, stop_freeze_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            stop_freeze_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

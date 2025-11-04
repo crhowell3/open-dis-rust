@@ -220,8 +220,8 @@ mod tests {
         );
         assert_eq!(pdu_header.length, areal_object_state_pdu.pdu_header.length);
         assert_eq!(
-            pdu_header.padding,
-            areal_object_state_pdu.pdu_header.padding
+            pdu_header.status_record,
+            areal_object_state_pdu.pdu_header.status_record
         );
     }
 

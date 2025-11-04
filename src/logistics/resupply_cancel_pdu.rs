@@ -127,7 +127,10 @@ mod tests {
             resupply_cancel_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, resupply_cancel_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, resupply_cancel_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            resupply_cancel_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

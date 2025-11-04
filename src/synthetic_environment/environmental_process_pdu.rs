@@ -185,8 +185,8 @@ mod tests {
             environmental_process_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            environmental_process_pdu.pdu_header.padding
+            pdu_header.status_record,
+            environmental_process_pdu.pdu_header.status_record
         );
     }
 

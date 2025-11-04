@@ -175,8 +175,8 @@ mod tests {
             stop_freeze_reliable_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            stop_freeze_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            stop_freeze_reliable_pdu.pdu_header.status_record
         );
     }
 

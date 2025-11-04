@@ -243,8 +243,8 @@ mod tests {
             supplemental_emission_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            supplemental_emission_pdu.pdu_header.padding
+            pdu_header.status_record,
+            supplemental_emission_pdu.pdu_header.status_record
         );
     }
 

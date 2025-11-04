@@ -152,7 +152,7 @@ mod tests {
             collision_pdu.pdu_header.protocol_family
         );
         assert_eq!(header.length, collision_pdu.pdu_header.length);
-        assert_eq!(header.padding, collision_pdu.pdu_header.padding);
+        assert_eq!(header.status_record, collision_pdu.pdu_header.status_record);
     }
 
     #[test]

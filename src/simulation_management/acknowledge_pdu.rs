@@ -156,7 +156,10 @@ mod tests {
             acknowledge_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, acknowledge_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, acknowledge_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            acknowledge_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

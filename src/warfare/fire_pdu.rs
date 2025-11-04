@@ -172,7 +172,7 @@ mod tests {
             fire_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, fire_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, fire_pdu.pdu_header.padding);
+        assert_eq!(pdu_header.status_record, fire_pdu.pdu_header.status_record);
     }
 
     #[test]

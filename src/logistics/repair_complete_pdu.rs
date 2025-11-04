@@ -142,7 +142,10 @@ mod tests {
             repair_complete_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, repair_complete_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, repair_complete_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            repair_complete_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

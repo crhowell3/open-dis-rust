@@ -194,8 +194,8 @@ mod tests {
             information_operations_report_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            information_operations_report_pdu.pdu_header.padding
+            pdu_header.status_record,
+            information_operations_report_pdu.pdu_header.status_record
         );
     }
 

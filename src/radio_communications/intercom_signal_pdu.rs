@@ -188,7 +188,10 @@ mod tests {
             intercom_signal_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, intercom_signal_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, intercom_signal_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            intercom_signal_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

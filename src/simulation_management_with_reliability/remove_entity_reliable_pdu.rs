@@ -159,8 +159,8 @@ mod tests {
             remove_entity_reliable_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            remove_entity_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            remove_entity_reliable_pdu.pdu_header.status_record
         );
     }
 
