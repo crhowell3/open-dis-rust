@@ -27,10 +27,12 @@ pub struct PduStatusRecord {
 }
 
 impl PduStatusRecord {
+    #[must_use]
     pub fn new_zero() -> Self {
         Self::new()
     }
 
+    #[must_use]
     pub fn get_dti(&self) -> DetonationTypeIndicator {
         DetonationTypeIndicator::from(self.bit4_5())
     }
@@ -39,7 +41,7 @@ impl PduStatusRecord {
         self.set_bit4_5(dti.into());
     }
 
-    /// Get bits 4–5 as Radio Attached Indicator
+    #[must_use]
     pub fn get_rai(&self) -> RadioAttachedIndicator {
         RadioAttachedIndicator::from(self.bit4_5())
     }
@@ -48,7 +50,7 @@ impl PduStatusRecord {
         self.set_bit4_5(rai.into());
     }
 
-    /// Get bits 4–5 as Intercom Attached Indicator
+    #[must_use]
     pub fn get_iai(&self) -> IntercomAttachedIndicator {
         IntercomAttachedIndicator::from(self.bit4_5())
     }
@@ -57,7 +59,7 @@ impl PduStatusRecord {
         self.set_bit4_5(iai.into());
     }
 
-    /// Get bit 4 as Fire Type Indicator
+    #[must_use]
     pub fn get_fti(&self) -> FireTypeIndicator {
         let bit4 = self.bit4_5() & 0b01;
         if bit4 == 0 {
@@ -73,7 +75,7 @@ impl PduStatusRecord {
         self.set_bit4_5(v);
     }
 
-    /// Get bit 4 as ISM, bit 5 as AII
+    #[must_use]
     pub fn get_ism(&self) -> PduStatusIFFSimulationMode {
         let bit4 = self.bit4_5() & 0b01;
         if bit4 == 0 {
@@ -89,6 +91,7 @@ impl PduStatusRecord {
         self.set_bit4_5(v);
     }
 
+    #[must_use]
     pub fn get_aii(&self) -> ActiveInterrogationIndicator {
         let bit5 = (self.bit4_5() >> 1) & 0b01;
         if bit5 == 0 {
@@ -104,10 +107,12 @@ impl PduStatusRecord {
         self.set_bit4_5(v);
     }
 
+    #[must_use]
     pub fn to_u8(&self) -> u8 {
         self.into_bytes()[0]
     }
 
+    #[must_use]
     pub fn from_u8(b: u8) -> Self {
         Self::from_bytes([b])
     }
