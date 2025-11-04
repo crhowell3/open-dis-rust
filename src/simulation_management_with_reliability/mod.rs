@@ -20,3 +20,18 @@ pub mod set_data_reliable_pdu;
 pub mod set_record_reliable_pdu;
 pub mod start_resume_reliable_pdu;
 pub mod stop_freeze_reliable_pdu;
+
+pub use acknowledge_reliable_pdu::AcknowledgeReliablePdu;
+pub use action_request_reliable_pdu::ActionRequestReliablePdu;
+pub use action_response_reliable_pdu::ActionResponseReliablePdu;
+pub use comment_reliable_pdu::CommentReliablePdu;
+pub use create_entity_reliable_pdu::CreateEntityReliablePdu;
+pub use data_query_reliable_pdu::DataQueryReliablePdu;
+pub use data_reliable_pdu::DataReliablePdu;
+pub use event_report_reliable_pdu::EventReportReliablePdu;
+pub use record_query_reliable_pdu::RecordQueryReliablePdu;
+pub use remove_entity_reliable_pdu::RemoveEntityReliablePdu;
+pub use set_data_reliable_pdu::SetDataReliablePdu;
+pub use set_record_reliable_pdu::SetRecordReliablePdu;
+pub use start_resume_reliable_pdu::StartResumeReliablePdu;
+pub use stop_freeze_reliable_pdu::StopFreezeReliablePdu;

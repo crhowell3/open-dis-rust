@@ -94,19 +94,19 @@ impl Pdu for PointObjectStatePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::PointObjectState {
-            let object_id = EntityId::decode(&mut buffer);
-            let referenced_object_id = EntityId::decode(&mut buffer);
+            let object_id = EntityId::deserialize(&mut buffer);
+            let referenced_object_id = EntityId::deserialize(&mut buffer);
             let update_number = buffer.get_u16();
             let force_id = buffer.get_u8();
             let modifications = buffer.get_u8();
-            let object_type = ObjectType::decode(&mut buffer);
-            let object_location = Vector3Double::decode(&mut buffer);
-            let object_orientation = EulerAngles::decode(&mut buffer);
+            let object_type = ObjectType::deserialize(&mut buffer);
+            let object_location = Vector3Double::deserialize(&mut buffer);
+            let object_orientation = EulerAngles::deserialize(&mut buffer);
             let object_appearance = buffer.get_f64();
-            let requester_id = SimulationAddress::decode(&mut buffer);
-            let receiving_id = SimulationAddress::decode(&mut buffer);
+            let requester_id = SimulationAddress::deserialize(&mut buffer);
+            let receiving_id = SimulationAddress::deserialize(&mut buffer);
             let pad2 = buffer.get_u32();
             Ok(PointObjectStatePdu {
                 pdu_header,
@@ -124,7 +124,13 @@ impl Pdu for PointObjectStatePdu {
                 pad2,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type PointObjectState, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -139,17 +145,17 @@ impl Pdu for PointObjectStatePdu {
     where
         Self: Sized,
     {
-        let object_id = EntityId::decode(&mut buffer);
-        let referenced_object_id = EntityId::decode(&mut buffer);
+        let object_id = EntityId::deserialize(&mut buffer);
+        let referenced_object_id = EntityId::deserialize(&mut buffer);
         let update_number = buffer.get_u16();
         let force_id = buffer.get_u8();
         let modifications = buffer.get_u8();
-        let object_type = ObjectType::decode(&mut buffer);
-        let object_location = Vector3Double::decode(&mut buffer);
-        let object_orientation = EulerAngles::decode(&mut buffer);
+        let object_type = ObjectType::deserialize(&mut buffer);
+        let object_location = Vector3Double::deserialize(&mut buffer);
+        let object_orientation = EulerAngles::deserialize(&mut buffer);
         let object_appearance = buffer.get_f64();
-        let requester_id = SimulationAddress::decode(&mut buffer);
-        let receiving_id = SimulationAddress::decode(&mut buffer);
+        let requester_id = SimulationAddress::deserialize(&mut buffer);
+        let receiving_id = SimulationAddress::deserialize(&mut buffer);
         let pad2 = buffer.get_u32();
         Ok(PointObjectStatePdu {
             pdu_header,
@@ -205,8 +211,8 @@ mod tests {
         );
         assert_eq!(pdu_header.length, point_object_state_pdu.pdu_header.length);
         assert_eq!(
-            pdu_header.padding,
-            point_object_state_pdu.pdu_header.padding
+            pdu_header.status_record,
+            point_object_state_pdu.pdu_header.status_record
         );
     }
 

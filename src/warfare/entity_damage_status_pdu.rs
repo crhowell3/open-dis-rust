@@ -78,11 +78,11 @@ impl Pdu for EntityDamageStatusPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::EntityDamageStatus {
-            let firing_entity_id = EntityId::decode(&mut buffer);
-            let target_entity_id = EntityId::decode(&mut buffer);
-            let damaged_entity_id = EntityId::decode(&mut buffer);
+            let firing_entity_id = EntityId::deserialize(&mut buffer);
+            let target_entity_id = EntityId::deserialize(&mut buffer);
+            let damaged_entity_id = EntityId::deserialize(&mut buffer);
             let padding1 = buffer.get_u16();
             let padding2 = buffer.get_u16();
             let number_of_damage_descriptions = buffer.get_u16();
@@ -98,7 +98,13 @@ impl Pdu for EntityDamageStatusPdu {
                 damage_descriptions,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type EntityDamageStatus, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -113,9 +119,9 @@ impl Pdu for EntityDamageStatusPdu {
     where
         Self: Sized,
     {
-        let firing_entity_id = EntityId::decode(&mut buffer);
-        let target_entity_id = EntityId::decode(&mut buffer);
-        let damaged_entity_id = EntityId::decode(&mut buffer);
+        let firing_entity_id = EntityId::deserialize(&mut buffer);
+        let target_entity_id = EntityId::deserialize(&mut buffer);
+        let damaged_entity_id = EntityId::deserialize(&mut buffer);
         let padding1 = buffer.get_u16();
         let padding2 = buffer.get_u16();
         let number_of_damage_descriptions = buffer.get_u16();
@@ -172,8 +178,8 @@ mod tests {
             entity_damage_status_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            entity_damage_status_pdu.pdu_header.padding
+            pdu_header.status_record,
+            entity_damage_status_pdu.pdu_header.status_record
         );
     }
 

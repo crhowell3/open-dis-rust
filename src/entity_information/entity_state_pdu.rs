@@ -103,20 +103,20 @@ impl Pdu for EntityStatePdu {
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<EntityStatePdu, DISError> {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::EntityState {
-            let entity_id = EntityId::decode(&mut buffer);
-            let force_id = ForceId::decode(&mut buffer);
+            let entity_id = EntityId::deserialize(&mut buffer);
+            let force_id = ForceId::deserialize(&mut buffer);
             let articulation_params = &buffer.get_u8();
-            let entity_type = EntityType::decode(&mut buffer);
-            let alt_entity_type = EntityType::decode(&mut buffer);
-            let linear_velocity = LinearVelocity::decode(&mut buffer);
-            let world_coordinate = WorldCoordinate::decode(&mut buffer);
-            let orientation = EulerAngles::decode(&mut buffer);
+            let entity_type = EntityType::deserialize(&mut buffer);
+            let alt_entity_type = EntityType::deserialize(&mut buffer);
+            let linear_velocity = LinearVelocity::deserialize(&mut buffer);
+            let world_coordinate = WorldCoordinate::deserialize(&mut buffer);
+            let orientation = EulerAngles::deserialize(&mut buffer);
             let appearance = buffer.get_u32();
-            let dead_reckoning = DeadReckoningParameters::decode(&mut buffer);
-            let entity_marking = EntityMarking::decode(&mut buffer);
-            let entity_capabilities = EntityCapabilities::decode(&mut buffer);
+            let dead_reckoning = DeadReckoningParameters::deserialize(&mut buffer);
+            let entity_marking = EntityMarking::deserialize(&mut buffer);
+            let entity_capabilities = EntityCapabilities::deserialize(&mut buffer);
 
             Ok(EntityStatePdu {
                 pdu_header,
@@ -135,7 +135,13 @@ impl Pdu for EntityStatePdu {
                 articulation_parameter: 0.0,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type EntityState, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -150,18 +156,18 @@ impl Pdu for EntityStatePdu {
     where
         Self: Sized,
     {
-        let entity_id = EntityId::decode(&mut buffer);
-        let force_id = ForceId::decode(&mut buffer);
+        let entity_id = EntityId::deserialize(&mut buffer);
+        let force_id = ForceId::deserialize(&mut buffer);
         let articulation_params = &buffer.get_u8();
-        let entity_type = EntityType::decode(&mut buffer);
-        let alt_entity_type = EntityType::decode(&mut buffer);
-        let linear_velocity = LinearVelocity::decode(&mut buffer);
-        let world_coordinate = WorldCoordinate::decode(&mut buffer);
-        let orientation = EulerAngles::decode(&mut buffer);
+        let entity_type = EntityType::deserialize(&mut buffer);
+        let alt_entity_type = EntityType::deserialize(&mut buffer);
+        let linear_velocity = LinearVelocity::deserialize(&mut buffer);
+        let world_coordinate = WorldCoordinate::deserialize(&mut buffer);
+        let orientation = EulerAngles::deserialize(&mut buffer);
         let appearance = buffer.get_u32();
-        let dead_reckoning_parameters = DeadReckoningParameters::decode(&mut buffer);
-        let entity_marking = EntityMarking::decode(&mut buffer);
-        let entity_capabilities = EntityCapabilities::decode(&mut buffer);
+        let dead_reckoning_parameters = DeadReckoningParameters::deserialize(&mut buffer);
+        let entity_marking = EntityMarking::deserialize(&mut buffer);
+        let entity_capabilities = EntityCapabilities::deserialize(&mut buffer);
 
         Ok(EntityStatePdu {
             pdu_header,
@@ -210,7 +216,10 @@ mod tests {
             entity_state_pdu.pdu_header.protocol_family
         );
         assert_eq!(header.length, entity_state_pdu.pdu_header.length);
-        assert_eq!(header.padding, entity_state_pdu.pdu_header.padding);
+        assert_eq!(
+            header.status_record,
+            entity_state_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

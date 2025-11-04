@@ -37,7 +37,7 @@ impl AngularVelocity {
     }
 
     /// Decode an `AngularVelocity` from a mutable byte stream
-    pub fn decode(buf: &mut BytesMut) -> AngularVelocity {
+    pub fn deserialize(buf: &mut BytesMut) -> AngularVelocity {
         AngularVelocity {
             rate_about_x_axis: buf.get_f32(),
             rate_about_y_axis: buf.get_f32(),

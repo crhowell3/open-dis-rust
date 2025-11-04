@@ -34,7 +34,7 @@ impl ShaftRPMs {
         buf.put_i32(self.shaft_rpm_rate_of_change);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> ShaftRPMs {
+    pub fn deserialize(buf: &mut BytesMut) -> ShaftRPMs {
         ShaftRPMs {
             current_shaft_rpms: buf.get_i16(),
             ordered_shaft_rpms: buf.get_i16(),

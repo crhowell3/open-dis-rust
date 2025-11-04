@@ -29,11 +29,11 @@ impl RecordSpecification {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> RecordSpecification {
+    pub fn deserialize(buf: &mut BytesMut) -> RecordSpecification {
         let number_of_record_sets = buf.get_u32();
         let mut record_sets: Vec<RecordSpecificationElement> = vec![];
         for _i in 0..number_of_record_sets {
-            record_sets.push(RecordSpecificationElement::decode(buf));
+            record_sets.push(RecordSpecificationElement::deserialize(buf));
         }
         RecordSpecification {
             number_of_record_sets,

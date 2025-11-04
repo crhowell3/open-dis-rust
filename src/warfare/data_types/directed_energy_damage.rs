@@ -90,19 +90,19 @@ impl DirectedEnergyDamage {
         buf.put_u16(self.padding2);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> DirectedEnergyDamage {
+    pub fn deserialize(buf: &mut BytesMut) -> DirectedEnergyDamage {
         DirectedEnergyDamage {
             record_type: buf.get_u32(),
             record_length: buf.get_u16(),
             padding: buf.get_u16(),
-            damage_location: Vector3Float::decode(buf),
+            damage_location: Vector3Float::deserialize(buf),
             damage_diameter: buf.get_f32(),
             temperature: buf.get_f32(),
             component_identification: buf.get_u8(),
             component_damage_status: buf.get_u8(),
             component_visual_damage_status: buf.get_u8(),
             component_visual_smoke_color: buf.get_u8(),
-            fire_event_id: EventId::decode(buf),
+            fire_event_id: EventId::deserialize(buf),
             padding2: buf.get_u16(),
         }
     }

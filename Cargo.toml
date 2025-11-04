@@ -8,7 +8,6 @@ license = "BSD-2-Clause"
 readme = "README.md"
 repository = "https://github.com/crhowell3/open-dis-rust"
 keywords = ["DIS", "IEEE", "Simulation"]
-rust-version = "1.85"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -16,9 +15,10 @@ rust-version = "1.85"
 bitflags = "2.5.0"
 bytes = "1.8.0"
 chrono = "0.4.31"
+modular-bitfield = "0.13.0"
 num-derive = "0.4.1"
 num-traits = "0.2.17"
-serde = {version = "1.0.188", features = ["derive"]}
+thiserror = "1.0.50"
 
 [dev-dependencies]
 futures = "0.3.31"

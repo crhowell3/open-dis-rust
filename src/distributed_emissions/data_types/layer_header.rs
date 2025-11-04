@@ -30,7 +30,7 @@ impl LayerHeader {
         buf.put_u16(self.length);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> LayerHeader {
+    pub fn deserialize(buf: &mut BytesMut) -> LayerHeader {
         LayerHeader {
             layer_number: buf.get_u8(),
             layer_specific_information: buf.get_u8(),

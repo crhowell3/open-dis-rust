@@ -8,3 +8,6 @@
 
 pub mod information_operations_action_pdu;
 pub mod information_operations_report_pdu;
+
+pub use information_operations_action_pdu::InformationOperationsActionPdu;
+pub use information_operations_report_pdu::InformationOperationsReportPdu;

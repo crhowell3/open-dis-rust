@@ -89,12 +89,12 @@ impl GridAxisDescriptor {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         let domain_initial = buf.get_f64();
         let domain_final = buf.get_f64();
         let domain_points = buf.get_u16();
         let interleaf_factor = buf.get_u8();
-        let axis_type = GridAxisDescriptorAxisType::decode(buf);
+        let axis_type = GridAxisDescriptorAxisType::deserialize(buf);
         let data = match axis_type {
             GridAxisDescriptorAxisType::RegularAxis => GridAxisType::FixedSpacing {
                 number_of_points_on_x_axis: buf.get_u16(),

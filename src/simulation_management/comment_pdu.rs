@@ -60,10 +60,10 @@ impl Pdu for CommentPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Comment {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let number_of_fixed_datum_records = buffer.get_u32();
             let number_of_variable_datum_records = buffer.get_u32();
             let mut fixed_datum_records: u64 = 0;
@@ -85,7 +85,10 @@ impl Pdu for CommentPdu {
                 variable_datum_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type Comment, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 
@@ -100,8 +103,8 @@ impl Pdu for CommentPdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let number_of_fixed_datum_records = buffer.get_u32();
         let number_of_variable_datum_records = buffer.get_u32();
         let mut fixed_datum_records: u64 = 0;
@@ -150,6 +153,9 @@ mod tests {
             comment_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, comment_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, comment_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            comment_pdu.pdu_header.status_record
+        );
     }
 }

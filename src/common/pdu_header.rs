@@ -4,9 +4,127 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+#![allow(clippy::must_use_candidate)]
+
 use bytes::{Buf, BufMut, BytesMut};
 use chrono::{Timelike, Utc};
+use modular_bitfield::prelude::*;
 use num_derive::FromPrimitive;
+
+use crate::common::enums::{
+    ActiveInterrogationIndicator, CoupledExtensionIndicator, DetonationTypeIndicator,
+    FireTypeIndicator, IntercomAttachedIndicator, LVCIndicator, PduStatusIFFSimulationMode,
+    RadioAttachedIndicator, TransferredEntityIndicator,
+};
+
+#[bitfield(bits = 8)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct PduStatusRecord {
+    pub tei: TransferredEntityIndicator,
+    pub lvc: LVCIndicator,
+    pub cei: CoupledExtensionIndicator,
+    pub bit4_5: B2,
+    #[skip]
+    __reserved: B2,
+}
+
+impl PduStatusRecord {
+    #[must_use]
+    pub fn new_zero() -> Self {
+        Self::new()
+    }
+
+    #[must_use]
+    pub fn get_dti(&self) -> DetonationTypeIndicator {
+        DetonationTypeIndicator::from(self.bit4_5())
+    }
+
+    pub fn set_dti(&mut self, dti: DetonationTypeIndicator) {
+        self.set_bit4_5(dti.into());
+    }
+
+    #[must_use]
+    pub fn get_rai(&self) -> RadioAttachedIndicator {
+        RadioAttachedIndicator::from(self.bit4_5())
+    }
+
+    pub fn set_rai(&mut self, rai: RadioAttachedIndicator) {
+        self.set_bit4_5(rai.into());
+    }
+
+    #[must_use]
+    pub fn get_iai(&self) -> IntercomAttachedIndicator {
+        IntercomAttachedIndicator::from(self.bit4_5())
+    }
+
+    pub fn set_iai(&mut self, iai: IntercomAttachedIndicator) {
+        self.set_bit4_5(iai.into());
+    }
+
+    #[must_use]
+    pub fn get_fti(&self) -> FireTypeIndicator {
+        let bit4 = self.bit4_5() & 0b01;
+        if bit4 == 0 {
+            FireTypeIndicator::Munition
+        } else {
+            FireTypeIndicator::Expendable
+        }
+    }
+
+    pub fn set_fti(&mut self, fti: FireTypeIndicator) {
+        let mut v = self.bit4_5();
+        v = (v & 0b10) | (fti as u8 & 0x01);
+        self.set_bit4_5(v);
+    }
+
+    #[must_use]
+    pub fn get_ism(&self) -> PduStatusIFFSimulationMode {
+        let bit4 = self.bit4_5() & 0b01;
+        if bit4 == 0 {
+            PduStatusIFFSimulationMode::Regeneration
+        } else {
+            PduStatusIFFSimulationMode::Interactive
+        }
+    }
+
+    pub fn set_ism(&mut self, ism: PduStatusIFFSimulationMode) {
+        let mut v = self.bit4_5();
+        v = (v & 0b10) | (ism as u8 & 0x01);
+        self.set_bit4_5(v);
+    }
+
+    #[must_use]
+    pub fn get_aii(&self) -> ActiveInterrogationIndicator {
+        let bit5 = (self.bit4_5() >> 1) & 0b01;
+        if bit5 == 0 {
+            ActiveInterrogationIndicator::NotActive
+        } else {
+            ActiveInterrogationIndicator::Active
+        }
+    }
+
+    pub fn set_aii(&mut self, aii: ActiveInterrogationIndicator) {
+        let mut v = self.bit4_5();
+        v = (v & 0b01) | ((aii as u8) << 1);
+        self.set_bit4_5(v);
+    }
+
+    #[must_use]
+    pub fn to_u8(&self) -> u8 {
+        self.into_bytes()[0]
+    }
+
+    #[must_use]
+    pub fn from_u8(b: u8) -> Self {
+        Self::from_bytes([b])
+    }
+}
+
+impl Default for PduStatusRecord {
+    fn default() -> Self {
+        Self::new_zero()
+    }
+}
 
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct PduHeader {
@@ -22,8 +140,8 @@ pub struct PduHeader {
     pub timestamp: u32,
     /// Length, in bytes, of the PDU
     pub length: u16,
-    /// Zero-filled array of padding
-    pub padding: u16,
+    /// PDU status record
+    pub status_record: PduStatusRecord,
 }
 
 impl PduHeader {
@@ -41,7 +159,7 @@ impl PduHeader {
             protocol_family,
             timestamp: PduHeader::calculate_dis_timestamp(),
             length,
-            padding: 0_u16,
+            status_record: PduStatusRecord::default(),
         }
     }
 
@@ -54,7 +172,7 @@ impl PduHeader {
             protocol_family,
             timestamp: PduHeader::calculate_dis_timestamp(),
             length,
-            padding: 0_u16,
+            status_record: PduStatusRecord::default(),
         }
     }
 
@@ -80,10 +198,10 @@ impl PduHeader {
         buf.put_u8(self.protocol_family as u8);
         buf.put_u32(self.timestamp);
         buf.put_u16(self.length);
-        buf.put_u16(self.padding);
+        buf.put_u8(self.status_record.to_u8());
     }
 
-    fn decode_protocol_version(data: u8) -> ProtocolVersion {
+    fn deserialize_protocol_version(data: u8) -> ProtocolVersion {
         match data {
             1 => ProtocolVersion::DIS_PDUv1,
             2 => ProtocolVersion::IEEE1278_1993,
@@ -96,20 +214,20 @@ impl PduHeader {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> PduHeader {
+    pub fn deserialize(buf: &mut BytesMut) -> PduHeader {
         PduHeader {
-            protocol_version: PduHeader::decode_protocol_version(buf.get_u8()),
+            protocol_version: PduHeader::deserialize_protocol_version(buf.get_u8()),
             exercise_id: buf.get_u8(),
-            pdu_type: PduHeader::decode_pdu_type(buf.get_u8()),
-            protocol_family: PduHeader::decode_protocol_family(buf.get_u8()),
+            pdu_type: PduHeader::deserialize_pdu_type(buf.get_u8()),
+            protocol_family: PduHeader::deserialize_protocol_family(buf.get_u8()),
             timestamp: buf.get_u32(),
             length: buf.get_u16(),
-            padding: buf.get_u16(),
+            status_record: PduStatusRecord::from_u8(buf.get_u8()),
         }
     }
 
     #[must_use]
-    pub fn decode_pdu_type(data: u8) -> PduType {
+    pub fn deserialize_pdu_type(data: u8) -> PduType {
         match data {
             1 => PduType::EntityState,
             2 => PduType::Fire,
@@ -188,7 +306,7 @@ impl PduHeader {
     }
 
     #[must_use]
-    fn decode_protocol_family(data: u8) -> ProtocolFamily {
+    fn deserialize_protocol_family(data: u8) -> ProtocolFamily {
         match data {
             1 => ProtocolFamily::EntityInformation,
             2 => ProtocolFamily::Warfare,

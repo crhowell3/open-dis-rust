@@ -75,10 +75,10 @@ impl Pdu for DataQueryReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::DataQueryReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let required_reliability_service = buffer.get_u8();
             let pad1 = buffer.get_u16();
             let pad2 = buffer.get_u8();
@@ -110,7 +110,13 @@ impl Pdu for DataQueryReliablePdu {
                 variable_datum_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type DataQueryReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -125,8 +131,8 @@ impl Pdu for DataQueryReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let required_reliability_service = buffer.get_u8();
         let pad1 = buffer.get_u16();
         let pad2 = buffer.get_u8();
@@ -192,8 +198,8 @@ mod tests {
         );
         assert_eq!(pdu_header.length, data_query_reliable_pdu.pdu_header.length);
         assert_eq!(
-            pdu_header.padding,
-            data_query_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            data_query_reliable_pdu.pdu_header.status_record
         );
     }
 }

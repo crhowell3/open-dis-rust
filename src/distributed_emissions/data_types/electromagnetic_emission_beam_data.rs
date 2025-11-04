@@ -34,11 +34,11 @@ impl ElectromagneticEmissionBeamData {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> ElectromagneticEmissionBeamData {
+    pub fn deserialize(buf: &mut BytesMut) -> ElectromagneticEmissionBeamData {
         let beam_data_length = buf.get_u8();
         let beam_id_number = buf.get_u8();
         let beam_parameter_index = buf.get_u16();
-        let fundamental_parameter_data = FundamentalParameterData::decode(buf);
+        let fundamental_parameter_data = FundamentalParameterData::deserialize(buf);
         let beam_function = buf.get_u8();
         let number_of_track_jam_targets = buf.get_u8();
         let high_density_track_jam = buf.get_u8();
@@ -46,7 +46,7 @@ impl ElectromagneticEmissionBeamData {
         let jamming_mode_sequence = buf.get_u32();
         let mut track_jam_targets: Vec<TrackJamTarget> = vec![];
         for _i in 0..number_of_track_jam_targets {
-            track_jam_targets.push(TrackJamTarget::decode(buf));
+            track_jam_targets.push(TrackJamTarget::deserialize(buf));
         }
 
         ElectromagneticEmissionBeamData {

@@ -59,10 +59,10 @@ impl Pdu for MinefieldResponseNackPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::MinefieldResponseNack {
-            let minefield_id = EntityId::decode(&mut buffer);
-            let requesting_entity_id = EntityId::decode(&mut buffer);
+            let minefield_id = EntityId::deserialize(&mut buffer);
+            let requesting_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u8();
             let number_of_missing_pdus = buffer.get_u8();
             let mut missing_pdu_sequence_numbers: Vec<u64> = vec![];
@@ -79,7 +79,13 @@ impl Pdu for MinefieldResponseNackPdu {
                 missing_pdu_sequence_numbers,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type MinefieldResponseNack, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -94,8 +100,8 @@ impl Pdu for MinefieldResponseNackPdu {
     where
         Self: Sized,
     {
-        let minefield_id = EntityId::decode(&mut buffer);
-        let requesting_entity_id = EntityId::decode(&mut buffer);
+        let minefield_id = EntityId::deserialize(&mut buffer);
+        let requesting_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u8();
         let number_of_missing_pdus = buffer.get_u8();
         let mut missing_pdu_sequence_numbers: Vec<u64> = vec![];
@@ -149,8 +155,8 @@ mod tests {
             minefield_response_nack_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            minefield_response_nack_pdu.pdu_header.padding
+            pdu_header.status_record,
+            minefield_response_nack_pdu.pdu_header.status_record
         );
     }
 }

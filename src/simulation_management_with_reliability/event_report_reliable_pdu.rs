@@ -67,11 +67,11 @@ impl Pdu for EventReportReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::EventReportReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let event_type = EventType::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let event_type = EventType::deserialize(&mut buffer);
             let padding = buffer.get_u32();
             let number_of_fixed_datum_records = buffer.get_u32();
             let number_of_variable_datum_records = buffer.get_u32();
@@ -96,7 +96,13 @@ impl Pdu for EventReportReliablePdu {
                 variable_datum_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type EventReportReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -111,9 +117,9 @@ impl Pdu for EventReportReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let event_type = EventType::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let event_type = EventType::deserialize(&mut buffer);
         let padding = buffer.get_u32();
         let number_of_fixed_datum_records = buffer.get_u32();
         let number_of_variable_datum_records = buffer.get_u32();
@@ -179,8 +185,8 @@ mod tests {
             event_report_reliable_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            event_report_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            event_report_reliable_pdu.pdu_header.status_record
         );
     }
 

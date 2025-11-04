@@ -71,16 +71,16 @@ impl Pdu for ResupplyOfferPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::ResupplyOffer {
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let supplying_entity_id = EntityId::decode(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let supplying_entity_id = EntityId::deserialize(&mut buffer);
             let number_of_supply_types = buffer.get_u8();
             let padding1 = buffer.get_i16();
             let padding2 = buffer.get_i8();
             let mut supplies: Vec<SupplyQuantity> = vec![];
             for _i in 0..number_of_supply_types {
-                supplies.push(SupplyQuantity::decode(&mut buffer));
+                supplies.push(SupplyQuantity::deserialize(&mut buffer));
             }
 
             Ok(ResupplyOfferPdu {
@@ -93,7 +93,13 @@ impl Pdu for ResupplyOfferPdu {
                 supplies,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type ResupplyOffer, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -108,14 +114,14 @@ impl Pdu for ResupplyOfferPdu {
     where
         Self: Sized,
     {
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let supplying_entity_id = EntityId::decode(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let supplying_entity_id = EntityId::deserialize(&mut buffer);
         let number_of_supply_types = buffer.get_u8();
         let padding1 = buffer.get_i16();
         let padding2 = buffer.get_i8();
         let mut supplies: Vec<SupplyQuantity> = vec![];
         for _i in 0..number_of_supply_types {
-            supplies.push(SupplyQuantity::decode(&mut buffer));
+            supplies.push(SupplyQuantity::deserialize(&mut buffer));
         }
 
         Ok(ResupplyOfferPdu {
@@ -159,7 +165,10 @@ mod tests {
             resupply_offer_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, resupply_offer_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, resupply_offer_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            resupply_offer_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

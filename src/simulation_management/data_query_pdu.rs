@@ -66,10 +66,10 @@ impl Pdu for DataQueryPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::DataQuery {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
             let time_interval = buffer.get_u32();
             let number_of_fixed_datum_records = buffer.get_u32();
@@ -95,7 +95,10 @@ impl Pdu for DataQueryPdu {
                 variable_datum_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type DataQuery, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 
@@ -110,8 +113,8 @@ impl Pdu for DataQueryPdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
         let time_interval = buffer.get_u32();
         let number_of_fixed_datum_records = buffer.get_u32();
@@ -167,6 +170,9 @@ mod tests {
             action_request_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, action_request_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            action_request_pdu.pdu_header.status_record
+        );
     }
 }

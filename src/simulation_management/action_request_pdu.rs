@@ -77,10 +77,10 @@ impl Pdu for ActionRequestPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::ActionRequest {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
             let action_id = buffer.get_u32();
             let number_of_fixed_datum_records = buffer.get_u32();
@@ -106,7 +106,13 @@ impl Pdu for ActionRequestPdu {
                 variable_datum_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type ActionRequest, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -121,8 +127,8 @@ impl Pdu for ActionRequestPdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
         let action_id = buffer.get_u32();
         let number_of_fixed_datum_records = buffer.get_u32();
@@ -182,7 +188,10 @@ mod tests {
             action_request_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, action_request_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            action_request_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

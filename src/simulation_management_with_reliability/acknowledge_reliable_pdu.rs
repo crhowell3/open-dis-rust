@@ -70,12 +70,12 @@ impl Pdu for AcknowledgeReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::AcknowledgeReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let acknowledge_flag = AcknowledgeFlag::decode(&mut buffer);
-            let response_flag = AcknowledgeResponseFlag::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let acknowledge_flag = AcknowledgeFlag::deserialize(&mut buffer);
+            let response_flag = AcknowledgeResponseFlag::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
 
             Ok(AcknowledgeReliablePdu {
@@ -87,7 +87,13 @@ impl Pdu for AcknowledgeReliablePdu {
                 request_id,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type AcknowledgeReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -102,10 +108,10 @@ impl Pdu for AcknowledgeReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let acknowledge_flag = AcknowledgeFlag::decode(&mut buffer);
-        let response_flag = AcknowledgeResponseFlag::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let acknowledge_flag = AcknowledgeFlag::deserialize(&mut buffer);
+        let response_flag = AcknowledgeResponseFlag::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
 
         Ok(AcknowledgeReliablePdu {
@@ -158,8 +164,8 @@ mod tests {
             acknowledge_reliable_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            acknowledge_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            acknowledge_reliable_pdu.pdu_header.status_record
         );
     }
 

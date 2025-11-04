@@ -67,12 +67,12 @@ impl Pdu for ActionResponseReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::ActionResponseReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
-            let request_status = ActionResponseRequestStatus::decode(&mut buffer);
+            let request_status = ActionResponseRequestStatus::deserialize(&mut buffer);
             let number_of_fixed_datum_records = buffer.get_u32();
             let number_of_variable_datum_records = buffer.get_u32();
             let mut fixed_datum_records: u64 = 0;
@@ -96,7 +96,13 @@ impl Pdu for ActionResponseReliablePdu {
                 variable_datum_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type ActionResponseReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -111,10 +117,10 @@ impl Pdu for ActionResponseReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
-        let request_status = ActionResponseRequestStatus::decode(&mut buffer);
+        let request_status = ActionResponseRequestStatus::deserialize(&mut buffer);
         let number_of_fixed_datum_records = buffer.get_u32();
         let number_of_variable_datum_records = buffer.get_u32();
         let mut fixed_datum_records: u64 = 0;
@@ -175,8 +181,8 @@ mod tests {
             action_response_reliable_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            action_response_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            action_response_reliable_pdu.pdu_header.status_record
         );
     }
 }

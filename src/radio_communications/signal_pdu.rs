@@ -78,9 +78,9 @@ impl Pdu for SignalPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Signal {
-            let entity_id = EntityId::decode(&mut buffer);
+            let entity_id = EntityId::deserialize(&mut buffer);
             let radio_id = buffer.get_u16();
             let encoding_scheme = buffer.get_u16();
             let tdl_type = buffer.get_u16();
@@ -106,7 +106,10 @@ impl Pdu for SignalPdu {
                 data,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type Signal, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 
@@ -121,7 +124,7 @@ impl Pdu for SignalPdu {
     where
         Self: Sized,
     {
-        let entity_id = EntityId::decode(&mut buffer);
+        let entity_id = EntityId::deserialize(&mut buffer);
         let radio_id = buffer.get_u16();
         let encoding_scheme = buffer.get_u16();
         let tdl_type = buffer.get_u16();
@@ -175,7 +178,10 @@ mod tests {
             signal_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, signal_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, signal_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            signal_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

@@ -52,10 +52,10 @@ impl Pdu for RemoveEntityPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::RemoveEntity {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
 
             Ok(RemoveEntityPdu {
@@ -65,7 +65,13 @@ impl Pdu for RemoveEntityPdu {
                 request_id,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type RemoveEntity, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -80,8 +86,8 @@ impl Pdu for RemoveEntityPdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
 
         Ok(RemoveEntityPdu {
@@ -125,7 +131,10 @@ mod tests {
             remove_entity_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, remove_entity_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, remove_entity_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            remove_entity_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

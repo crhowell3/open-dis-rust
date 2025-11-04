@@ -94,22 +94,22 @@ impl Pdu for DetonationPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Detonation {
-            let firing_entity_id = EntityId::decode(&mut buffer);
-            let target_entity_id = EntityId::decode(&mut buffer);
-            let exploding_entity_id = EntityId::decode(&mut buffer);
-            let event_id = EventId::decode(&mut buffer);
-            let velocity = Vector3Float::decode(&mut buffer);
-            let location_in_world_coordinates = Vector3Double::decode(&mut buffer);
-            let descriptor = MunitionDescriptor::decode(&mut buffer);
-            let location_in_entitys_coordinates = Vector3Float::decode(&mut buffer);
+            let firing_entity_id = EntityId::deserialize(&mut buffer);
+            let target_entity_id = EntityId::deserialize(&mut buffer);
+            let exploding_entity_id = EntityId::deserialize(&mut buffer);
+            let event_id = EventId::deserialize(&mut buffer);
+            let velocity = Vector3Float::deserialize(&mut buffer);
+            let location_in_world_coordinates = Vector3Double::deserialize(&mut buffer);
+            let descriptor = MunitionDescriptor::deserialize(&mut buffer);
+            let location_in_entitys_coordinates = Vector3Float::deserialize(&mut buffer);
             let detonation_result = buffer.get_u8();
             let number_of_variable_parameters = buffer.get_u8();
             let padding = buffer.get_u16();
             let mut variable_parameters: Vec<VariableParameter> = vec![];
             for _i in 0..number_of_variable_parameters {
-                variable_parameters.push(VariableParameter::decode(&mut buffer));
+                variable_parameters.push(VariableParameter::deserialize(&mut buffer));
             }
             Ok(DetonationPdu {
                 pdu_header,
@@ -127,7 +127,13 @@ impl Pdu for DetonationPdu {
                 variable_parameters,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type Detonation, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -142,20 +148,20 @@ impl Pdu for DetonationPdu {
     where
         Self: Sized,
     {
-        let firing_entity_id = EntityId::decode(&mut buffer);
-        let target_entity_id = EntityId::decode(&mut buffer);
-        let exploding_entity_id = EntityId::decode(&mut buffer);
-        let event_id = EventId::decode(&mut buffer);
-        let velocity = Vector3Float::decode(&mut buffer);
-        let location_in_world_coordinates = Vector3Double::decode(&mut buffer);
-        let descriptor = MunitionDescriptor::decode(&mut buffer);
-        let location_in_entitys_coordinates = Vector3Float::decode(&mut buffer);
+        let firing_entity_id = EntityId::deserialize(&mut buffer);
+        let target_entity_id = EntityId::deserialize(&mut buffer);
+        let exploding_entity_id = EntityId::deserialize(&mut buffer);
+        let event_id = EventId::deserialize(&mut buffer);
+        let velocity = Vector3Float::deserialize(&mut buffer);
+        let location_in_world_coordinates = Vector3Double::deserialize(&mut buffer);
+        let descriptor = MunitionDescriptor::deserialize(&mut buffer);
+        let location_in_entitys_coordinates = Vector3Float::deserialize(&mut buffer);
         let detonation_result = buffer.get_u8();
         let number_of_variable_parameters = buffer.get_u8();
         let padding = buffer.get_u16();
         let mut variable_parameters: Vec<VariableParameter> = vec![];
         for _i in 0..number_of_variable_parameters {
-            variable_parameters.push(VariableParameter::decode(&mut buffer));
+            variable_parameters.push(VariableParameter::deserialize(&mut buffer));
         }
         Ok(DetonationPdu {
             pdu_header,
@@ -203,7 +209,10 @@ mod tests {
             detonation_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, detonation_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, detonation_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            detonation_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

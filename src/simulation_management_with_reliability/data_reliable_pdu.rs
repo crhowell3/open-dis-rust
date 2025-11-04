@@ -72,10 +72,10 @@ impl Pdu for DataReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::DataReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
             let required_reliability_service = buffer.get_u8();
             let pad1 = buffer.get_u16();
@@ -105,7 +105,13 @@ impl Pdu for DataReliablePdu {
                 variable_datum_records,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type DataReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -120,8 +126,8 @@ impl Pdu for DataReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
         let required_reliability_service = buffer.get_u8();
         let pad1 = buffer.get_u16();
@@ -185,7 +191,10 @@ mod tests {
             data_reliable_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, data_reliable_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, data_reliable_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            data_reliable_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

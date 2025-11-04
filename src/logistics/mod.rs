@@ -12,3 +12,10 @@ pub mod resupply_cancel_pdu;
 pub mod resupply_offer_pdu;
 pub mod resupply_received_pdu;
 pub mod service_request_pdu;
+
+pub use repair_complete_pdu::RepairCompletePdu;
+pub use repair_response_pdu::RepairResponsePdu;
+pub use resupply_cancel_pdu::ResupplyCancelPdu;
+pub use resupply_offer_pdu::ResupplyOfferPdu;
+pub use resupply_received_pdu::ResupplyReceivedPdu;
+pub use service_request_pdu::ServiceRequestPdu;

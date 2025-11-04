@@ -96,20 +96,20 @@ impl Pdu for DesignatorPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Designator {
-            let designating_entity_id = EntityId::decode(&mut buffer);
-            let code_name = DesignatorSystemName::decode(&mut buffer);
-            let designated_entity_id = EntityId::decode(&mut buffer);
-            let designator_code = DesignatorCode::decode(&mut buffer);
+            let designating_entity_id = EntityId::deserialize(&mut buffer);
+            let code_name = DesignatorSystemName::deserialize(&mut buffer);
+            let designated_entity_id = EntityId::deserialize(&mut buffer);
+            let designator_code = DesignatorCode::deserialize(&mut buffer);
             let designator_power = buffer.get_f32();
             let designator_wavelength = buffer.get_f32();
-            let designator_spot_wrt_designated = Vector3Float::decode(&mut buffer);
-            let designator_spot_location = Vector3Double::decode(&mut buffer);
-            let dead_reckoning_algorithm = DeadReckoningAlgorithm::decode(&mut buffer);
+            let designator_spot_wrt_designated = Vector3Float::deserialize(&mut buffer);
+            let designator_spot_location = Vector3Double::deserialize(&mut buffer);
+            let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(&mut buffer);
             let padding1 = buffer.get_u8();
             let padding2 = buffer.get_u16();
-            let entity_linear_acceleration = Vector3Float::decode(&mut buffer);
+            let entity_linear_acceleration = Vector3Float::deserialize(&mut buffer);
 
             Ok(DesignatorPdu {
                 pdu_header,
@@ -127,7 +127,13 @@ impl Pdu for DesignatorPdu {
                 entity_linear_acceleration,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type Designator, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -144,18 +150,18 @@ impl Pdu for DesignatorPdu {
     where
         Self: Sized,
     {
-        let designating_entity_id = EntityId::decode(&mut buffer);
-        let code_name = DesignatorSystemName::decode(&mut buffer);
-        let designated_entity_id = EntityId::decode(&mut buffer);
-        let designator_code = DesignatorCode::decode(&mut buffer);
+        let designating_entity_id = EntityId::deserialize(&mut buffer);
+        let code_name = DesignatorSystemName::deserialize(&mut buffer);
+        let designated_entity_id = EntityId::deserialize(&mut buffer);
+        let designator_code = DesignatorCode::deserialize(&mut buffer);
         let designator_power = buffer.get_f32();
         let designator_wavelength = buffer.get_f32();
-        let designator_spot_wrt_designated = Vector3Float::decode(&mut buffer);
-        let designator_spot_location = Vector3Double::decode(&mut buffer);
-        let dead_reckoning_algorithm = DeadReckoningAlgorithm::decode(&mut buffer);
+        let designator_spot_wrt_designated = Vector3Float::deserialize(&mut buffer);
+        let designator_spot_location = Vector3Double::deserialize(&mut buffer);
+        let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(&mut buffer);
         let padding1 = buffer.get_u8();
         let padding2 = buffer.get_u16();
-        let entity_linear_acceleration = Vector3Float::decode(&mut buffer);
+        let entity_linear_acceleration = Vector3Float::deserialize(&mut buffer);
 
         Ok(DesignatorPdu {
             pdu_header,
@@ -207,7 +213,10 @@ mod tests {
             designator_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, designator_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, designator_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            designator_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

@@ -5,9 +5,8 @@
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
-use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.80
 pub struct SimulationAddress {
     /// Identification number representing the site, which may be a facility,
@@ -43,7 +42,7 @@ impl SimulationAddress {
         buf.put_u16(self.application_id);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> SimulationAddress {
+    pub fn deserialize(buf: &mut BytesMut) -> SimulationAddress {
         SimulationAddress {
             site_id: buf.get_u16(),
             application_id: buf.get_u16(),

@@ -123,22 +123,22 @@ impl Pdu for TransmitterPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Transmitter {
-            let entity_id = EntityId::decode(&mut buffer);
+            let entity_id = EntityId::deserialize(&mut buffer);
             let radio_id = buffer.get_u16();
-            let radio_entity_type = RadioEntityType::decode(&mut buffer);
+            let radio_entity_type = RadioEntityType::deserialize(&mut buffer);
             let transmit_state = buffer.get_u8();
             let input_source = buffer.get_u8();
             let padding1 = buffer.get_u16();
-            let antenna_location = Vector3Double::decode(&mut buffer);
-            let relative_antenna_location = Vector3Float::decode(&mut buffer);
+            let antenna_location = Vector3Double::deserialize(&mut buffer);
+            let relative_antenna_location = Vector3Float::deserialize(&mut buffer);
             let antenna_pattern_type = buffer.get_u16();
             let antenna_pattern_count = buffer.get_u16();
             let frequency = buffer.get_u64();
             let transmit_frequency_bandwidth = buffer.get_f32();
             let power = buffer.get_f32();
-            let modulation_type = ModulationType::decode(&mut buffer);
+            let modulation_type = ModulationType::deserialize(&mut buffer);
             let crypto_system = buffer.get_u16();
             let crypto_key_id = buffer.get_u16();
             let modulation_parameter_count = buffer.get_u8();
@@ -146,11 +146,11 @@ impl Pdu for TransmitterPdu {
             let padding3 = buffer.get_u8();
             let mut modulation_parameter_list: Vec<Vector3Float> = vec![];
             for _i in 0..modulation_parameter_count {
-                modulation_parameter_list.push(Vector3Float::decode(&mut buffer));
+                modulation_parameter_list.push(Vector3Float::deserialize(&mut buffer));
             }
             let mut antenna_pattern_list: Vec<Vector3Float> = vec![];
             for _i in 0..antenna_pattern_count {
-                antenna_pattern_list.push(Vector3Float::decode(&mut buffer));
+                antenna_pattern_list.push(Vector3Float::deserialize(&mut buffer));
             }
             Ok(TransmitterPdu {
                 pdu_header,
@@ -177,7 +177,13 @@ impl Pdu for TransmitterPdu {
                 antenna_pattern_list,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type Transmitter, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -192,20 +198,20 @@ impl Pdu for TransmitterPdu {
     where
         Self: Sized,
     {
-        let entity_id = EntityId::decode(&mut buffer);
+        let entity_id = EntityId::deserialize(&mut buffer);
         let radio_id = buffer.get_u16();
-        let radio_entity_type = RadioEntityType::decode(&mut buffer);
+        let radio_entity_type = RadioEntityType::deserialize(&mut buffer);
         let transmit_state = buffer.get_u8();
         let input_source = buffer.get_u8();
         let padding1 = buffer.get_u16();
-        let antenna_location = Vector3Double::decode(&mut buffer);
-        let relative_antenna_location = Vector3Float::decode(&mut buffer);
+        let antenna_location = Vector3Double::deserialize(&mut buffer);
+        let relative_antenna_location = Vector3Float::deserialize(&mut buffer);
         let antenna_pattern_type = buffer.get_u16();
         let antenna_pattern_count = buffer.get_u16();
         let frequency = buffer.get_u64();
         let transmit_frequency_bandwidth = buffer.get_f32();
         let power = buffer.get_f32();
-        let modulation_type = ModulationType::decode(&mut buffer);
+        let modulation_type = ModulationType::deserialize(&mut buffer);
         let crypto_system = buffer.get_u16();
         let crypto_key_id = buffer.get_u16();
         let modulation_parameter_count = buffer.get_u8();
@@ -213,11 +219,11 @@ impl Pdu for TransmitterPdu {
         let padding3 = buffer.get_u8();
         let mut modulation_parameter_list: Vec<Vector3Float> = vec![];
         for _i in 0..modulation_parameter_count {
-            modulation_parameter_list.push(Vector3Float::decode(&mut buffer));
+            modulation_parameter_list.push(Vector3Float::deserialize(&mut buffer));
         }
         let mut antenna_pattern_list: Vec<Vector3Float> = vec![];
         for _i in 0..antenna_pattern_count {
-            antenna_pattern_list.push(Vector3Float::decode(&mut buffer));
+            antenna_pattern_list.push(Vector3Float::deserialize(&mut buffer));
         }
         Ok(TransmitterPdu {
             pdu_header,
@@ -278,7 +284,10 @@ mod tests {
             transmitter_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, transmitter_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, transmitter_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            transmitter_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

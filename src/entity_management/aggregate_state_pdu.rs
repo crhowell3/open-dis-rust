@@ -132,38 +132,38 @@ impl Pdu for AggregateStatePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::AggregateState {
-            let aggregate_id = EntityId::decode(&mut buffer);
+            let aggregate_id = EntityId::deserialize(&mut buffer);
             let force_id = buffer.get_u8();
             let aggregate_state = buffer.get_u8();
-            let aggregate_type = EntityType::decode(&mut buffer);
+            let aggregate_type = EntityType::deserialize(&mut buffer);
             let formation = buffer.get_u32();
-            let aggregate_marking = AggregateMarking::decode(&mut buffer);
-            let dimensions = Vector3Float::decode(&mut buffer);
-            let orientation = EulerAngles::decode(&mut buffer);
-            let center_of_mass = Vector3Double::decode(&mut buffer);
-            let velocity = Vector3Float::decode(&mut buffer);
+            let aggregate_marking = AggregateMarking::deserialize(&mut buffer);
+            let dimensions = Vector3Float::deserialize(&mut buffer);
+            let orientation = EulerAngles::deserialize(&mut buffer);
+            let center_of_mass = Vector3Double::deserialize(&mut buffer);
+            let velocity = Vector3Float::deserialize(&mut buffer);
             let number_of_dis_aggregates = buffer.get_u16();
             let number_of_dis_entities = buffer.get_u16();
             let number_of_silent_aggregate_types = buffer.get_u16();
             let number_of_silent_entity_types = buffer.get_u16();
             let mut aggregate_id_list: Vec<AggregateId> = vec![];
             for _i in 0..number_of_dis_aggregates {
-                aggregate_id_list.push(AggregateId::decode(&mut buffer));
+                aggregate_id_list.push(AggregateId::deserialize(&mut buffer));
             }
             let mut entity_id_list: Vec<EntityId> = vec![];
             for _i in 0..number_of_dis_entities {
-                entity_id_list.push(EntityId::decode(&mut buffer));
+                entity_id_list.push(EntityId::deserialize(&mut buffer));
             }
             let pad2 = buffer.get_u8();
             let mut silent_aggregate_system_list: Vec<EntityType> = vec![];
             for _i in 0..number_of_silent_aggregate_types {
-                silent_aggregate_system_list.push(EntityType::decode(&mut buffer));
+                silent_aggregate_system_list.push(EntityType::deserialize(&mut buffer));
             }
             let mut silent_entity_system_list: Vec<EntityType> = vec![];
             for _i in 0..number_of_silent_entity_types {
-                silent_entity_system_list.push(EntityType::decode(&mut buffer));
+                silent_entity_system_list.push(EntityType::deserialize(&mut buffer));
             }
             let number_of_variable_datum_records = buffer.get_u32();
             let mut variable_datum_list: Vec<u64> = vec![];
@@ -195,7 +195,13 @@ impl Pdu for AggregateStatePdu {
                 variable_datum_list,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type AggregateState, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -210,36 +216,36 @@ impl Pdu for AggregateStatePdu {
     where
         Self: Sized,
     {
-        let aggregate_id = EntityId::decode(&mut buffer);
+        let aggregate_id = EntityId::deserialize(&mut buffer);
         let force_id = buffer.get_u8();
         let aggregate_state = buffer.get_u8();
-        let aggregate_type = EntityType::decode(&mut buffer);
+        let aggregate_type = EntityType::deserialize(&mut buffer);
         let formation = buffer.get_u32();
-        let aggregate_marking = AggregateMarking::decode(&mut buffer);
-        let dimensions = Vector3Float::decode(&mut buffer);
-        let orientation = EulerAngles::decode(&mut buffer);
-        let center_of_mass = Vector3Double::decode(&mut buffer);
-        let velocity = Vector3Float::decode(&mut buffer);
+        let aggregate_marking = AggregateMarking::deserialize(&mut buffer);
+        let dimensions = Vector3Float::deserialize(&mut buffer);
+        let orientation = EulerAngles::deserialize(&mut buffer);
+        let center_of_mass = Vector3Double::deserialize(&mut buffer);
+        let velocity = Vector3Float::deserialize(&mut buffer);
         let number_of_dis_aggregates = buffer.get_u16();
         let number_of_dis_entities = buffer.get_u16();
         let number_of_silent_aggregate_types = buffer.get_u16();
         let number_of_silent_entity_types = buffer.get_u16();
         let mut aggregate_id_list: Vec<AggregateId> = vec![];
         for _i in 0..number_of_dis_aggregates {
-            aggregate_id_list.push(AggregateId::decode(&mut buffer));
+            aggregate_id_list.push(AggregateId::deserialize(&mut buffer));
         }
         let mut entity_id_list: Vec<EntityId> = vec![];
         for _i in 0..number_of_dis_entities {
-            entity_id_list.push(EntityId::decode(&mut buffer));
+            entity_id_list.push(EntityId::deserialize(&mut buffer));
         }
         let pad2 = buffer.get_u8();
         let mut silent_aggregate_system_list: Vec<EntityType> = vec![];
         for _i in 0..number_of_silent_aggregate_types {
-            silent_aggregate_system_list.push(EntityType::decode(&mut buffer));
+            silent_aggregate_system_list.push(EntityType::deserialize(&mut buffer));
         }
         let mut silent_entity_system_list: Vec<EntityType> = vec![];
         for _i in 0..number_of_silent_entity_types {
-            silent_entity_system_list.push(EntityType::decode(&mut buffer));
+            silent_entity_system_list.push(EntityType::deserialize(&mut buffer));
         }
         let number_of_variable_datum_records = buffer.get_u32();
         let mut variable_datum_list: Vec<u64> = vec![];
@@ -305,7 +311,10 @@ mod tests {
             aggregate_state_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, aggregate_state_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, aggregate_state_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            aggregate_state_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

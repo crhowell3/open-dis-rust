@@ -73,14 +73,14 @@ impl Pdu for ReceiverPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Receiver {
-            let entity_id = EntityId::decode(&mut buffer);
+            let entity_id = EntityId::deserialize(&mut buffer);
             let radio_id = buffer.get_u16();
             let receiver_state = buffer.get_u16();
             let padding1 = buffer.get_u16();
             let received_power = buffer.get_f32();
-            let transmitter_entity_id = EntityId::decode(&mut buffer);
+            let transmitter_entity_id = EntityId::deserialize(&mut buffer);
             let transmitter_radio_id = buffer.get_u16();
             Ok(ReceiverPdu {
                 pdu_header,
@@ -93,7 +93,10 @@ impl Pdu for ReceiverPdu {
                 transmitter_radio_id,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type Receiver, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 
@@ -108,12 +111,12 @@ impl Pdu for ReceiverPdu {
     where
         Self: Sized,
     {
-        let entity_id = EntityId::decode(&mut buffer);
+        let entity_id = EntityId::deserialize(&mut buffer);
         let radio_id = buffer.get_u16();
         let receiver_state = buffer.get_u16();
         let padding1 = buffer.get_u16();
         let received_power = buffer.get_f32();
-        let transmitter_entity_id = EntityId::decode(&mut buffer);
+        let transmitter_entity_id = EntityId::deserialize(&mut buffer);
         let transmitter_radio_id = buffer.get_u16();
         Ok(ReceiverPdu {
             pdu_header,
@@ -157,7 +160,10 @@ mod tests {
             receiver_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, receiver_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, receiver_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            receiver_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

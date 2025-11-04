@@ -32,8 +32,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 mod udp {
     use bytes::BytesMut;
-    use open_dis_rust::common::pdu::Pdu;
-    use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+    use open_dis_rust::{common::Pdu, simulation_management::AcknowledgePdu};
     use std::error::Error;
     use std::io;
     use std::net::SocketAddr;

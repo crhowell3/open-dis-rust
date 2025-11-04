@@ -66,16 +66,16 @@ impl Pdu for CollisionPdu {
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<CollisionPdu, DISError> {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Collision {
-            let issuing_entity_id = EntityId::decode(&mut buffer);
-            let colliding_entity_id = EntityId::decode(&mut buffer);
-            let event_id = EventId::decode(&mut buffer);
+            let issuing_entity_id = EntityId::deserialize(&mut buffer);
+            let colliding_entity_id = EntityId::deserialize(&mut buffer);
+            let event_id = EventId::deserialize(&mut buffer);
             let collision_type = buffer.get_u8();
             let padding = buffer.get_u8();
-            let velocity = Vector3Float::decode(&mut buffer);
+            let velocity = Vector3Float::deserialize(&mut buffer);
             let mass = buffer.get_f32();
-            let location_wrt_entity = Vector3Float::decode(&mut buffer);
+            let location_wrt_entity = Vector3Float::deserialize(&mut buffer);
             Ok(CollisionPdu {
                 pdu_header,
                 issuing_entity_id,
@@ -88,7 +88,10 @@ impl Pdu for CollisionPdu {
                 location_wrt_entity,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type Collision, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 
@@ -103,14 +106,14 @@ impl Pdu for CollisionPdu {
     where
         Self: Sized,
     {
-        let issuing_entity_id = EntityId::decode(&mut buffer);
-        let colliding_entity_id = EntityId::decode(&mut buffer);
-        let event_id = EventId::decode(&mut buffer);
+        let issuing_entity_id = EntityId::deserialize(&mut buffer);
+        let colliding_entity_id = EntityId::deserialize(&mut buffer);
+        let event_id = EventId::deserialize(&mut buffer);
         let collision_type = buffer.get_u8();
         let padding = buffer.get_u8();
-        let velocity = Vector3Float::decode(&mut buffer);
+        let velocity = Vector3Float::deserialize(&mut buffer);
         let mass = buffer.get_f32();
-        let location_wrt_entity = Vector3Float::decode(&mut buffer);
+        let location_wrt_entity = Vector3Float::deserialize(&mut buffer);
         Ok(CollisionPdu {
             pdu_header,
             issuing_entity_id,
@@ -149,7 +152,7 @@ mod tests {
             collision_pdu.pdu_header.protocol_family
         );
         assert_eq!(header.length, collision_pdu.pdu_header.length);
-        assert_eq!(header.padding, collision_pdu.pdu_header.padding);
+        assert_eq!(header.status_record, collision_pdu.pdu_header.status_record);
     }
 
     #[test]

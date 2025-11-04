@@ -10,3 +10,8 @@ pub mod detonation_pdu;
 pub mod directed_energy_fire_pdu;
 pub mod entity_damage_status_pdu;
 pub mod fire_pdu;
+
+pub use detonation_pdu::DetonationPdu;
+pub use directed_energy_fire_pdu::DirectedEnergyFirePdu;
+pub use entity_damage_status_pdu::EntityDamageStatusPdu;
+pub use fire_pdu::FirePdu;

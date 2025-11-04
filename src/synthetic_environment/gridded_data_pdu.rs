@@ -112,17 +112,17 @@ impl Pdu for GriddedDataPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::GriddedData {
-            let environmental_simulation_id = EntityId::decode(&mut buffer);
+            let environmental_simulation_id = EntityId::deserialize(&mut buffer);
             let field_number = buffer.get_u16();
             let pdu_number = buffer.get_u16();
             let pdu_total = buffer.get_u16();
-            let coordinate_system = GriddedDataCoordinateSystem::decode(&mut buffer);
+            let coordinate_system = GriddedDataCoordinateSystem::deserialize(&mut buffer);
             let number_of_grid_axes = buffer.get_u8();
-            let constant_grid = GriddedDataConstantGrid::decode(&mut buffer);
-            let environment_type = EntityType::decode(&mut buffer);
-            let orientation = EulerAngles::decode(&mut buffer);
+            let constant_grid = GriddedDataConstantGrid::deserialize(&mut buffer);
+            let environment_type = EntityType::deserialize(&mut buffer);
+            let orientation = EulerAngles::deserialize(&mut buffer);
             let sample_time = buffer.get_u64();
             let total_values = buffer.get_u32();
             let vector_dimension = buffer.get_u8();
@@ -130,11 +130,11 @@ impl Pdu for GriddedDataPdu {
             let padding2 = buffer.get_u16();
             let mut grid_axis_descriptors: Vec<GridAxisDescriptor> = vec![];
             for _ in 0..number_of_grid_axes {
-                grid_axis_descriptors.push(GridAxisDescriptor::decode(&mut buffer));
+                grid_axis_descriptors.push(GridAxisDescriptor::deserialize(&mut buffer));
             }
             let mut grid_data_list: Vec<GridDataRecord> = vec![];
             while buffer.has_remaining() {
-                grid_data_list.push(GridDataRecord::decode(&mut buffer));
+                grid_data_list.push(GridDataRecord::deserialize(&mut buffer));
             }
 
             Ok(GriddedDataPdu {
@@ -157,7 +157,13 @@ impl Pdu for GriddedDataPdu {
                 grid_data_list,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type GriddedData, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -172,15 +178,15 @@ impl Pdu for GriddedDataPdu {
     where
         Self: Sized,
     {
-        let environmental_simulation_id = EntityId::decode(&mut buffer);
+        let environmental_simulation_id = EntityId::deserialize(&mut buffer);
         let field_number = buffer.get_u16();
         let pdu_number = buffer.get_u16();
         let pdu_total = buffer.get_u16();
-        let coordinate_system = GriddedDataCoordinateSystem::decode(&mut buffer);
+        let coordinate_system = GriddedDataCoordinateSystem::deserialize(&mut buffer);
         let number_of_grid_axes = buffer.get_u8();
-        let constant_grid = GriddedDataConstantGrid::decode(&mut buffer);
-        let environment_type = EntityType::decode(&mut buffer);
-        let orientation = EulerAngles::decode(&mut buffer);
+        let constant_grid = GriddedDataConstantGrid::deserialize(&mut buffer);
+        let environment_type = EntityType::deserialize(&mut buffer);
+        let orientation = EulerAngles::deserialize(&mut buffer);
         let sample_time = buffer.get_u64();
         let total_values = buffer.get_u32();
         let vector_dimension = buffer.get_u8();
@@ -188,11 +194,11 @@ impl Pdu for GriddedDataPdu {
         let padding2 = buffer.get_u16();
         let mut grid_axis_descriptors: Vec<GridAxisDescriptor> = vec![];
         for _ in 0..number_of_grid_axes {
-            grid_axis_descriptors.push(GridAxisDescriptor::decode(&mut buffer));
+            grid_axis_descriptors.push(GridAxisDescriptor::deserialize(&mut buffer));
         }
         let mut grid_data_list: Vec<GridDataRecord> = vec![];
         while buffer.has_remaining() {
-            grid_data_list.push(GridDataRecord::decode(&mut buffer));
+            grid_data_list.push(GridDataRecord::deserialize(&mut buffer));
         }
         Ok(GriddedDataPdu {
             pdu_header,
@@ -248,7 +254,10 @@ mod tests {
             gridded_data_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, gridded_data_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, gridded_data_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            gridded_data_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

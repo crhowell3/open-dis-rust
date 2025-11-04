@@ -27,7 +27,7 @@ impl ApaData {
         buf.put_i16(self.parameter_value);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> ApaData {
+    pub fn deserialize(buf: &mut BytesMut) -> ApaData {
         ApaData {
             parameter_index: buf.get_u16(),
             parameter_value: buf.get_i16(),

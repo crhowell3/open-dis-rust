@@ -50,15 +50,15 @@ impl AcousticEmitterSystemData {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> AcousticEmitterSystemData {
+    pub fn deserialize(buf: &mut BytesMut) -> AcousticEmitterSystemData {
         let emitter_system_data_length = buf.get_u8();
         let number_of_beams = buf.get_u8();
         let pad2 = buf.get_u16();
-        let acoustic_emitter_system = AcousticEmitterSystem::decode(buf);
-        let emitter_location = Vector3Float::decode(buf);
+        let acoustic_emitter_system = AcousticEmitterSystem::deserialize(buf);
+        let emitter_location = Vector3Float::deserialize(buf);
         let mut beam_records: Vec<AcousticBeamData> = vec![];
         for _i in 0..number_of_beams {
-            beam_records.push(AcousticBeamData::decode(buf));
+            beam_records.push(AcousticBeamData::deserialize(buf));
         }
         AcousticEmitterSystemData {
             emitter_system_data_length,

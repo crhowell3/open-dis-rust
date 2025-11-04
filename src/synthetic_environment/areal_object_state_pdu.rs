@@ -95,23 +95,23 @@ impl Pdu for ArealObjectStatePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::ArealObjectState {
-            let object_id = EntityId::decode(&mut buffer);
-            let referenced_object_id = EntityId::decode(&mut buffer);
+            let object_id = EntityId::deserialize(&mut buffer);
+            let referenced_object_id = EntityId::deserialize(&mut buffer);
             let update_number = buffer.get_u16();
             let force_id = buffer.get_u8();
             let modifications = buffer.get_u8();
-            let object_type = EntityType::decode(&mut buffer);
+            let object_type = EntityType::deserialize(&mut buffer);
             let specific_object_appearance = buffer.get_u32();
             let general_object_appearance =
                 ObjectStateAppearanceGeneral::from_u16(buffer.get_u16()).unwrap();
             let number_of_points = buffer.get_u16();
-            let requester_id = SimulationAddress::decode(&mut buffer);
-            let receiving_id = SimulationAddress::decode(&mut buffer);
+            let requester_id = SimulationAddress::deserialize(&mut buffer);
+            let receiving_id = SimulationAddress::deserialize(&mut buffer);
             let mut object_location: Vec<Vector3Double> = vec![];
             for _i in 0..number_of_points {
-                object_location.push(Vector3Double::decode(&mut buffer));
+                object_location.push(Vector3Double::deserialize(&mut buffer));
             }
             Ok(ArealObjectStatePdu {
                 pdu_header,
@@ -129,7 +129,13 @@ impl Pdu for ArealObjectStatePdu {
                 object_location,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type ArealObjectState, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -144,21 +150,21 @@ impl Pdu for ArealObjectStatePdu {
     where
         Self: Sized,
     {
-        let object_id = EntityId::decode(&mut buffer);
-        let referenced_object_id = EntityId::decode(&mut buffer);
+        let object_id = EntityId::deserialize(&mut buffer);
+        let referenced_object_id = EntityId::deserialize(&mut buffer);
         let update_number = buffer.get_u16();
         let force_id = buffer.get_u8();
         let modifications = buffer.get_u8();
-        let object_type = EntityType::decode(&mut buffer);
+        let object_type = EntityType::deserialize(&mut buffer);
         let specific_object_appearance = buffer.get_u32();
         let general_object_appearance =
             ObjectStateAppearanceGeneral::from_u16(buffer.get_u16()).unwrap();
         let number_of_points = buffer.get_u16();
-        let requester_id = SimulationAddress::decode(&mut buffer);
-        let receiving_id = SimulationAddress::decode(&mut buffer);
+        let requester_id = SimulationAddress::deserialize(&mut buffer);
+        let receiving_id = SimulationAddress::deserialize(&mut buffer);
         let mut object_location: Vec<Vector3Double> = vec![];
         for _i in 0..number_of_points {
-            object_location.push(Vector3Double::decode(&mut buffer));
+            object_location.push(Vector3Double::deserialize(&mut buffer));
         }
         Ok(ArealObjectStatePdu {
             pdu_header,
@@ -214,8 +220,8 @@ mod tests {
         );
         assert_eq!(pdu_header.length, areal_object_state_pdu.pdu_header.length);
         assert_eq!(
-            pdu_header.padding,
-            areal_object_state_pdu.pdu_header.padding
+            pdu_header.status_record,
+            areal_object_state_pdu.pdu_header.status_record
         );
     }
 

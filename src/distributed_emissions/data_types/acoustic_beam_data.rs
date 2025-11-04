@@ -39,12 +39,12 @@ impl AcousticBeamData {
         self.fundamental_data_parameters.serialize(buf);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> AcousticBeamData {
+    pub fn deserialize(buf: &mut BytesMut) -> AcousticBeamData {
         AcousticBeamData {
             beam_data_length: buf.get_u16(),
             beam_id_number: buf.get_u8(),
             pad2: buf.get_u16(),
-            fundamental_data_parameters: AcousticBeamFundamentalParameter::decode(buf),
+            fundamental_data_parameters: AcousticBeamFundamentalParameter::deserialize(buf),
         }
     }
 }

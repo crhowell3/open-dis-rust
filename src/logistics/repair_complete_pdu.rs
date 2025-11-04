@@ -62,11 +62,11 @@ impl Pdu for RepairCompletePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::RepairComplete {
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let repairing_entity_id = EntityId::decode(&mut buffer);
-            let repair = RepairGroups::decode(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let repairing_entity_id = EntityId::deserialize(&mut buffer);
+            let repair = RepairGroups::deserialize(&mut buffer);
             let padding2 = buffer.get_i8();
 
             Ok(RepairCompletePdu {
@@ -77,7 +77,13 @@ impl Pdu for RepairCompletePdu {
                 padding2,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type RepairComplete, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -92,9 +98,9 @@ impl Pdu for RepairCompletePdu {
     where
         Self: Sized,
     {
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let repairing_entity_id = EntityId::decode(&mut buffer);
-        let repair = RepairGroups::decode(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let repairing_entity_id = EntityId::deserialize(&mut buffer);
+        let repair = RepairGroups::deserialize(&mut buffer);
         let padding2 = buffer.get_i8();
 
         Ok(RepairCompletePdu {
@@ -136,7 +142,10 @@ mod tests {
             repair_complete_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, repair_complete_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, repair_complete_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            repair_complete_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

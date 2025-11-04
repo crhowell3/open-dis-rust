@@ -77,15 +77,15 @@ impl Pdu for TransferOwnershipPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::TransferOwnership {
-            let originating_id = SimulationAddress::decode(&mut buffer);
-            let receiving_id = SimulationAddress::decode(&mut buffer);
+            let originating_id = SimulationAddress::deserialize(&mut buffer);
+            let receiving_id = SimulationAddress::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
             let required_reliability_service = buffer.get_u8();
             let transfer_type = buffer.get_u8();
-            let transfer_entity_id = EntityId::decode(&mut buffer);
-            let record_information = RecordSpecification::decode(&mut buffer);
+            let transfer_entity_id = EntityId::deserialize(&mut buffer);
+            let record_information = RecordSpecification::deserialize(&mut buffer);
             Ok(TransferOwnershipPdu {
                 pdu_header,
                 originating_id,
@@ -97,7 +97,13 @@ impl Pdu for TransferOwnershipPdu {
                 record_information,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type TransferOwnership, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -112,13 +118,13 @@ impl Pdu for TransferOwnershipPdu {
     where
         Self: Sized,
     {
-        let originating_id = SimulationAddress::decode(&mut buffer);
-        let receiving_id = SimulationAddress::decode(&mut buffer);
+        let originating_id = SimulationAddress::deserialize(&mut buffer);
+        let receiving_id = SimulationAddress::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
         let required_reliability_service = buffer.get_u8();
         let transfer_type = buffer.get_u8();
-        let transfer_entity_id = EntityId::decode(&mut buffer);
-        let record_information = RecordSpecification::decode(&mut buffer);
+        let transfer_entity_id = EntityId::deserialize(&mut buffer);
+        let record_information = RecordSpecification::deserialize(&mut buffer);
         Ok(TransferOwnershipPdu {
             pdu_header,
             originating_id,
@@ -168,8 +174,8 @@ mod tests {
         );
         assert_eq!(pdu_header.length, transfer_ownership_pdu.pdu_header.length);
         assert_eq!(
-            pdu_header.padding,
-            transfer_ownership_pdu.pdu_header.padding
+            pdu_header.status_record,
+            transfer_ownership_pdu.pdu_header.status_record
         );
     }
 

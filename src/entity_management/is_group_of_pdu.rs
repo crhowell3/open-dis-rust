@@ -76,9 +76,9 @@ impl Pdu for IsGroupOfPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::IsGroupOf {
-            let group_entity_id = EntityId::decode(&mut buffer);
+            let group_entity_id = EntityId::deserialize(&mut buffer);
             let grouped_entity_category = buffer.get_u8();
             let number_of_grouped_entities = buffer.get_u8();
             let pad2 = buffer.get_u32();
@@ -99,7 +99,10 @@ impl Pdu for IsGroupOfPdu {
                 grouped_entity_descriptions,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type IsGroupOf, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 
@@ -114,7 +117,7 @@ impl Pdu for IsGroupOfPdu {
     where
         Self: Sized,
     {
-        let group_entity_id = EntityId::decode(&mut buffer);
+        let group_entity_id = EntityId::deserialize(&mut buffer);
         let grouped_entity_category = buffer.get_u8();
         let number_of_grouped_entities = buffer.get_u8();
         let pad2 = buffer.get_u32();
@@ -169,7 +172,10 @@ mod tests {
             is_group_of_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, is_group_of_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, is_group_of_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            is_group_of_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

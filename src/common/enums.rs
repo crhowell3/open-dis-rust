@@ -8,6 +8,7 @@
 
 use bitflags::bitflags;
 use bytes::{Buf, BytesMut};
+use modular_bitfield::Specifier;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -28,7 +29,7 @@ pub enum ProtocolVersion {
 
 impl ProtocolVersion {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -114,7 +115,7 @@ pub enum PduType {
 
 impl PduType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -141,7 +142,7 @@ pub enum ProtocolFamily {
 
 impl ProtocolFamily {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -185,7 +186,7 @@ pub enum ForceId {
 
 impl ForceId {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -208,7 +209,7 @@ pub enum EntityKind {
 
 impl EntityKind {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -227,7 +228,7 @@ pub enum OtherKinds {
 
 impl OtherKinds {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -298,7 +299,7 @@ pub enum LandDomainCategories {
 
 impl LandDomainCategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -345,7 +346,7 @@ pub enum AirDomainCategories {
 
 impl AirDomainCategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -406,7 +407,7 @@ pub enum SurfaceDomainCategories {
 
 impl SurfaceDomainCategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -439,7 +440,7 @@ pub enum SubsurfaceDomainCategories {
 
 impl SubsurfaceDomainCategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -465,7 +466,7 @@ pub enum SpaceDomainCategories {
 
 impl SpaceDomainCategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -491,7 +492,7 @@ pub enum MunitionKind {
 
 impl MunitionKind {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -508,7 +509,7 @@ pub enum MunitionCategory {
 
 impl MunitionCategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -644,7 +645,7 @@ pub enum USWeaponSubcategories {
 
 impl USWeaponSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -709,7 +710,7 @@ pub enum RussiaWeaponSubcategories {
 
 impl RussiaWeaponSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -734,7 +735,7 @@ pub enum UKWeaponSubcategories {
 
 impl UKWeaponSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -755,7 +756,7 @@ pub enum FrenchWeaponSubcategories {
 
 impl FrenchWeaponSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -777,7 +778,7 @@ pub enum LifeFormsSubcategoryGermanWeapons {
 
 impl LifeFormsSubcategoryGermanWeapons {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -796,7 +797,7 @@ pub enum EnvironmentalSubcategory {
 
 impl EnvironmentalSubcategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -853,7 +854,7 @@ pub enum RadioCategory {
 
 impl RadioCategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -926,7 +927,7 @@ pub enum RadioSubcategory {
 
 impl RadioSubcategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -951,7 +952,7 @@ pub enum ExpendableAirCategory {
 
 impl ExpendableAirCategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -971,7 +972,7 @@ pub enum ExpendableSurfaceCategory {
 
 impl ExpendableSurfaceCategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -991,7 +992,7 @@ pub enum ExpendableSubsurfaceCategory {
 
 impl ExpendableSubsurfaceCategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -1021,7 +1022,7 @@ pub enum SensorEmitterCategory {
 
 impl SensorEmitterCategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -1316,7 +1317,7 @@ pub enum Country {
 
 impl Country {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -1392,7 +1393,7 @@ pub enum DeadReckoningAlgorithm {
 
 impl DeadReckoningAlgorithm {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -1409,7 +1410,7 @@ pub enum EntityMarkingCharacterSet {
 
 impl EntityMarkingCharacterSet {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -1435,7 +1436,7 @@ pub enum EntityCapabilities {
 
 impl EntityCapabilities {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -1453,7 +1454,7 @@ pub enum VariableParameterRecordType {
 
 impl VariableParameterRecordType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -1481,7 +1482,7 @@ pub enum AttachedParts {
 
 impl AttachedParts {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
@@ -1511,7 +1512,7 @@ pub enum ArticulatedPartsTypeMetric {
 
 impl ArticulatedPartsTypeMetric {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -1782,7 +1783,7 @@ pub enum ArticulatedPartsTypeClass {
 
 impl ArticulatedPartsTypeClass {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
@@ -1892,7 +1893,7 @@ pub enum MunitionDescriptorWarhead {
 
 impl MunitionDescriptorWarhead {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -2012,7 +2013,7 @@ pub enum MunitionDescriptorFuse {
 
 impl MunitionDescriptorFuse {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -2059,7 +2060,7 @@ pub enum DetonationResult {
 
 impl DetonationResult {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -2077,7 +2078,7 @@ pub enum ServiceRequestServiceTypeRequested {
 
 impl ServiceRequestServiceTypeRequested {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -2174,7 +2175,7 @@ pub enum RepairCompleteRepair {
 
 impl RepairCompleteRepair {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -2192,7 +2193,7 @@ pub enum RepairResponseRepairResult {
 
 impl RepairResponseRepairResult {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -3453,7 +3454,7 @@ pub enum VariableRecordTypes {
 
 impl VariableRecordTypes {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
@@ -3475,7 +3476,7 @@ pub enum Reason {
 
 impl Reason {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -3521,7 +3522,7 @@ pub enum AcknowledgeFlag {
 
 impl AcknowledgeFlag {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -3538,7 +3539,7 @@ pub enum AcknowledgeResponseFlag {
 
 impl AcknowledgeResponseFlag {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -3603,7 +3604,7 @@ pub enum ActionRequestActionID {
 
 impl ActionRequestActionID {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
@@ -3630,7 +3631,7 @@ pub enum ActionResponseRequestStatus {
 
 impl ActionResponseRequestStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
@@ -3662,7 +3663,7 @@ pub enum EventType {
 
 impl EventType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
@@ -3677,7 +3678,7 @@ pub enum RequiredReliabilityService {
 
 impl RequiredReliabilityService {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6455,7 +6456,7 @@ pub enum EmitterName {
 
 impl EmitterName {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         EmitterName::from_u16(buf.get_u16()).unwrap_or(EmitterName::default())
     }
 }
@@ -6564,7 +6565,7 @@ pub enum EmitterSystemFunction {
 
 impl EmitterSystemFunction {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6579,7 +6580,7 @@ pub enum ElectromagneticEmissionStateUpdateIndicator {
 
 impl ElectromagneticEmissionStateUpdateIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6616,7 +6617,7 @@ pub enum ElectromagneticEmissionBeamFunction {
 
 impl ElectromagneticEmissionBeamFunction {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6631,7 +6632,7 @@ pub enum HighDensityTrackJam {
 
 impl HighDensityTrackJam {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6747,7 +6748,7 @@ pub enum DesignatorSystemName {
 
 impl DesignatorSystemName {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -6762,7 +6763,7 @@ pub enum DesignatorCode {
 
 impl DesignatorCode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -6790,7 +6791,7 @@ pub enum IFFSystemType {
 
 impl IFFSystemType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -6822,7 +6823,7 @@ pub enum IFFSystemName {
 
 impl IFFSystemName {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -6841,7 +6842,7 @@ pub enum IFFSystemMode {
 
 impl IFFSystemMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6855,7 +6856,7 @@ pub enum IFFLayerSpecificInformation {
 
 impl IFFLayerSpecificInformation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6873,7 +6874,7 @@ pub enum IFFAlternateMode4ChallengeReply {
 
 impl IFFAlternateMode4ChallengeReply {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6887,7 +6888,7 @@ pub enum IFFSystemType1OperationalParameter1 {
 
 impl IFFSystemType1OperationalParameter1 {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6901,7 +6902,7 @@ pub enum IFFSystemType1OperationalParameter2 {
 
 impl IFFSystemType1OperationalParameter2 {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6943,7 +6944,7 @@ pub enum SubcategoriesforLandCategory200Mammal {
 
 impl SubcategoriesforLandCategory200Mammal {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6979,7 +6980,7 @@ pub enum SubcategoriesforLandCategory201Reptile {
 
 impl SubcategoriesforLandCategory201Reptile {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -6996,7 +6997,7 @@ pub enum SubcategoriesforLandCategory202Amphibian {
 
 impl SubcategoriesforLandCategory202Amphibian {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7016,7 +7017,7 @@ pub enum SubcategoriesforLandCategory203Insect {
 
 impl SubcategoriesforLandCategory203Insect {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7034,7 +7035,7 @@ pub enum SubcategoriesforLandCategory204Arachnid {
 
 impl SubcategoriesforLandCategory204Arachnid {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7049,7 +7050,7 @@ pub enum SubcategoriesforLandCategory205Mollusk {
 
 impl SubcategoriesforLandCategory205Mollusk {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7074,7 +7075,7 @@ pub enum SubcategoriesforLandCategory206Marsupial {
 
 impl SubcategoriesforLandCategory206Marsupial {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7114,7 +7115,7 @@ pub enum SubcategoriesforAirCategory200Bird {
 
 impl SubcategoriesforAirCategory200Bird {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7136,7 +7137,7 @@ pub enum SubcategoriesforAirCategory201Insect {
 
 impl SubcategoriesforAirCategory201Insect {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7152,7 +7153,7 @@ pub enum SubcategoriesforAirCategory202Mammal {
 
 impl SubcategoriesforAirCategory202Mammal {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7192,7 +7193,7 @@ pub enum SubcategoriesforSubsurfaceCategory200Fish {
 
 impl SubcategoriesforSubsurfaceCategory200Fish {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7264,7 +7265,7 @@ pub enum SubcategoriesforSubsurfaceCategory201Mammal {
 
 impl SubcategoriesforSubsurfaceCategory201Mammal {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7286,7 +7287,7 @@ pub enum SubcategoriesforSubsurfaceCategory202Mollusk {
 
 impl SubcategoriesforSubsurfaceCategory202Mollusk {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7304,7 +7305,7 @@ pub enum SubcategoriesforSubsurfaceCategory203Crustacean {
 
 impl SubcategoriesforSubsurfaceCategory203Crustacean {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7319,7 +7320,7 @@ pub enum SubcategoriesforSubsurfaceCategory204Insect {
 
 impl SubcategoriesforSubsurfaceCategory204Insect {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7346,7 +7347,7 @@ pub enum AnimalLifeformGroupSizeRangeEnumerationforallDomains {
 
 impl AnimalLifeformGroupSizeRangeEnumerationforallDomains {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7365,7 +7366,7 @@ pub enum SpecificDimensionEnumerationsforLandAreaSize {
 
 impl SpecificDimensionEnumerationsforLandAreaSize {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7384,7 +7385,7 @@ pub enum SpecificDimensionEnumerationsforAirAreaSize {
 
 impl SpecificDimensionEnumerationsforAirAreaSize {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7403,7 +7404,7 @@ pub enum AddSpecificDimensionEnumerationsforSubsurfaceAreaSize {
 
 impl AddSpecificDimensionEnumerationsforSubsurfaceAreaSize {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7422,7 +7423,7 @@ pub enum AddVariantsforLandCategory200Mammal {
 
 impl AddVariantsforLandCategory200Mammal {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7440,7 +7441,7 @@ pub enum VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids {
 
 impl VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7457,7 +7458,7 @@ pub enum VariantsforAirCategory200Bird {
 
 impl VariantsforAirCategory200Bird {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7473,7 +7474,7 @@ pub enum AddVariantsforAirCategory201Insect {
 
 impl AddVariantsforAirCategory201Insect {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7494,7 +7495,7 @@ pub enum AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect {
 
 impl AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7509,7 +7510,7 @@ pub enum VariantsforSubsurfaceCategory201Mammal {
 
 impl VariantsforSubsurfaceCategory201Mammal {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7524,7 +7525,7 @@ pub enum UAStateChangeUpdateIndicator {
 
 impl UAStateChangeUpdateIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7547,7 +7548,7 @@ pub enum UAAcousticSystemName {
 
 impl UAAcousticSystemName {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7565,7 +7566,7 @@ pub enum UAAcousticEmitterSystemFunction {
 
 impl UAAcousticEmitterSystemFunction {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7579,7 +7580,7 @@ pub enum UAActiveEmissionParameterIndex {
 
 impl UAActiveEmissionParameterIndex {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7598,7 +7599,7 @@ pub enum UAScanPattern {
 
 impl UAScanPattern {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7612,7 +7613,7 @@ pub enum UAPassiveParameterIndex {
 
 impl UAPassiveParameterIndex {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7626,7 +7627,7 @@ pub enum UAAdditionalPassiveActivityParameterIndex {
 
 impl UAAdditionalPassiveActivityParameterIndex {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7648,7 +7649,7 @@ pub enum TransmitterMajorModulation {
 
 impl TransmitterMajorModulation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7672,7 +7673,7 @@ pub enum TransmitterDetailAmplitudeModulation {
 
 impl TransmitterDetailAmplitudeModulation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7687,7 +7688,7 @@ pub enum TransmitterDetailAmplitudeandAngleModulation {
 
 impl TransmitterDetailAmplitudeandAngleModulation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7705,7 +7706,7 @@ pub enum TransmitterDetailAngleModulation {
 
 impl TransmitterDetailAngleModulation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7720,7 +7721,7 @@ pub enum TransmitterDetailCombinationModulation {
 
 impl TransmitterDetailCombinationModulation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7737,7 +7738,7 @@ pub enum TransmitterDetailPulseModulation {
 
 impl TransmitterDetailPulseModulation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7752,7 +7753,7 @@ pub enum TransmitterDetailUnmodulatedModulation {
 
 impl TransmitterDetailUnmodulatedModulation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7766,7 +7767,7 @@ pub enum TransmitterDetailCarrierPhaseShiftModulation {
 
 impl TransmitterDetailCarrierPhaseShiftModulation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7793,7 +7794,7 @@ pub enum TransmitterModulationTypeSystem {
 
 impl TransmitterModulationTypeSystem {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7809,7 +7810,7 @@ pub enum TransmitterTransmitState {
 
 impl TransmitterTransmitState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7837,7 +7838,7 @@ pub enum TransmitterInputSource {
 
 impl TransmitterInputSource {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7865,7 +7866,7 @@ pub enum TransmitterCryptoSystem {
 
 impl TransmitterCryptoSystem {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7884,7 +7885,7 @@ pub enum TransmitterAntennaPatternType {
 
 impl TransmitterAntennaPatternType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -7899,7 +7900,7 @@ pub enum TransmitterAntennaPatternReferenceSystem {
 
 impl TransmitterAntennaPatternReferenceSystem {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7914,7 +7915,7 @@ pub enum CCTTSINCGARSStartofMessage {
 
 impl CCTTSINCGARSStartofMessage {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7929,7 +7930,7 @@ pub enum CCTTSINCGARSClearChannel {
 
 impl CCTTSINCGARSClearChannel {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7947,7 +7948,7 @@ pub enum TimeSlotAllocationLevel {
 
 impl TimeSlotAllocationLevel {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7962,7 +7963,7 @@ pub enum JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode {
 
 impl JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7979,7 +7980,7 @@ pub enum JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode {
 
 impl JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -7997,7 +7998,7 @@ pub enum JTIDSMIDSModulationParametersSynchronizationState {
 
 impl JTIDSMIDSModulationParametersSynchronizationState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8018,7 +8019,7 @@ pub enum MessageTypeIdentifier {
 
 impl MessageTypeIdentifier {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8066,7 +8067,7 @@ pub enum SignalUserProtocolIdentificationNumber {
 
 impl SignalUserProtocolIdentificationNumber {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
@@ -8177,7 +8178,7 @@ pub enum SignalTDLType {
 
 impl SignalTDLType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8193,7 +8194,7 @@ pub enum ReceiverReceiverState {
 
 impl ReceiverReceiverState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8212,7 +8213,7 @@ pub enum IntercomControlControlType {
 
 impl IntercomControlControlType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8230,7 +8231,7 @@ pub enum IntercomControlCommunicationsType {
 
 impl IntercomControlCommunicationsType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8250,7 +8251,7 @@ pub enum IntercomControlCommand {
 
 impl IntercomControlCommand {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8266,7 +8267,7 @@ pub enum IntercomControlTransmitLineState {
 
 impl IntercomControlTransmitLineState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8283,7 +8284,7 @@ pub enum IntercomControlDestinationLineStateCommand {
 
 impl IntercomControlDestinationLineStateCommand {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8299,7 +8300,7 @@ pub enum IntercomControlRecordType {
 
 impl IntercomControlRecordType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8315,7 +8316,7 @@ pub enum CollisionType {
 
 impl CollisionType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8337,7 +8338,7 @@ pub enum MinefieldSensorTypes {
 
 impl MinefieldSensorTypes {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8362,7 +8363,7 @@ pub enum MinefieldSensorTypesOptical {
 
 impl MinefieldSensorTypesOptical {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8385,7 +8386,7 @@ pub enum MinefieldSensorTypesFLIR {
 
 impl MinefieldSensorTypesFLIR {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8404,7 +8405,7 @@ pub enum MinefieldSensorTypesRADAR {
 
 impl MinefieldSensorTypesRADAR {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8421,7 +8422,7 @@ pub enum MinefieldSensorTypesMagnetic {
 
 impl MinefieldSensorTypesMagnetic {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8436,7 +8437,7 @@ pub enum MinefieldSensorTypesLaser {
 
 impl MinefieldSensorTypesLaser {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8450,7 +8451,7 @@ pub enum MinefieldSensorTypesSONAR {
 
 impl MinefieldSensorTypesSONAR {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8466,7 +8467,7 @@ pub enum MinefieldSensorTypesPhysical {
 
 impl MinefieldSensorTypesPhysical {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8480,7 +8481,7 @@ pub enum MinefieldSensorTypesMultispectral {
 
 impl MinefieldSensorTypesMultispectral {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8499,7 +8500,7 @@ pub enum AggregateStateAggregateState {
 
 impl AggregateStateAggregateState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8518,7 +8519,7 @@ pub enum AggregateStateFormation {
 
 impl AggregateStateFormation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
@@ -8537,7 +8538,7 @@ pub enum AggregateStateAggregateKind {
 
 impl AggregateStateAggregateKind {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8573,7 +8574,7 @@ pub enum AggregateStateSubcategory {
 
 impl AggregateStateSubcategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8588,7 +8589,7 @@ pub enum AggregateStateSpecific {
 
 impl AggregateStateSpecific {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8612,7 +8613,7 @@ pub enum IsPartOfNature {
 
 impl IsPartOfNature {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8628,7 +8629,7 @@ pub enum IsPartOfPosition {
 
 impl IsPartOfPosition {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8664,7 +8665,7 @@ pub enum IsPartOfStationName {
 
 impl IsPartOfStationName {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8687,7 +8688,7 @@ pub enum IsGroupOfGroupedEntityCategory {
 
 impl IsGroupOfGroupedEntityCategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8709,7 +8710,7 @@ pub enum IsGroupOfRestStatus {
 
 impl IsGroupOfRestStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8731,7 +8732,7 @@ pub enum TransferControlTransferType {
 
 impl TransferControlTransferType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8753,7 +8754,7 @@ pub enum ObjectKind {
 
 impl ObjectKind {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8796,7 +8797,7 @@ pub enum GriddedDataFieldNumber {}
 
 impl GriddedDataFieldNumber {
     #[must_use]
-    pub fn decode(_buf: &mut BytesMut) -> Self {
+    pub fn deserialize(_buf: &mut BytesMut) -> Self {
         unimplemented!()
     }
 }
@@ -8813,7 +8814,7 @@ pub enum GriddedDataCoordinateSystem {
 
 impl GriddedDataCoordinateSystem {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -8828,7 +8829,7 @@ pub enum GriddedDataConstantGrid {
 
 impl GriddedDataConstantGrid {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8842,7 +8843,7 @@ pub enum GriddedDataSampleType {
 
 impl GriddedDataSampleType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8858,7 +8859,7 @@ pub enum GriddedDataDataRepresentation {
 
 impl GriddedDataDataRepresentation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8872,7 +8873,7 @@ pub enum EnvironmentalProcessModelType {
 
 impl EnvironmentalProcessModelType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8904,7 +8905,7 @@ pub enum EnvironmentalProcessRecordType {
 
 impl EnvironmentalProcessRecordType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or(Self::default())
     }
 }
@@ -8921,7 +8922,7 @@ pub enum SignalEncodingClass {
 
 impl SignalEncodingClass {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8947,7 +8948,7 @@ pub enum SignalEncodingType {
 
 impl SignalEncodingType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8970,7 +8971,7 @@ pub enum RepairGroups {
 
 impl RepairGroups {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -8985,7 +8986,7 @@ pub enum EnvironmentRecordTypeGroups {
 
 impl EnvironmentRecordTypeGroups {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9003,7 +9004,7 @@ pub enum PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories {
 
 impl PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9018,7 +9019,7 @@ pub enum PlatformAirCivilianUltralightRigidWingAircraftSubcategories {
 
 impl PlatformAirCivilianUltralightRigidWingAircraftSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9033,7 +9034,7 @@ pub enum PlatformAirCivilianGliderSubcategories {
 
 impl PlatformAirCivilianGliderSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9054,7 +9055,7 @@ pub enum PlatformAirCivilianFixedWingAircraftSubcategories {
 
 impl PlatformAirCivilianFixedWingAircraftSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9074,7 +9075,7 @@ pub enum PlatformAirCivilianHelicopterSubcategories {
 
 impl PlatformAirCivilianHelicopterSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9092,7 +9093,7 @@ pub enum PlatformAirCivilianLighterthanAirBalloonSubcategories {
 
 impl PlatformAirCivilianLighterthanAirBalloonSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9109,7 +9110,7 @@ pub enum PlatformAirCivilianLighterthanAirAirshipSubcategories {
 
 impl PlatformAirCivilianLighterthanAirAirshipSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9126,7 +9127,7 @@ pub enum APAParameterIndexAPAStatus {
 
 impl APAParameterIndexAPAStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9142,7 +9143,7 @@ pub enum SeparationVPReasonforSeparation {
 
 impl SeparationVPReasonforSeparation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9159,7 +9160,7 @@ pub enum SeparationVPPreEntityIndicator {
 
 impl SeparationVPPreEntityIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9179,7 +9180,7 @@ pub enum IOActionIOWarfareType {
 
 impl IOActionIOWarfareType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9193,7 +9194,7 @@ pub enum IOActionIOSimulationSource {
 
 impl IOActionIOSimulationSource {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9211,7 +9212,7 @@ pub enum IOActionIOActionType {
 
 impl IOActionIOActionType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9231,7 +9232,7 @@ pub enum IOActionIOActionPhase {
 
 impl IOActionIOActionPhase {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9248,7 +9249,7 @@ pub enum IOReportIOReportType {
 
 impl IOReportIOReportType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9269,7 +9270,7 @@ pub enum IOEffectsRecordIOStatus {
 
 impl IOEffectsRecordIOStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9286,7 +9287,7 @@ pub enum IOEffectsRecordIOLinkType {
 
 impl IOEffectsRecordIOLinkType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9304,7 +9305,7 @@ pub enum IOEffectsRecordIOEffect {
 
 impl IOEffectsRecordIOEffect {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9318,7 +9319,7 @@ pub enum IOEffectsRecordIOProcess {
 
 impl IOEffectsRecordIOProcess {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9335,7 +9336,7 @@ pub enum IOCommsNodeRecordCommsNodeType {
 
 impl IOCommsNodeRecordCommsNodeType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9349,7 +9350,7 @@ pub enum DISAttributeActionCode {
 
 impl DISAttributeActionCode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9365,7 +9366,7 @@ pub enum DRParametersType {
 
 impl DRParametersType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9380,7 +9381,7 @@ pub enum HighFidelityHAVEQUICKTODTransmitIndicator {
 
 impl HighFidelityHAVEQUICKTODTransmitIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9396,7 +9397,7 @@ pub enum NETIDRecordMode {
 
 impl NETIDRecordMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9413,7 +9414,7 @@ pub enum NETIDRecordFrequencyTable {
 
 impl NETIDRecordFrequencyTable {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9429,13 +9430,14 @@ pub enum EEAttributeStateIndicator {
 
 impl EEAttributeStateIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
 // SISO-REF-010-2023 DISPDUStatusTransferredEntityIndicator(TEI) [UID 301]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
 pub enum TransferredEntityIndicator {
     #[default]
     NoDifference = 0,
@@ -9444,13 +9446,14 @@ pub enum TransferredEntityIndicator {
 
 impl TransferredEntityIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
 // SISO-REF-010-2023 LVCIndicator [UID 302]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 2]
 pub enum LVCIndicator {
     #[default]
     NoStatement = 0,
@@ -9461,13 +9464,14 @@ pub enum LVCIndicator {
 
 impl LVCIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
 // SISO-REF-010-2023 DISPDUStatusCoupledExtensionIndicator(CEI) [UID 303]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
 pub enum CoupledExtensionIndicator {
     #[default]
     NotCoupled = 0,
@@ -9476,13 +9480,14 @@ pub enum CoupledExtensionIndicator {
 
 impl CoupledExtensionIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
 // SISO-REF-010-2023 DISPDUStatusFireTypeIndicator(FTI) [UID 304]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
 pub enum FireTypeIndicator {
     #[default]
     Munition = 0,
@@ -9491,29 +9496,47 @@ pub enum FireTypeIndicator {
 
 impl FireTypeIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
 // SISO-REF-010-2023 DISPDUStatusDetonationTypeIndicator(DTI) [UID 305]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 2]
 pub enum DetonationTypeIndicator {
     #[default]
     Munition = 0,
     Expendable = 1,
-    NonmunitionExplosion = 2,
+    NonMunitionExplosion = 2,
+}
+
+impl From<u8> for DetonationTypeIndicator {
+    fn from(value: u8) -> Self {
+        match value & 0b11 {
+            1 => Self::Expendable,
+            2 => Self::NonMunitionExplosion,
+            _ => Self::Munition,
+        }
+    }
+}
+
+impl From<DetonationTypeIndicator> for u8 {
+    fn from(value: DetonationTypeIndicator) -> Self {
+        value as u8
+    }
 }
 
 impl DetonationTypeIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
 // SISO-REF-010-2023 RadioAttachedIndicator [UID 306]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 2]
 pub enum RadioAttachedIndicator {
     #[default]
     NoStatement = 0,
@@ -9521,15 +9544,32 @@ pub enum RadioAttachedIndicator {
     Attached = 2,
 }
 
+impl From<u8> for RadioAttachedIndicator {
+    fn from(value: u8) -> Self {
+        match value & 0b11 {
+            1 => Self::Unattached,
+            2 => Self::Attached,
+            _ => Self::NoStatement,
+        }
+    }
+}
+
+impl From<RadioAttachedIndicator> for u8 {
+    fn from(value: RadioAttachedIndicator) -> Self {
+        value as u8
+    }
+}
+
 impl RadioAttachedIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
 // SISO-REF-010-2023 IntercomAttachedIndicator(IAI) [UID 307]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 2]
 pub enum IntercomAttachedIndicator {
     #[default]
     NoStatement = 0,
@@ -9537,24 +9577,41 @@ pub enum IntercomAttachedIndicator {
     Attached = 2,
 }
 
+impl From<u8> for IntercomAttachedIndicator {
+    fn from(value: u8) -> Self {
+        match value & 0b11 {
+            1 => Self::Unattached,
+            2 => Self::Attached,
+            _ => Self::NoStatement,
+        }
+    }
+}
+
+impl From<IntercomAttachedIndicator> for u8 {
+    fn from(value: IntercomAttachedIndicator) -> Self {
+        value as u8
+    }
+}
+
 impl IntercomAttachedIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
-// SISO-REF-010-2023 PDUStatusIFFSimulationMode [UID 308]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum PDUStatusIFFSimulationMode {
+// SISO-REF-010-2023 PduStatusIFFSimulationMode [UID 308]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
+pub enum PduStatusIFFSimulationMode {
     #[default]
     Regeneration = 0,
     Interactive = 1,
 }
 
-impl PDUStatusIFFSimulationMode {
+impl PduStatusIFFSimulationMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9574,7 +9631,7 @@ pub enum ExplosiveMaterialGroups {
 
 impl ExplosiveMaterialGroups {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9632,7 +9689,7 @@ pub enum ExplosiveMaterialCategories {
 
 impl ExplosiveMaterialCategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -9648,7 +9705,7 @@ pub enum DEPrecisionAimpointBeamSpotType {
 
 impl DEPrecisionAimpointBeamSpotType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9665,7 +9722,7 @@ pub enum DEFirePulseShape {
 
 impl DEFirePulseShape {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9688,7 +9745,7 @@ pub enum EntityDamageStatusComponentIdentification {
 
 impl EntityDamageStatusComponentIdentification {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9706,7 +9763,7 @@ pub enum DEDamageDescriptionComponentDamageStatus {
 
 impl DEDamageDescriptionComponentDamageStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9723,7 +9780,7 @@ pub enum DEDamageDescriptionComponentVisualSmokeColor {
 
 impl DEDamageDescriptionComponentVisualSmokeColor {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9738,7 +9795,7 @@ pub enum BeamStatusBeamState {
 
 impl BeamStatusBeamState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9758,7 +9815,7 @@ pub enum EntityAssociationAssociationStatus {
 
 impl EntityAssociationAssociationStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9773,7 +9830,7 @@ pub enum EntityVPRecordChangeIndicator {
 
 impl EntityVPRecordChangeIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9793,7 +9850,7 @@ pub enum EntityAssociationGroupMemberType {
 
 impl EntityAssociationGroupMemberType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9811,7 +9868,7 @@ pub enum PhysicalAssociationTypeGroups {
 
 impl PhysicalAssociationTypeGroups {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9852,7 +9909,7 @@ pub enum EntityAssociationPhysicalAssociationType {
 
 impl EntityAssociationPhysicalAssociationType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9878,7 +9935,7 @@ pub enum EntityAssociationPhysicalConnectionType {
 
 impl EntityAssociationPhysicalConnectionType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9892,7 +9949,7 @@ pub enum SensorRecordSensorTypeOtherActiveSensors {
 
 impl SensorRecordSensorTypeOtherActiveSensors {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -9975,7 +10032,7 @@ pub enum SensorRecordSensorTypePassiveSensors {
 
 impl SensorRecordSensorTypePassiveSensors {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -9991,7 +10048,7 @@ pub enum MunitionExpendableStatus {
 
 impl MunitionExpendableStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10007,7 +10064,7 @@ pub enum FuelMeasurementUnits {
 
 impl FuelMeasurementUnits {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10021,7 +10078,7 @@ pub enum FuelLocation {
 
 impl FuelLocation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10049,7 +10106,7 @@ pub enum EntityAssociationAssociationType {
 
 impl EntityAssociationAssociationType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10064,7 +10121,7 @@ pub enum SensorOnOffStatus {
 
 impl SensorOnOffStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10084,7 +10141,7 @@ pub enum OwnershipStatus {
 
 impl OwnershipStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10098,7 +10155,7 @@ pub enum RecordREventType {
 
 impl RecordREventType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10113,7 +10170,7 @@ pub enum RecordQueryREventType {
 
 impl RecordQueryREventType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10133,7 +10190,7 @@ pub enum UAPropulsionPlantConfigurationConfiguration {
 
 impl UAPropulsionPlantConfigurationConfiguration {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10148,7 +10205,7 @@ pub enum MinefieldStateProtocolMode {
 
 impl MinefieldStateProtocolMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10163,7 +10220,7 @@ pub enum TransponderInterrogatorIndicator {
 
 impl TransponderInterrogatorIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10178,7 +10235,7 @@ pub enum IFFSimulationMode {
 
 impl IFFSimulationMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10193,7 +10250,7 @@ pub enum IFFApplicableModes {
 
 impl IFFApplicableModes {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10208,7 +10265,7 @@ pub enum ModeCAltitudeIndicator {
 
 impl ModeCAltitudeIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10223,7 +10280,7 @@ pub enum TCASACASBasicAdvancedIndicator {
 
 impl TCASACASBasicAdvancedIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10238,7 +10295,7 @@ pub enum TCASACASIndicator {
 
 impl TCASACASIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10254,7 +10311,7 @@ pub enum TCASACASSoftwareVersion {
 
 impl TCASACASSoftwareVersion {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10270,7 +10327,7 @@ pub enum TCASACASType {
 
 impl TCASACASType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10285,7 +10342,7 @@ pub enum TCASIIIType {
 
 impl TCASIIIType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10305,7 +10362,7 @@ pub enum Mode5IFFMission {
 
 impl Mode5IFFMission {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10324,7 +10381,7 @@ pub enum ModeSInterrogatorStatusTransmitState {
 
 impl ModeSInterrogatorStatusTransmitState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10339,7 +10396,7 @@ pub enum ModeSInterrogatorIdentifierICType {
 
 impl ModeSInterrogatorIdentifierICType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10354,7 +10411,7 @@ pub enum ISLSAntennaType {
 
 impl ISLSAntennaType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10371,7 +10428,7 @@ pub enum Mode5Reply {
 
 impl Mode5Reply {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10388,7 +10445,7 @@ pub enum AntennaSelection {
 
 impl AntennaSelection {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10404,7 +10461,7 @@ pub enum Mode5SquitterType {
 
 impl Mode5SquitterType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10419,7 +10476,7 @@ pub enum Level2SquitterStatus {
 
 impl Level2SquitterStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10436,7 +10493,7 @@ pub enum ModeSSquitterType {
 
 impl ModeSSquitterType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10451,7 +10508,7 @@ pub enum ModeSSquitterRecordSource {
 
 impl ModeSSquitterRecordSource {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10467,7 +10524,7 @@ pub enum AircraftPresentDomain {
 
 impl AircraftPresentDomain {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10483,7 +10540,7 @@ pub enum AircraftIdentificationType {
 
 impl AircraftIdentificationType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10502,7 +10559,7 @@ pub enum CapabilityReport {
 
 impl CapabilityReport {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10519,7 +10576,7 @@ pub enum NavigationSource {
 
 impl NavigationSource {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10534,7 +10591,7 @@ pub enum IFFDataRecordAvailable {
 
 impl IFFDataRecordAvailable {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10549,7 +10606,7 @@ pub enum Mode5SAltitudeResolution {
 
 impl Mode5SAltitudeResolution {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10564,7 +10621,7 @@ pub enum DeltaMode5SAltitudePositiveNegativeIndicator {
 
 impl DeltaMode5SAltitudePositiveNegativeIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10591,7 +10648,7 @@ pub enum FormatType {
 
 impl FormatType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10606,7 +10663,7 @@ pub enum AircraftAddressSource {
 
 impl AircraftAddressSource {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10623,7 +10680,7 @@ pub enum SurveillanceStatus {
 
 impl SurveillanceStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10639,7 +10696,7 @@ pub enum TurnRateSource {
 
 impl TurnRateSource {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10655,7 +10712,7 @@ pub enum TimeTypeSource {
 
 impl TimeTypeSource {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10669,7 +10726,7 @@ pub enum AircraftTypeWake {
 
 impl AircraftTypeWake {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10685,7 +10742,7 @@ pub enum DataCategory {
 
 impl DataCategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10711,7 +10768,7 @@ pub enum TILinkType {
 
 impl TILinkType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10727,7 +10784,7 @@ pub enum AntennaStatus {
 
 impl AntennaStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10744,7 +10801,7 @@ pub enum TransmissionIndicator {
 
 impl TransmissionIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10761,7 +10818,7 @@ pub enum ReplyAmplification {
 
 impl ReplyAmplification {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10776,7 +10833,7 @@ pub enum DEFireFlagsStateUpdateFlag {
 
 impl DEFireFlagsStateUpdateFlag {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10793,7 +10850,7 @@ pub enum ComponentVisualDamageStatusSmoke {
 
 impl ComponentVisualDamageStatusSmoke {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10810,7 +10867,7 @@ pub enum ComponentVisualDamageStatusSurfaceDamage {
 
 impl ComponentVisualDamageStatusSurfaceDamage {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10825,7 +10882,7 @@ pub enum GridAxisDescriptorAxisType {
 
 impl GridAxisDescriptorAxisType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10840,7 +10897,7 @@ pub enum AppearancePaintScheme {
 
 impl AppearancePaintScheme {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10857,7 +10914,7 @@ pub enum AppearanceDamage {
 
 impl AppearanceDamage {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10872,7 +10929,7 @@ pub enum Mode5MessageFormatsStatus {
 
 impl Mode5MessageFormatsStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10889,7 +10946,7 @@ pub enum AppearanceTrailingEffects {
 
 impl AppearanceTrailingEffects {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10908,7 +10965,7 @@ pub enum AppearanceHatch {
 
 impl AppearanceHatch {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10923,7 +10980,7 @@ pub enum AppearanceLauncherOperational {
 
 impl AppearanceLauncherOperational {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10940,7 +10997,7 @@ pub enum AppearanceCamouflageType {
 
 impl AppearanceCamouflageType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10955,7 +11012,7 @@ pub enum AppearanceConcealedPosition {
 
 impl AppearanceConcealedPosition {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10970,7 +11027,7 @@ pub enum AppearanceEntityorObjectState {
 
 impl AppearanceEntityorObjectState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -10990,7 +11047,7 @@ pub enum AppearanceCanopy {
 
 impl AppearanceCanopy {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11006,13 +11063,14 @@ pub enum AppearanceSubsurfaceHatch {
 
 impl AppearanceSubsurfaceHatch {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
 // SISO-REF-010-2023 DISPDUStatusActiveInterrogationIndicator(AII) [UID 389]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[bits = 1]
 pub enum ActiveInterrogationIndicator {
     #[default]
     NotActive = 0,
@@ -11021,7 +11079,7 @@ pub enum ActiveInterrogationIndicator {
 
 impl ActiveInterrogationIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11038,7 +11096,7 @@ pub enum AppearanceLifeformHealth {
 
 impl AppearanceLifeformHealth {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11067,7 +11125,7 @@ pub enum AppearanceLifeFormComplianceStatus {
 
 impl AppearanceLifeFormComplianceStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11096,7 +11154,7 @@ pub enum AppearanceLifeFormPosture {
 
 impl AppearanceLifeFormPosture {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11113,7 +11171,7 @@ pub enum AppearanceLifeFormWeaponImplement {
 
 impl AppearanceLifeFormWeaponImplement {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11128,7 +11186,7 @@ pub enum AppearanceConcealedMovement {
 
 impl AppearanceConcealedMovement {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11146,7 +11204,7 @@ pub enum AppearanceEnvironmentalDensity {
 
 impl AppearanceEnvironmentalDensity {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11161,7 +11219,7 @@ pub enum Mode5PlatformType {
 
 impl Mode5PlatformType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11176,7 +11234,7 @@ pub enum AppearanceAntiCollisionDayNight {
 
 impl AppearanceAntiCollisionDayNight {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11191,7 +11249,7 @@ pub enum AppearanceNavigationPositionBrightness {
 
 impl AppearanceNavigationPositionBrightness {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11208,7 +11266,7 @@ pub enum AppearanceSupplyDeployed {
 
 impl AppearanceSupplyDeployed {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11223,7 +11281,7 @@ pub enum AppearanceNVGMode {
 
 impl AppearanceNVGMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11240,7 +11298,7 @@ pub enum Parachute {
 
 impl Parachute {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11257,7 +11315,7 @@ pub enum FlareSmokeColor {
 
 impl FlareSmokeColor {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11273,7 +11331,7 @@ pub enum FlareSmokeStatus {
 
 impl FlareSmokeStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11289,7 +11347,7 @@ pub enum SpotChaffStatus {
 
 impl SpotChaffStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11305,7 +11363,7 @@ pub enum AppearanceObjectGeneralDamage {
 
 impl AppearanceObjectGeneralDamage {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11320,7 +11378,7 @@ pub enum AppearanceObjectGeneralPredistributed {
 
 impl AppearanceObjectGeneralPredistributed {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11336,7 +11394,7 @@ pub enum AppearanceObjectSpecificBreachState {
 
 impl AppearanceObjectSpecificBreachState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11353,7 +11411,7 @@ pub enum AppearanceObjectSpecificChemicalType {
 
 impl AppearanceObjectSpecificChemicalType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11370,7 +11428,7 @@ pub enum AppearanceLinearObjectTankDitchBreach {
 
 impl AppearanceLinearObjectTankDitchBreach {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11386,7 +11444,7 @@ pub enum AppearanceLinearObjectLaneMarkerVisible {
 
 impl AppearanceLinearObjectLaneMarkerVisible {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11403,7 +11461,7 @@ pub enum AppearanceObjectGeneralIEDPresent {
 
 impl AppearanceObjectGeneralIEDPresent {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11418,7 +11476,7 @@ pub enum Mode5LevelSelection {
 
 impl Mode5LevelSelection {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11442,7 +11500,7 @@ pub enum SupplyFuelType {
 
 impl SupplyFuelType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11461,7 +11519,7 @@ pub enum SensorTypeSource {
 
 impl SensorTypeSource {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11476,7 +11534,7 @@ pub enum AttachedPartDetachedIndicator {
 
 impl AttachedPartDetachedIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11491,7 +11549,7 @@ pub enum IntercomControlCommunicationsClass {
 
 impl IntercomControlCommunicationsClass {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11505,7 +11563,7 @@ pub enum DISLiveEntitySubprotocolNumber {
 
 impl DISLiveEntitySubprotocolNumber {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11521,7 +11579,7 @@ pub enum MinefieldAppearanceMinefieldType {
 
 impl MinefieldAppearanceMinefieldType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11536,7 +11594,7 @@ pub enum MinefieldAppearanceActiveStatus {
 
 impl MinefieldAppearanceActiveStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11551,7 +11609,7 @@ pub enum MinefieldAppearanceLane {
 
 impl MinefieldAppearanceLane {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11566,7 +11624,7 @@ pub enum MinefieldAppearanceState {
 
 impl MinefieldAppearanceState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11586,7 +11644,7 @@ pub enum MinefieldFusingFuseType {
 
 impl MinefieldFusingFuseType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11601,7 +11659,7 @@ pub enum Mode5LocationErrors {
 
 impl Mode5LocationErrors {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11618,7 +11676,7 @@ pub enum MinefieldPaintSchemeAlgae {
 
 impl MinefieldPaintSchemeAlgae {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11650,7 +11708,7 @@ pub enum MinefieldPaintSchemePaintScheme {
 
 impl MinefieldPaintSchemePaintScheme {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11667,7 +11725,7 @@ pub enum CoverShroudStatus {
 
 impl CoverShroudStatus {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11688,7 +11746,7 @@ pub enum PlatformLandMotorcycleSubcategories {
 
 impl PlatformLandMotorcycleSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11747,7 +11805,7 @@ pub enum PlatformLandCarSubcategories {
 
 impl PlatformLandCarSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11779,7 +11837,7 @@ pub enum PlatformLandBusSubcategories {
 
 impl PlatformLandBusSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11824,7 +11882,7 @@ pub enum PlatformLandSingleUnitCargoTruckSubcategories {
 
 impl PlatformLandSingleUnitCargoTruckSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11882,7 +11940,7 @@ pub enum PlatformLandSingleUnitUtilityEmergencyTruckSubcategories {
 
 impl PlatformLandSingleUnitUtilityEmergencyTruckSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11898,7 +11956,7 @@ pub enum PlatformLandMultipleUnitCargoTruckSubcategories {
 
 impl PlatformLandMultipleUnitCargoTruckSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11913,7 +11971,7 @@ pub enum PlatformLandMultipleUnitUtilityEmergencyTruckSubcategories {
 
 impl PlatformLandMultipleUnitUtilityEmergencyTruckSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -11982,7 +12040,7 @@ pub enum PlatformLandConstructionSpecialtyVehicleSubcategories {
 
 impl PlatformLandConstructionSpecialtyVehicleSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12004,7 +12062,7 @@ pub enum PlatformLandFarmSpecialtyVehicleSubcategories {
 
 impl PlatformLandFarmSpecialtyVehicleSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12045,7 +12103,7 @@ pub enum PlatformLandTrailerSubcategories {
 
 impl PlatformLandTrailerSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12073,7 +12131,7 @@ pub enum PlatformLandRecreationalSubcategories {
 
 impl PlatformLandRecreationalSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12111,7 +12169,7 @@ pub enum PlatformLandNonmotorizedSubcategories {
 
 impl PlatformLandNonmotorizedSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12132,7 +12190,7 @@ pub enum PlatformLandTrainsSubcategories {
 
 impl PlatformLandTrainsSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12151,7 +12209,7 @@ pub enum PlatformLandUtilityEmergencyCarSubcategories {
 
 impl PlatformLandUtilityEmergencyCarSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12169,7 +12227,7 @@ pub enum PlatformSurfacePassengerVesselSubcategories {
 
 impl PlatformSurfacePassengerVesselSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12189,7 +12247,7 @@ pub enum PlatformSurfaceDryCargoShipSubcategories {
 
 impl PlatformSurfaceDryCargoShipSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12211,7 +12269,7 @@ pub enum PlatformSurfaceTankerSubcategories {
 
 impl PlatformSurfaceTankerSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12233,7 +12291,7 @@ pub enum PlatformSurfaceSupportVesselSubcategories {
 
 impl PlatformSurfaceSupportVesselSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12250,7 +12308,7 @@ pub enum PlatformSurfacePrivateMotorboatSubcategories {
 
 impl PlatformSurfacePrivateMotorboatSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12267,7 +12325,7 @@ pub enum PlatformSurfacePrivateSailboatSubcategories {
 
 impl PlatformSurfacePrivateSailboatSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12285,7 +12343,7 @@ pub enum PlatformSurfaceFishingVesselSubcategories {
 
 impl PlatformSurfaceFishingVesselSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12308,7 +12366,7 @@ pub enum PlatformSurfaceOtherVesselsSubcategories {
 
 impl PlatformSurfaceOtherVesselsSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12323,7 +12381,7 @@ pub enum CryptoKeyIDCryptoMode {
 
 impl CryptoKeyIDCryptoMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12494,7 +12552,7 @@ pub enum Color {
 
 impl Color {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12508,7 +12566,7 @@ pub enum BuildingPaintScheme {
 
 impl BuildingPaintScheme {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12525,7 +12583,7 @@ pub enum Season {
 
 impl Season {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12542,7 +12600,7 @@ pub enum Material {
 
 impl Material {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12558,7 +12616,7 @@ pub enum Link11_11BFidelityLevel {
 
 impl Link11_11BFidelityLevel {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12574,7 +12632,7 @@ pub enum Link11TerminalMode {
 
 impl Link11TerminalMode {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12596,7 +12654,7 @@ pub enum Link11DataTerminalSetIndicator {
 
 impl Link11DataTerminalSetIndicator {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12615,7 +12673,7 @@ pub enum Link11ModeofOperation {
 
 impl Link11ModeofOperation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -12630,7 +12688,7 @@ pub enum LifeFormsSubcategoryIranianWeapons {
 
 impl LifeFormsSubcategoryIranianWeapons {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12670,7 +12728,7 @@ pub enum LifeFormLandCategories {
 
 impl LifeFormLandCategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12712,7 +12770,7 @@ pub enum LifeFormHumanSubcategoryEquipmentClass {
 
 impl LifeFormHumanSubcategoryEquipmentClass {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12788,7 +12846,7 @@ pub enum LifeFormHumanSpecificAssaultRifles {
 
 impl LifeFormHumanSpecificAssaultRifles {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12811,7 +12869,7 @@ pub enum LifeFormHumanSpecificHighPowerRifles {
 
 impl LifeFormHumanSpecificHighPowerRifles {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12845,7 +12903,7 @@ pub enum LifeFormCategoriesUS {
 
 impl LifeFormCategoriesUS {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12896,7 +12954,7 @@ pub enum LifeFormExtraPersonalData {
 
 impl LifeFormExtraPersonalData {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12912,7 +12970,7 @@ pub enum LifeFormAirCategories {
 
 impl LifeFormAirCategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12930,7 +12988,7 @@ pub enum LifeFormSubsurfaceCategories {
 
 impl LifeFormSubsurfaceCategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -12977,7 +13035,7 @@ pub enum LifeFormHumanSpecificSniper {
 
 impl LifeFormHumanSpecificSniper {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13003,7 +13061,7 @@ pub enum LifeFormHumanSpecificSubMachineGun {
 
 impl LifeFormHumanSpecificSubMachineGun {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13024,7 +13082,7 @@ pub enum AustralianCategoryOverlay {
 
 impl AustralianCategoryOverlay {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13050,7 +13108,7 @@ pub enum LifeFormCategoriesAfghanistan {
 
 impl LifeFormCategoriesAfghanistan {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13069,7 +13127,7 @@ pub enum LifeFormHumanSpecificEquipmentClass {
 
 impl LifeFormHumanSpecificEquipmentClass {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13079,7 +13137,7 @@ impl LifeFormHumanSpecificEquipmentClass {
 pub enum CivilianSubmarineSubcategories {}
 
 impl CivilianSubmarineSubcategories {
-    pub fn decode(_buf: &mut BytesMut) -> Self {
+    pub fn deserialize(_buf: &mut BytesMut) -> Self {
         unimplemented!()
     }
 }
@@ -13089,7 +13147,7 @@ impl CivilianSubmarineSubcategories {
 pub enum CivilianSubmersibleSubcategories {}
 
 impl CivilianSubmersibleSubcategories {
-    pub fn decode(_buf: &mut BytesMut) -> Self {
+    pub fn deserialize(_buf: &mut BytesMut) -> Self {
         unimplemented!()
     }
 }
@@ -13103,7 +13161,7 @@ pub enum PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories {
 
 impl PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13118,7 +13176,7 @@ pub enum LeafCoverage {
 
 impl LeafCoverage {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13134,7 +13192,7 @@ pub enum LifeFormHumanSpecificAntiMaterielRifles {
 
 impl LifeFormHumanSpecificAntiMaterielRifles {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13287,7 +13345,7 @@ pub enum LifeFormHumanSpecificShotGuns {
 
 impl LifeFormHumanSpecificShotGuns {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13305,7 +13363,7 @@ pub enum LifeFormHumanSpecificMortars {
 
 impl LifeFormHumanSpecificMortars {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13334,7 +13392,7 @@ pub enum LifeFormHumanSpecificHandGuns {
 
 impl LifeFormHumanSpecificHandGuns {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13352,7 +13410,7 @@ pub enum LifeFormHumanSpecificWeaponNonspecific {
 
 impl LifeFormHumanSpecificWeaponNonspecific {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13406,7 +13464,7 @@ pub enum LifeFormHumanSpecificGrenadeLaunchers {
 
 impl LifeFormHumanSpecificGrenadeLaunchers {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13507,7 +13565,7 @@ pub enum LifeFormHumanSpecificMachineGuns {
 
 impl LifeFormHumanSpecificMachineGuns {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13540,7 +13598,7 @@ pub enum LifeFormHumanSpecificGrenadeLaunchingMachineGun {
 
 impl LifeFormHumanSpecificGrenadeLaunchingMachineGun {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13622,7 +13680,7 @@ pub enum LifeFormHumanSpecificAntiTankRockets {
 
 impl LifeFormHumanSpecificAntiTankRockets {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13710,7 +13768,7 @@ pub enum LifeFormHumanSpecificAntiTankMissiles {
 
 impl LifeFormHumanSpecificAntiTankMissiles {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13747,7 +13805,7 @@ pub enum LifeFormHumanSpecificManPortableAirDefenseSystem {
 
 impl LifeFormHumanSpecificManPortableAirDefenseSystem {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13789,7 +13847,7 @@ pub enum LifeFormHumanSpecificRecoillessRifles {
 
 impl LifeFormHumanSpecificRecoillessRifles {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13809,7 +13867,7 @@ pub enum LifeFormHumanSpecificFlameRockets {
 
 impl LifeFormHumanSpecificFlameRockets {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13837,7 +13895,7 @@ pub enum LifeFormHumanSpecificFlameThrowers {
 
 impl LifeFormHumanSpecificFlameThrowers {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13853,7 +13911,7 @@ pub enum LifeFormHumanSpecificDroneGuns {
 
 impl LifeFormHumanSpecificDroneGuns {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13867,7 +13925,7 @@ pub enum LifeFormHumanSpecificLogisticsEQClass {
 
 impl LifeFormHumanSpecificLogisticsEQClass {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13881,7 +13939,7 @@ pub enum LifeFormHumanSpecificPersonalElectronicsClass {
 
 impl LifeFormHumanSpecificPersonalElectronicsClass {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13896,7 +13954,7 @@ pub enum LifeFormHumanSpecificLasersClass {
 
 impl LifeFormHumanSpecificLasersClass {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13911,7 +13969,7 @@ pub enum TransmitterDetailSATCOMModulation {
 
 impl TransmitterDetailSATCOMModulation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -13937,7 +13995,7 @@ pub enum SupplyDomain {
 
 impl SupplyDomain {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13956,7 +14014,7 @@ pub enum Class1SupplyCategorySubsistence {
 
 impl Class1SupplyCategorySubsistence {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13977,7 +14035,7 @@ pub enum Class2SupplyCategoryClothingIndividualEquipmentToolsAdminSupplies {
 
 impl Class2SupplyCategoryClothingIndividualEquipmentToolsAdminSupplies {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -13994,7 +14052,7 @@ pub enum Class3SupplyCategoryPetroleumOilsLubricants {
 
 impl Class3SupplyCategoryPetroleumOilsLubricants {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14010,7 +14068,7 @@ pub enum Class4SupplyCategoryConstructionMaterials {
 
 impl Class4SupplyCategoryConstructionMaterials {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14024,7 +14082,7 @@ pub enum Class6SupplyCategoryPersonnelDemandItems {
 
 impl Class6SupplyCategoryPersonnelDemandItems {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14062,7 +14120,7 @@ pub enum Class7SupplyCategoryMajorItems {
 
 impl Class7SupplyCategoryMajorItems {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14078,7 +14136,7 @@ pub enum Class8SupplyCategoryMedicalMaterial {
 
 impl Class8SupplyCategoryMedicalMaterial {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14101,7 +14159,7 @@ pub enum Class9SupplyCategoryRepairPartsandComponents {
 
 impl Class9SupplyCategoryRepairPartsandComponents {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14115,7 +14173,7 @@ pub enum Class10SupplyCategoryMaterialToSupportNonMilitaryPrograms {
 
 impl Class10SupplyCategoryMaterialToSupportNonMilitaryPrograms {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14133,7 +14191,7 @@ pub enum Class11SupplyCategorySupplies {
 
 impl Class11SupplyCategorySupplies {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14158,7 +14216,7 @@ pub enum Class12SupplyCategorySlingLoads {
 
 impl Class12SupplyCategorySlingLoads {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14175,7 +14233,7 @@ pub enum LifeSavingEquipment {
 
 impl LifeSavingEquipment {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14195,7 +14253,7 @@ pub enum IslandSubcategory {
 
 impl IslandSubcategory {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -14213,7 +14271,7 @@ pub enum Link11MessageSubType {
 
 impl Link11MessageSubType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14233,7 +14291,7 @@ pub enum Link11MessageTypeIdentifier {
 
 impl Link11MessageTypeIdentifier {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14251,7 +14309,7 @@ pub enum Link11DataSignallingRate {
 
 impl Link11DataSignallingRate {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14267,7 +14325,7 @@ pub enum Link11SignalIntegrationInterval {
 
 impl Link11SignalIntegrationInterval {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14283,7 +14341,7 @@ pub enum Link11SignalWaveform {
 
 impl Link11SignalWaveform {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14298,7 +14356,7 @@ pub enum Link11_11BEncryptionFlag {
 
 impl Link11_11BEncryptionFlag {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14313,7 +14371,7 @@ pub enum SISOSTD002Version {
 
 impl SISOSTD002Version {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14331,7 +14389,7 @@ pub enum Link11BLinkState {
 
 impl Link11BLinkState {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14348,7 +14406,7 @@ pub enum Link11BModeofOperation {
 
 impl Link11BModeofOperation {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -14364,7 +14422,7 @@ pub enum Link11BMessageSubType {
 
 impl Link11BMessageSubType {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14381,7 +14439,7 @@ pub enum Link11BDataSignalingRate {
 
 impl Link11BDataSignalingRate {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14397,7 +14455,7 @@ pub enum Link11BModulationStandard {
 
 impl Link11BModulationStandard {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14415,7 +14473,7 @@ pub enum CIGIExtensionPacketID {
 
 impl CIGIExtensionPacketID {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
     }
 }
@@ -14439,7 +14497,7 @@ pub enum Link16Version {
 
 impl Link16Version {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14454,7 +14512,7 @@ pub enum AircraftIDSource {
 
 impl AircraftIDSource {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14471,7 +14529,7 @@ pub enum ClothingIRSignature {
 
 impl ClothingIRSignature {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
@@ -14492,7 +14550,7 @@ pub enum DamageArea {
 
 impl DamageArea {
     #[must_use]
-    pub fn decode(buf: &mut BytesMut) -> Self {
+    pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }

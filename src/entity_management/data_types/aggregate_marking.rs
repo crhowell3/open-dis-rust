@@ -27,7 +27,7 @@ impl AggregateMarking {
         }
     }
 
-    pub fn decode(buf: &mut BytesMut) -> AggregateMarking {
+    pub fn deserialize(buf: &mut BytesMut) -> AggregateMarking {
         let character_set = buf.get_u8();
         let mut characters: [i8; 31] = [0; 31];
         for char in &mut characters {

@@ -81,9 +81,9 @@ impl Pdu for IntercomSignalPdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::IntercomSignal {
-            let entity_id = EntityId::decode(&mut buffer);
+            let entity_id = EntityId::deserialize(&mut buffer);
             let radio_id = buffer.get_u16();
             let communications_device_id = buffer.get_u16();
             let encoding_scheme = buffer.get_u16();
@@ -108,7 +108,13 @@ impl Pdu for IntercomSignalPdu {
                 data,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type IntercomSignal, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -123,7 +129,7 @@ impl Pdu for IntercomSignalPdu {
     where
         Self: Sized,
     {
-        let entity_id = EntityId::decode(&mut buffer);
+        let entity_id = EntityId::deserialize(&mut buffer);
         let radio_id = buffer.get_u16();
         let communications_device_id = buffer.get_u16();
         let encoding_scheme = buffer.get_u16();
@@ -182,7 +188,10 @@ mod tests {
             intercom_signal_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, intercom_signal_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, intercom_signal_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            intercom_signal_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

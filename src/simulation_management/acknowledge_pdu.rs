@@ -69,12 +69,12 @@ impl Pdu for AcknowledgePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Acknowledge {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let acknowledge_flag = AcknowledgeFlag::decode(&mut buffer);
-            let response_flag = AcknowledgeResponseFlag::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let acknowledge_flag = AcknowledgeFlag::deserialize(&mut buffer);
+            let response_flag = AcknowledgeResponseFlag::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
 
             Ok(AcknowledgePdu {
@@ -86,7 +86,13 @@ impl Pdu for AcknowledgePdu {
                 request_id,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type Acknowledge, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -101,10 +107,10 @@ impl Pdu for AcknowledgePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let acknowledge_flag = AcknowledgeFlag::decode(&mut buffer);
-        let response_flag = AcknowledgeResponseFlag::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let acknowledge_flag = AcknowledgeFlag::deserialize(&mut buffer);
+        let response_flag = AcknowledgeResponseFlag::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
 
         Ok(AcknowledgePdu {
@@ -150,7 +156,10 @@ mod tests {
             acknowledge_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, acknowledge_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, acknowledge_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            acknowledge_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

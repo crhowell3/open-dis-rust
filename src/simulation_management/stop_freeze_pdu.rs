@@ -66,12 +66,12 @@ impl Pdu for StopFreezePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::StopFreeze {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
-            let real_world_time = ClockTime::decode(&mut buffer);
-            let reason = Reason::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
+            let real_world_time = ClockTime::deserialize(&mut buffer);
+            let reason = Reason::deserialize(&mut buffer);
             let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
             let padding = buffer.get_i16();
             let request_id = buffer.get_u32();
@@ -87,7 +87,13 @@ impl Pdu for StopFreezePdu {
                 request_id,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type StopFreeze, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -102,10 +108,10 @@ impl Pdu for StopFreezePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
-        let real_world_time = ClockTime::decode(&mut buffer);
-        let reason = Reason::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
+        let real_world_time = ClockTime::deserialize(&mut buffer);
+        let reason = Reason::deserialize(&mut buffer);
         let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
         let padding = buffer.get_i16();
         let request_id = buffer.get_u32();
@@ -155,7 +161,10 @@ mod tests {
             stop_freeze_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, stop_freeze_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, stop_freeze_pdu.pdu_header.padding);
+        assert_eq!(
+            pdu_header.status_record,
+            stop_freeze_pdu.pdu_header.status_record
+        );
     }
 
     #[test]

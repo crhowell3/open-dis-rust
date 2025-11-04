@@ -32,7 +32,7 @@ impl SecondaryOperationalData {
         buf.put_u16(self.number_of_iff_fundamental_parameter_records);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> SecondaryOperationalData {
+    pub fn deserialize(buf: &mut BytesMut) -> SecondaryOperationalData {
         SecondaryOperationalData {
             operational_data1: buf.get_u8(),
             operational_data2: buf.get_u8(),

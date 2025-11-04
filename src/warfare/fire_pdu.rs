@@ -81,16 +81,16 @@ impl Pdu for FirePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::Fire {
-            let firing_entity_id = EntityId::decode(&mut buffer);
-            let target_entity_id = EntityId::decode(&mut buffer);
-            let munition_expendable_id = EntityId::decode(&mut buffer);
-            let event_id = EventId::decode(&mut buffer);
+            let firing_entity_id = EntityId::deserialize(&mut buffer);
+            let target_entity_id = EntityId::deserialize(&mut buffer);
+            let munition_expendable_id = EntityId::deserialize(&mut buffer);
+            let event_id = EventId::deserialize(&mut buffer);
             let fire_mission_index = buffer.get_u32();
-            let location_in_world_coordinates = Vector3Double::decode(&mut buffer);
-            let descriptor = MunitionDescriptor::decode(&mut buffer);
-            let velocity = Vector3Float::decode(&mut buffer);
+            let location_in_world_coordinates = Vector3Double::deserialize(&mut buffer);
+            let descriptor = MunitionDescriptor::deserialize(&mut buffer);
+            let velocity = Vector3Float::deserialize(&mut buffer);
             let range = buffer.get_f32();
             Ok(FirePdu {
                 pdu_header,
@@ -105,7 +105,10 @@ impl Pdu for FirePdu {
                 range,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!("Expected PDU type Fire, got {:?}", pdu_header.pdu_type),
+                None,
+            ))
         }
     }
 
@@ -120,14 +123,14 @@ impl Pdu for FirePdu {
     where
         Self: Sized,
     {
-        let firing_entity_id = EntityId::decode(&mut buffer);
-        let target_entity_id = EntityId::decode(&mut buffer);
-        let munition_expendable_id = EntityId::decode(&mut buffer);
-        let event_id = EventId::decode(&mut buffer);
+        let firing_entity_id = EntityId::deserialize(&mut buffer);
+        let target_entity_id = EntityId::deserialize(&mut buffer);
+        let munition_expendable_id = EntityId::deserialize(&mut buffer);
+        let event_id = EventId::deserialize(&mut buffer);
         let fire_mission_index = buffer.get_u32();
-        let location_in_world_coordinates = Vector3Double::decode(&mut buffer);
-        let descriptor = MunitionDescriptor::decode(&mut buffer);
-        let velocity = Vector3Float::decode(&mut buffer);
+        let location_in_world_coordinates = Vector3Double::deserialize(&mut buffer);
+        let descriptor = MunitionDescriptor::deserialize(&mut buffer);
+        let velocity = Vector3Float::deserialize(&mut buffer);
         let range = buffer.get_f32();
         Ok(FirePdu {
             pdu_header,
@@ -169,7 +172,7 @@ mod tests {
             fire_pdu.pdu_header.protocol_family
         );
         assert_eq!(pdu_header.length, fire_pdu.pdu_header.length);
-        assert_eq!(pdu_header.padding, fire_pdu.pdu_header.padding);
+        assert_eq!(pdu_header.status_record, fire_pdu.pdu_header.status_record);
     }
 
     #[test]

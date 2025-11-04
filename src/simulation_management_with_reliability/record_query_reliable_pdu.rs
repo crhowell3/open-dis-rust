@@ -76,15 +76,15 @@ impl Pdu for RecordQueryReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::RecordQueryReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
             let required_reliability_service = buffer.get_u8();
             let pad1 = buffer.get_u16();
             let pad2 = buffer.get_u8();
-            let event_type = EventType::decode(&mut buffer);
+            let event_type = EventType::deserialize(&mut buffer);
             let time = buffer.get_u32();
             let number_of_records = buffer.get_u32();
             let mut record_ids: Vec<u32> = vec![];
@@ -106,7 +106,13 @@ impl Pdu for RecordQueryReliablePdu {
                 record_ids,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type RecordQueryReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -121,13 +127,13 @@ impl Pdu for RecordQueryReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
         let required_reliability_service = buffer.get_u8();
         let pad1 = buffer.get_u16();
         let pad2 = buffer.get_u8();
-        let event_type = EventType::decode(&mut buffer);
+        let event_type = EventType::deserialize(&mut buffer);
         let time = buffer.get_u32();
         let number_of_records = buffer.get_u32();
         let mut record_ids: Vec<u32> = vec![];
@@ -190,8 +196,8 @@ mod tests {
             record_query_reliable_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            record_query_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            record_query_reliable_pdu.pdu_header.status_record
         );
     }
 

@@ -49,11 +49,11 @@ impl EntityType {
         buf.put_u8(self.extra);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> EntityType {
+    pub fn deserialize(buf: &mut BytesMut) -> EntityType {
         EntityType {
-            kind: EntityKind::decode(buf),
+            kind: EntityKind::deserialize(buf),
             domain: buf.get_u8(),
-            country: Country::decode(buf),
+            country: Country::deserialize(buf),
             category: buf.get_u8(),
             subcategory: buf.get_u8(),
             specific: buf.get_u8(),

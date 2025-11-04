@@ -27,9 +27,9 @@ impl SupplyQuantity {
         buf.put_f32(self.quantity);
     }
 
-    pub fn decode(buf: &mut BytesMut) -> SupplyQuantity {
+    pub fn deserialize(buf: &mut BytesMut) -> SupplyQuantity {
         SupplyQuantity {
-            supply_type: EntityType::decode(buf),
+            supply_type: EntityType::deserialize(buf),
             quantity: buf.get_f32(),
         }
     }

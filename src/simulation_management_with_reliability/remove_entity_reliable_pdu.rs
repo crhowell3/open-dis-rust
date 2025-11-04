@@ -61,10 +61,10 @@ impl Pdu for RemoveEntityReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::RemoveEntityReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let required_reliability_service = buffer.get_u8();
             let pad1 = buffer.get_u16();
             let pad2 = buffer.get_u8();
@@ -80,7 +80,13 @@ impl Pdu for RemoveEntityReliablePdu {
                 request_id,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type RemoveEntityReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -95,8 +101,8 @@ impl Pdu for RemoveEntityReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let required_reliability_service = buffer.get_u8();
         let pad1 = buffer.get_u16();
         let pad2 = buffer.get_u8();
@@ -153,8 +159,8 @@ mod tests {
             remove_entity_reliable_pdu.pdu_header.length
         );
         assert_eq!(
-            pdu_header.padding,
-            remove_entity_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            remove_entity_reliable_pdu.pdu_header.status_record
         );
     }
 

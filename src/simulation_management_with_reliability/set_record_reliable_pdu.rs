@@ -69,10 +69,10 @@ impl Pdu for SetRecordReliablePdu {
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::decode(&mut buffer);
+        let pdu_header = PduHeader::deserialize(&mut buffer);
         if pdu_header.pdu_type == PduType::SetRecordReliable {
-            let originating_entity_id = EntityId::decode(&mut buffer);
-            let receiving_entity_id = EntityId::decode(&mut buffer);
+            let originating_entity_id = EntityId::deserialize(&mut buffer);
+            let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let request_id = buffer.get_u32();
             let required_reliability_service = buffer.get_u8();
             let pad1 = buffer.get_u16();
@@ -95,7 +95,13 @@ impl Pdu for SetRecordReliablePdu {
                 record_ids,
             })
         } else {
-            Err(DISError::InvalidDISHeader)
+            Err(DISError::invalid_header(
+                format!(
+                    "Expected PDU type SetRecordReliable, got {:?}",
+                    pdu_header.pdu_type
+                ),
+                None,
+            ))
         }
     }
 
@@ -110,8 +116,8 @@ impl Pdu for SetRecordReliablePdu {
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::decode(&mut buffer);
-        let receiving_entity_id = EntityId::decode(&mut buffer);
+        let originating_entity_id = EntityId::deserialize(&mut buffer);
+        let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let request_id = buffer.get_u32();
         let required_reliability_service = buffer.get_u8();
         let pad1 = buffer.get_u16();
@@ -172,8 +178,8 @@ mod tests {
         );
         assert_eq!(pdu_header.length, set_record_reliable_pdu.pdu_header.length);
         assert_eq!(
-            pdu_header.padding,
-            set_record_reliable_pdu.pdu_header.padding
+            pdu_header.status_record,
+            set_record_reliable_pdu.pdu_header.status_record
         );
     }
 
