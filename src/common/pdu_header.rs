@@ -164,14 +164,14 @@ impl PduHeader {
     }
 
     #[must_use]
-    pub fn default(pdu_type: PduType, protocol_family: ProtocolFamily, length: u16) -> Self {
+    pub fn default() -> Self {
         PduHeader {
             protocol_version: ProtocolVersion::IEEE1278_1_2012,
             exercise_id: 1,
-            pdu_type,
-            protocol_family,
+            pdu_type: PduType::default(),
+            protocol_family: ProtocolFamily::default(),
             timestamp: PduHeader::calculate_dis_timestamp(),
-            length,
+            length: 0_u16,
             status_record: PduStatusRecord::default(),
         }
     }

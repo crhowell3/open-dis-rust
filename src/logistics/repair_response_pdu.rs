@@ -10,6 +10,7 @@ use std::any::Any;
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
+    enums::RepairResponseRepairResult,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
@@ -20,9 +21,9 @@ pub struct RepairResponsePdu {
     pub pdu_header: PduHeader,
     pub receiving_entity_id: EntityId,
     pub repairing_entity_id: EntityId,
-    pub repair_result: u8,
-    pub padding1: i16,
-    pub padding2: i8,
+    pub repair_result: RepairResponseRepairResult,
+    _padding: u8,
+    _padding2: u16,
 }
 
 impl Default for RepairResponsePdu {
@@ -38,12 +39,12 @@ impl Default for RepairResponsePdu {
     ///
     fn default() -> Self {
         RepairResponsePdu {
-            pdu_header: PduHeader::default(PduType::RepairResponse, ProtocolFamily::Logistics, 56),
+            pdu_header: PduHeader::default(PduType::RepairResponse, ProtocolFamily::Logistics, 28),
             receiving_entity_id: EntityId::default(1),
             repairing_entity_id: EntityId::default(2),
-            repair_result: 0,
-            padding1: 0,
-            padding2: 0,
+            repair_result: RepairResponseRepairResult::default(),
+            _padding: 0_u8,
+            _padding2: 0_u16,
         }
     }
 }
@@ -55,9 +56,9 @@ impl Pdu for RepairResponsePdu {
         self.pdu_header.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         self.repairing_entity_id.serialize(buf);
-        buf.put_u8(self.repair_result);
-        buf.put_i16(self.padding1);
-        buf.put_i8(self.padding2);
+        buf.put_u8(self.repair_result as u8);
+        buf.put_u8(self._padding);
+        buf.put_u16(self._padding2);
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -68,17 +69,17 @@ impl Pdu for RepairResponsePdu {
         if pdu_header.pdu_type == PduType::RepairResponse {
             let receiving_entity_id = EntityId::deserialize(&mut buffer);
             let repairing_entity_id = EntityId::deserialize(&mut buffer);
-            let repair_result = buffer.get_u8();
-            let padding1 = buffer.get_i16();
-            let padding2 = buffer.get_i8();
+            let repair_result = RepairResponseRepairResult::deserialize(&mut buffer);
+            let _padding = buffer.get_u8();
+            let _padding2 = buffer.get_u16();
 
             Ok(RepairResponsePdu {
                 pdu_header,
                 receiving_entity_id,
                 repairing_entity_id,
                 repair_result,
-                padding1,
-                padding2,
+                _padding,
+                _padding2,
             })
         } else {
             Err(DISError::invalid_header(
@@ -104,17 +105,17 @@ impl Pdu for RepairResponsePdu {
     {
         let receiving_entity_id = EntityId::deserialize(&mut buffer);
         let repairing_entity_id = EntityId::deserialize(&mut buffer);
-        let repair_result = buffer.get_u8();
-        let padding1 = buffer.get_i16();
-        let padding2 = buffer.get_i8();
+        let repair_result = RepairResponseRepairResult::deserialize(&mut buffer);
+        let _padding = buffer.get_u8();
+        let _padding2 = buffer.get_u16();
 
         Ok(RepairResponsePdu {
             pdu_header,
             receiving_entity_id,
             repairing_entity_id,
             repair_result,
-            padding1,
-            padding2,
+            _padding,
+            _padding2,
         })
     }
 }
@@ -131,8 +132,11 @@ mod tests {
     #[test]
     fn create_header() {
         let repair_response_pdu = RepairResponsePdu::default();
-        let pdu_header =
-            PduHeader::default(PduType::RepairResponse, ProtocolFamily::Logistics, 448 / 8);
+        let pdu_header = PduHeader::default(
+            PduType::RepairResponse,
+            ProtocolFamily::Logistics,
+            u16::try_from(std::mem::size_of_val(&repair_response_pdu)).expect("size of pdu"),
+        );
 
         assert_eq!(
             pdu_header.protocol_version,

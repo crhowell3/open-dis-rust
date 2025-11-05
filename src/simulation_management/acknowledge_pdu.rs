@@ -18,7 +18,7 @@ use crate::common::{
 #[derive(Copy, Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.5.6
 pub struct AcknowledgePdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub acknowledge_flag: AcknowledgeFlag,
@@ -27,23 +27,9 @@ pub struct AcknowledgePdu {
 }
 
 impl Default for AcknowledgePdu {
-    /// Creates a default-initialized Acknowledge PDU
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Acknowledge PDU:
-    /// ```
-    /// use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
-    /// let mut acknowledge_pdu = AcknowledgePdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         AcknowledgePdu {
-            pdu_header: PduHeader::default(
-                PduType::Acknowledge,
-                ProtocolFamily::SimulationManagement,
-                32,
-            ),
+            pdu_header: PduHeader::default(),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
             acknowledge_flag: AcknowledgeFlag::default(),
@@ -54,6 +40,22 @@ impl Default for AcknowledgePdu {
 }
 
 impl Pdu for AcknowledgePdu {
+    fn length(&self) -> u16 {
+        std::mem::size_of::<PduHeader>() as u16
+            + std::mem::size_of::<EntityId>() as u16 * 2
+            + std::mem::size_of::<AcknowledgeFlag>() as u16
+            + std::mem::size_of::<AcknowledgeResponseFlag>() as u16
+            + std::mem::size_of::<u32>() as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -124,23 +126,36 @@ impl Pdu for AcknowledgePdu {
     }
 }
 
+impl AcknowledgePdu {
+    /// Creates an Acknowledge PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing an Acknowledge PDU:
+    /// ```
+    /// use open_dis_rust::simulation_management::AcknowledgePdu;
+    /// let mut acknowledge_pdu = AcknowledgePdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::Acknowledge;
+        pdu.pdu_header.protocol_family = ProtocolFamily::SimulationManagement;
+        pdu.finalize();
+        pdu
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::AcknowledgePdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
     use bytes::BytesMut;
 
     #[test]
     fn create_header() {
-        let acknowledge_pdu = AcknowledgePdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::Acknowledge,
-            ProtocolFamily::SimulationManagement,
-            32,
-        );
+        let acknowledge_pdu = AcknowledgePdu::new();
+        let pdu_header = PduHeader::default();
 
         assert_eq!(
             pdu_header.protocol_version,
