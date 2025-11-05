@@ -9727,9 +9727,9 @@ impl DEFirePulseShape {
     }
 }
 
-// SISO-REF-010-2023 EntityDamageStatusComponentIdentification [UID 314]
+// SISO-REF-010-2023 ComponentIdentification [UID 314]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum EntityDamageStatusComponentIdentification {
+pub enum ComponentIdentification {
     #[default]
     EntityCenter = 0,
     EntityStructure = 1,
@@ -9743,16 +9743,16 @@ pub enum EntityDamageStatusComponentIdentification {
     FuelTankSolidRocketMotor = 9,
 }
 
-impl EntityDamageStatusComponentIdentification {
+impl ComponentIdentification {
     #[must_use]
     pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
-// SISO-REF-010-2023 DEDamageDescriptionComponentDamageStatus [UID 315]
+// SISO-REF-010-2023 ComponentDamageStatus [UID 315]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DEDamageDescriptionComponentDamageStatus {
+pub enum ComponentDamageStatus {
     #[default]
     NoDamage = 0,
     MinorDamage = 1,
@@ -9761,16 +9761,16 @@ pub enum DEDamageDescriptionComponentDamageStatus {
     Destroyed = 4,
 }
 
-impl DEDamageDescriptionComponentDamageStatus {
+impl ComponentDamageStatus {
     #[must_use]
     pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
     }
 }
 
-// SISO-REF-010-2023 DEDamageDescriptionComponentVisualSmokeColor [UID 316]
+// SISO-REF-010-2023 ComponentVisualSmokeColor [UID 316]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum DEDamageDescriptionComponentVisualSmokeColor {
+pub enum ComponentVisualSmokeColor {
     #[default]
     NoSmoke = 0,
     White = 1,
@@ -9778,7 +9778,7 @@ pub enum DEDamageDescriptionComponentVisualSmokeColor {
     Black = 3,
 }
 
-impl DEDamageDescriptionComponentVisualSmokeColor {
+impl ComponentVisualSmokeColor {
     #[must_use]
     pub fn deserialize(buf: &mut BytesMut) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
