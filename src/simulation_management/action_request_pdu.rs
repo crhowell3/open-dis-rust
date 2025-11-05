@@ -14,51 +14,53 @@ use crate::common::{
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.5.7
 pub struct ActionRequestPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub request_id: u32,
     pub action_id: u32,
     pub number_of_fixed_datum_records: u32,
     pub number_of_variable_datum_records: u32,
-    pub fixed_datum_records: u64,
-    pub variable_datum_records: u64,
+    pub fixed_datum_records: Vec<u64>,
+    pub variable_datum_records: Vec<u64>,
 }
 
 impl Default for ActionRequestPdu {
-    /// Creates a default-initialized Action Request PDU
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Action Request PDU:
-    /// ```
-    /// use open_dis_rust::simulation_management::action_request_pdu::ActionRequestPdu;
-    /// let mut action_request_pdu = ActionRequestPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         ActionRequestPdu {
-            pdu_header: PduHeader::default(
-                PduType::ActionRequest,
-                ProtocolFamily::SimulationManagement,
-                56,
-            ),
+            pdu_header: PduHeader::default(),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
             request_id: 0,
             action_id: 0,
             number_of_fixed_datum_records: 0,
             number_of_variable_datum_records: 0,
-            fixed_datum_records: 0,
-            variable_datum_records: 0,
+            fixed_datum_records: vec![],
+            variable_datum_records: vec![],
         }
     }
 }
 
 impl Pdu for ActionRequestPdu {
+    fn length(&self) -> u16 {
+        let fixed_section = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<EntityId>() * 2
+            + std::mem::size_of::<u32>() * 4;
+
+        fixed_section as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -69,8 +71,12 @@ impl Pdu for ActionRequestPdu {
         buf.put_u32(self.action_id);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
-        buf.put_u64(self.fixed_datum_records);
-        buf.put_u64(self.variable_datum_records);
+        for i in 0..self.fixed_datum_records.len() {
+            buf.put_u64(self.fixed_datum_records[i])
+        }
+        for i in 0..self.variable_datum_records.len() {
+            buf.put_u64(self.variable_datum_records[i])
+        }
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -85,13 +91,15 @@ impl Pdu for ActionRequestPdu {
             let action_id = buffer.get_u32();
             let number_of_fixed_datum_records = buffer.get_u32();
             let number_of_variable_datum_records = buffer.get_u32();
-            let mut fixed_datum_records: u64 = 0;
+            let mut fixed_datum_records: Vec<u64> = vec![];
+            fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
             for _record in 0..number_of_fixed_datum_records as usize {
-                fixed_datum_records += buffer.get_u64();
+                fixed_datum_records.push(buffer.get_u64());
             }
-            let mut variable_datum_records: u64 = 0;
+            let mut variable_datum_records: Vec<u64> = vec![];
+            variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
             for _record in 0..number_of_variable_datum_records as usize {
-                variable_datum_records += buffer.get_u64();
+                variable_datum_records.push(buffer.get_u64());
             }
 
             Ok(ActionRequestPdu {
@@ -133,13 +141,15 @@ impl Pdu for ActionRequestPdu {
         let action_id = buffer.get_u32();
         let number_of_fixed_datum_records = buffer.get_u32();
         let number_of_variable_datum_records = buffer.get_u32();
-        let mut fixed_datum_records: u64 = 0;
+        let mut fixed_datum_records: Vec<u64> = vec![];
+        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
         for _record in 0..number_of_fixed_datum_records as usize {
-            fixed_datum_records += buffer.get_u64();
+            fixed_datum_records.push(buffer.get_u64());
         }
-        let mut variable_datum_records: u64 = 0;
+        let mut variable_datum_records: Vec<u64> = vec![];
+        variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
         for _record in 0..number_of_variable_datum_records as usize {
-            variable_datum_records += buffer.get_u64();
+            variable_datum_records.push(buffer.get_u64());
         }
 
         Ok(ActionRequestPdu {
@@ -156,23 +166,36 @@ impl Pdu for ActionRequestPdu {
     }
 }
 
+impl ActionRequestPdu {
+    /// Creates an Action Request PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing an Action Request PDU:
+    /// ```
+    /// use open_dis_rust::simulation_management::ActionRequestPdu;
+    /// let mut action_request_pdu = ActionRequestPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::ActionRequest;
+        pdu.pdu_header.protocol_family = ProtocolFamily::SimulationManagement;
+        pdu.finalize();
+        pdu
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::ActionRequestPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
     use bytes::BytesMut;
 
     #[test]
     fn create_header() {
-        let action_request_pdu = ActionRequestPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::ActionRequest,
-            ProtocolFamily::SimulationManagement,
-            448 / 8,
-        );
+        let action_request_pdu = ActionRequestPdu::new();
+        let pdu_header = PduHeader::default();
 
         assert_eq!(
             pdu_header.protocol_version,
