@@ -9,7 +9,6 @@ use crate::common::{
     EntityCoordinateVector,
     enums::{ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor},
     event_id::EventId,
-    vector3_float::Vector3Float,
 };
 
 #[derive(Copy, Clone, Debug)]
