@@ -5,10 +5,11 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
+    ProtocolFamily,
     dis_error::DISError,
     entity_id::EntityId,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::{PduHeader, PduType},
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -25,11 +26,7 @@ pub struct CreateEntityPdu {
 impl Default for CreateEntityPdu {
     fn default() -> Self {
         CreateEntityPdu {
-            pdu_header: PduHeader::default(
-                PduType::CreateEntity,
-                ProtocolFamily::SimulationManagement,
-                56,
-            ),
+            pdu_header: PduHeader::default(),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
             request_id: 0,
@@ -38,6 +35,22 @@ impl Default for CreateEntityPdu {
 }
 
 impl Pdu for CreateEntityPdu {
+    fn length(&self) -> u16 {
+        let length = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<EntityId>() * 2
+            + std::mem::size_of::<u32>();
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -98,37 +111,83 @@ impl Pdu for CreateEntityPdu {
     }
 }
 
+impl CreateEntityPdu {
+    /// Creates a CreateEntity PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing an CreateEntity PDU:
+    /// ```
+    /// use open_dis_rust::simulation_management::CreateEntityPdu;
+    /// let mut create_entity_pdu = CreateEntityPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::CreateEntity;
+        pdu.pdu_header.protocol_family = ProtocolFamily::SimulationManagement;
+        pdu.finalize();
+        pdu
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use bytes::BytesMut;
+
     use super::CreateEntityPdu;
-    use crate::common::pdu_header::{PduHeader, PduType, ProtocolFamily};
+    use crate::common::{Pdu, PduType, pdu_header::PduHeader};
 
     #[test]
     fn create_header() {
-        let action_request_pdu = CreateEntityPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::CreateEntity,
-            ProtocolFamily::SimulationManagement,
-            448 / 8,
-        );
+        let create_entity_pdu = CreateEntityPdu::default();
+        let pdu_header = PduHeader::default();
 
         assert_eq!(
             pdu_header.protocol_version,
-            action_request_pdu.pdu_header.protocol_version
+            create_entity_pdu.pdu_header.protocol_version
         );
         assert_eq!(
             pdu_header.exercise_id,
-            action_request_pdu.pdu_header.exercise_id
+            create_entity_pdu.pdu_header.exercise_id
         );
-        assert_eq!(pdu_header.pdu_type, action_request_pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.pdu_type, create_entity_pdu.pdu_header.pdu_type);
         assert_eq!(
             pdu_header.protocol_family,
-            action_request_pdu.pdu_header.protocol_family
+            create_entity_pdu.pdu_header.protocol_family
         );
-        assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
+        assert_eq!(pdu_header.length, create_entity_pdu.pdu_header.length);
         assert_eq!(
             pdu_header.status_record,
-            action_request_pdu.pdu_header.status_record
+            create_entity_pdu.pdu_header.status_record
         );
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let create_entity_pdu = CreateEntityPdu::default();
+        let any_pdu = create_entity_pdu.as_any();
+
+        assert!(any_pdu.is::<CreateEntityPdu>());
+    }
+
+    #[test]
+    fn deserialize_header() {
+        let mut create_entity_pdu = CreateEntityPdu::default();
+        let mut buffer = BytesMut::new();
+        create_entity_pdu.serialize(&mut buffer);
+
+        let new_create_entity_pdu = CreateEntityPdu::deserialize(buffer).unwrap();
+        assert_eq!(
+            new_create_entity_pdu.pdu_header,
+            create_entity_pdu.pdu_header
+        );
+    }
+
+    #[test]
+    fn create_new_pdu() {
+        let create_entity_pdu = CreateEntityPdu::new();
+
+        assert_eq!(create_entity_pdu.header().pdu_type, PduType::CreateEntity);
     }
 }

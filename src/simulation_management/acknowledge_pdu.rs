@@ -41,11 +41,13 @@ impl Default for AcknowledgePdu {
 
 impl Pdu for AcknowledgePdu {
     fn length(&self) -> u16 {
-        std::mem::size_of::<PduHeader>() as u16
-            + std::mem::size_of::<EntityId>() as u16 * 2
-            + std::mem::size_of::<AcknowledgeFlag>() as u16
-            + std::mem::size_of::<AcknowledgeResponseFlag>() as u16
-            + std::mem::size_of::<u32>() as u16
+        let length = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<EntityId>() * 2
+            + std::mem::size_of::<AcknowledgeFlag>()
+            + std::mem::size_of::<AcknowledgeResponseFlag>()
+            + std::mem::size_of::<u32>();
+
+        length as u16
     }
 
     fn header(&self) -> &PduHeader {
