@@ -150,8 +150,10 @@ impl AcknowledgePdu {
 
 #[cfg(test)]
 mod tests {
+    use std::any::type_name_of_val;
+
     use super::AcknowledgePdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use crate::common::{PduType, pdu::Pdu, pdu_header::PduHeader};
     use bytes::BytesMut;
 
     #[test]
@@ -195,5 +197,12 @@ mod tests {
 
         let new_acknowledge_pdu = AcknowledgePdu::deserialize(buffer).unwrap();
         assert_eq!(new_acknowledge_pdu.pdu_header, acknowledge_pdu.pdu_header);
+    }
+
+    #[test]
+    fn create_new_pdu() {
+        let comment_pdu = AcknowledgePdu::new();
+        assert!(type_name_of_val(&comment_pdu).contains("AcknowledgePdu"));
+        assert_eq!(comment_pdu.header().pdu_type, PduType::Acknowledge);
     }
 }

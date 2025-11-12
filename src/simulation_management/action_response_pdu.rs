@@ -10,7 +10,7 @@ use crate::common::{
     entity_id::EntityId,
     enums::ActionResponseRequestStatus,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::{PduHeader, PduType},
 };
 
 use bytes::{Buf, BufMut, BytesMut};

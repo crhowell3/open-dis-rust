@@ -5,7 +5,6 @@
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
-use chrono::format::Fixed;
 use std::any::Any;
 
 use crate::common::{
@@ -229,7 +228,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let mut action_request_pdu = ActionRequestPdu::default();
+        let mut action_request_pdu = ActionRequestPdu::new();
         let mut buffer = BytesMut::new();
         action_request_pdu.serialize(&mut buffer);
 

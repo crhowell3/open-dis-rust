@@ -5,6 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
+    datum_records::{FixedDatumRecord, VariableDatumRecord},
     dis_error::DISError,
     entity_id::EntityId,
     pdu::Pdu,
@@ -13,7 +14,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.5.11
 pub struct DataPdu {
     pub pdu_header: PduHeader,
@@ -23,27 +24,43 @@ pub struct DataPdu {
     pub padding: u32,
     pub number_of_fixed_datum_records: u32,
     pub number_of_variable_datum_records: u32,
-    pub fixed_datum_records: u64,
-    pub variable_datum_records: u64,
+    pub fixed_datum_records: Vec<FixedDatumRecord>,
+    pub variable_datum_records: Vec<VariableDatumRecord>,
 }
 
 impl Default for DataPdu {
     fn default() -> Self {
         DataPdu {
-            pdu_header: PduHeader::default(PduType::Data, ProtocolFamily::SimulationManagement, 56),
+            pdu_header: PduHeader::default(),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
             request_id: 0,
             padding: 0,
             number_of_fixed_datum_records: 0,
             number_of_variable_datum_records: 0,
-            fixed_datum_records: 0,
-            variable_datum_records: 0,
+            fixed_datum_records: vec![],
+            variable_datum_records: vec![],
         }
     }
 }
 
 impl Pdu for DataPdu {
+    fn length(&self) -> u16 {
+        let fixed_section = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<EntityId>() * 2
+            + std::mem::size_of::<u32>() * 4;
+
+        fixed_section as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -54,8 +71,12 @@ impl Pdu for DataPdu {
         buf.put_u32(self.padding);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
-        buf.put_u64(self.fixed_datum_records);
-        buf.put_u64(self.variable_datum_records);
+        for i in 0..self.fixed_datum_records.len() {
+            self.fixed_datum_records[i].serialize(buf);
+        }
+        for i in 0..self.variable_datum_records.len() {
+            self.variable_datum_records[i].serialize(buf);
+        }
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
@@ -70,13 +91,15 @@ impl Pdu for DataPdu {
             let padding = buffer.get_u32();
             let number_of_fixed_datum_records = buffer.get_u32();
             let number_of_variable_datum_records = buffer.get_u32();
-            let mut fixed_datum_records: u64 = 0;
+            let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
+            fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
             for _record in 0..number_of_fixed_datum_records as usize {
-                fixed_datum_records += buffer.get_u64();
+                fixed_datum_records.push(FixedDatumRecord::deserialize(&mut buffer));
             }
-            let mut variable_datum_records: u64 = 0;
+            let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
+            variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
             for _record in 0..number_of_variable_datum_records as usize {
-                variable_datum_records += buffer.get_u64();
+                variable_datum_records.push(VariableDatumRecord::deserialize(&mut buffer));
             }
 
             Ok(DataPdu {
@@ -115,13 +138,15 @@ impl Pdu for DataPdu {
         let padding = buffer.get_u32();
         let number_of_fixed_datum_records = buffer.get_u32();
         let number_of_variable_datum_records = buffer.get_u32();
-        let mut fixed_datum_records: u64 = 0;
+        let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
+        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
         for _record in 0..number_of_fixed_datum_records as usize {
-            fixed_datum_records += buffer.get_u64();
+            fixed_datum_records.push(FixedDatumRecord::deserialize(&mut buffer));
         }
-        let mut variable_datum_records: u64 = 0;
+        let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
+        variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
         for _record in 0..number_of_variable_datum_records as usize {
-            variable_datum_records += buffer.get_u64();
+            variable_datum_records.push(VariableDatumRecord::deserialize(&mut buffer));
         }
 
         Ok(DataPdu {
@@ -138,20 +163,39 @@ impl Pdu for DataPdu {
     }
 }
 
+impl DataPdu {
+    /// Creates a Data PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing a Data PDU:
+    /// ```
+    /// use open_dis_rust::simulation_management::DataPdu;
+    /// let mut data_pdu = DataPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::Data;
+        pdu.pdu_header.protocol_family = ProtocolFamily::SimulationManagement;
+        pdu.finalize();
+        pdu
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::DataPdu;
     use crate::common::{
         pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
+        pdu_header::{PduHeader, PduType},
     };
     use bytes::BytesMut;
 
     #[test]
     fn create_header() {
-        let data_pdu = DataPdu::default();
-        let pdu_header =
-            PduHeader::default(PduType::Data, ProtocolFamily::SimulationManagement, 448 / 8);
+        let data_pdu = DataPdu::new();
+        let pdu_header = PduHeader::default();
 
         assert_eq!(
             pdu_header.protocol_version,
@@ -168,6 +212,14 @@ mod tests {
     }
 
     #[test]
+    fn cast_to_any() {
+        let action_request_pdu = DataPdu::default();
+        let any_pdu = action_request_pdu.as_any();
+
+        assert!(any_pdu.is::<DataPdu>());
+    }
+
+    #[test]
     fn deserialize_header() {
         let mut data_pdu = DataPdu::default();
         let mut buffer = BytesMut::new();
@@ -175,5 +227,12 @@ mod tests {
 
         let new_data_pdu = DataPdu::deserialize(buffer).unwrap();
         assert_eq!(new_data_pdu.pdu_header, data_pdu.pdu_header);
+    }
+
+    #[test]
+    fn create_new_pdu() {
+        let data_pdu = DataPdu::new();
+
+        assert_eq!(data_pdu.header().pdu_type, PduType::Comment);
     }
 }
