@@ -22,7 +22,7 @@ use super::data_types::munition_descriptor::MunitionDescriptor;
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.3.2
 pub struct FirePdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub firing_entity_id: EntityId,
     pub target_entity_id: EntityId,
     pub munition_expendable_id: EntityId,

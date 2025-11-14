@@ -6,8 +6,6 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::DISError;
-
 #[derive(Clone, Debug)]
 pub struct FixedDatumRecord {
     pub datum_id: u32,

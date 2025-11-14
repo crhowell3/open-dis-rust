@@ -19,7 +19,7 @@ use super::data_types::directed_energy_damage::DirectedEnergyDamage;
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.3.5
 pub struct EntityDamageStatusPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub firing_entity_id: EntityId,
     pub target_entity_id: EntityId,
     pub damaged_entity_id: EntityId,
@@ -156,7 +156,7 @@ impl EntityDamageStatusPdu {
     /// Initializing an Entity Damage Status PDU:
     /// ```
     /// use open_dis_rust::warfare::EntityDamageStatusPdu;
-    /// let entity_damage_status_pdu = EntityDamageStatusPdu::new();
+    /// let pdu = EntityDamageStatusPdu::new();
     /// ```
     ///
     pub fn new() -> Self {
