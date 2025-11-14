@@ -102,96 +102,36 @@ impl Pdu for ArealObjectStatePdu {
         }
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::ArealObjectState {
-            let object_id = EntityId::deserialize(&mut buffer);
-            let referenced_object_id = EntityId::deserialize(&mut buffer);
-            let update_number = buffer.get_u16();
-            let force_id = ForceId::deserialize(&mut buffer);
-            let modifications = buffer.get_u8();
-            let object_type = ObjectType::deserialize(&mut buffer);
-            let specific_object_appearance = buffer.get_u32();
-            let general_object_appearance =
-                ObjectStateAppearanceGeneral::from_u16(buffer.get_u16()).unwrap();
-            let number_of_points = buffer.get_u16();
-            let requester_id = SimulationAddress::deserialize(&mut buffer);
-            let receiving_id = SimulationAddress::deserialize(&mut buffer);
-            let mut object_location: Vec<WorldCoordinate> = vec![];
-            for _i in 0..number_of_points {
-                object_location.push(WorldCoordinate::deserialize(&mut buffer));
-            }
-            Ok(ArealObjectStatePdu {
-                pdu_header,
-                object_id,
-                referenced_object_id,
-                update_number,
-                force_id,
-                modifications,
-                object_type,
-                specific_object_appearance,
-                general_object_appearance,
-                number_of_points,
-                requester_id,
-                receiving_id,
-                object_location,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::ArealObjectState {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type ArealObjectState, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let object_id = EntityId::deserialize(&mut buffer);
-        let referenced_object_id = EntityId::deserialize(&mut buffer);
-        let update_number = buffer.get_u16();
-        let force_id = ForceId::deserialize(&mut buffer);
-        let modifications = buffer.get_u8();
-        let object_type = ObjectType::deserialize(&mut buffer);
-        let specific_object_appearance = buffer.get_u32();
-        let general_object_appearance =
-            ObjectStateAppearanceGeneral::from_u16(buffer.get_u16()).unwrap();
-        let number_of_points = buffer.get_u16();
-        let requester_id = SimulationAddress::deserialize(&mut buffer);
-        let receiving_id = SimulationAddress::deserialize(&mut buffer);
-        let mut object_location: Vec<WorldCoordinate> = vec![];
-        for _i in 0..number_of_points {
-            object_location.push(WorldCoordinate::deserialize(&mut buffer));
-        }
-        Ok(ArealObjectStatePdu {
-            pdu_header,
-            object_id,
-            referenced_object_id,
-            update_number,
-            force_id,
-            modifications,
-            object_type,
-            specific_object_appearance,
-            general_object_appearance,
-            number_of_points,
-            requester_id,
-            receiving_id,
-            object_location,
-        })
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 }
 
@@ -213,13 +153,48 @@ impl ArealObjectStatePdu {
         pdu.finalize();
         pdu
     }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let object_id = EntityId::deserialize(buf);
+        let referenced_object_id = EntityId::deserialize(buf);
+        let update_number = buf.get_u16();
+        let force_id = ForceId::deserialize(buf);
+        let modifications = buf.get_u8();
+        let object_type = ObjectType::deserialize(buf);
+        let specific_object_appearance = buf.get_u32();
+        let general_object_appearance =
+            ObjectStateAppearanceGeneral::from_u16(buf.get_u16()).unwrap();
+        let number_of_points = buf.get_u16();
+        let requester_id = SimulationAddress::deserialize(buf);
+        let receiving_id = SimulationAddress::deserialize(buf);
+        let mut object_location: Vec<WorldCoordinate> = vec![];
+        for _i in 0..number_of_points {
+            object_location.push(WorldCoordinate::deserialize(buf));
+        }
+
+        ArealObjectStatePdu {
+            pdu_header: PduHeader::default(),
+            object_id,
+            referenced_object_id,
+            update_number,
+            force_id,
+            modifications,
+            object_type,
+            specific_object_appearance,
+            general_object_appearance,
+            number_of_points,
+            requester_id,
+            receiving_id,
+            object_location,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::ArealObjectStatePdu;
     use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::BytesMut;
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
@@ -244,17 +219,14 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let mut areal_object_state_pdu = ArealObjectStatePdu::new();
-        let mut buffer = BytesMut::new();
-        areal_object_state_pdu.serialize(&mut buffer);
+        let mut pdu = ArealObjectStatePdu::new();
+        let mut serialize_buffer = BytesMut::new();
+        pdu.serialize(&mut serialize_buffer);
 
-        let new_areal_object_state_pdu = ArealObjectStatePdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_areal_object_state_pdu.pdu_header,
-            areal_object_state_pdu.pdu_header
-        );
+        let mut deserialize_buffer = Bytes::new();
+        let new_pdu = ArealObjectStatePdu::deserialize(&mut deserialize_buffer).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
-
     #[test]
     fn check_default_pdu_length() {
         const DEFAULT_LENGTH: u16 = 384 / 8;

@@ -91,82 +91,36 @@ impl Pdu for LinearObjectStatePdu {
         }
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::LinearObjectState {
-            let object_id = EntityId::deserialize(&mut buffer);
-            let referenced_object_id = EntityId::deserialize(&mut buffer);
-            let update_number = buffer.get_u16();
-            let force_id = ForceId::deserialize(&mut buffer);
-            let number_of_segments = buffer.get_u8();
-            let requester_id = SimulationAddress::deserialize(&mut buffer);
-            let receiving_id = SimulationAddress::deserialize(&mut buffer);
-            let object_type = ObjectType::deserialize(&mut buffer);
-            let mut linear_segment_parameters: Vec<LinearSegmentParameter> = vec![];
-            for _i in 0..number_of_segments {
-                linear_segment_parameters.push(LinearSegmentParameter::deserialize(&mut buffer));
-            }
-            Ok(LinearObjectStatePdu {
-                pdu_header,
-                object_id,
-                referenced_object_id,
-                update_number,
-                force_id,
-                number_of_segments,
-                requester_id,
-                receiving_id,
-                object_type,
-                linear_segment_parameters,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::LinearObjectState {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type LinearObjectState, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let object_id = EntityId::deserialize(&mut buffer);
-        let referenced_object_id = EntityId::deserialize(&mut buffer);
-        let update_number = buffer.get_u16();
-        let force_id = ForceId::deserialize(&mut buffer);
-        let number_of_segments = buffer.get_u8();
-        let requester_id = SimulationAddress::deserialize(&mut buffer);
-        let receiving_id = SimulationAddress::deserialize(&mut buffer);
-        let object_type = ObjectType::deserialize(&mut buffer);
-        let mut linear_segment_parameters: Vec<LinearSegmentParameter> = vec![];
-        for _i in 0..number_of_segments {
-            linear_segment_parameters.push(LinearSegmentParameter::deserialize(&mut buffer));
-        }
-        Ok(LinearObjectStatePdu {
-            pdu_header,
-            object_id,
-            referenced_object_id,
-            update_number,
-            force_id,
-            number_of_segments,
-            requester_id,
-            receiving_id,
-            object_type,
-            linear_segment_parameters,
-        })
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 }
 
@@ -188,13 +142,41 @@ impl LinearObjectStatePdu {
         pdu.finalize();
         pdu
     }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let object_id = EntityId::deserialize(buf);
+        let referenced_object_id = EntityId::deserialize(buf);
+        let update_number = buf.get_u16();
+        let force_id = ForceId::deserialize(buf);
+        let number_of_segments = buf.get_u8();
+        let requester_id = SimulationAddress::deserialize(buf);
+        let receiving_id = SimulationAddress::deserialize(buf);
+        let object_type = ObjectType::deserialize(buf);
+        let mut linear_segment_parameters: Vec<LinearSegmentParameter> = vec![];
+        for _i in 0..number_of_segments {
+            linear_segment_parameters.push(LinearSegmentParameter::deserialize(buf));
+        }
+
+        LinearObjectStatePdu {
+            pdu_header: PduHeader::default(),
+            object_id,
+            referenced_object_id,
+            update_number,
+            force_id,
+            number_of_segments,
+            requester_id,
+            receiving_id,
+            object_type,
+            linear_segment_parameters,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::LinearObjectStatePdu;
     use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::BytesMut;
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
@@ -216,18 +198,15 @@ mod tests {
 
         assert!(any_pdu.is::<LinearObjectStatePdu>());
     }
-
     #[test]
     fn deserialize_header() {
-        let mut linear_object_state_pdu = LinearObjectStatePdu::default();
-        let mut buffer = BytesMut::new();
-        linear_object_state_pdu.serialize(&mut buffer);
+        let mut pdu = LinearObjectStatePdu::default();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_linear_object_state_pdu = LinearObjectStatePdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_linear_object_state_pdu.pdu_header,
-            linear_object_state_pdu.pdu_header
-        );
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = LinearObjectStatePdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
 
     #[test]

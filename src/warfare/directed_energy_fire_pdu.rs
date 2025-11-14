@@ -165,7 +165,7 @@ mod tests {
 
     #[test]
     fn create_header() {
-        let pdu = DirectedEnergyFirePdu::default();
+        let pdu = DirectedEnergyFirePdu::new();
         let pdu_header = PduHeader::default();
 
         assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
@@ -186,7 +186,7 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let mut pdu = DirectedEnergyFirePdu::default();
+        let mut pdu = DirectedEnergyFirePdu::new();
         let mut serialize_buffer = BytesMut::new();
         pdu.serialize(&mut serialize_buffer);
 

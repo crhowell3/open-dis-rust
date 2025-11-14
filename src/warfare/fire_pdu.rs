@@ -201,7 +201,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 384 / 8;
+        const DEFAULT_LENGTH: u16 = 768 / 8;
         let pdu = FirePdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
