@@ -9,6 +9,7 @@
 pub mod angular_velocity_vector;
 pub mod clock_time;
 pub mod constants;
+pub mod datum_records;
 pub mod dis_error;
 pub mod entity_coordinate_vector;
 pub mod entity_id;

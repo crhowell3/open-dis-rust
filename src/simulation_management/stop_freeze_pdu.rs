@@ -25,7 +25,7 @@ pub struct StopFreezePdu {
     pub real_world_time: ClockTime,
     pub reason: Reason,
     pub frozen_behavior: FrozenBehavior,
-    pub padding: i16,
+    _padding: u16,
     pub request_id: u32,
 }
 
@@ -42,7 +42,7 @@ impl Default for StopFreezePdu {
             real_world_time: ClockTime::default(),
             reason: Reason::default(),
             frozen_behavior: FrozenBehavior::default(),
-            padding: 0,
+            _padding: 0_u16,
             request_id: 0,
         }
     }
@@ -58,7 +58,7 @@ impl Pdu for StopFreezePdu {
         self.real_world_time.serialize(buf);
         buf.put_u8(self.reason as u8);
         buf.put_u8(self.frozen_behavior.as_u8());
-        buf.put_i16(self.padding);
+        buf.put_u16(self._padding);
         buf.put_u32(self.request_id);
     }
 
@@ -73,7 +73,7 @@ impl Pdu for StopFreezePdu {
             let real_world_time = ClockTime::deserialize(&mut buffer);
             let reason = Reason::deserialize(&mut buffer);
             let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
-            let padding = buffer.get_i16();
+            let padding = buffer.get_u16();
             let request_id = buffer.get_u32();
 
             Ok(StopFreezePdu {
@@ -83,7 +83,7 @@ impl Pdu for StopFreezePdu {
                 real_world_time,
                 reason,
                 frozen_behavior,
-                padding,
+                _padding: padding,
                 request_id,
             })
         } else {
@@ -113,7 +113,7 @@ impl Pdu for StopFreezePdu {
         let real_world_time = ClockTime::deserialize(&mut buffer);
         let reason = Reason::deserialize(&mut buffer);
         let frozen_behavior = FrozenBehavior::from_u8(buffer.get_u8()).unwrap();
-        let padding = buffer.get_i16();
+        let padding = buffer.get_u16();
         let request_id = buffer.get_u32();
 
         Ok(StopFreezePdu {
@@ -123,7 +123,7 @@ impl Pdu for StopFreezePdu {
             real_world_time,
             reason,
             frozen_behavior,
-            padding,
+            _padding: padding,
             request_id,
         })
     }

@@ -42,7 +42,7 @@ impl MunitionDescriptor {
         buf.put_u16(self.rate);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> MunitionDescriptor {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> MunitionDescriptor {
         MunitionDescriptor {
             munition_type: EntityType::deserialize(buf),
             warhead: buf.get_u16(),

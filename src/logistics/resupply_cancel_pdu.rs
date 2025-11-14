@@ -35,7 +35,7 @@ impl Default for ResupplyCancelPdu {
     ///
     fn default() -> Self {
         ResupplyCancelPdu {
-            pdu_header: PduHeader::default(PduType::ResupplyCancel, ProtocolFamily::Logistics, 56),
+            pdu_header: PduHeader::default(PduType::ResupplyCancel, ProtocolFamily::Logistics, 24),
             receiving_entity_id: EntityId::default(1),
             supplying_entity_id: EntityId::default(2),
         }
@@ -110,8 +110,11 @@ mod tests {
     #[test]
     fn create_header() {
         let resupply_cancel_pdu = ResupplyCancelPdu::default();
-        let pdu_header =
-            PduHeader::default(PduType::ResupplyCancel, ProtocolFamily::Logistics, 448 / 8);
+        let pdu_header = PduHeader::default(
+            PduType::ResupplyCancel,
+            ProtocolFamily::Logistics,
+            u16::try_from(std::mem::size_of_val(&resupply_cancel_pdu)).expect("size of pdu"),
+        );
 
         assert_eq!(
             pdu_header.protocol_version,

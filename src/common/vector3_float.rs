@@ -93,7 +93,7 @@ impl Vector3Float {
         buf.put_f32(self.z);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> Vector3Float {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Vector3Float {
         Vector3Float {
             x: buf.get_f32(),
             y: buf.get_f32(),

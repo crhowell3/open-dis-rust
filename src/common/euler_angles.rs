@@ -30,7 +30,7 @@ impl EulerAngles {
         buf.put_f32(self.phi);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EulerAngles {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EulerAngles {
         EulerAngles {
             psi: buf.get_f32(),
             theta: buf.get_f32(),

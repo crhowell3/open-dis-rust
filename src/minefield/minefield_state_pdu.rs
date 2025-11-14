@@ -5,12 +5,13 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
+    WorldCoordinate,
     dis_error::DISError,
     entity_type::EntityType,
+    enums::{ForceId, MinefieldStateProtocolMode},
     euler_angles::EulerAngles,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
-    vector3_double::Vector3Double,
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -20,17 +21,17 @@ use super::data_types::{minefield_identifier::MinefieldIdentifier, point::Point}
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.9.2
 pub struct MinefieldStatePdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub minefield_id: MinefieldIdentifier,
     pub minefield_sequence: u16,
-    pub force_id: u8,
+    pub force_id: ForceId,
     pub number_of_perimeter_points: u8,
     pub minefield_type: EntityType,
     pub number_of_mine_types: u16,
-    pub minefield_location: Vector3Double,
+    pub minefield_location: WorldCoordinate,
     pub minefield_orientation: EulerAngles,
     pub appearance: u16,
-    pub protocol_mode: u16,
+    pub protocol_mode: MinefieldStateProtocolMode,
     pub perimeter_points: Vec<Point>,
     pub mine_type: Vec<EntityType>,
 }
@@ -38,38 +39,62 @@ pub struct MinefieldStatePdu {
 impl Default for MinefieldStatePdu {
     fn default() -> Self {
         MinefieldStatePdu {
-            pdu_header: PduHeader::default(PduType::MinefieldState, ProtocolFamily::Minefield, 56),
+            pdu_header: PduHeader::default(),
             minefield_id: MinefieldIdentifier::default(),
             minefield_sequence: 0,
-            force_id: 0,
+            force_id: ForceId::default(),
             number_of_perimeter_points: 0,
             minefield_type: EntityType::default(),
             number_of_mine_types: 0,
-            minefield_location: Vector3Double::default(),
+            minefield_location: WorldCoordinate::default(),
             minefield_orientation: EulerAngles::default(),
             appearance: 0,
-            protocol_mode: 0,
-            perimeter_points: vec![Point::default()],
-            mine_type: vec![EntityType::default()],
+            protocol_mode: MinefieldStateProtocolMode::default(),
+            perimeter_points: vec![],
+            mine_type: vec![],
         }
     }
 }
 
 impl Pdu for MinefieldStatePdu {
+    fn length(&self) -> u16 {
+        let length = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<MinefieldIdentifier>()
+            + std::mem::size_of::<u16>()
+            + std::mem::size_of::<ForceId>()
+            + std::mem::size_of::<u8>()
+            + std::mem::size_of::<EntityType>()
+            + std::mem::size_of::<u16>()
+            + std::mem::size_of::<WorldCoordinate>()
+            + std::mem::size_of::<EulerAngles>()
+            + std::mem::size_of::<u16>()
+            + std::mem::size_of::<MinefieldStateProtocolMode>();
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.minefield_id.serialize(buf);
         buf.put_u16(self.minefield_sequence);
-        buf.put_u8(self.force_id);
+        buf.put_u8(self.force_id as u8);
         buf.put_u8(self.number_of_perimeter_points);
         self.minefield_type.serialize(buf);
         buf.put_u16(self.number_of_mine_types);
         self.minefield_location.serialize(buf);
         self.minefield_orientation.serialize(buf);
         buf.put_u16(self.appearance);
-        buf.put_u16(self.protocol_mode);
+        buf.put_u16(self.protocol_mode as u16);
         for i in 0..self.perimeter_points.len() {
             self.perimeter_points[i].serialize(buf);
         }
@@ -78,89 +103,80 @@ impl Pdu for MinefieldStatePdu {
         }
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::MinefieldState {
-            let minefield_id = MinefieldIdentifier::deserialize(&mut buffer);
-            let minefield_sequence = buffer.get_u16();
-            let force_id = buffer.get_u8();
-            let number_of_perimeter_points = buffer.get_u8();
-            let minefield_type = EntityType::deserialize(&mut buffer);
-            let number_of_mine_types = buffer.get_u16();
-            let minefield_location = Vector3Double::deserialize(&mut buffer);
-            let minefield_orientation = EulerAngles::deserialize(&mut buffer);
-            let appearance = buffer.get_u16();
-            let protocol_mode = buffer.get_u16();
-            let mut perimeter_points: Vec<Point> = vec![];
-            for _i in 0..number_of_perimeter_points {
-                perimeter_points.push(Point::deserialize(&mut buffer));
-            }
-            let mut mine_type: Vec<EntityType> = vec![];
-            for _i in 0..number_of_mine_types {
-                mine_type.push(EntityType::deserialize(&mut buffer));
-            }
-
-            Ok(MinefieldStatePdu {
-                pdu_header,
-                minefield_id,
-                minefield_sequence,
-                force_id,
-                number_of_perimeter_points,
-                minefield_type,
-                number_of_mine_types,
-                minefield_location,
-                minefield_orientation,
-                appearance,
-                protocol_mode,
-                perimeter_points,
-                mine_type,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::MinefieldState {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type MinefieldState, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let minefield_id = MinefieldIdentifier::deserialize(&mut buffer);
-        let minefield_sequence = buffer.get_u16();
-        let force_id = buffer.get_u8();
-        let number_of_perimeter_points = buffer.get_u8();
-        let minefield_type = EntityType::deserialize(&mut buffer);
-        let number_of_mine_types = buffer.get_u16();
-        let minefield_location = Vector3Double::deserialize(&mut buffer);
-        let minefield_orientation = EulerAngles::deserialize(&mut buffer);
-        let appearance = buffer.get_u16();
-        let protocol_mode = buffer.get_u16();
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl MinefieldStatePdu {
+    /// Creates a new `MinefieldStatePdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `MinefieldStatePdu`:
+    /// ```
+    /// use open_dis_rust::minefield::MinefieldStatePdu;
+    /// let pdu = MinefieldStatePdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::MinefieldState;
+        pdu.pdu_header.protocol_family = ProtocolFamily::Minefield;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let minefield_id = MinefieldIdentifier::deserialize(buf);
+        let minefield_sequence = buf.get_u16();
+        let force_id = ForceId::deserialize(buf);
+        let number_of_perimeter_points = buf.get_u8();
+        let minefield_type = EntityType::deserialize(buf);
+        let number_of_mine_types = buf.get_u16();
+        let minefield_location = WorldCoordinate::deserialize(buf);
+        let minefield_orientation = EulerAngles::deserialize(buf);
+        let appearance = buf.get_u16();
+        let protocol_mode = MinefieldStateProtocolMode::deserialize(buf);
         let mut perimeter_points: Vec<Point> = vec![];
         for _i in 0..number_of_perimeter_points {
-            perimeter_points.push(Point::deserialize(&mut buffer));
+            perimeter_points.push(Point::deserialize(buf));
         }
         let mut mine_type: Vec<EntityType> = vec![];
         for _i in 0..number_of_mine_types {
-            mine_type.push(EntityType::deserialize(&mut buffer));
+            mine_type.push(EntityType::deserialize(buf));
         }
 
-        Ok(MinefieldStatePdu {
-            pdu_header,
+        MinefieldStatePdu {
+            pdu_header: PduHeader::default(),
             minefield_id,
             minefield_sequence,
             force_id,
@@ -173,38 +189,53 @@ impl Pdu for MinefieldStatePdu {
             protocol_mode,
             perimeter_points,
             mine_type,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use bytes::{Bytes, BytesMut};
+
     use super::MinefieldStatePdu;
-    use crate::common::pdu_header::{PduHeader, PduType, ProtocolFamily};
+    use crate::common::{Pdu, pdu_header::PduHeader};
 
     #[test]
     fn create_header() {
-        let minefield_state_pdu = MinefieldStatePdu::default();
-        let pdu_header =
-            PduHeader::default(PduType::MinefieldState, ProtocolFamily::Minefield, 448 / 8);
+        let pdu = MinefieldStatePdu::new();
+        let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            minefield_state_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            minefield_state_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, minefield_state_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            minefield_state_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, minefield_state_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            minefield_state_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let pdu = MinefieldStatePdu::new();
+        let any_pdu = pdu.as_any();
+
+        assert!(any_pdu.is::<MinefieldStatePdu>());
+    }
+
+    #[test]
+    fn deserialize_header() {
+        let mut pdu = MinefieldStatePdu::new();
+        let mut serialize_buffer = BytesMut::new();
+        pdu.serialize(&mut serialize_buffer);
+
+        let mut deserialize_buffer = Bytes::new();
+        let new_pdu = MinefieldStatePdu::deserialize(&mut deserialize_buffer).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 576 / 8;
+        let pdu = MinefieldStatePdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }
