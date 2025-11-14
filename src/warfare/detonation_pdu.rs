@@ -15,8 +15,6 @@ use crate::common::{
     event_id::EventId,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
-    vector3_double::Vector3Double,
-    vector3_float::Vector3Float,
 };
 
 use super::data_types::{
@@ -115,94 +113,33 @@ impl Pdu for DetonationPdu {
         }
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::Detonation {
-            let firing_entity_id = EntityId::deserialize(&mut buffer);
-            let target_entity_id = EntityId::deserialize(&mut buffer);
-            let exploding_entity_id = EntityId::deserialize(&mut buffer);
-            let event_id = EventId::deserialize(&mut buffer);
-            let velocity = LinearVelocity::deserialize(&mut buffer);
-            let location_in_world_coordinates = WorldCoordinate::deserialize(&mut buffer);
-            let descriptor = MunitionDescriptor::deserialize(&mut buffer);
-            let location_in_entitys_coordinates = EntityCoordinateVector::deserialize(&mut buffer);
-            let detonation_result = DetonationResult::deserialize(&mut buffer);
-            let number_of_variable_parameters = buffer.get_u8();
-            let _padding = buffer.get_u16();
-            let mut variable_parameters: Vec<VariableParameter> = vec![];
-            for _ in 0..number_of_variable_parameters {
-                variable_parameters.push(VariableParameter::deserialize(&mut buffer));
-            }
-            Ok(DetonationPdu {
-                pdu_header,
-                firing_entity_id,
-                target_entity_id,
-                exploding_entity_id,
-                event_id,
-                velocity,
-                location_in_world_coordinates,
-                descriptor,
-                location_in_entitys_coordinates,
-                detonation_result,
-                number_of_variable_parameters,
-                _padding,
-                variable_parameters,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!(
-                    "Expected PDU type Detonation, got {:?}",
-                    pdu_header.pdu_type
-                ),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::Detonation {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type Detonation, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let firing_entity_id = EntityId::deserialize(&mut buffer);
-        let target_entity_id = EntityId::deserialize(&mut buffer);
-        let exploding_entity_id = EntityId::deserialize(&mut buffer);
-        let event_id = EventId::deserialize(&mut buffer);
-        let velocity = LinearVelocity::deserialize(&mut buffer);
-        let location_in_world_coordinates = WorldCoordinate::deserialize(&mut buffer);
-        let descriptor = MunitionDescriptor::deserialize(&mut buffer);
-        let location_in_entitys_coordinates = EntityCoordinateVector::deserialize(&mut buffer);
-        let detonation_result = DetonationResult::deserialize(&mut buffer);
-        let number_of_variable_parameters = buffer.get_u8();
-        let _padding = buffer.get_u16();
-        let mut variable_parameters: Vec<VariableParameter> = vec![];
-        for _ in 0..number_of_variable_parameters {
-            variable_parameters.push(VariableParameter::deserialize(&mut buffer));
-        }
-        Ok(DetonationPdu {
-            pdu_header,
-            firing_entity_id,
-            target_entity_id,
-            exploding_entity_id,
-            event_id,
-            velocity,
-            location_in_world_coordinates,
-            descriptor,
-            location_in_entitys_coordinates,
-            detonation_result,
-            number_of_variable_parameters,
-            _padding,
-            variable_parameters,
-        })
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 }
 
@@ -224,37 +161,59 @@ impl DetonationPdu {
         pdu.finalize();
         pdu
     }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let firing_entity_id = EntityId::deserialize(buf);
+        let target_entity_id = EntityId::deserialize(buf);
+        let exploding_entity_id = EntityId::deserialize(buf);
+        let event_id = EventId::deserialize(buf);
+        let velocity = LinearVelocity::deserialize(buf);
+        let location_in_world_coordinates = WorldCoordinate::deserialize(buf);
+        let descriptor = MunitionDescriptor::deserialize(buf);
+        let location_in_entitys_coordinates = EntityCoordinateVector::deserialize(buf);
+        let detonation_result = DetonationResult::deserialize(buf);
+        let number_of_variable_parameters = buf.get_u8();
+        let _padding = buf.get_u16();
+        let mut variable_parameters: Vec<VariableParameter> = vec![];
+        for _ in 0..number_of_variable_parameters {
+            variable_parameters.push(VariableParameter::deserialize(buf));
+        }
+
+        DetonationPdu {
+            pdu_header: PduHeader::default(),
+            firing_entity_id,
+            target_entity_id,
+            exploding_entity_id,
+            event_id,
+            velocity,
+            location_in_world_coordinates,
+            descriptor,
+            location_in_entitys_coordinates,
+            detonation_result,
+            number_of_variable_parameters,
+            _padding,
+            variable_parameters,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::DetonationPdu;
     use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::BytesMut;
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let detonation_pdu = DetonationPdu::new();
-        let pdu_header = PduHeader::default();
+        let pdu = DetonationPdu::new();
+        let header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            detonation_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            detonation_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, detonation_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            detonation_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, detonation_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            detonation_pdu.pdu_header.status_record
-        );
+        assert_eq!(header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(header.length, pdu.pdu_header.length);
+        assert_eq!(header.status_record, pdu.pdu_header.status_record);
     }
 
     #[test]
@@ -267,12 +226,13 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let mut detonation_pdu = DetonationPdu::new();
-        let mut buffer = BytesMut::new();
-        detonation_pdu.serialize(&mut buffer);
+        let mut pdu = DetonationPdu::default();
+        let mut serialize_buffer = BytesMut::new();
+        pdu.serialize(&mut serialize_buffer);
 
-        let new_detonation_pdu = DetonationPdu::deserialize(buffer).unwrap();
-        assert_eq!(new_detonation_pdu.pdu_header, detonation_pdu.pdu_header);
+        let mut deserialize_buffer = Bytes::new();
+        let new_pdu = DetonationPdu::deserialize(&mut deserialize_buffer).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
 
     #[test]

@@ -8,13 +8,12 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    LinearVelocity, WorldCoordinate,
     dis_error::DISError,
     entity_id::EntityId,
     event_id::EventId,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
-    vector3_double::Vector3Double,
-    vector3_float::Vector3Float,
 };
 
 use super::data_types::munition_descriptor::MunitionDescriptor;
@@ -28,9 +27,9 @@ pub struct FirePdu {
     pub munition_expendable_id: EntityId,
     pub event_id: EventId,
     pub fire_mission_index: u32,
-    pub location_in_world_coordinates: Vector3Double,
+    pub location_in_world_coordinates: WorldCoordinate,
     pub descriptor: MunitionDescriptor,
-    pub velocity: Vector3Float,
+    pub velocity: LinearVelocity,
     pub range: f32,
 }
 
@@ -43,9 +42,9 @@ impl Default for FirePdu {
             munition_expendable_id: EntityId::default(3),
             event_id: EventId::default(1),
             fire_mission_index: 0,
-            location_in_world_coordinates: Vector3Double::default(),
+            location_in_world_coordinates: WorldCoordinate::default(),
             descriptor: MunitionDescriptor::default(),
-            velocity: Vector3Float::default(),
+            velocity: LinearVelocity::default(),
             range: 0.0,
         }
     }
@@ -54,11 +53,12 @@ impl Default for FirePdu {
 impl Pdu for FirePdu {
     fn length(&self) -> u16 {
         let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 4
+            + std::mem::size_of::<EntityId>() * 3
+            + std::mem::size_of::<EventId>()
             + std::mem::size_of::<u32>()
-            + std::mem::size_of::<Vector3Double>()
+            + std::mem::size_of::<WorldCoordinate>()
             + std::mem::size_of::<MunitionDescriptor>()
-            + std::mem::size_of::<Vector3Float>()
+            + std::mem::size_of::<LinearVelocity>()
             + std::mem::size_of::<f32>();
 
         length as u16
@@ -86,73 +86,33 @@ impl Pdu for FirePdu {
         buf.put_f32(self.range);
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::Fire {
-            let firing_entity_id = EntityId::deserialize(&mut buffer);
-            let target_entity_id = EntityId::deserialize(&mut buffer);
-            let munition_expendable_id = EntityId::deserialize(&mut buffer);
-            let event_id = EventId::deserialize(&mut buffer);
-            let fire_mission_index = buffer.get_u32();
-            let location_in_world_coordinates = Vector3Double::deserialize(&mut buffer);
-            let descriptor = MunitionDescriptor::deserialize(&mut buffer);
-            let velocity = Vector3Float::deserialize(&mut buffer);
-            let range = buffer.get_f32();
-            Ok(FirePdu {
-                pdu_header,
-                firing_entity_id,
-                target_entity_id,
-                munition_expendable_id,
-                event_id,
-                fire_mission_index,
-                location_in_world_coordinates,
-                descriptor,
-                velocity,
-                range,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!("Expected PDU type Fire, got {:?}", pdu_header.pdu_type),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::Fire {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type Fire, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let firing_entity_id = EntityId::deserialize(&mut buffer);
-        let target_entity_id = EntityId::deserialize(&mut buffer);
-        let munition_expendable_id = EntityId::deserialize(&mut buffer);
-        let event_id = EventId::deserialize(&mut buffer);
-        let fire_mission_index = buffer.get_u32();
-        let location_in_world_coordinates = Vector3Double::deserialize(&mut buffer);
-        let descriptor = MunitionDescriptor::deserialize(&mut buffer);
-        let velocity = Vector3Float::deserialize(&mut buffer);
-        let range = buffer.get_f32();
-        Ok(FirePdu {
-            pdu_header,
-            firing_entity_id,
-            target_entity_id,
-            munition_expendable_id,
-            event_id,
-            fire_mission_index,
-            location_in_world_coordinates,
-            descriptor,
-            velocity,
-            range,
-        })
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 }
 
@@ -174,31 +134,50 @@ impl FirePdu {
         pdu.finalize();
         pdu
     }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let firing_entity_id = EntityId::deserialize(buf);
+        let target_entity_id = EntityId::deserialize(buf);
+        let munition_expendable_id = EntityId::deserialize(buf);
+        let event_id = EventId::deserialize(buf);
+        let fire_mission_index = buf.get_u32();
+        let location_in_world_coordinates = WorldCoordinate::deserialize(buf);
+        let descriptor = MunitionDescriptor::deserialize(buf);
+        let velocity = LinearVelocity::deserialize(buf);
+        let range = buf.get_f32();
+
+        FirePdu {
+            pdu_header: PduHeader::default(),
+            firing_entity_id,
+            target_entity_id,
+            munition_expendable_id,
+            event_id,
+            fire_mission_index,
+            location_in_world_coordinates,
+            descriptor,
+            velocity,
+            range,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::FirePdu;
     use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::BytesMut;
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let fire_pdu = FirePdu::new();
+        let pdu = FirePdu::default();
         let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            fire_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(pdu_header.exercise_id, fire_pdu.pdu_header.exercise_id);
-        assert_eq!(pdu_header.pdu_type, fire_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            fire_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, fire_pdu.pdu_header.length);
-        assert_eq!(pdu_header.status_record, fire_pdu.pdu_header.status_record);
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
     }
 
     #[test]
@@ -211,11 +190,19 @@ mod tests {
 
     #[test]
     fn deserialize_header() {
-        let mut fire_pdu = FirePdu::new();
-        let mut buffer = BytesMut::new();
-        fire_pdu.serialize(&mut buffer);
+        let mut pdu = FirePdu::default();
+        let mut serialize_buffer = BytesMut::new();
+        pdu.serialize(&mut serialize_buffer);
 
-        let new_fire_pdu = FirePdu::deserialize(buffer).unwrap();
-        assert_eq!(new_fire_pdu.pdu_header, fire_pdu.pdu_header);
+        let mut deserialize_buffer = Bytes::new();
+        let new_pdu = FirePdu::deserialize(&mut deserialize_buffer).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 384 / 8;
+        let pdu = FirePdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

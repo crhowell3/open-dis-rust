@@ -89,7 +89,7 @@ impl GridAxisDescriptor {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> Self {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let domain_initial = buf.get_f64();
         let domain_final = buf.get_f64();
         let domain_points = buf.get_u16();

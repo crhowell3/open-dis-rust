@@ -79,42 +79,23 @@ impl Pdu for DirectedEnergyFirePdu {
     }
 
     /// Deserialize bytes from `BytesMut` buffer and interpret as `DirectedEnergyFirePdu`
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::DirectedEnergyFire {
-            let firing_entity_id = EntityId::deserialize(&mut buffer);
-            let target_entity_id = EntityId::deserialize(&mut buffer);
-            let damaged_entity_id = EntityId::deserialize(&mut buffer);
-            let _padding = buffer.get_u16();
-            let _padding2 = buffer.get_u16();
-            let number_of_damage_descriptions = buffer.get_u16();
-            let mut damage_descriptions: Vec<DirectedEnergyDamage> = vec![];
-            for _ in 0..number_of_damage_descriptions {
-                damage_descriptions.push(DirectedEnergyDamage::deserialize(&mut buffer));
-            }
-
-            Ok(DirectedEnergyFirePdu {
-                pdu_header,
-                firing_entity_id,
-                target_entity_id,
-                damaged_entity_id,
-                _padding,
-                _padding2,
-                number_of_damage_descriptions,
-                damage_descriptions,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::DirectedEnergyFire {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type DirectedEnergyFire, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     /// Treat `DirectedEnergyFirePdu` as Any type
@@ -122,35 +103,13 @@ impl Pdu for DirectedEnergyFirePdu {
         self
     }
 
-    /// Deserialize
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let firing_entity_id = EntityId::deserialize(&mut buffer);
-        let target_entity_id = EntityId::deserialize(&mut buffer);
-        let damaged_entity_id = EntityId::deserialize(&mut buffer);
-        let _padding = buffer.get_u16();
-        let _padding2 = buffer.get_u16();
-        let number_of_damage_descriptions = buffer.get_u16();
-        let mut damage_descriptions: Vec<DirectedEnergyDamage> = vec![];
-        for _ in 0..number_of_damage_descriptions {
-            damage_descriptions.push(DirectedEnergyDamage::deserialize(&mut buffer));
-        }
-
-        Ok(DirectedEnergyFirePdu {
-            pdu_header,
-            firing_entity_id,
-            target_entity_id,
-            damaged_entity_id,
-            _padding,
-            _padding2,
-            number_of_damage_descriptions,
-            damage_descriptions,
-        })
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 }
 
@@ -172,63 +131,74 @@ impl DirectedEnergyFirePdu {
         pdu.finalize();
         pdu
     }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let firing_entity_id = EntityId::deserialize(buf);
+        let target_entity_id = EntityId::deserialize(buf);
+        let damaged_entity_id = EntityId::deserialize(buf);
+        let _padding = buf.get_u16();
+        let _padding2 = buf.get_u16();
+        let number_of_damage_descriptions = buf.get_u16();
+        let mut damage_descriptions: Vec<DirectedEnergyDamage> = vec![];
+        for _ in 0..number_of_damage_descriptions {
+            damage_descriptions.push(DirectedEnergyDamage::deserialize(buf));
+        }
+
+        DirectedEnergyFirePdu {
+            pdu_header: PduHeader::default(),
+            firing_entity_id,
+            target_entity_id,
+            damaged_entity_id,
+            _padding,
+            _padding2,
+            number_of_damage_descriptions,
+            damage_descriptions,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::DirectedEnergyFirePdu;
     use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::BytesMut;
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let directed_energy_fire_pdu = DirectedEnergyFirePdu::default();
+        let pdu = DirectedEnergyFirePdu::default();
         let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            directed_energy_fire_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            directed_energy_fire_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(
-            pdu_header.pdu_type,
-            directed_energy_fire_pdu.pdu_header.pdu_type
-        );
-        assert_eq!(
-            pdu_header.protocol_family,
-            directed_energy_fire_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(
-            pdu_header.length,
-            directed_energy_fire_pdu.pdu_header.length
-        );
-        assert_eq!(
-            pdu_header.status_record,
-            directed_energy_fire_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
     }
 
     #[test]
     fn cast_to_any() {
-        let directed_energy_fire_pdu = DirectedEnergyFirePdu::default();
-        let any_pdu = directed_energy_fire_pdu.as_any();
+        let pdu = DirectedEnergyFirePdu::new();
+        let any_pdu = pdu.as_any();
 
         assert!(any_pdu.is::<DirectedEnergyFirePdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut directed_energy_fire_pdu = DirectedEnergyFirePdu::default();
-        let mut buffer = BytesMut::new();
-        directed_energy_fire_pdu.serialize(&mut buffer);
+        let mut pdu = DirectedEnergyFirePdu::default();
+        let mut serialize_buffer = BytesMut::new();
+        pdu.serialize(&mut serialize_buffer);
 
-        let new_directed_energy_fire_pdu = DirectedEnergyFirePdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_directed_energy_fire_pdu.pdu_header,
-            directed_energy_fire_pdu.pdu_header
-        );
+        let mut deserialize_buffer = Bytes::new();
+        let new_pdu = DirectedEnergyFirePdu::deserialize(&mut deserialize_buffer).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 384 / 8;
+        let pdu = DirectedEnergyFirePdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

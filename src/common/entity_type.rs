@@ -49,7 +49,7 @@ impl EntityType {
         buf.put_u8(self.extra);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EntityType {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityType {
         EntityType {
             kind: EntityKind::deserialize(buf),
             domain: buf.get_u8(),

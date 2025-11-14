@@ -62,14 +62,14 @@ impl VariableDatumRecord {
         }
     }
 
-    pub fn deserialize(buffer: &mut BytesMut) -> Self {
-        let datum_id = buffer.get_u32();
-        let length_bits = buffer.get_u32();
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        let datum_id = buf.get_u32();
+        let length_bits = buf.get_u32();
         let value_bytes = Self::bytes_count(length_bits);
 
         let mut value = vec![0u8; value_bytes];
         for i in 0..value_bytes {
-            value[i] = buffer.get_u8();
+            value[i] = buf.get_u8();
         }
 
         Self {

@@ -38,14 +38,14 @@ impl EntityId {
         buf.put_u16(self.entity_id);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EntityId {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityId {
         EntityId {
             simulation_address: EntityId::deserialize_simulation_address(buf),
             entity_id: buf.get_u16(),
         }
     }
 
-    fn deserialize_simulation_address(buf: &mut BytesMut) -> SimulationAddress {
+    fn deserialize_simulation_address<B: Buf>(buf: &mut B) -> SimulationAddress {
         SimulationAddress {
             site_id: buf.get_u16(),
             application_id: buf.get_u16(),

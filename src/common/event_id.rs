@@ -35,7 +35,7 @@ impl EventId {
         buf.put_u16(self.event_identifier);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EventId {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EventId {
         EventId {
             simulation_address: SimulationAddress::deserialize(buf),
             event_identifier: buf.get_u16(),

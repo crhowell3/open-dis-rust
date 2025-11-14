@@ -30,7 +30,7 @@ impl StandardVariableRecords {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> StandardVariableRecords {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> StandardVariableRecords {
         let record_type = buf.get_u32();
         let record_length = buf.get_u16();
         let mut record_specific_fields: Vec<u8> = vec![];

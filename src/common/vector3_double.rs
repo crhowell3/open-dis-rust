@@ -29,7 +29,7 @@ impl Vector3Double {
         buf.put_f64(self.z);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> Vector3Double {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Vector3Double {
         Vector3Double {
             x: buf.get_f64(),
             y: buf.get_f64(),

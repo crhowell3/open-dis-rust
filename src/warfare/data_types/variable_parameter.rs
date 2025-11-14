@@ -52,7 +52,7 @@ impl VariableParameter {
         buf.put_u8(self.variable_parameter_field4);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> VariableParameter {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> VariableParameter {
         VariableParameter {
             record_type: buf.get_u8(),
             variable_parameter_field1: buf.get_f64(),

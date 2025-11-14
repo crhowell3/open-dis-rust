@@ -214,7 +214,7 @@ impl PduHeader {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> PduHeader {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> PduHeader {
         PduHeader {
             protocol_version: PduHeader::deserialize_protocol_version(buf.get_u8()),
             exercise_id: buf.get_u8(),

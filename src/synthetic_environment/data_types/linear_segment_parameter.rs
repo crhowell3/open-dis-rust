@@ -66,7 +66,7 @@ impl LinearSegmentParameter {
         buf.put_u32(self._padding);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> LinearSegmentParameter {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> LinearSegmentParameter {
         LinearSegmentParameter {
             segment_number: buf.get_u8(),
             segment_modification: buf.get_u8(),

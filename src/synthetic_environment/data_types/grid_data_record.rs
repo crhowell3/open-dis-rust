@@ -97,7 +97,7 @@ impl GridDataRecord {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> GridDataRecord {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> GridDataRecord {
         let sample_type = GriddedDataSampleType::deserialize(buf);
         let data_representation = GriddedDataDataRepresentation::deserialize(buf);
         let data = match data_representation {

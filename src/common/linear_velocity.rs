@@ -28,7 +28,7 @@ impl LinearVelocity {
         buf.put_f32(self.third_vector_component);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> LinearVelocity {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> LinearVelocity {
         LinearVelocity {
             first_vector_component: buf.get_f32(),
             second_vector_component: buf.get_f32(),

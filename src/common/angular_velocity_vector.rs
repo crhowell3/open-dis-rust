@@ -21,12 +21,8 @@ pub struct AngularVelocity {
 impl AngularVelocity {
     /// Create a new `AngularVelocity` struct with existing values
     #[must_use]
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
-        AngularVelocity {
-            rate_about_x_axis: x,
-            rate_about_y_axis: y,
-            rate_about_z_axis: z,
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Serialize an instance of an `AngularVelocity` into a mutable byte stream

@@ -92,7 +92,7 @@ impl DirectedEnergyDamage {
         buf.put_u16(self._padding2);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> DirectedEnergyDamage {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> DirectedEnergyDamage {
         DirectedEnergyDamage {
             record_type: buf.get_u32(),
             record_length: buf.get_u16(),
