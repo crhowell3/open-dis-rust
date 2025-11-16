@@ -7,7 +7,8 @@
 //! Constants and compile-time computations for DIS protocol
 
 /// Maximum PDU size in bytes as defined by the DIS standard
-pub const MAX_PDU_SIZE: usize = 8192;
+pub const MAX_PDU_SIZE_OCTETS: usize = 8192;
+pub const MAX_PDU_SIZE_BITS: usize = 65_536;
 
 /// PDU header size in bytes
 pub const PDU_HEADER_SIZE: usize = 12;
@@ -26,7 +27,7 @@ pub const PROTOCOL_VERSION_2012: u8 = 7;
 #[must_use]
 /// Compile-time PDU size validation
 pub const fn validate_pdu_size(size: usize) -> bool {
-    size <= MAX_PDU_SIZE
+    size <= MAX_PDU_SIZE_OCTETS
 }
 
 #[must_use]
@@ -57,8 +58,8 @@ mod tests {
     #[test]
     fn test_pdu_size_validation() {
         assert!(validate_pdu_size(1000));
-        assert!(validate_pdu_size(MAX_PDU_SIZE));
-        assert!(!validate_pdu_size(MAX_PDU_SIZE + 1));
+        assert!(validate_pdu_size(MAX_PDU_SIZE_OCTETS));
+        assert!(!validate_pdu_size(MAX_PDU_SIZE_OCTETS + 1));
     }
 
     #[test]

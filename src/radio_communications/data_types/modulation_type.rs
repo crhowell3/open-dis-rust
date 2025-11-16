@@ -31,7 +31,7 @@ impl ModulationType {
         buf.put_u16(self.system);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> ModulationType {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> ModulationType {
         ModulationType {
             spread_spectrum: buf.get_u16(),
             major: buf.get_u16(),

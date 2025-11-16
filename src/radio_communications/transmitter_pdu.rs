@@ -3,13 +3,22 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::{
-    dis_error::DISError,
-    entity_id::EntityId,
-    pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
-    vector3_double::Vector3Double,
-    vector3_float::Vector3Float,
+use crate::{
+    common::{
+        EntityCoordinateVector, WorldCoordinate,
+        dis_error::DISError,
+        entity_id::EntityId,
+        enums::{
+            TransmitterAntennaPatternType, TransmitterCryptoSystem, TransmitterInputSource,
+            TransmitterTransmitState,
+        },
+        pdu::Pdu,
+        pdu_header::{PduHeader, PduType, ProtocolFamily},
+    },
+    radio_communications::data_types::{
+        antenna_pattern::AntennaPattern, modulation_parameters::ModulationParameters,
+        variable_transmitter_parameters::VariableTransmitterParameters,
+    },
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -19,75 +28,91 @@ use super::data_types::{modulation_type::ModulationType, radio_entity_type::Radi
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.7.2
 pub struct TransmitterPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub entity_id: EntityId,
     pub radio_id: u16,
     pub radio_entity_type: RadioEntityType,
-    pub transmit_state: u8,
-    pub input_source: u8,
-    pub padding1: u16,
-    pub antenna_location: Vector3Double,
-    pub relative_antenna_location: Vector3Float,
-    pub antenna_pattern_type: u16,
-    pub antenna_pattern_count: u16,
+    pub transmit_state: TransmitterTransmitState,
+    pub input_source: TransmitterInputSource,
+    pub number_of_variable_transmitter_parameters_records: u16,
+    pub antenna_location: WorldCoordinate,
+    pub relative_antenna_location: EntityCoordinateVector,
+    pub antenna_pattern_type: TransmitterAntennaPatternType,
+    pub antenna_pattern_length: u16,
     pub frequency: u64,
     pub transmit_frequency_bandwidth: f32,
     pub power: f32,
     pub modulation_type: ModulationType,
-    pub crypto_system: u16,
+    pub crypto_system: TransmitterCryptoSystem,
     pub crypto_key_id: u16,
-    pub modulation_parameter_count: u8,
-    pub padding2: u16,
-    pub padding3: u8,
-    pub modulation_parameter_list: Vec<Vector3Float>,
-    pub antenna_pattern_list: Vec<Vector3Float>,
+    pub modulation_parameter_length: u8,
+    _padding: u8,
+    _padding2: u16,
+    pub modulation_parameters: Option<ModulationParameters>,
+    pub antenna_pattern: Option<AntennaPattern>,
+    pub variable_transmitter_parameters: Vec<VariableTransmitterParameters>,
 }
 
 impl Default for TransmitterPdu {
-    /// Creates a default Transmitter PDU with arbitrary originating and receiving
-    /// entity IDs
-    ///
-    /// # Examples
-    ///
-    /// Initializing a Transmitter PDU:
-    /// ```
-    /// use open_dis_rust::radio_communications::transmitter_pdu::TransmitterPdu;
-    /// let transmitter_pdu = TransmitterPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         TransmitterPdu {
-            pdu_header: PduHeader::default(
-                PduType::Transmitter,
-                ProtocolFamily::RadioCommunications,
-                112,
-            ),
+            pdu_header: PduHeader::default(),
             entity_id: EntityId::default(1),
-            radio_id: 0,
+            radio_id: 0u16,
             radio_entity_type: RadioEntityType::default(),
-            transmit_state: 0,
-            input_source: 0,
-            padding1: 0,
-            antenna_location: Vector3Double::default(),
-            relative_antenna_location: Vector3Float::default(),
-            antenna_pattern_type: 0,
-            antenna_pattern_count: 0,
-            frequency: 0,
+            transmit_state: TransmitterTransmitState::default(),
+            input_source: TransmitterInputSource::default(),
+            number_of_variable_transmitter_parameters_records: 0u16,
+            antenna_location: WorldCoordinate::default(),
+            relative_antenna_location: EntityCoordinateVector::default(),
+            antenna_pattern_type: TransmitterAntennaPatternType::default(),
+            antenna_pattern_length: 0u16,
+            frequency: 0u64,
             transmit_frequency_bandwidth: 0.0,
             power: 0.0,
             modulation_type: ModulationType::default(),
-            crypto_system: 0,
-            crypto_key_id: 0,
-            modulation_parameter_count: 0,
-            padding2: 0,
-            padding3: 0,
-            modulation_parameter_list: vec![Vector3Float::default()],
-            antenna_pattern_list: vec![Vector3Float::default()],
+            crypto_system: TransmitterCryptoSystem::default(),
+            crypto_key_id: 0u16,
+            modulation_parameter_length: 0u8,
+            _padding: 0u8,
+            _padding2: 0u16,
+            modulation_parameters: None,
+            antenna_pattern: None,
+            variable_transmitter_parameters: vec![],
         }
     }
 }
 
 impl Pdu for TransmitterPdu {
+    fn length(&self) -> u16 {
+        let length = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<EntityId>()
+            + std::mem::size_of::<u16>() * 5
+            + std::mem::size_of::<RadioEntityType>()
+            + std::mem::size_of::<TransmitterTransmitState>()
+            + std::mem::size_of::<TransmitterInputSource>()
+            + std::mem::size_of::<WorldCoordinate>()
+            + std::mem::size_of::<EntityCoordinateVector>()
+            + std::mem::size_of::<TransmitterAntennaPatternType>()
+            + std::mem::size_of::<u64>()
+            + std::mem::size_of::<f32>() * 2
+            + std::mem::size_of::<ModulationType>()
+            + std::mem::size_of::<TransmitterCryptoSystem>()
+            + std::mem::size_of::<u8>() * 2
+            + std::mem::size_of::<Option<ModulationParameters>>()
+            + std::mem::size_of::<Option<AntennaPattern>>();
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -95,208 +120,180 @@ impl Pdu for TransmitterPdu {
         self.entity_id.serialize(buf);
         buf.put_u16(self.radio_id);
         self.radio_entity_type.serialize(buf);
-        buf.put_u8(self.transmit_state);
-        buf.put_u8(self.input_source);
-        buf.put_u16(self.padding1);
+        buf.put_u8(self.transmit_state as u8);
+        buf.put_u8(self.input_source as u8);
+        buf.put_u16(self.number_of_variable_transmitter_parameters_records);
         self.antenna_location.serialize(buf);
         self.relative_antenna_location.serialize(buf);
-        buf.put_u16(self.antenna_pattern_type);
-        buf.put_u16(self.antenna_pattern_count);
+        buf.put_u16(self.antenna_pattern_type as u16);
+        buf.put_u16(self.antenna_pattern_length);
         buf.put_u64(self.frequency);
         buf.put_f32(self.transmit_frequency_bandwidth);
         buf.put_f32(self.power);
         self.modulation_type.serialize(buf);
-        buf.put_u16(self.crypto_system);
+        buf.put_u16(self.crypto_system as u16);
         buf.put_u16(self.crypto_key_id);
-        buf.put_u8(self.modulation_parameter_count);
-        buf.put_u16(self.padding2);
-        buf.put_u8(self.padding3);
-        for i in 0..self.modulation_parameter_list.len() {
-            self.modulation_parameter_list[i].serialize(buf);
+        buf.put_u8(self.modulation_parameter_length);
+        buf.put_u8(self._padding);
+        buf.put_u16(self._padding2);
+        if let Some(modulation_parameters) = &self.modulation_parameters {
+            modulation_parameters.serialize(buf);
         }
-        for i in 0..self.antenna_pattern_list.len() {
-            self.antenna_pattern_list[i].serialize(buf);
+        if let Some(antenna_pattern) = &self.antenna_pattern {
+            antenna_pattern.serialize(buf);
+        }
+        for i in 0..self.number_of_variable_transmitter_parameters_records as usize {
+            self.variable_transmitter_parameters[i].serialize(buf);
         }
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::Transmitter {
-            let entity_id = EntityId::deserialize(&mut buffer);
-            let radio_id = buffer.get_u16();
-            let radio_entity_type = RadioEntityType::deserialize(&mut buffer);
-            let transmit_state = buffer.get_u8();
-            let input_source = buffer.get_u8();
-            let padding1 = buffer.get_u16();
-            let antenna_location = Vector3Double::deserialize(&mut buffer);
-            let relative_antenna_location = Vector3Float::deserialize(&mut buffer);
-            let antenna_pattern_type = buffer.get_u16();
-            let antenna_pattern_count = buffer.get_u16();
-            let frequency = buffer.get_u64();
-            let transmit_frequency_bandwidth = buffer.get_f32();
-            let power = buffer.get_f32();
-            let modulation_type = ModulationType::deserialize(&mut buffer);
-            let crypto_system = buffer.get_u16();
-            let crypto_key_id = buffer.get_u16();
-            let modulation_parameter_count = buffer.get_u8();
-            let padding2 = buffer.get_u16();
-            let padding3 = buffer.get_u8();
-            let mut modulation_parameter_list: Vec<Vector3Float> = vec![];
-            for _i in 0..modulation_parameter_count {
-                modulation_parameter_list.push(Vector3Float::deserialize(&mut buffer));
-            }
-            let mut antenna_pattern_list: Vec<Vector3Float> = vec![];
-            for _i in 0..antenna_pattern_count {
-                antenna_pattern_list.push(Vector3Float::deserialize(&mut buffer));
-            }
-            Ok(TransmitterPdu {
-                pdu_header,
-                entity_id,
-                radio_id,
-                radio_entity_type,
-                transmit_state,
-                input_source,
-                padding1,
-                antenna_location,
-                relative_antenna_location,
-                antenna_pattern_type,
-                antenna_pattern_count,
-                frequency,
-                transmit_frequency_bandwidth,
-                power,
-                modulation_type,
-                crypto_system,
-                crypto_key_id,
-                modulation_parameter_count,
-                padding2,
-                padding3,
-                modulation_parameter_list,
-                antenna_pattern_list,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!(
-                    "Expected PDU type Transmitter, got {:?}",
-                    pdu_header.pdu_type
-                ),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::Transmitter {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type Transmitter, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let entity_id = EntityId::deserialize(&mut buffer);
-        let radio_id = buffer.get_u16();
-        let radio_entity_type = RadioEntityType::deserialize(&mut buffer);
-        let transmit_state = buffer.get_u8();
-        let input_source = buffer.get_u8();
-        let padding1 = buffer.get_u16();
-        let antenna_location = Vector3Double::deserialize(&mut buffer);
-        let relative_antenna_location = Vector3Float::deserialize(&mut buffer);
-        let antenna_pattern_type = buffer.get_u16();
-        let antenna_pattern_count = buffer.get_u16();
-        let frequency = buffer.get_u64();
-        let transmit_frequency_bandwidth = buffer.get_f32();
-        let power = buffer.get_f32();
-        let modulation_type = ModulationType::deserialize(&mut buffer);
-        let crypto_system = buffer.get_u16();
-        let crypto_key_id = buffer.get_u16();
-        let modulation_parameter_count = buffer.get_u8();
-        let padding2 = buffer.get_u16();
-        let padding3 = buffer.get_u8();
-        let mut modulation_parameter_list: Vec<Vector3Float> = vec![];
-        for _i in 0..modulation_parameter_count {
-            modulation_parameter_list.push(Vector3Float::deserialize(&mut buffer));
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl TransmitterPdu {
+    /// Creates a new `TransmitterPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `TransmitterPdu`:
+    /// ```
+    /// use open_dis_rust::radio_communications::TransmitterPdu;
+    /// let pdu = TransmitterPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::Transmitter;
+        pdu.pdu_header.protocol_family = ProtocolFamily::RadioCommunications;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let entity_id = EntityId::deserialize(buf);
+        let radio_id = buf.get_u16();
+        let radio_entity_type = RadioEntityType::deserialize(buf);
+        let transmit_state = TransmitterTransmitState::deserialize(buf);
+        let input_source = TransmitterInputSource::deserialize(buf);
+        let number_of_variable_transmitter_parameters_records = buf.get_u16();
+        let antenna_location = WorldCoordinate::deserialize(buf);
+        let relative_antenna_location = EntityCoordinateVector::deserialize(buf);
+        let antenna_pattern_type = TransmitterAntennaPatternType::deserialize(buf);
+        let antenna_pattern_length = buf.get_u16();
+        let frequency = buf.get_u64();
+        let transmit_frequency_bandwidth = buf.get_f32();
+        let power = buf.get_f32();
+        let modulation_type = ModulationType::deserialize(buf);
+        let crypto_system = TransmitterCryptoSystem::deserialize(buf);
+        let crypto_key_id = buf.get_u16();
+        let modulation_parameter_length = buf.get_u8();
+        let _padding = buf.get_u8();
+        let _padding2 = buf.get_u16();
+        let modulation_parameters =
+            ModulationParameters::deserialize(buf, modulation_parameter_length);
+        let antenna_pattern = AntennaPattern::deserialize(buf, antenna_pattern_length);
+        let mut variable_transmitter_parameters: Vec<VariableTransmitterParameters> = vec![];
+        for _ in 0..number_of_variable_transmitter_parameters_records {
+            variable_transmitter_parameters.push(VariableTransmitterParameters::deserialize(buf));
         }
-        let mut antenna_pattern_list: Vec<Vector3Float> = vec![];
-        for _i in 0..antenna_pattern_count {
-            antenna_pattern_list.push(Vector3Float::deserialize(&mut buffer));
-        }
-        Ok(TransmitterPdu {
-            pdu_header,
+
+        TransmitterPdu {
+            pdu_header: PduHeader::default(),
             entity_id,
             radio_id,
             radio_entity_type,
             transmit_state,
             input_source,
-            padding1,
+            number_of_variable_transmitter_parameters_records,
             antenna_location,
             relative_antenna_location,
             antenna_pattern_type,
-            antenna_pattern_count,
+            antenna_pattern_length,
             frequency,
             transmit_frequency_bandwidth,
             power,
             modulation_type,
             crypto_system,
             crypto_key_id,
-            modulation_parameter_count,
-            padding2,
-            padding3,
-            modulation_parameter_list,
-            antenna_pattern_list,
-        })
+            modulation_parameter_length,
+            _padding,
+            _padding2,
+            modulation_parameters,
+            antenna_pattern,
+            variable_transmitter_parameters,
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::TransmitterPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let transmitter_pdu = TransmitterPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::Transmitter,
-            ProtocolFamily::RadioCommunications,
-            896 / 8,
-        );
+        let pdu = TransmitterPdu::new();
+        let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            transmitter_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            transmitter_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, transmitter_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            transmitter_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, transmitter_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            transmitter_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let pdu = TransmitterPdu::new();
+        let any_pdu = pdu.as_any();
+
+        assert!(any_pdu.is::<TransmitterPdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut transmitter_pdu = TransmitterPdu::default();
-        let mut buffer = BytesMut::new();
-        transmitter_pdu.serialize(&mut buffer);
+        let mut pdu = TransmitterPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_transmitter_pdu = TransmitterPdu::deserialize(buffer).unwrap();
-        assert_eq!(new_transmitter_pdu.pdu_header, transmitter_pdu.pdu_header);
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = TransmitterPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 832 / 8;
+        let pdu = TransmitterPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

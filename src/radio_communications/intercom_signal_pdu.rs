@@ -15,7 +15,7 @@ use std::any::Any;
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.7.5
 pub struct IntercomSignalPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub entity_id: EntityId,
     pub radio_id: u16,
     pub communications_device_id: u16,
@@ -41,11 +41,7 @@ impl Default for IntercomSignalPdu {
     ///
     fn default() -> Self {
         IntercomSignalPdu {
-            pdu_header: PduHeader::default(
-                PduType::IntercomSignal,
-                ProtocolFamily::RadioCommunications,
-                56,
-            ),
+            pdu_header: PduHeader::default(),
             entity_id: EntityId::default(1),
             radio_id: 0,
             communications_device_id: 0,

@@ -44,7 +44,7 @@ impl RadioEntityType {
         buf.put_u16(self.nomenclature);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> RadioEntityType {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> RadioEntityType {
         RadioEntityType {
             entity_kind: buf.get_u8(),
             domain: buf.get_u8(),

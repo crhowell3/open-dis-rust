@@ -16,7 +16,6 @@ use crate::common::{
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
     simulation_address::SimulationAddress,
-    vector3_double::Vector3Double,
 };
 
 use super::data_types::object_type::ObjectType;

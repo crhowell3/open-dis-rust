@@ -16,7 +16,7 @@ pub struct MinefieldIdentifier {
 impl MinefieldIdentifier {
     #[must_use]
     pub fn new(simulation_address: SimulationAddress, minefield_number: u16) -> Self {
-        MinefieldIdentifier {
+        Self {
             simulation_address,
             minefield_number,
         }
@@ -27,8 +27,8 @@ impl MinefieldIdentifier {
         buf.put_u16(self.minefield_number);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> MinefieldIdentifier {
-        MinefieldIdentifier {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             simulation_address: SimulationAddress::deserialize(buf),
             minefield_number: buf.get_u16(),
         }
