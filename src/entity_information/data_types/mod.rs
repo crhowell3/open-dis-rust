@@ -3,5 +3,7 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+pub mod attribute_record;
+pub mod attribute_record_set;
 pub mod dead_reckoning_parameters;
 pub mod entity_marking;

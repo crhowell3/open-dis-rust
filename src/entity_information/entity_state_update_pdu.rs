@@ -23,9 +23,9 @@ use crate::{
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.2.5
 pub struct EntityStateUpdatePdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub entity_id: EntityId,
-    pub padding: u8,
+    _padding: u8,
     pub number_of_variable_parameters: u8,
     pub entity_linear_velocity: LinearVelocity,
     pub entity_location: WorldCoordinate,
@@ -37,13 +37,9 @@ pub struct EntityStateUpdatePdu {
 impl Default for EntityStateUpdatePdu {
     fn default() -> Self {
         EntityStateUpdatePdu {
-            pdu_header: PduHeader::default(
-                PduType::EntityStateUpdate,
-                ProtocolFamily::EntityInformation,
-                864 / 8,
-            ),
+            pdu_header: PduHeader::default(),
             entity_id: EntityId::default(1),
-            padding: 0,
+            _padding: 0,
             number_of_variable_parameters: 0,
             entity_linear_velocity: LinearVelocity::default(),
             entity_location: WorldCoordinate::default(),
@@ -55,12 +51,26 @@ impl Default for EntityStateUpdatePdu {
 }
 
 impl Pdu for EntityStateUpdatePdu {
+    fn length(&self) -> u16 {
+        let length = std::mem::size_of::<PduHeader>() + std::mem::size_of::<EntityId>();
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
         self.pdu_header.serialize(buf);
         self.entity_id.serialize(buf);
-        buf.put_u8(self.padding);
+        buf.put_u8(self._padding);
         buf.put_u8(self.number_of_variable_parameters);
         self.entity_linear_velocity.serialize(buf);
         self.entity_location.serialize(buf);
@@ -71,125 +81,126 @@ impl Pdu for EntityStateUpdatePdu {
         }
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<EntityStateUpdatePdu, DISError> {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::EntityStateUpdate {
-            let entity_id = EntityId::deserialize(&mut buffer);
-            let padding = buffer.get_u8();
-            let number_of_variable_parameters = buffer.get_u8();
-            let entity_linear_velocity = LinearVelocity::deserialize(&mut buffer);
-            let entity_location = WorldCoordinate::deserialize(&mut buffer);
-            let entity_orientation = EulerAngles::deserialize(&mut buffer);
-            let entity_appearance = buffer.get_u32();
-            let mut variable_parameter_records: Vec<VariableParameter> = vec![];
-            for _i in 0..number_of_variable_parameters {
-                variable_parameter_records.push(VariableParameter::deserialize(&mut buffer));
-            }
-            Ok(EntityStateUpdatePdu {
-                pdu_header,
-                entity_id,
-                padding,
-                number_of_variable_parameters,
-                entity_linear_velocity,
-                entity_location,
-                entity_orientation,
-                entity_appearance,
-                variable_parameter_records,
-            })
-        } else {
-            Err(DISError::invalid_header(
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
+    where
+        Self: Sized,
+    {
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::EntityStateUpdate {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type EntityStateUpdate, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let entity_id = EntityId::deserialize(&mut buffer);
-        let padding = buffer.get_u8();
-        let number_of_variable_parameters = buffer.get_u8();
-        let entity_linear_velocity = LinearVelocity::deserialize(&mut buffer);
-        let entity_location = WorldCoordinate::deserialize(&mut buffer);
-        let entity_orientation = EulerAngles::deserialize(&mut buffer);
-        let entity_appearance = buffer.get_u32();
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl EntityStateUpdatePdu {
+    /// Creates a new `EntityStateUpdatePdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `EntityStateUpdatePdu`:
+    /// ```
+    /// use open_dis_rust::entity_information::EntityStateUpdatePdu;
+    /// let pdu = EntityStateUpdatePdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::EntityStateUpdate;
+        pdu.pdu_header.protocol_family = ProtocolFamily::EntityInformation;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let entity_id = EntityId::deserialize(buf);
+        let _padding = buf.get_u8();
+        let number_of_variable_parameters = buf.get_u8();
+        let entity_linear_velocity = LinearVelocity::deserialize(buf);
+        let entity_location = WorldCoordinate::deserialize(buf);
+        let entity_orientation = EulerAngles::deserialize(buf);
+        let entity_appearance = buf.get_u32();
         let mut variable_parameter_records: Vec<VariableParameter> = vec![];
         for _i in 0..number_of_variable_parameters {
-            variable_parameter_records.push(VariableParameter::deserialize(&mut buffer));
+            variable_parameter_records.push(VariableParameter::deserialize(buf));
         }
-        Ok(EntityStateUpdatePdu {
-            pdu_header,
+        EntityStateUpdatePdu {
+            pdu_header: PduHeader::default(),
             entity_id,
-            padding,
+            _padding,
             number_of_variable_parameters,
             entity_linear_velocity,
             entity_location,
             entity_orientation,
             entity_appearance,
             variable_parameter_records,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::EntityStateUpdatePdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let entity_state_update_pdu = EntityStateUpdatePdu::default();
-        let header = PduHeader::default(
-            PduType::EntityStateUpdate,
-            ProtocolFamily::EntityInformation,
-            864 / 8,
-        );
-        assert_eq!(
-            header.protocol_version,
-            entity_state_update_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            header.exercise_id,
-            entity_state_update_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(header.pdu_type, entity_state_update_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            header.protocol_family,
-            entity_state_update_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(header.length, entity_state_update_pdu.pdu_header.length);
-        assert_eq!(
-            header.status_record,
-            entity_state_update_pdu.pdu_header.status_record
-        );
+        let pdu = EntityStateUpdatePdu::new();
+        let pdu_header = PduHeader::default();
+
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let pdu = EntityStateUpdatePdu::new();
+        let any_pdu = pdu.as_any();
+
+        assert!(any_pdu.is::<EntityStateUpdatePdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut entity_state_update_pdu = EntityStateUpdatePdu::default();
-        let mut buffer = BytesMut::new();
-        entity_state_update_pdu.serialize(&mut buffer);
+        let mut pdu = EntityStateUpdatePdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_entity_state_update_pdu = EntityStateUpdatePdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_entity_state_update_pdu.pdu_header,
-            entity_state_update_pdu.pdu_header
-        );
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = EntityStateUpdatePdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 576 / 8;
+        let pdu = EntityStateUpdatePdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }
