@@ -9,6 +9,7 @@ use std::any::Any;
 
 use crate::{
     common::{
+        SimulationIdentifier,
         dis_error::DISError,
         entity_id::EntityId,
         enums::{IOActionIOSimulationSource, IOReportIOReportType},
@@ -21,50 +22,57 @@ use crate::{
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.12.3
 pub struct InformationOperationsReportPdu {
-    pub pdu_header: PduHeader,
-    pub originating_simulation_id: EntityId,
+    pdu_header: PduHeader,
+    pub originating_simulation_id: SimulationIdentifier,
     pub io_simulation_source: IOActionIOSimulationSource,
     pub io_report_type: IOReportIOReportType,
-    pub padding1: u8,
+    _padding: u8,
     pub io_attacker_entity_id: EntityId,
     pub primary_target_entity_id: EntityId,
-    pub padding2: u16,
-    pub padding3: u16,
+    _padding2: u16,
+    _padding3: u16,
     pub io_records: StandardVariableSpecification,
 }
 
 impl Default for InformationOperationsReportPdu {
-    /// Creates default-initialized Information Operations Report PDU
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Information Operations Report PDU:
-    /// ```
-    /// use open_dis_rust::information_operations::information_operations_report_pdu::InformationOperationsReportPdu;
-    /// let mut io_report_pdu = InformationOperationsReportPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         InformationOperationsReportPdu {
-            pdu_header: PduHeader::default(
-                PduType::InformationOperationsReport,
-                ProtocolFamily::InformationOperations,
-                32,
-            ),
-            originating_simulation_id: EntityId::default(1),
+            pdu_header: PduHeader::default(),
+            originating_simulation_id: SimulationIdentifier::default(),
             io_simulation_source: IOActionIOSimulationSource::default(),
             io_report_type: IOReportIOReportType::default(),
-            padding1: 0,
+            _padding: 0u8,
             io_attacker_entity_id: EntityId::default(3),
             primary_target_entity_id: EntityId::default(4),
-            padding2: 0,
-            padding3: 0,
+            _padding2: 0u16,
+            _padding3: 0u16,
             io_records: StandardVariableSpecification::default(),
         }
     }
 }
 
 impl Pdu for InformationOperationsReportPdu {
+    fn length(&self) -> u16 {
+        let length = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<SimulationIdentifier>()
+            + std::mem::size_of::<EntityId>() * 2
+            + std::mem::size_of::<u8>()
+            + std::mem::size_of::<u16>() * 2
+            + std::mem::size_of::<IOReportIOReportType>()
+            + std::mem::size_of::<IOActionIOSimulationSource>()
+            + std::mem::size_of::<StandardVariableSpecification>();
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -72,144 +80,134 @@ impl Pdu for InformationOperationsReportPdu {
         self.originating_simulation_id.serialize(buf);
         buf.put_u16(self.io_simulation_source as u16);
         buf.put_u8(self.io_report_type as u8);
-        buf.put_u8(self.padding1);
+        buf.put_u8(self._padding);
         self.io_attacker_entity_id.serialize(buf);
         self.primary_target_entity_id.serialize(buf);
-        buf.put_u16(self.padding2);
-        buf.put_u16(self.padding3);
+        buf.put_u16(self._padding2);
+        buf.put_u16(self._padding3);
         self.io_records.serialize(buf);
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::InformationOperationsReport {
-            let originating_simulation_id = EntityId::deserialize(&mut buffer);
-            let io_simulation_source = IOActionIOSimulationSource::deserialize(&mut buffer);
-            let io_report_type = IOReportIOReportType::deserialize(&mut buffer);
-            let padding1 = buffer.get_u8();
-            let io_attacker_entity_id = EntityId::deserialize(&mut buffer);
-            let primary_target_entity_id = EntityId::deserialize(&mut buffer);
-            let padding2 = buffer.get_u16();
-            let padding3 = buffer.get_u16();
-            let io_records = StandardVariableSpecification::deserialize(&mut buffer);
-            Ok(InformationOperationsReportPdu {
-                pdu_header,
-                originating_simulation_id,
-                io_simulation_source,
-                io_report_type,
-                padding1,
-                io_attacker_entity_id,
-                primary_target_entity_id,
-                padding2,
-                padding3,
-                io_records,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::InformationOperationsReport {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type InformationOperationsReport, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let originating_simulation_id = EntityId::deserialize(&mut buffer);
-        let io_simulation_source = IOActionIOSimulationSource::deserialize(&mut buffer);
-        let io_report_type = IOReportIOReportType::deserialize(&mut buffer);
-        let padding1 = buffer.get_u8();
-        let io_attacker_entity_id = EntityId::deserialize(&mut buffer);
-        let primary_target_entity_id = EntityId::deserialize(&mut buffer);
-        let padding2 = buffer.get_u16();
-        let padding3 = buffer.get_u16();
-        let io_records = StandardVariableSpecification::deserialize(&mut buffer);
-        Ok(InformationOperationsReportPdu {
-            pdu_header,
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl InformationOperationsReportPdu {
+    /// Creates a new `InformationOperationsReportPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `InformationOperationsReportPdu`:
+    /// ```
+    /// use open_dis_rust::information_operations::InformationOperationsReportPdu;
+    /// let pdu = InformationOperationsReportPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::InformationOperationsReport;
+        pdu.pdu_header.protocol_family = ProtocolFamily::InformationOperations;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let originating_simulation_id = SimulationIdentifier::deserialize(buf);
+        let io_simulation_source = IOActionIOSimulationSource::deserialize(buf);
+        let io_report_type = IOReportIOReportType::deserialize(buf);
+        let _padding = buf.get_u8();
+        let io_attacker_entity_id = EntityId::deserialize(buf);
+        let primary_target_entity_id = EntityId::deserialize(buf);
+        let _padding2 = buf.get_u16();
+        let _padding3 = buf.get_u16();
+        let io_records = StandardVariableSpecification::deserialize(buf);
+
+        InformationOperationsReportPdu {
+            pdu_header: PduHeader::default(),
             originating_simulation_id,
             io_simulation_source,
             io_report_type,
-            padding1,
+            _padding,
             io_attacker_entity_id,
             primary_target_entity_id,
-            padding2,
-            padding3,
+            _padding2,
+            _padding3,
             io_records,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::InformationOperationsReportPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let information_operations_report_pdu = InformationOperationsReportPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::InformationOperationsReport,
-            ProtocolFamily::InformationOperations,
-            32,
-        );
+        let pdu = InformationOperationsReportPdu::new();
+        let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            information_operations_report_pdu
-                .pdu_header
-                .protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            information_operations_report_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(
-            pdu_header.pdu_type,
-            information_operations_report_pdu.pdu_header.pdu_type
-        );
-        assert_eq!(
-            pdu_header.protocol_family,
-            information_operations_report_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(
-            pdu_header.length,
-            information_operations_report_pdu.pdu_header.length
-        );
-        assert_eq!(
-            pdu_header.status_record,
-            information_operations_report_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let pdu = InformationOperationsReportPdu::new();
+        let any_pdu = pdu.as_any();
+
+        assert!(any_pdu.is::<InformationOperationsReportPdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut information_operations_report_pdu = InformationOperationsReportPdu::default();
-        let mut buffer = BytesMut::new();
-        information_operations_report_pdu.serialize(&mut buffer);
+        let mut pdu = InformationOperationsReportPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_information_operations_report_pdu =
-            InformationOperationsReportPdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_information_operations_report_pdu.pdu_header,
-            information_operations_report_pdu.pdu_header
-        );
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = InformationOperationsReportPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 320 / 8;
+        let pdu = InformationOperationsReportPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }
