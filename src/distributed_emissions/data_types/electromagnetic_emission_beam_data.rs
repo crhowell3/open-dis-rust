@@ -34,7 +34,7 @@ impl ElectromagneticEmissionBeamData {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> ElectromagneticEmissionBeamData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> ElectromagneticEmissionBeamData {
         let beam_data_length = buf.get_u8();
         let beam_id_number = buf.get_u8();
         let beam_parameter_index = buf.get_u16();

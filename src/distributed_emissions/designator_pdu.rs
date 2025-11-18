@@ -10,69 +10,78 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    EntityCoordinateVector, LinearAcceleration, WorldCoordinate,
     dis_error::DISError,
     entity_id::EntityId,
     enums::{DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName},
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
-    vector3_double::Vector3Double,
-    vector3_float::Vector3Float,
 };
 
 #[derive(Copy, Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.6.3
 pub struct DesignatorPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub designating_entity_id: EntityId,
     pub code_name: DesignatorSystemName,
     pub designated_entity_id: EntityId,
     pub designator_code: DesignatorCode,
     pub designator_power: f32,
     pub designator_wavelength: f32,
-    pub designator_spot_wrt_designated: Vector3Float,
-    pub designator_spot_location: Vector3Double,
+    pub designator_spot_wrt_designated: EntityCoordinateVector,
+    pub designator_spot_location: WorldCoordinate,
     pub dead_reckoning_algorithm: DeadReckoningAlgorithm,
-    pub padding1: u8,
-    pub padding2: u16,
-    pub entity_linear_acceleration: Vector3Float,
+    _padding: u8,
+    _padding2: u16,
+    pub entity_linear_acceleration: LinearAcceleration,
 }
 
 impl Default for DesignatorPdu {
-    /// Creates a default-initialized Designator PDU
-    ///
-    /// # Examples
-    ///
-    /// Initializing a Designator PDU:
-    /// ```
-    /// use open_dis_rust::distributed_emissions::designator_pdu::DesignatorPdu;
-    /// let mut designator_pdu = DesignatorPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         DesignatorPdu {
-            pdu_header: PduHeader::default(
-                PduType::Designator,
-                ProtocolFamily::DistributedEmissionRegeneration,
-                88,
-            ),
+            pdu_header: PduHeader::default(),
             designating_entity_id: EntityId::default(1),
             code_name: DesignatorSystemName::default(),
             designated_entity_id: EntityId::default(2),
             designator_code: DesignatorCode::default(),
             designator_power: 0.0,
             designator_wavelength: 0.0,
-            designator_spot_wrt_designated: Vector3Float::new(0.0, 0.0, 0.0),
-            designator_spot_location: Vector3Double::new(0.0, 0.0, 0.0),
+            designator_spot_wrt_designated: EntityCoordinateVector::new(0.0, 0.0, 0.0),
+            designator_spot_location: WorldCoordinate::new(0.0, 0.0, 0.0),
             dead_reckoning_algorithm: DeadReckoningAlgorithm::default(),
-            padding1: 0,
-            padding2: 0,
-            entity_linear_acceleration: Vector3Float::new(0.0, 0.0, 0.0),
+            _padding: 0,
+            _padding2: 0,
+            entity_linear_acceleration: LinearAcceleration::new(0.0, 0.0, 0.0),
         }
     }
 }
 
 impl Pdu for DesignatorPdu {
-    /// Serialize contents of `DesignatorPdu` into `BytesMut` buffer
+    fn length(&self) -> u16 {
+        let length = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<EntityId>() * 2
+            + std::mem::size_of::<DesignatorSystemName>()
+            + std::mem::size_of::<DesignatorCode>()
+            + std::mem::size_of::<f32>() * 2
+            + std::mem::size_of::<EntityCoordinateVector>()
+            + std::mem::size_of::<WorldCoordinate>()
+            + std::mem::size_of::<DeadReckoningAlgorithm>()
+            + std::mem::size_of::<u8>()
+            + std::mem::size_of::<u16>()
+            + std::mem::size_of::<LinearAcceleration>();
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    /// Serialize contents of `DesignatorPdu` into `BytesMut` buf
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -86,85 +95,77 @@ impl Pdu for DesignatorPdu {
         self.designator_spot_wrt_designated.serialize(buf);
         self.designator_spot_location.serialize(buf);
         buf.put_u8(self.dead_reckoning_algorithm as u8);
-        buf.put_u8(self.padding1);
-        buf.put_u16(self.padding2);
+        buf.put_u8(self._padding);
+        buf.put_u16(self._padding2);
         self.entity_linear_acceleration.serialize(buf);
     }
 
-    /// Deserialize bytes from `BytesMut` buffer and interpret as `DesignatorPdu`
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    /// Deserialize bytes from `BytesMut` buf and interpret as `DesignatorPdu`
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::Designator {
-            let designating_entity_id = EntityId::deserialize(&mut buffer);
-            let code_name = DesignatorSystemName::deserialize(&mut buffer);
-            let designated_entity_id = EntityId::deserialize(&mut buffer);
-            let designator_code = DesignatorCode::deserialize(&mut buffer);
-            let designator_power = buffer.get_f32();
-            let designator_wavelength = buffer.get_f32();
-            let designator_spot_wrt_designated = Vector3Float::deserialize(&mut buffer);
-            let designator_spot_location = Vector3Double::deserialize(&mut buffer);
-            let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(&mut buffer);
-            let padding1 = buffer.get_u8();
-            let padding2 = buffer.get_u16();
-            let entity_linear_acceleration = Vector3Float::deserialize(&mut buffer);
-
-            Ok(DesignatorPdu {
-                pdu_header,
-                designating_entity_id,
-                code_name,
-                designated_entity_id,
-                designator_code,
-                designator_power,
-                designator_wavelength,
-                designator_spot_wrt_designated,
-                designator_spot_location,
-                dead_reckoning_algorithm,
-                padding1,
-                padding2,
-                entity_linear_acceleration,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!(
-                    "Expected PDU type Designator, got {:?}",
-                    pdu_header.pdu_type
-                ),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::Designator {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type Designator, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
-    /// Treat `DesignatorPdu` as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    /// Deserialize bytes from `BytesMut` buffer, but assume PDU header exists already
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let designating_entity_id = EntityId::deserialize(&mut buffer);
-        let code_name = DesignatorSystemName::deserialize(&mut buffer);
-        let designated_entity_id = EntityId::deserialize(&mut buffer);
-        let designator_code = DesignatorCode::deserialize(&mut buffer);
-        let designator_power = buffer.get_f32();
-        let designator_wavelength = buffer.get_f32();
-        let designator_spot_wrt_designated = Vector3Float::deserialize(&mut buffer);
-        let designator_spot_location = Vector3Double::deserialize(&mut buffer);
-        let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(&mut buffer);
-        let padding1 = buffer.get_u8();
-        let padding2 = buffer.get_u16();
-        let entity_linear_acceleration = Vector3Float::deserialize(&mut buffer);
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
 
-        Ok(DesignatorPdu {
-            pdu_header,
+impl DesignatorPdu {
+    /// Creates a new `DesignatorPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `DesignatorPdu`:
+    /// ```
+    /// use open_dis_rust::distributed_emissions::DesignatorPdu;
+    /// let pdu = DesignatorPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::Designator;
+        pdu.pdu_header.protocol_family = ProtocolFamily::DistributedEmissionRegeneration;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let designating_entity_id = EntityId::deserialize(buf);
+        let code_name = DesignatorSystemName::deserialize(buf);
+        let designated_entity_id = EntityId::deserialize(buf);
+        let designator_code = DesignatorCode::deserialize(buf);
+        let designator_power = buf.get_f32();
+        let designator_wavelength = buf.get_f32();
+        let designator_spot_wrt_designated = EntityCoordinateVector::deserialize(buf);
+        let designator_spot_location = WorldCoordinate::deserialize(buf);
+        let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(buf);
+        let _padding = buf.get_u8();
+        let _padding2 = buf.get_u16();
+        let entity_linear_acceleration = LinearAcceleration::deserialize(buf);
+
+        DesignatorPdu {
+            pdu_header: PduHeader::default(),
             designating_entity_id,
             code_name,
             designated_entity_id,
@@ -174,66 +175,55 @@ impl Pdu for DesignatorPdu {
             designator_spot_wrt_designated,
             designator_spot_location,
             dead_reckoning_algorithm,
-            padding1,
-            padding2,
+            _padding,
+            _padding2,
             entity_linear_acceleration,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::DesignatorPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let designator_pdu = DesignatorPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::Designator,
-            ProtocolFamily::DistributedEmissionRegeneration,
-            88,
-        );
+        let pdu = DesignatorPdu::new();
+        let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            designator_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            designator_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, designator_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            designator_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, designator_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            designator_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
     }
 
     #[test]
     fn cast_to_any() {
-        let designator_pdu = DesignatorPdu::default();
-        let any_pdu = designator_pdu.as_any();
+        let pdu = DesignatorPdu::new();
+        let any_pdu = pdu.as_any();
 
         assert!(any_pdu.is::<DesignatorPdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut designator_pdu = DesignatorPdu::default();
-        let mut buffer = BytesMut::new();
-        designator_pdu.serialize(&mut buffer);
+        let mut pdu = DesignatorPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_designator_pdu = DesignatorPdu::deserialize(buffer).unwrap();
-        assert_eq!(new_designator_pdu.pdu_header, designator_pdu.pdu_header);
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = DesignatorPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 704 / 8;
+        let pdu = DesignatorPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

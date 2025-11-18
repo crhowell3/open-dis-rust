@@ -31,7 +31,7 @@ impl TrackJamTarget {
         buf.put_u8(self.beam_id);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> TrackJamTarget {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> TrackJamTarget {
         TrackJamTarget {
             track_jam: EntityId::deserialize(buf),
             emitter_id: buf.get_u8(),

@@ -25,7 +25,7 @@ impl PropulsionSystemData {
         buf.put_f32(self.engine_rpm);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> PropulsionSystemData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> PropulsionSystemData {
         PropulsionSystemData {
             power_setting: buf.get_f32(),
             engine_rpm: buf.get_f32(),

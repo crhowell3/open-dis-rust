@@ -42,7 +42,7 @@ impl BeamData {
         buf.put_f32(self.beam_sweep_sync);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> BeamData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> BeamData {
         BeamData {
             beam_azimuth_center: buf.get_f32(),
             beam_azimuth_sweep: buf.get_f32(),

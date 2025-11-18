@@ -31,7 +31,7 @@ impl SystemId {
         buf.put_u8(self.change_options);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> SystemId {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> SystemId {
         SystemId {
             system_type: buf.get_u16(),
             system_name: buf.get_u16(),

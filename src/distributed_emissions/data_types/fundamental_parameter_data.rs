@@ -33,7 +33,7 @@ impl FundamentalParameterData {
         buf.put_f32(self.beam_sweep_sync);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> FundamentalParameterData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> FundamentalParameterData {
         FundamentalParameterData {
             frequency: buf.get_f32(),
             frequency_range: buf.get_f32(),

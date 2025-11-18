@@ -36,7 +36,7 @@ impl AcousticEmitterSystem {
         buf.put_u8(self.acoustic_id);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> AcousticEmitterSystem {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> AcousticEmitterSystem {
         AcousticEmitterSystem {
             acoustic_name: UAAcousticSystemName::deserialize(buf),
             acoustic_function: UAAcousticEmitterSystemFunction::deserialize(buf),
