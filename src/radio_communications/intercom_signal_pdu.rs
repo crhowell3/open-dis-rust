@@ -6,6 +6,7 @@
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
+    enums::SignalTDLType,
     pdu::Pdu,
     pdu_header::{PduHeader, PduType, ProtocolFamily},
 };
@@ -20,7 +21,7 @@ pub struct IntercomSignalPdu {
     pub radio_id: u16,
     pub communications_device_id: u16,
     pub encoding_scheme: u16,
-    pub tdl_type: u16,
+    pub tdl_type: SignalTDLType,
     pub sample_rate: u32,
     pub data_length: u16,
     pub samples: u16,
@@ -28,17 +29,6 @@ pub struct IntercomSignalPdu {
 }
 
 impl Default for IntercomSignalPdu {
-    /// Creates a default Intercom Signal PDU with arbitrary originating and receiving
-    /// entity IDs
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Intercom Signal PDU:
-    /// ```
-    /// use open_dis_rust::radio_communications::intercom_signal_pdu::IntercomSignalPdu;
-    /// let intercom_signal_pdu = IntercomSignalPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         IntercomSignalPdu {
             pdu_header: PduHeader::default(),
@@ -46,7 +36,7 @@ impl Default for IntercomSignalPdu {
             radio_id: 0,
             communications_device_id: 0,
             encoding_scheme: 0,
-            tdl_type: 0,
+            tdl_type: SignalTDLType::default(),
             sample_rate: 0,
             data_length: 0,
             samples: 0,
@@ -56,6 +46,24 @@ impl Default for IntercomSignalPdu {
 }
 
 impl Pdu for IntercomSignalPdu {
+    fn length(&self) -> u16 {
+        let length = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<EntityId>()
+            + std::mem::size_of::<u16>() * 5
+            + std::mem::size_of::<SignalTDLType>()
+            + std::mem::size_of::<u32>();
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -64,7 +72,7 @@ impl Pdu for IntercomSignalPdu {
         buf.put_u16(self.radio_id);
         buf.put_u16(self.communications_device_id);
         buf.put_u16(self.encoding_scheme);
-        buf.put_u16(self.tdl_type);
+        buf.put_u16(self.tdl_type as u16);
         buf.put_u32(self.sample_rate);
         buf.put_u16(self.data_length);
         buf.put_u16(self.samples);
@@ -73,72 +81,73 @@ impl Pdu for IntercomSignalPdu {
         }
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::IntercomSignal {
-            let entity_id = EntityId::deserialize(&mut buffer);
-            let radio_id = buffer.get_u16();
-            let communications_device_id = buffer.get_u16();
-            let encoding_scheme = buffer.get_u16();
-            let tdl_type = buffer.get_u16();
-            let sample_rate = buffer.get_u32();
-            let data_length = buffer.get_u16();
-            let samples = buffer.get_u16();
-            let mut data: Vec<u8> = vec![];
-            for _i in 0..data_length {
-                data.push(buffer.get_u8());
-            }
-            Ok(IntercomSignalPdu {
-                pdu_header,
-                entity_id,
-                radio_id,
-                communications_device_id,
-                encoding_scheme,
-                tdl_type,
-                sample_rate,
-                data_length,
-                samples,
-                data,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::IntercomSignal {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type IntercomSignal, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let entity_id = EntityId::deserialize(&mut buffer);
-        let radio_id = buffer.get_u16();
-        let communications_device_id = buffer.get_u16();
-        let encoding_scheme = buffer.get_u16();
-        let tdl_type = buffer.get_u16();
-        let sample_rate = buffer.get_u32();
-        let data_length = buffer.get_u16();
-        let samples = buffer.get_u16();
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl IntercomSignalPdu {
+    /// Creates a new `IntercomSignalPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `IntercomSignalPdu`:
+    /// ```
+    /// use open_dis_rust::radio_communications::IntercomSignalPdu;
+    /// let pdu = IntercomSignalPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::IntercomSignal;
+        pdu.pdu_header.protocol_family = ProtocolFamily::RadioCommunications;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let entity_id = EntityId::deserialize(buf);
+        let radio_id = buf.get_u16();
+        let communications_device_id = buf.get_u16();
+        let encoding_scheme = buf.get_u16();
+        let tdl_type = SignalTDLType::deserialize(buf);
+        let sample_rate = buf.get_u32();
+        let data_length = buf.get_u16();
+        let samples = buf.get_u16();
         let mut data: Vec<u8> = vec![];
         for _i in 0..data_length {
-            data.push(buffer.get_u8());
+            data.push(buf.get_u8());
         }
-        Ok(IntercomSignalPdu {
-            pdu_header,
+        IntercomSignalPdu {
+            pdu_header: PduHeader::default(),
             entity_id,
             radio_id,
             communications_device_id,
@@ -148,58 +157,52 @@ impl Pdu for IntercomSignalPdu {
             data_length,
             samples,
             data,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::IntercomSignalPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let intercom_signal_pdu = IntercomSignalPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::IntercomSignal,
-            ProtocolFamily::RadioCommunications,
-            448 / 8,
-        );
+        let pdu = IntercomSignalPdu::new();
+        let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            intercom_signal_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            intercom_signal_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, intercom_signal_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            intercom_signal_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, intercom_signal_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            intercom_signal_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let pdu = IntercomSignalPdu::new();
+        let any_pdu = pdu.as_any();
+
+        assert!(any_pdu.is::<IntercomSignalPdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut intercom_signal_pdu = IntercomSignalPdu::default();
-        let mut buffer = BytesMut::new();
-        intercom_signal_pdu.serialize(&mut buffer);
+        let mut pdu = IntercomSignalPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_intercom_signal_pdu = IntercomSignalPdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_intercom_signal_pdu.pdu_header,
-            intercom_signal_pdu.pdu_header
-        );
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = IntercomSignalPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 256 / 8;
+        let pdu = IntercomSignalPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }
