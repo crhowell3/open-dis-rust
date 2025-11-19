@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.7
 /// For all fields, assume right-hand rule for directionality
@@ -33,11 +35,15 @@ impl AngularVelocity {
     }
 
     /// Decode an `AngularVelocity` from a mutable byte stream
-    pub fn deserialize(buf: &mut BytesMut) -> AngularVelocity {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> AngularVelocity {
         AngularVelocity {
             rate_about_x_axis: buf.get_f32(),
             rate_about_y_axis: buf.get_f32(),
             rate_about_z_axis: buf.get_f32(),
         }
     }
+}
+
+impl SerializedLength for AngularVelocity {
+    const LENGTH: usize = 12;
 }

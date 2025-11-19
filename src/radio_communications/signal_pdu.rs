@@ -6,9 +6,9 @@
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
-    enums::SignalTDLType,
+    enums::{PduType, ProtocolFamily, SignalTDLType},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;

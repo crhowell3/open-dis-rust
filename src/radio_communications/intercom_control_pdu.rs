@@ -7,9 +7,12 @@ use super::data_types::intercom_communications_parameters::IntercomCommunication
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
-    enums::{IntercomControlCommand, IntercomControlControlType, IntercomControlTransmitLineState},
+    enums::{
+        IntercomControlCommand, IntercomControlControlType, IntercomControlTransmitLineState,
+        PduType, ProtocolFamily,
+    },
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;

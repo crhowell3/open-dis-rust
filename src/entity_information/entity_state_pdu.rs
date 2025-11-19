@@ -8,14 +8,15 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    SerializedLength,
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::EntityType,
-    enums::{Country, EntityCapabilities, EntityKind, ForceId},
+    enums::{EntityCapabilities, ForceId, PduType, ProtocolFamily},
     euler_angles::EulerAngles,
     linear_velocity::LinearVelocity,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
     world_coordinate::WorldCoordinate,
 };
 
@@ -26,7 +27,7 @@ use super::data_types::{
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.2.2
 pub struct EntityStatePdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub entity_id: EntityId,
     pub force_id: ForceId,
     pub number_of_articulation_parameters: u8,
@@ -45,32 +46,12 @@ pub struct EntityStatePdu {
 impl Default for EntityStatePdu {
     fn default() -> Self {
         EntityStatePdu {
-            pdu_header: PduHeader::default(
-                PduType::EntityState,
-                ProtocolFamily::EntityInformation,
-                864 / 8,
-            ),
+            pdu_header: PduHeader::default(),
             entity_id: EntityId::default(2),
             force_id: ForceId::default(),
             number_of_articulation_parameters: 0,
-            entity_type: EntityType {
-                kind: EntityKind::default(),
-                domain: 1,
-                country: Country::default(),
-                category: 3,
-                subcategory: 0,
-                specific: 0,
-                extra: 0,
-            },
-            alternative_entity_type: EntityType {
-                kind: EntityKind::default(),
-                domain: 1,
-                country: Country::default(),
-                category: 0,
-                subcategory: 0,
-                specific: 0,
-                extra: 0,
-            },
+            entity_type: EntityType::default(),
+            alternative_entity_type: EntityType::default(),
             entity_linear_velocity: LinearVelocity::new(0.0, 0.0, 0.0),
             entity_location: WorldCoordinate::new(0.0, 0.0, 0.0),
             entity_orientation: EulerAngles::new(0.0, 0.0, 0.0),
@@ -84,6 +65,19 @@ impl Default for EntityStatePdu {
 }
 
 impl Pdu for EntityStatePdu {
+    fn length(&self) -> u16 {
+        let length = PduHeader::LENGTH;
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
     fn serialize(&mut self, buf: &mut BytesMut) {
         self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
             .expect("The length of the PDU should fit in a u16.");
@@ -102,75 +96,71 @@ impl Pdu for EntityStatePdu {
         buf.put_u8(self.entity_capabilities as u8);
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<EntityStatePdu, DISError> {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::EntityState {
-            let entity_id = EntityId::deserialize(&mut buffer);
-            let force_id = ForceId::deserialize(&mut buffer);
-            let articulation_params = &buffer.get_u8();
-            let entity_type = EntityType::deserialize(&mut buffer);
-            let alt_entity_type = EntityType::deserialize(&mut buffer);
-            let linear_velocity = LinearVelocity::deserialize(&mut buffer);
-            let world_coordinate = WorldCoordinate::deserialize(&mut buffer);
-            let orientation = EulerAngles::deserialize(&mut buffer);
-            let appearance = buffer.get_u32();
-            let dead_reckoning = DeadReckoningParameters::deserialize(&mut buffer);
-            let entity_marking = EntityMarking::deserialize(&mut buffer);
-            let entity_capabilities = EntityCapabilities::deserialize(&mut buffer);
-
-            Ok(EntityStatePdu {
-                pdu_header,
-                entity_id,
-                force_id,
-                number_of_articulation_parameters: *articulation_params,
-                entity_type,
-                alternative_entity_type: alt_entity_type,
-                entity_linear_velocity: linear_velocity,
-                entity_location: world_coordinate,
-                entity_orientation: orientation,
-                entity_appearance: appearance,
-                dead_reckoning_parameters: dead_reckoning,
-                entity_marking,
-                entity_capabilities,
-                articulation_parameter: 0.0,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!(
-                    "Expected PDU type EntityState, got {:?}",
-                    pdu_header.pdu_type
-                ),
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
+    where
+        Self: Sized,
+    {
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::EntityState {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type EntityState, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let entity_id = EntityId::deserialize(&mut buffer);
-        let force_id = ForceId::deserialize(&mut buffer);
-        let articulation_params = &buffer.get_u8();
-        let entity_type = EntityType::deserialize(&mut buffer);
-        let alt_entity_type = EntityType::deserialize(&mut buffer);
-        let linear_velocity = LinearVelocity::deserialize(&mut buffer);
-        let world_coordinate = WorldCoordinate::deserialize(&mut buffer);
-        let orientation = EulerAngles::deserialize(&mut buffer);
-        let appearance = buffer.get_u32();
-        let dead_reckoning_parameters = DeadReckoningParameters::deserialize(&mut buffer);
-        let entity_marking = EntityMarking::deserialize(&mut buffer);
-        let entity_capabilities = EntityCapabilities::deserialize(&mut buffer);
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
 
-        Ok(EntityStatePdu {
-            pdu_header,
+impl EntityStatePdu {
+    /// Creates a new `EntityStatePdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `EntityStatePdu`:
+    /// ```
+    /// use open_dis_rust::entity_information::EntityStatePdu;
+    /// let pdu = EntityStatePdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::EntityState;
+        pdu.pdu_header.protocol_family = ProtocolFamily::EntityInformation;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let entity_id = EntityId::deserialize(buf);
+        let force_id = ForceId::deserialize(buf);
+        let articulation_params = &buf.get_u8();
+        let entity_type = EntityType::deserialize(buf);
+        let alt_entity_type = EntityType::deserialize(buf);
+        let linear_velocity = LinearVelocity::deserialize(buf);
+        let world_coordinate = WorldCoordinate::deserialize(buf);
+        let orientation = EulerAngles::deserialize(buf);
+        let appearance = buf.get_u32();
+        let dead_reckoning_parameters = DeadReckoningParameters::deserialize(buf);
+        let entity_marking = EntityMarking::deserialize(buf);
+        let entity_capabilities = EntityCapabilities::deserialize(buf);
+
+        EntityStatePdu {
+            pdu_header: PduHeader::default(),
             entity_id,
             force_id,
             number_of_articulation_parameters: *articulation_params,
@@ -184,51 +174,52 @@ impl Pdu for EntityStatePdu {
             entity_marking,
             entity_capabilities,
             articulation_parameter: 0.0,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::EntityStatePdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let entity_state_pdu = EntityStatePdu::default();
-        let header = PduHeader::default(
-            PduType::EntityState,
-            ProtocolFamily::EntityInformation,
-            864 / 8,
-        );
-        assert_eq!(
-            header.protocol_version,
-            entity_state_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(header.exercise_id, entity_state_pdu.pdu_header.exercise_id);
-        assert_eq!(header.pdu_type, entity_state_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            header.protocol_family,
-            entity_state_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(header.length, entity_state_pdu.pdu_header.length);
-        assert_eq!(
-            header.status_record,
-            entity_state_pdu.pdu_header.status_record
-        );
+        let pdu = EntityStatePdu::new();
+        let pdu_header = PduHeader::default();
+
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let pdu = EntityStatePdu::new();
+        let any_pdu = pdu.as_any();
+
+        assert!(any_pdu.is::<EntityStatePdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut entity_state_pdu = EntityStatePdu::default();
-        let mut buffer = BytesMut::new();
-        entity_state_pdu.serialize(&mut buffer);
+        let mut pdu = EntityStatePdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_entity_state_pdu = EntityStatePdu::deserialize(buffer).unwrap();
-        assert_eq!(new_entity_state_pdu.pdu_header, entity_state_pdu.pdu_header);
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = EntityStatePdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 1152 / 8;
+        let pdu = EntityStatePdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

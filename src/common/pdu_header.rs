@@ -9,12 +9,15 @@
 use bytes::{Buf, BufMut, BytesMut};
 use chrono::{Timelike, Utc};
 use modular_bitfield::prelude::*;
-use num_derive::FromPrimitive;
 
-use crate::common::enums::{
-    ActiveInterrogationIndicator, CoupledExtensionIndicator, DetonationTypeIndicator,
-    FireTypeIndicator, IntercomAttachedIndicator, LVCIndicator, PduStatusIFFSimulationMode,
-    RadioAttachedIndicator, TransferredEntityIndicator,
+use crate::common::{
+    SerializedLength,
+    enums::{
+        ActiveInterrogationIndicator, CoupledExtensionIndicator, DetonationTypeIndicator,
+        FireTypeIndicator, IntercomAttachedIndicator, LVCIndicator, PduStatusIFFSimulationMode,
+        PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator,
+        TransferredEntityIndicator,
+    },
 };
 
 #[bitfield(bits = 8)]
@@ -326,113 +329,6 @@ impl PduHeader {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum ProtocolFamily {
-    #[default]
-    Other = 0,
-    EntityInformation = 1,
-    Warfare = 2,
-    Logistics = 3,
-    RadioCommunications = 4,
-    SimulationManagement = 5,
-    DistributedEmissionRegeneration = 6,
-    EntityManagement = 7,
-    Minefield = 8,
-    SyntheticEnvironment = 9,
-    SimulationManagementWithReliability = 10,
-    LiveEntityInformationInteraction = 11,
-    NonRealTime = 12,
-    InformationOperations = 13,
-}
-
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-#[allow(non_camel_case_types)]
-pub enum ProtocolVersion {
-    #[default]
-    Other = 0,
-    DIS_PDUv1 = 1,
-    IEEE1278_1993 = 2,
-    DIS_PDUv2_Third_Draft = 3,
-    DIS_PDUv2_Fourth_Draft_Revised = 4,
-    IEEE1278_1_1995 = 5,
-    IEEE1278_1A_1998 = 6,
-    IEEE1278_1_2012 = 7,
-}
-
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
-pub enum PduType {
-    #[default]
-    Other = 0,
-    EntityState = 1,
-    Fire = 2,
-    Detonation = 3,
-    Collision = 4,
-    ServiceRequest = 5,
-    ResupplyOffer = 6,
-    ResupplyReceived = 7,
-    ResupplyCancel = 8,
-    RepairComplete = 9,
-    RepairResponse = 10,
-    CreateEntity = 11,
-    RemoveEntity = 12,
-    StartResume = 13,
-    StopFreeze = 14,
-    Acknowledge = 15,
-    ActionRequest = 16,
-    ActionResponse = 17,
-    DataQuery = 18,
-    SetData = 19,
-    Data = 20,
-    EventReport = 21,
-    Comment = 22,
-    ElectromagneticEmission = 23,
-    Designator = 24,
-    Transmitter = 25,
-    Signal = 26,
-    Receiver = 27,
-    IFF = 28,
-    UnderwaterAcoustic = 29,
-    SupplementalEmission = 30,
-    IntercomSignal = 31,
-    IntercomControl = 32,
-    AggregateState = 33,
-    IsGroupOf = 34,
-    TransferOwnership = 35,
-    IsPartOf = 36,
-    MinefieldState = 37,
-    MinefieldQuery = 38,
-    MinefieldData = 39,
-    MinefieldResponseNack = 40,
-    EnvironmentalProcess = 41,
-    GriddedData = 42,
-    PointObjectState = 43,
-    LinearObjectState = 44,
-    ArealObjectState = 45,
-    TSPI = 46,
-    Appearance = 47,
-    ArticulatedParts = 48,
-    LEFire = 49,
-    LEDetonation = 50,
-    CreateEntityReliable = 51,
-    RemoveEntityReliable = 52,
-    StartResumeReliable = 53,
-    StopFreezeReliable = 54,
-    AcknowledgeReliable = 55,
-    ActionRequestReliable = 56,
-    ActionResponseReliable = 57,
-    DataQueryReliable = 58,
-    SetDataReliable = 59,
-    DataReliable = 60,
-    EventReportReliable = 61,
-    CommentReliable = 62,
-    RecordReliable = 63,
-    SetRecordReliable = 64,
-    RecordQueryReliable = 65,
-    CollisionElastic = 66,
-    EntityStateUpdate = 67,
-    DirectedEnergyFire = 68,
-    EntityDamageStatus = 69,
-    InformationOperationsAction = 70,
-    InformationOperationsReport = 71,
-    Attribute = 72,
+impl SerializedLength for PduHeader {
+    const LENGTH: usize = 12;
 }

@@ -11,12 +11,11 @@ use std::any::Any;
 
 use crate::{
     common::{
-        SimulationAddress,
+        SerializedLength, SimulationAddress,
         dis_error::DISError,
-        entity_id::EntityId,
-        enums::DISAttributeActionCode,
+        enums::{DISAttributeActionCode, PduType, ProtocolFamily},
         pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
+        pdu_header::PduHeader,
     },
     entity_information::data_types::attribute_record_set::AttributeRecordSet,
 };
@@ -57,7 +56,7 @@ impl Default for AttributePdu {
 
 impl Pdu for AttributePdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>() + std::mem::size_of::<EntityId>();
+        let length = PduHeader::LENGTH + 4; // TODO(@anyone): Get length
 
         length as u16
     }

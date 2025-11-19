@@ -12,10 +12,10 @@ use super::data_types::electromagnetic_emission_system_data::ElectromagneticEmis
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
-    enums::EEAttributeStateIndicator,
+    enums::{EEAttributeStateIndicator, PduType, ProtocolFamily},
     event_id::EventId,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 #[derive(Clone, Debug)]

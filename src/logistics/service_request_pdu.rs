@@ -7,19 +7,14 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use crate::common::{
-    dis_error::DISError,
-    entity_id::EntityId,
-    pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
-};
+use crate::common::{dis_error::DISError, entity_id::EntityId, pdu::Pdu, pdu_header::PduHeader};
 
 use super::data_types::supply_quantity::SupplyQuantity;
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.4.2
 pub struct ServiceRequestPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub receiving_entity_id: EntityId,
     pub servicing_entity_id: EntityId,
     pub service_type_requested: u8,
@@ -29,19 +24,9 @@ pub struct ServiceRequestPdu {
 }
 
 impl Default for ServiceRequestPdu {
-    /// Creates a default Service Request PDU with arbitrary receiving and supplying entity IDs
-    ///
-    /// # Examples
-    ///
-    /// Initializing a Service Request PDU:
-    /// ```
-    /// use open_dis_rust::logistics::service_request_pdu::ServiceRequestPdu;
-    /// let service_request_pdu = ServiceRequestPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         ServiceRequestPdu {
-            pdu_header: PduHeader::default(PduType::ServiceRequest, ProtocolFamily::Logistics, 56),
+            pdu_header: PduHeader::default(),
             receiving_entity_id: EntityId::default(1),
             servicing_entity_id: EntityId::default(2),
             service_type_requested: 0,

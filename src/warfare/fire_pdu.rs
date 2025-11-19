@@ -11,9 +11,10 @@ use crate::common::{
     LinearVelocity, WorldCoordinate,
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{PduType, ProtocolFamily},
     event_id::EventId,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 use super::data_types::munition_descriptor::MunitionDescriptor;

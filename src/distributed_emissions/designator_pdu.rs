@@ -13,9 +13,11 @@ use crate::common::{
     EntityCoordinateVector, LinearAcceleration, WorldCoordinate,
     dis_error::DISError,
     entity_id::EntityId,
-    enums::{DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName},
+    enums::{
+        DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName, PduType, ProtocolFamily,
+    },
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 #[derive(Copy, Clone, Debug)]

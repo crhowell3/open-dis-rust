@@ -10,10 +10,10 @@ use std::any::Any;
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
-    enums::{UAPassiveParameterIndex, UAStateChangeUpdateIndicator},
+    enums::{PduType, ProtocolFamily, UAPassiveParameterIndex, UAStateChangeUpdateIndicator},
     event_id::EventId,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 use super::data_types::{

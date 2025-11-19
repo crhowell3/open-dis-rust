@@ -10,8 +10,9 @@ use std::any::Any;
 use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{PduType, ProtocolFamily},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 use super::data_types::directed_energy_damage::DirectedEnergyDamage;
@@ -148,10 +149,7 @@ mod tests {
     use std::any::type_name_of_val;
 
     use super::EntityDamageStatusPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType},
-    };
+    use crate::common::{enums::PduType, pdu::Pdu, pdu_header::PduHeader};
     use bytes::{Bytes, BytesMut};
 
     #[test]

@@ -9,12 +9,14 @@ use std::any::Any;
 
 use crate::{
     common::{
+        SerializedLength,
         dis_error::DISError,
         entity_id::EntityId,
+        enums::{PduType, ProtocolFamily},
         euler_angles::EulerAngles,
         linear_velocity::LinearVelocity,
         pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
+        pdu_header::PduHeader,
         world_coordinate::WorldCoordinate,
     },
     warfare::data_types::variable_parameter::VariableParameter,
@@ -52,7 +54,14 @@ impl Default for EntityStateUpdatePdu {
 
 impl Pdu for EntityStateUpdatePdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>() + std::mem::size_of::<EntityId>();
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH
+            + 1
+            + 1
+            + LinearVelocity::LENGTH
+            + WorldCoordinate::LENGTH
+            + EulerAngles::LENGTH
+            + 4;
 
         length as u16
     }

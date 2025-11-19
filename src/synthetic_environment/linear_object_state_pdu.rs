@@ -8,12 +8,11 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
-    ProtocolFamily,
     dis_error::DISError,
     entity_id::EntityId,
-    enums::ForceId,
+    enums::{ForceId, PduType, ProtocolFamily},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType},
+    pdu_header::PduHeader,
     simulation_address::SimulationAddress,
 };
 

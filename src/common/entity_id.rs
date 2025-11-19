@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+use crate::common::SerializedLength;
+
 use super::simulation_address::SimulationAddress;
 use bytes::{Buf, BufMut, BytesMut};
 
@@ -51,4 +53,8 @@ impl EntityId {
             application_id: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for EntityId {
+    const LENGTH: usize = 6;
 }

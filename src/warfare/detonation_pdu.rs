@@ -11,10 +11,10 @@ use crate::common::{
     EntityCoordinateVector, LinearVelocity, WorldCoordinate,
     dis_error::DISError,
     entity_id::EntityId,
-    enums::DetonationResult,
+    enums::{DetonationResult, PduType, ProtocolFamily},
     event_id::EventId,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 use super::data_types::{

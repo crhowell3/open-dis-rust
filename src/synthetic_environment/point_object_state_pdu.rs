@@ -11,10 +11,10 @@ use crate::common::{
     WorldCoordinate,
     dis_error::DISError,
     entity_id::EntityId,
-    enums::ForceId,
+    enums::{ForceId, PduType, ProtocolFamily},
     euler_angles::EulerAngles,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
     simulation_address::SimulationAddress,
 };
 

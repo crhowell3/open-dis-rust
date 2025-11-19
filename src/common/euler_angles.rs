@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.32
 pub struct EulerAngles {
@@ -37,4 +39,8 @@ impl EulerAngles {
             phi: buf.get_f32(),
         }
     }
+}
+
+impl SerializedLength for EulerAngles {
+    const LENGTH: usize = 12;
 }

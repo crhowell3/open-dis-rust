@@ -14,10 +14,10 @@ use crate::{
         entity_id::EntityId,
         enums::{
             IOActionIOActionPhase, IOActionIOActionType, IOActionIOSimulationSource,
-            IOActionIOWarfareType,
+            IOActionIOWarfareType, PduType, ProtocolFamily,
         },
         pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
+        pdu_header::PduHeader,
     },
     warfare::data_types::standard_variable_specification::StandardVariableSpecification,
 };

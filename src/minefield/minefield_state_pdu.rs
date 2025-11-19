@@ -8,10 +8,10 @@ use crate::common::{
     WorldCoordinate,
     dis_error::DISError,
     entity_type::EntityType,
-    enums::{ForceId, MinefieldStateProtocolMode},
+    enums::{ForceId, MinefieldStateProtocolMode, PduType, ProtocolFamily},
     euler_angles::EulerAngles,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;

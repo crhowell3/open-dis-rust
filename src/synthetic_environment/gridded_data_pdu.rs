@@ -12,10 +12,10 @@ use crate::common::{
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::EntityType,
-    enums::{GriddedDataConstantGrid, GriddedDataCoordinateSystem},
+    enums::{GriddedDataConstantGrid, GriddedDataCoordinateSystem, PduType, ProtocolFamily},
     euler_angles::EulerAngles,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 use super::data_types::{

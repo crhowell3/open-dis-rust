@@ -9,11 +9,11 @@ use crate::{
         dis_error::DISError,
         entity_id::EntityId,
         enums::{
-            TransmitterAntennaPatternType, TransmitterCryptoSystem, TransmitterInputSource,
-            TransmitterTransmitState,
+            PduType, ProtocolFamily, TransmitterAntennaPatternType, TransmitterCryptoSystem,
+            TransmitterInputSource, TransmitterTransmitState,
         },
         pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
+        pdu_header::PduHeader,
     },
     radio_communications::data_types::{
         antenna_pattern::AntennaPattern, modulation_parameters::ModulationParameters,

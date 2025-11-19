@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.98
 pub struct WorldCoordinate {
@@ -25,7 +27,7 @@ impl WorldCoordinate {
     /// Instantiating a new `WorldCoordinate`:
     /// ```
     /// use open_dis_rust::common::WorldCoordinate;
-    /// let mut world_coordinate = WorldCoordinate::default();
+    /// let mut world_coordinate = WorldCoordinate::new(0.0, 0.0, 0.0);
     /// ```
     ///
     #[must_use]
@@ -46,4 +48,8 @@ impl WorldCoordinate {
             z: buf.get_f64(),
         }
     }
+}
+
+impl SerializedLength for WorldCoordinate {
+    const LENGTH: usize = 24;
 }

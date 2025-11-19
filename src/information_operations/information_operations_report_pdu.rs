@@ -12,9 +12,9 @@ use crate::{
         SimulationIdentifier,
         dis_error::DISError,
         entity_id::EntityId,
-        enums::{IOActionIOSimulationSource, IOReportIOReportType},
+        enums::{IOActionIOSimulationSource, IOReportIOReportType, PduType, ProtocolFamily},
         pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
+        pdu_header::PduHeader,
     },
     warfare::data_types::standard_variable_specification::StandardVariableSpecification,
 };

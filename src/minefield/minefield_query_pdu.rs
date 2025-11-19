@@ -9,9 +9,9 @@ use crate::{
         dis_error::DISError,
         entity_id::EntityId,
         entity_type::EntityType,
-        enums::MinefieldSensorTypes,
+        enums::{MinefieldSensorTypes, PduType, ProtocolFamily},
         pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
+        pdu_header::PduHeader,
     },
     minefield::data_types::minefield_identifier::MinefieldIdentifier,
 };
