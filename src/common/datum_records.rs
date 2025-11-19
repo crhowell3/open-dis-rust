@@ -18,9 +18,9 @@ impl FixedDatumRecord {
         buf.put_u32(self.datum_value);
     }
 
-    pub fn deserialize(buffer: &mut BytesMut) -> Self {
-        let datum_id = buffer.get_u32();
-        let datum_value = buffer.get_u32();
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        let datum_id = buf.get_u32();
+        let datum_value = buf.get_u32();
         Self {
             datum_id,
             datum_value,
