@@ -4,6 +4,7 @@
 //     Licensed under the BSD-2-Clause License
 
 use crate::common::{
+    SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -18,9 +19,8 @@ use std::any::Any;
 /// Implemented according to IEEE 1278.1-2012 §7.7.5
 pub struct IntercomSignalPdu {
     pdu_header: PduHeader,
-    pub entity_id: EntityId,
-    pub radio_id: u16,
-    pub communications_device_id: u16,
+    pub intercom_reference_id: EntityId,
+    pub intercom_number: u16,
     pub encoding_scheme: u16,
     pub tdl_type: SignalTDLType,
     pub sample_rate: u32,
@@ -33,9 +33,8 @@ impl Default for IntercomSignalPdu {
     fn default() -> Self {
         IntercomSignalPdu {
             pdu_header: PduHeader::default(),
-            entity_id: EntityId::default(1),
-            radio_id: 0,
-            communications_device_id: 0,
+            intercom_reference_id: EntityId::default(1),
+            intercom_number: 0,
             encoding_scheme: 0,
             tdl_type: SignalTDLType::default(),
             sample_rate: 0,
@@ -48,11 +47,7 @@ impl Default for IntercomSignalPdu {
 
 impl Pdu for IntercomSignalPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>()
-            + std::mem::size_of::<u16>() * 5
-            + std::mem::size_of::<SignalTDLType>()
-            + std::mem::size_of::<u32>();
+        let length = PduHeader::LENGTH + EntityId::LENGTH + 2 + 2 + 2 + 4 + 2 + 2;
 
         length as u16
     }
@@ -72,9 +67,8 @@ impl Pdu for IntercomSignalPdu {
             max_size: MAX_PDU_SIZE_OCTETS,
         })?;
         self.pdu_header.serialize(buf);
-        self.entity_id.serialize(buf);
-        buf.put_u16(self.radio_id);
-        buf.put_u16(self.communications_device_id);
+        self.intercom_reference_id.serialize(buf);
+        buf.put_u16(self.intercom_number);
         buf.put_u16(self.encoding_scheme);
         buf.put_u16(self.tdl_type as u16);
         buf.put_u32(self.sample_rate);
@@ -139,9 +133,8 @@ impl IntercomSignalPdu {
     }
 
     fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
-        let entity_id = EntityId::deserialize(buf);
-        let radio_id = buf.get_u16();
-        let communications_device_id = buf.get_u16();
+        let intercom_reference_id = EntityId::deserialize(buf);
+        let intercom_number = buf.get_u16();
         let encoding_scheme = buf.get_u16();
         let tdl_type = SignalTDLType::deserialize(buf);
         let sample_rate = buf.get_u32();
@@ -153,9 +146,8 @@ impl IntercomSignalPdu {
         }
         IntercomSignalPdu {
             pdu_header: PduHeader::default(),
-            entity_id,
-            radio_id,
-            communications_device_id,
+            intercom_reference_id,
+            intercom_number,
             encoding_scheme,
             tdl_type,
             sample_rate,
@@ -169,8 +161,8 @@ impl IntercomSignalPdu {
 #[cfg(test)]
 mod tests {
     use super::IntercomSignalPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -184,7 +176,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = IntercomSignalPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = IntercomSignalPdu::deserialize(&mut deserialize_buf).unwrap();
@@ -193,7 +185,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / 8;
+        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
         let pdu = IntercomSignalPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
