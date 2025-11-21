@@ -8,7 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
-    LinearVelocity, WorldCoordinate,
+    LinearVelocity, SerializedLength, WorldCoordinate,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -54,11 +54,11 @@ impl Default for FirePdu {
 
 impl Pdu for FirePdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 3
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH * 3
             + std::mem::size_of::<EventId>()
             + std::mem::size_of::<u32>()
-            + std::mem::size_of::<WorldCoordinate>()
+            + WorldCoordinate::LENGTH
             + std::mem::size_of::<MunitionDescriptor>()
             + std::mem::size_of::<LinearVelocity>()
             + std::mem::size_of::<f32>();
@@ -185,11 +185,11 @@ mod tests {
     #[test]
     fn deserialize_header() {
         let mut pdu = FirePdu::default();
-        let mut serialize_buffer = BytesMut::new();
-        let _ = pdu.serialize(&mut serialize_buffer);
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
 
-        let mut deserialize_buffer = Bytes::new();
-        let new_pdu = FirePdu::deserialize(&mut deserialize_buffer).unwrap();
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = FirePdu::deserialize(&mut deserialize_buf).unwrap();
         assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
 

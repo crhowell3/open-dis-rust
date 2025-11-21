@@ -165,7 +165,7 @@ impl DirectedEnergyFirePdu {
 mod tests {
     use super::DirectedEnergyFirePdu;
     use crate::common::pdu::Pdu;
-    use bytes::{Bytes, BytesMut};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -178,11 +178,11 @@ mod tests {
     #[test]
     fn deserialize_header() {
         let mut pdu = DirectedEnergyFirePdu::new();
-        let mut serialize_buffer = BytesMut::new();
-        let _ = pdu.serialize(&mut serialize_buffer);
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
 
-        let mut deserialize_buffer = Bytes::new();
-        let new_pdu = DirectedEnergyFirePdu::deserialize(&mut deserialize_buffer).unwrap();
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = DirectedEnergyFirePdu::deserialize(&mut deserialize_buf).unwrap();
         assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
 

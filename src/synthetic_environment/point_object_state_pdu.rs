@@ -8,7 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
-    WorldCoordinate,
+    SerializedLength, WorldCoordinate,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -65,9 +65,19 @@ impl Default for PointObjectStatePdu {
 
 impl Pdu for PointObjectStatePdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 3
-            + std::mem::size_of::<u16>() * 3;
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH * 2
+            + 2
+            + 1
+            + 1
+            + ObjectType::LENGTH
+            + WorldCoordinate::LENGTH
+            + EulerAngles::LENGTH
+            + 4
+            + 2
+            + 2
+            + SimulationAddress::LENGTH * 2
+            + 4;
 
         length as u16
     }
@@ -195,23 +205,23 @@ impl PointObjectStatePdu {
 #[cfg(test)]
 mod tests {
     use super::PointObjectStatePdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn deserialize_header() {
         let mut pdu = PointObjectStatePdu::default();
-        let mut serialize_buffer = BytesMut::new();
-        pdu.serialize(&mut serialize_buffer);
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
 
-        let mut deserialize_buffer = Bytes::new();
-        let new_pdu = PointObjectStatePdu::deserialize(&mut deserialize_buffer).unwrap();
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = PointObjectStatePdu::deserialize(&mut deserialize_buf).unwrap();
         assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 704 / 8;
+        const DEFAULT_LENGTH: u16 = 704 / BITS_PER_BYTE;
         let pdu = PointObjectStatePdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

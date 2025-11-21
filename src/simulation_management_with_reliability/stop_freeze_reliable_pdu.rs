@@ -123,7 +123,7 @@ impl StopFreezeReliablePdu {
     /// Initializing an StopFreezeReliable PDU:
     /// ```
     /// use open_dis_rust::simulation_management_with_reliability::StopFreezeReliablePdu;
-    /// let mut acknowledge_pdu = StopFreezeReliablePdu::new();
+    /// let mut pdu = StopFreezeReliablePdu::new();
     /// ```
     ///
     pub fn new() -> Self {
@@ -178,7 +178,7 @@ mod tests {
         let mut serialize_buf = BytesMut::new();
         pdu.serialize(&mut serialize_buf);
 
-        let mut deserialize_buf = Bytes::new();
+        let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = StopFreezeReliablePdu::deserialize(&mut deserialize_buf).unwrap();
         assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
