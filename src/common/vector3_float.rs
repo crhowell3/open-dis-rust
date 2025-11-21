@@ -136,6 +136,10 @@ impl std::ops::Div<f32> for Vector3Float {
     }
 }
 
+impl SerializedLength for Vector3Float {
+    const LENGTH: usize = 12;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -175,8 +179,4 @@ mod tests {
         let unit_x = Vector3Float::unit_x();
         assert_eq!(unit_x, Vector3Float::new(1.0, 0.0, 0.0));
     }
-}
-
-impl SerializedLength for Vector3Float {
-    const LENGTH: usize = 12;
 }

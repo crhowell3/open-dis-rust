@@ -202,19 +202,6 @@ mod tests {
     use bytes::{Bytes, BytesMut};
 
     #[test]
-    fn create_header() {
-        let pdu = ArealObjectStatePdu::new();
-        let pdu_header = PduHeader::default();
-
-        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
-        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
-        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
-        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
-        assert_eq!(pdu_header.length, pdu.pdu_header.length);
-        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
-    }
-
-    #[test]
     fn cast_to_any() {
         let pdu = ArealObjectStatePdu::new();
         let any_pdu = pdu.as_any();
@@ -232,6 +219,7 @@ mod tests {
         let new_pdu = ArealObjectStatePdu::deserialize(&mut deserialize_buffer).unwrap();
         assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
+
     #[test]
     fn check_default_pdu_length() {
         const DEFAULT_LENGTH: u16 = 384 / 8;

@@ -37,7 +37,7 @@ pub struct VariableDatumRecord {
 
 impl VariableDatumRecord {
     fn bytes_count(length_bits: u32) -> usize {
-        ((length_bits as usize) + 7) / 8
+        (length_bits as usize).div_ceil(8)
     }
 
     pub fn serialize(&mut self, buf: &mut BytesMut) {

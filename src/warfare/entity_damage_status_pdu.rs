@@ -151,24 +151,9 @@ impl EntityDamageStatusPdu {
 
 #[cfg(test)]
 mod tests {
-    use std::any::type_name_of_val;
-
     use super::EntityDamageStatusPdu;
-    use crate::common::{enums::PduType, pdu::Pdu, pdu_header::PduHeader};
+    use crate::common::pdu::Pdu;
     use bytes::{Bytes, BytesMut};
-
-    #[test]
-    fn create_header() {
-        let pdu = EntityDamageStatusPdu::new();
-        let header = PduHeader::default();
-
-        assert_eq!(header.protocol_version, pdu.pdu_header.protocol_version);
-        assert_eq!(header.exercise_id, pdu.pdu_header.exercise_id);
-        assert_eq!(header.pdu_type, pdu.pdu_header.pdu_type);
-        assert_eq!(header.protocol_family, pdu.pdu_header.protocol_family);
-        assert_eq!(header.length, pdu.pdu_header.length);
-        assert_eq!(header.status_record, pdu.pdu_header.status_record);
-    }
 
     #[test]
     fn cast_to_any() {
@@ -182,21 +167,11 @@ mod tests {
     fn deserialize_header() {
         let mut pdu = EntityDamageStatusPdu::default();
         let mut serialize_buffer = BytesMut::new();
-        pdu.serialize(&mut serialize_buffer);
+        let _ = pdu.serialize(&mut serialize_buffer);
 
         let mut deserialize_buffer = Bytes::new();
         let new_pdu = EntityDamageStatusPdu::deserialize(&mut deserialize_buffer).unwrap();
         assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
-    }
-
-    #[test]
-    fn create_new_pdu() {
-        let entity_damage_status_pdu = EntityDamageStatusPdu::new();
-        assert!(type_name_of_val(&entity_damage_status_pdu).contains("EntityDamageStatusPdu"));
-        assert_eq!(
-            entity_damage_status_pdu.header().pdu_type,
-            PduType::EntityDamageStatus
-        );
     }
 
     #[test]

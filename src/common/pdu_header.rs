@@ -129,7 +129,7 @@ impl Default for PduStatusRecord {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct PduHeader {
     /// The version of the protocol
     pub protocol_version: ProtocolVersion,
@@ -147,6 +147,20 @@ pub struct PduHeader {
     pub status_record: PduStatusRecord,
 }
 
+impl Default for PduHeader {
+    fn default() -> Self {
+        PduHeader {
+            protocol_version: ProtocolVersion::IEEE1278_1_2012,
+            exercise_id: 1,
+            pdu_type: PduType::default(),
+            protocol_family: ProtocolFamily::default(),
+            timestamp: PduHeader::calculate_dis_timestamp(),
+            length: 0_u16,
+            status_record: PduStatusRecord::default(),
+        }
+    }
+}
+
 impl PduHeader {
     #[must_use]
     pub fn new(
@@ -162,19 +176,6 @@ impl PduHeader {
             protocol_family,
             timestamp: PduHeader::calculate_dis_timestamp(),
             length,
-            status_record: PduStatusRecord::default(),
-        }
-    }
-
-    #[must_use]
-    pub fn default() -> Self {
-        PduHeader {
-            protocol_version: ProtocolVersion::IEEE1278_1_2012,
-            exercise_id: 1,
-            pdu_type: PduType::default(),
-            protocol_family: ProtocolFamily::default(),
-            timestamp: PduHeader::calculate_dis_timestamp(),
-            length: 0_u16,
             status_record: PduStatusRecord::default(),
         }
     }

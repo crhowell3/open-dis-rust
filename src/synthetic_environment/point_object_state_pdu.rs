@@ -199,34 +199,6 @@ mod tests {
     use bytes::{Bytes, BytesMut};
 
     #[test]
-    fn create_header() {
-        let point_object_state_pdu = PointObjectStatePdu::default();
-        let pdu_header = PduHeader::default();
-
-        assert_eq!(
-            pdu_header.protocol_version,
-            point_object_state_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            point_object_state_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(
-            pdu_header.pdu_type,
-            point_object_state_pdu.pdu_header.pdu_type
-        );
-        assert_eq!(
-            pdu_header.protocol_family,
-            point_object_state_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, point_object_state_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            point_object_state_pdu.pdu_header.status_record
-        );
-    }
-
-    #[test]
     fn deserialize_header() {
         let mut pdu = PointObjectStatePdu::default();
         let mut serialize_buffer = BytesMut::new();

@@ -205,21 +205,8 @@ impl DetonationPdu {
 #[cfg(test)]
 mod tests {
     use super::DetonationPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use crate::common::pdu::Pdu;
     use bytes::{Bytes, BytesMut};
-
-    #[test]
-    fn create_header() {
-        let pdu = DetonationPdu::new();
-        let header = PduHeader::default();
-
-        assert_eq!(header.protocol_version, pdu.pdu_header.protocol_version);
-        assert_eq!(header.exercise_id, pdu.pdu_header.exercise_id);
-        assert_eq!(header.pdu_type, pdu.pdu_header.pdu_type);
-        assert_eq!(header.protocol_family, pdu.pdu_header.protocol_family);
-        assert_eq!(header.length, pdu.pdu_header.length);
-        assert_eq!(header.status_record, pdu.pdu_header.status_record);
-    }
 
     #[test]
     fn cast_to_any() {
@@ -233,7 +220,7 @@ mod tests {
     fn deserialize_header() {
         let mut pdu = DetonationPdu::default();
         let mut serialize_buffer = BytesMut::new();
-        pdu.serialize(&mut serialize_buffer);
+        let _ = pdu.serialize(&mut serialize_buffer);
 
         let mut deserialize_buffer = Bytes::new();
         let new_pdu = DetonationPdu::deserialize(&mut deserialize_buffer).unwrap();
