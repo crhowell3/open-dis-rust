@@ -6,6 +6,7 @@
 
 use crate::common::{
     SerializedLength,
+    constants::MAX_PDU_SIZE_OCTETS,
     datum_records::{FixedDatumRecord, VariableDatumRecord},
     dis_error::DISError,
     entity_id::EntityId,
@@ -48,7 +49,7 @@ impl Default for SetDataPdu {
 
 impl Pdu for SetDataPdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 4 + 4 + 4 + 4; // TODO(@anyone): Get length
+        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 4 + 4 + 4 + 4;
 
         length as u16
     }
@@ -61,9 +62,12 @@ impl Pdu for SetDataPdu {
         &mut self.pdu_header
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
@@ -77,6 +81,7 @@ impl Pdu for SetDataPdu {
         for i in 0..self.variable_datum_records.len() {
             self.variable_datum_records[i].serialize(buf);
         }
+        Ok(())
     }
 
     fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
@@ -136,12 +141,16 @@ impl SetDataPdu {
         let number_of_fixed_datum_records = buf.get_u32();
         let number_of_variable_datum_records = buf.get_u32();
         let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
-        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
+        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap_or_default());
         for _record in 0..number_of_fixed_datum_records as usize {
             fixed_datum_records.push(FixedDatumRecord::deserialize(buf));
         }
         let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
-        variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
+        variable_datum_records.reserve(
+            number_of_variable_datum_records
+                .try_into()
+                .unwrap_or_default(),
+        );
         for _record in 0..number_of_variable_datum_records as usize {
             variable_datum_records.push(VariableDatumRecord::deserialize(buf));
         }

@@ -10,6 +10,7 @@ use std::any::Any;
 use super::data_types::electromagnetic_emission_system_data::ElectromagneticEmissionSystemData;
 
 use crate::common::{
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     enums::{EEAttributeStateIndicator, PduType, ProtocolFamily},
@@ -65,9 +66,12 @@ impl Pdu for ElectromagneticEmissionsPdu {
     }
 
     /// Serialize contents of `ElectromagneticEmissionsPdu` into `BytesMut` buf
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.emitting_entity_id.serialize(buf);
         self.event_id.serialize(buf);
@@ -77,6 +81,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
         for i in 0..self.number_of_systems {
             self.systems[i as usize].serialize(buf);
         }
+        Ok(())
     }
 
     /// Deserialize bytes from `BytesMut` buf and interpret as `ElectromagneticEmissionsPdu`

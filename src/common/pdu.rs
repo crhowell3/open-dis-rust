@@ -20,7 +20,7 @@ pub trait Pdu {
         self.header_mut().length = len;
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut);
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError>;
 
     /// # Errors
     ///

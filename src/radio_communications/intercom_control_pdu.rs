@@ -5,6 +5,7 @@
 
 use super::data_types::intercom_communications_parameters::IntercomCommunicationsParameters;
 use crate::common::{
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     enums::{
@@ -74,9 +75,12 @@ impl Pdu for IntercomControlPdu {
         &mut self.pdu_header
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         buf.put_u8(self.control_type as u8);
         buf.put_u8(self.communications_channel_type);
@@ -92,6 +96,7 @@ impl Pdu for IntercomControlPdu {
         for i in 0usize..self.intercom_parameters_length as usize {
             self.intercom_parameters[i].serialize(buf);
         }
+        Ok(())
     }
 
     fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>

@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.80
 pub struct SimulationAddress {
@@ -48,4 +50,8 @@ impl SimulationAddress {
             application_id: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for SimulationAddress {
+    const LENGTH: usize = 4;
 }

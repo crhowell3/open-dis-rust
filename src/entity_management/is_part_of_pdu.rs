@@ -4,15 +4,18 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::BytesMut;
+use bytes::{Buf, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    SerializedLength,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::EntityType,
+    enums::{PduType, ProtocolFamily},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
     vector3_float::Vector3Float,
 };
 
@@ -21,7 +24,7 @@ use super::data_types::{named_location::NamedLocation, relationship::Relationshi
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.8.5
 pub struct IsPartOfPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub relationship: Relationship,
@@ -31,19 +34,9 @@ pub struct IsPartOfPdu {
 }
 
 impl Default for IsPartOfPdu {
-    /// Creates a default Is Part Of PDU with arbitrary aggregate ID
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Is Part Of PDU:
-    /// ```
-    /// use open_dis_rust::entity_management::is_part_of_pdu::IsPartOfPdu;
-    /// let is_part_of_pdu = IsPartOfPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         IsPartOfPdu {
-            pdu_header: PduHeader::default(PduType::IsPartOf, ProtocolFamily::EntityManagement, 56),
+            pdu_header: PduHeader::default(),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
             relationship: Relationship::default(),
@@ -55,9 +48,31 @@ impl Default for IsPartOfPdu {
 }
 
 impl Pdu for IsPartOfPdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> u16 {
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH * 2
+            + Relationship::LENGTH
+            + Vector3Float::LENGTH
+            + NamedLocation::LENGTH
+            + EntityType::LENGTH;
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
@@ -65,108 +80,119 @@ impl Pdu for IsPartOfPdu {
         self.part_location.serialize(buf);
         self.named_location_id.serialize(buf);
         self.part_entity_type.serialize(buf);
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::IsPartOf {
-            let originating_entity_id = EntityId::deserialize(&mut buffer);
-            let receiving_entity_id = EntityId::deserialize(&mut buffer);
-            let relationship = Relationship::deserialize(&mut buffer);
-            let part_location = Vector3Float::deserialize(&mut buffer);
-            let named_location_id = NamedLocation::deserialize(&mut buffer);
-            let part_entity_type = EntityType::deserialize(&mut buffer);
-            Ok(IsPartOfPdu {
-                pdu_header,
-                originating_entity_id,
-                receiving_entity_id,
-                relationship,
-                part_location,
-                named_location_id,
-                part_entity_type,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!("Expected PDU type IsPartOf, got {:?}", pdu_header.pdu_type),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::IsPartOf {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type IsPartOf, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::deserialize(&mut buffer);
-        let receiving_entity_id = EntityId::deserialize(&mut buffer);
-        let relationship = Relationship::deserialize(&mut buffer);
-        let part_location = Vector3Float::deserialize(&mut buffer);
-        let named_location_id = NamedLocation::deserialize(&mut buffer);
-        let part_entity_type = EntityType::deserialize(&mut buffer);
-        Ok(IsPartOfPdu {
-            pdu_header,
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl IsPartOfPdu {
+    /// Creates a new `IsPartOfPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `IsPartOfPdu`:
+    /// ```
+    /// use open_dis_rust::entity_management::IsPartOfPdu;
+    /// let pdu = IsPartOfPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::IsPartOf;
+        pdu.pdu_header.protocol_family = ProtocolFamily::EntityManagement;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let originating_entity_id = EntityId::deserialize(buf);
+        let receiving_entity_id = EntityId::deserialize(buf);
+        let relationship = Relationship::deserialize(buf);
+        let part_location = Vector3Float::deserialize(buf);
+        let named_location_id = NamedLocation::deserialize(buf);
+        let part_entity_type = EntityType::deserialize(buf);
+        IsPartOfPdu {
+            pdu_header: PduHeader::default(),
             originating_entity_id,
             receiving_entity_id,
             relationship,
             part_location,
             named_location_id,
             part_entity_type,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::IsPartOfPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let is_part_of_pdu = IsPartOfPdu::default();
-        let pdu_header =
-            PduHeader::default(PduType::IsPartOf, ProtocolFamily::EntityManagement, 448 / 8);
+        let pdu = IsPartOfPdu::new();
+        let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            is_part_of_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            is_part_of_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, is_part_of_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            is_part_of_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, is_part_of_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            is_part_of_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let pdu = IsPartOfPdu::new();
+        let any_pdu = pdu.as_any();
+
+        assert!(any_pdu.is::<IsPartOfPdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut is_part_of_pdu = IsPartOfPdu::default();
-        let mut buffer = BytesMut::new();
-        is_part_of_pdu.serialize(&mut buffer);
+        let mut pdu = IsPartOfPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_is_part_of_pdu = IsPartOfPdu::deserialize(buffer).unwrap();
-        assert_eq!(new_is_part_of_pdu.pdu_header, is_part_of_pdu.pdu_header);
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = IsPartOfPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 256 / 8;
+        let pdu = IsPartOfPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

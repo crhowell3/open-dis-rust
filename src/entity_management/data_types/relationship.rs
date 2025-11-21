@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Clone, Debug, Default)]
 pub struct Relationship {
     pub nature: u16,
@@ -22,10 +24,14 @@ impl Relationship {
         buf.put_u16(self.position);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> Relationship {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Relationship {
         Relationship {
             nature: buf.get_u16(),
             position: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for Relationship {
+    const LENGTH: usize = 4;
 }

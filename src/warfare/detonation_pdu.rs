@@ -9,6 +9,7 @@ use std::any::Any;
 
 use crate::common::{
     EntityCoordinateVector, LinearVelocity, WorldCoordinate,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     enums::{DetonationResult, PduType, ProtocolFamily},
@@ -93,9 +94,12 @@ impl Pdu for DetonationPdu {
         &mut self.pdu_header
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.firing_entity_id.serialize(buf);
         self.target_entity_id.serialize(buf);
@@ -111,6 +115,7 @@ impl Pdu for DetonationPdu {
         for i in 0..self.variable_parameters.len() {
             self.variable_parameters[i].serialize(buf);
         }
+        Ok(())
     }
 
     fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>

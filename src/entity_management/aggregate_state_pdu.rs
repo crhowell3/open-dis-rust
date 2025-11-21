@@ -8,12 +8,15 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    SerializedLength,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::EntityType,
+    enums::{PduType, ProtocolFamily},
     euler_angles::EulerAngles,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
     vector3_double::Vector3Double,
     vector3_float::Vector3Float,
 };
@@ -23,7 +26,7 @@ use super::data_types::{aggregate_id::AggregateId, aggregate_marking::AggregateM
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.8.2
 pub struct AggregateStatePdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub aggregate_id: EntityId,
     pub force_id: u8,
     pub aggregate_state: u8,
@@ -48,23 +51,9 @@ pub struct AggregateStatePdu {
 }
 
 impl Default for AggregateStatePdu {
-    /// Creates a default Aggregate State PDU with arbitrary aggregate ID
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Aggregate State PDU:
-    /// ```
-    /// use open_dis_rust::entity_management::aggregate_state_pdu::AggregateStatePdu;
-    /// let aggregate_state_pdu = AggregateStatePdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         AggregateStatePdu {
-            pdu_header: PduHeader::default(
-                PduType::AggregateState,
-                ProtocolFamily::EntityManagement,
-                56,
-            ),
+            pdu_header: PduHeader::default(),
             aggregate_id: EntityId::default(1),
             force_id: 0,
             aggregate_state: 0,
@@ -91,9 +80,26 @@ impl Default for AggregateStatePdu {
 }
 
 impl Pdu for AggregateStatePdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> u16 {
+        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 4 + 4 + 4 + 4;
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.aggregate_id.serialize(buf);
         buf.put_u8(self.force_id);
@@ -126,134 +132,101 @@ impl Pdu for AggregateStatePdu {
         for i in 0..self.variable_datum_list.len() {
             buf.put_u64(self.variable_datum_list[i]);
         }
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::AggregateState {
-            let aggregate_id = EntityId::deserialize(&mut buffer);
-            let force_id = buffer.get_u8();
-            let aggregate_state = buffer.get_u8();
-            let aggregate_type = EntityType::deserialize(&mut buffer);
-            let formation = buffer.get_u32();
-            let aggregate_marking = AggregateMarking::deserialize(&mut buffer);
-            let dimensions = Vector3Float::deserialize(&mut buffer);
-            let orientation = EulerAngles::deserialize(&mut buffer);
-            let center_of_mass = Vector3Double::deserialize(&mut buffer);
-            let velocity = Vector3Float::deserialize(&mut buffer);
-            let number_of_dis_aggregates = buffer.get_u16();
-            let number_of_dis_entities = buffer.get_u16();
-            let number_of_silent_aggregate_types = buffer.get_u16();
-            let number_of_silent_entity_types = buffer.get_u16();
-            let mut aggregate_id_list: Vec<AggregateId> = vec![];
-            for _i in 0..number_of_dis_aggregates {
-                aggregate_id_list.push(AggregateId::deserialize(&mut buffer));
-            }
-            let mut entity_id_list: Vec<EntityId> = vec![];
-            for _i in 0..number_of_dis_entities {
-                entity_id_list.push(EntityId::deserialize(&mut buffer));
-            }
-            let pad2 = buffer.get_u8();
-            let mut silent_aggregate_system_list: Vec<EntityType> = vec![];
-            for _i in 0..number_of_silent_aggregate_types {
-                silent_aggregate_system_list.push(EntityType::deserialize(&mut buffer));
-            }
-            let mut silent_entity_system_list: Vec<EntityType> = vec![];
-            for _i in 0..number_of_silent_entity_types {
-                silent_entity_system_list.push(EntityType::deserialize(&mut buffer));
-            }
-            let number_of_variable_datum_records = buffer.get_u32();
-            let mut variable_datum_list: Vec<u64> = vec![];
-            for _i in 0..number_of_variable_datum_records {
-                variable_datum_list.push(buffer.get_u64());
-            }
-            Ok(AggregateStatePdu {
-                pdu_header,
-                aggregate_id,
-                force_id,
-                aggregate_state,
-                aggregate_type,
-                formation,
-                aggregate_marking,
-                dimensions,
-                orientation,
-                center_of_mass,
-                velocity,
-                number_of_dis_aggregates,
-                number_of_dis_entities,
-                number_of_silent_aggregate_types,
-                number_of_silent_entity_types,
-                aggregate_id_list,
-                entity_id_list,
-                pad2,
-                silent_aggregate_system_list,
-                silent_entity_system_list,
-                number_of_variable_datum_records,
-                variable_datum_list,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::AggregateState {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type AggregateState, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let aggregate_id = EntityId::deserialize(&mut buffer);
-        let force_id = buffer.get_u8();
-        let aggregate_state = buffer.get_u8();
-        let aggregate_type = EntityType::deserialize(&mut buffer);
-        let formation = buffer.get_u32();
-        let aggregate_marking = AggregateMarking::deserialize(&mut buffer);
-        let dimensions = Vector3Float::deserialize(&mut buffer);
-        let orientation = EulerAngles::deserialize(&mut buffer);
-        let center_of_mass = Vector3Double::deserialize(&mut buffer);
-        let velocity = Vector3Float::deserialize(&mut buffer);
-        let number_of_dis_aggregates = buffer.get_u16();
-        let number_of_dis_entities = buffer.get_u16();
-        let number_of_silent_aggregate_types = buffer.get_u16();
-        let number_of_silent_entity_types = buffer.get_u16();
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl AggregateStatePdu {
+    /// Creates a new `AggregateStatePdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `AggregateStatePdu`:
+    /// ```
+    /// use open_dis_rust::entity_management::AggregateStatePdu;
+    /// let pdu = AggregateStatePdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::AggregateState;
+        pdu.pdu_header.protocol_family = ProtocolFamily::EntityManagement;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let aggregate_id = EntityId::deserialize(buf);
+        let force_id = buf.get_u8();
+        let aggregate_state = buf.get_u8();
+        let aggregate_type = EntityType::deserialize(buf);
+        let formation = buf.get_u32();
+        let aggregate_marking = AggregateMarking::deserialize(buf);
+        let dimensions = Vector3Float::deserialize(buf);
+        let orientation = EulerAngles::deserialize(buf);
+        let center_of_mass = Vector3Double::deserialize(buf);
+        let velocity = Vector3Float::deserialize(buf);
+        let number_of_dis_aggregates = buf.get_u16();
+        let number_of_dis_entities = buf.get_u16();
+        let number_of_silent_aggregate_types = buf.get_u16();
+        let number_of_silent_entity_types = buf.get_u16();
         let mut aggregate_id_list: Vec<AggregateId> = vec![];
         for _i in 0..number_of_dis_aggregates {
-            aggregate_id_list.push(AggregateId::deserialize(&mut buffer));
+            aggregate_id_list.push(AggregateId::deserialize(buf));
         }
         let mut entity_id_list: Vec<EntityId> = vec![];
         for _i in 0..number_of_dis_entities {
-            entity_id_list.push(EntityId::deserialize(&mut buffer));
+            entity_id_list.push(EntityId::deserialize(buf));
         }
-        let pad2 = buffer.get_u8();
+        let pad2 = buf.get_u8();
         let mut silent_aggregate_system_list: Vec<EntityType> = vec![];
         for _i in 0..number_of_silent_aggregate_types {
-            silent_aggregate_system_list.push(EntityType::deserialize(&mut buffer));
+            silent_aggregate_system_list.push(EntityType::deserialize(buf));
         }
         let mut silent_entity_system_list: Vec<EntityType> = vec![];
         for _i in 0..number_of_silent_entity_types {
-            silent_entity_system_list.push(EntityType::deserialize(&mut buffer));
+            silent_entity_system_list.push(EntityType::deserialize(buf));
         }
-        let number_of_variable_datum_records = buffer.get_u32();
+        let number_of_variable_datum_records = buf.get_u32();
         let mut variable_datum_list: Vec<u64> = vec![];
         for _i in 0..number_of_variable_datum_records {
-            variable_datum_list.push(buffer.get_u64());
+            variable_datum_list.push(buf.get_u64());
         }
-        Ok(AggregateStatePdu {
-            pdu_header,
+
+        AggregateStatePdu {
+            pdu_header: PduHeader::default(),
             aggregate_id,
             force_id,
             aggregate_state,
@@ -275,58 +248,52 @@ impl Pdu for AggregateStatePdu {
             silent_entity_system_list,
             number_of_variable_datum_records,
             variable_datum_list,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::AggregateStatePdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let aggregate_state_pdu = AggregateStatePdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::AggregateState,
-            ProtocolFamily::EntityManagement,
-            448 / 8,
-        );
+        let pdu = AggregateStatePdu::new();
+        let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            aggregate_state_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            aggregate_state_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, aggregate_state_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            aggregate_state_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, aggregate_state_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            aggregate_state_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let pdu = AggregateStatePdu::new();
+        let any_pdu = pdu.as_any();
+
+        assert!(any_pdu.is::<AggregateStatePdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut aggregate_state_pdu = AggregateStatePdu::default();
-        let mut buffer = BytesMut::new();
-        aggregate_state_pdu.serialize(&mut buffer);
+        let mut pdu = AggregateStatePdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_aggregate_state_pdu = AggregateStatePdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_aggregate_state_pdu.pdu_header,
-            aggregate_state_pdu.pdu_header
-        );
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = AggregateStatePdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 1088 / BITS_PER_BYTE;
+        let pdu = AggregateStatePdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

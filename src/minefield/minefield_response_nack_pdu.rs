@@ -5,6 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     enums::{PduType, ProtocolFamily},
@@ -55,9 +56,12 @@ impl Pdu for MinefieldResponseNackPdu {
         &mut self.pdu_header
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.minefield_id.serialize(buf);
         self.requesting_entity_id.serialize(buf);
@@ -66,6 +70,7 @@ impl Pdu for MinefieldResponseNackPdu {
         for i in 0..self.missing_pdu_sequence_numbers.len() {
             buf.put_u64(self.missing_pdu_sequence_numbers[i]);
         }
+        Ok(())
     }
 
     fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>

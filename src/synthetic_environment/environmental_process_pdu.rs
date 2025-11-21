@@ -8,6 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::EntityType,
@@ -64,9 +65,12 @@ impl Pdu for EnvironmentalProcessPdu {
         &mut self.pdu_header
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.environmental_process_id.serialize(buf);
         self.environment_type.serialize(buf);
@@ -77,6 +81,7 @@ impl Pdu for EnvironmentalProcessPdu {
         for i in 0..self.environment_records.len() {
             self.environment_records[i].serialize(buf);
         }
+        Ok(())
     }
 
     fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>

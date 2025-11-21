@@ -8,10 +8,13 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    SerializedLength,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{PduType, ProtocolFamily},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
     simulation_address::SimulationAddress,
 };
 
@@ -20,7 +23,7 @@ use super::data_types::record_specification::RecordSpecification;
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.8.4
 pub struct TransferOwnershipPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub originating_id: SimulationAddress,
     pub receiving_id: SimulationAddress,
     pub request_id: u32,
@@ -31,23 +34,9 @@ pub struct TransferOwnershipPdu {
 }
 
 impl Default for TransferOwnershipPdu {
-    /// Creates a default Transfer Ownership PDU with arbitrary originating and receiving IDs
-    ///
-    /// # Examples
-    ///
-    /// Initializing a Transfer Ownership PDU:
-    /// ```
-    /// use open_dis_rust::entity_management::transfer_ownership_pdu::TransferOwnershipPdu;
-    /// let transfer_ownership_pdu = TransferOwnershipPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         TransferOwnershipPdu {
-            pdu_header: PduHeader::default(
-                PduType::TransferOwnership,
-                ProtocolFamily::EntityManagement,
-                56,
-            ),
+            pdu_header: PduHeader::default(),
             originating_id: SimulationAddress::default(),
             receiving_id: SimulationAddress::default(),
             request_id: 0,
@@ -60,9 +49,27 @@ impl Default for TransferOwnershipPdu {
 }
 
 impl Pdu for TransferOwnershipPdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> u16 {
+        let length =
+            PduHeader::LENGTH + SimulationAddress::LENGTH * 2 + 4 + 1 + 1 + EntityId::LENGTH;
+
+        length as u16
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.originating_id.serialize(buf);
         self.receiving_id.serialize(buf);
@@ -71,62 +78,72 @@ impl Pdu for TransferOwnershipPdu {
         buf.put_u8(self.transfer_type);
         self.transfer_entity_id.serialize(buf);
         self.record_information.serialize(buf);
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::TransferOwnership {
-            let originating_id = SimulationAddress::deserialize(&mut buffer);
-            let receiving_id = SimulationAddress::deserialize(&mut buffer);
-            let request_id = buffer.get_u32();
-            let required_reliability_service = buffer.get_u8();
-            let transfer_type = buffer.get_u8();
-            let transfer_entity_id = EntityId::deserialize(&mut buffer);
-            let record_information = RecordSpecification::deserialize(&mut buffer);
-            Ok(TransferOwnershipPdu {
-                pdu_header,
-                originating_id,
-                receiving_id,
-                request_id,
-                required_reliability_service,
-                transfer_type,
-                transfer_entity_id,
-                record_information,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::TransferOwnership {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type TransferOwnership, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let originating_id = SimulationAddress::deserialize(&mut buffer);
-        let receiving_id = SimulationAddress::deserialize(&mut buffer);
-        let request_id = buffer.get_u32();
-        let required_reliability_service = buffer.get_u8();
-        let transfer_type = buffer.get_u8();
-        let transfer_entity_id = EntityId::deserialize(&mut buffer);
-        let record_information = RecordSpecification::deserialize(&mut buffer);
-        Ok(TransferOwnershipPdu {
-            pdu_header,
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl TransferOwnershipPdu {
+    /// Creates a new `TransferOwnershipPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `TransferOwnershipPdu`:
+    /// ```
+    /// use open_dis_rust::entity_management::TransferOwnershipPdu;
+    /// let pdu = TransferOwnershipPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::SetData;
+        pdu.pdu_header.protocol_family = ProtocolFamily::EntityManagement;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let originating_id = SimulationAddress::deserialize(buf);
+        let receiving_id = SimulationAddress::deserialize(buf);
+        let request_id = buf.get_u32();
+        let required_reliability_service = buf.get_u8();
+        let transfer_type = buf.get_u8();
+        let transfer_entity_id = EntityId::deserialize(buf);
+        let record_information = RecordSpecification::deserialize(buf);
+
+        TransferOwnershipPdu {
+            pdu_header: PduHeader::default(),
             originating_id,
             receiving_id,
             request_id,
@@ -134,61 +151,52 @@ impl Pdu for TransferOwnershipPdu {
             transfer_type,
             transfer_entity_id,
             record_information,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::TransferOwnershipPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
-    use bytes::BytesMut;
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let transfer_ownership_pdu = TransferOwnershipPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::TransferOwnership,
-            ProtocolFamily::EntityManagement,
-            448 / 8,
-        );
+        let pdu = TransferOwnershipPdu::new();
+        let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            transfer_ownership_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            transfer_ownership_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(
-            pdu_header.pdu_type,
-            transfer_ownership_pdu.pdu_header.pdu_type
-        );
-        assert_eq!(
-            pdu_header.protocol_family,
-            transfer_ownership_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, transfer_ownership_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            transfer_ownership_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
+    }
+
+    #[test]
+    fn cast_to_any() {
+        let pdu = TransferOwnershipPdu::new();
+        let any_pdu = pdu.as_any();
+
+        assert!(any_pdu.is::<TransferOwnershipPdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut transfer_ownership_pdu = TransferOwnershipPdu::default();
-        let mut buffer = BytesMut::new();
-        transfer_ownership_pdu.serialize(&mut buffer);
+        let mut pdu = TransferOwnershipPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_transfer_ownership_pdu = TransferOwnershipPdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_transfer_ownership_pdu.pdu_header,
-            transfer_ownership_pdu.pdu_header
-        );
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = TransferOwnershipPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 256 / 8;
+        let pdu = TransferOwnershipPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

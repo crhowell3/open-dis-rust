@@ -10,6 +10,7 @@ use std::any::Any;
 use crate::common::{
     SerializedLength,
     clock_time::ClockTime,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     enums::{FrozenBehavior, PduType, ProtocolFamily, Reason},
@@ -60,9 +61,12 @@ impl Pdu for StopFreezePdu {
         &mut self.pdu_header
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
@@ -71,6 +75,7 @@ impl Pdu for StopFreezePdu {
         buf.put_u8(self.frozen_behavior.as_u8());
         buf.put_u16(self._padding);
         buf.put_u32(self.request_id);
+        Ok(())
     }
 
     fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>

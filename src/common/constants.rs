@@ -9,6 +9,7 @@
 /// Maximum PDU size in bytes as defined by the DIS standard
 pub const MAX_PDU_SIZE_OCTETS: usize = 8192;
 pub const MAX_PDU_SIZE_BITS: usize = 65_536;
+pub const BITS_PER_BYTE: u16 = 8;
 
 /// PDU header size in bytes
 pub const PDU_HEADER_SIZE: usize = 12;
@@ -18,11 +19,6 @@ pub const MAX_ARTICULATION_PARAMS: usize = 64;
 
 /// Maximum size of entity marking string
 pub const MAX_ENTITY_MARKING_LENGTH: usize = 32;
-
-/// Protocol version constants
-pub const PROTOCOL_VERSION_1995: u8 = 3;
-pub const PROTOCOL_VERSION_1998: u8 = 4;
-pub const PROTOCOL_VERSION_2012: u8 = 7;
 
 #[must_use]
 /// Compile-time PDU size validation
@@ -40,15 +36,6 @@ pub const fn total_pdu_size(payload_size: usize) -> usize {
 /// Compile-time string length validation for entity marking
 pub const fn validate_marking_length(len: usize) -> bool {
     len <= MAX_ENTITY_MARKING_LENGTH
-}
-
-#[must_use]
-/// Compile-time protocol version validation
-pub const fn is_valid_protocol_version(version: u8) -> bool {
-    matches!(
-        version,
-        PROTOCOL_VERSION_1995 | PROTOCOL_VERSION_1998 | PROTOCOL_VERSION_2012
-    )
 }
 
 #[cfg(test)]
@@ -73,14 +60,5 @@ mod tests {
         assert!(validate_marking_length(31));
         assert!(validate_marking_length(MAX_ENTITY_MARKING_LENGTH));
         assert!(!validate_marking_length(MAX_ENTITY_MARKING_LENGTH + 1));
-    }
-
-    #[test]
-    fn test_protocol_version_validation() {
-        assert!(is_valid_protocol_version(PROTOCOL_VERSION_1995));
-        assert!(is_valid_protocol_version(PROTOCOL_VERSION_1998));
-        assert!(is_valid_protocol_version(PROTOCOL_VERSION_2012));
-        assert!(!is_valid_protocol_version(0));
-        assert!(!is_valid_protocol_version(255));
     }
 }

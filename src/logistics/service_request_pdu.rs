@@ -7,7 +7,10 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use crate::common::{dis_error::DISError, entity_id::EntityId, pdu::Pdu, pdu_header::PduHeader};
+use crate::common::{
+    constants::MAX_PDU_SIZE_OCTETS, dis_error::DISError, entity_id::EntityId, pdu::Pdu,
+    pdu_header::PduHeader,
+};
 
 use super::data_types::supply_quantity::SupplyQuantity;
 
@@ -38,9 +41,12 @@ impl Default for ServiceRequestPdu {
 }
 
 impl Pdu for ServiceRequestPdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         self.servicing_entity_id.serialize(buf);
@@ -50,6 +56,7 @@ impl Pdu for ServiceRequestPdu {
         for i in 0..self.supplies.len() {
             self.supplies[i].serialize(buf);
         }
+        Ok(())
     }
 
     fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>

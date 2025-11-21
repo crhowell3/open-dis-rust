@@ -9,6 +9,7 @@ use std::any::Any;
 
 use crate::common::{
     ClockTime,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::EntityType,
@@ -85,9 +86,12 @@ impl Pdu for GriddedDataPdu {
         &mut self.pdu_header
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.environmental_simulation_id.serialize(buf);
         buf.put_u16(self.field_number);
@@ -109,6 +113,7 @@ impl Pdu for GriddedDataPdu {
         for i in 0..self.grid_data_list.len() {
             self.grid_data_list[i].serialize(buf);
         }
+        Ok(())
     }
 
     fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>

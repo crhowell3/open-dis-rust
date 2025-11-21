@@ -6,6 +6,7 @@
 use crate::{
     common::{
         EntityCoordinateVector, WorldCoordinate,
+        constants::MAX_PDU_SIZE_OCTETS,
         dis_error::DISError,
         entity_id::EntityId,
         enums::{
@@ -113,9 +114,12 @@ impl Pdu for TransmitterPdu {
         &mut self.pdu_header
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.entity_id.serialize(buf);
         buf.put_u16(self.radio_id);
@@ -145,6 +149,7 @@ impl Pdu for TransmitterPdu {
         for i in 0..self.number_of_variable_transmitter_parameters_records as usize {
             self.variable_transmitter_parameters[i].serialize(buf);
         }
+        Ok(())
     }
 
     fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>

@@ -8,8 +8,9 @@ use crate::common::{
     datum_records::{FixedDatumRecord, VariableDatumRecord},
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{PduType, ProtocolFamily},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
@@ -79,87 +80,33 @@ impl Pdu for DataPdu {
         }
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::Data {
-            let originating_entity_id = EntityId::deserialize(&mut buffer);
-            let receiving_entity_id = EntityId::deserialize(&mut buffer);
-            let request_id = buffer.get_u32();
-            let padding = buffer.get_u32();
-            let number_of_fixed_datum_records = buffer.get_u32();
-            let number_of_variable_datum_records = buffer.get_u32();
-            let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
-            fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
-            for _record in 0..number_of_fixed_datum_records as usize {
-                fixed_datum_records.push(FixedDatumRecord::deserialize(&mut buffer));
-            }
-            let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
-            variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
-            for _record in 0..number_of_variable_datum_records as usize {
-                variable_datum_records.push(VariableDatumRecord::deserialize(&mut buffer));
-            }
-
-            Ok(DataPdu {
-                pdu_header,
-                originating_entity_id,
-                receiving_entity_id,
-                request_id,
-                padding,
-                number_of_fixed_datum_records,
-                number_of_variable_datum_records,
-                fixed_datum_records,
-                variable_datum_records,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!("Expected PDU type Data, got {:?}", pdu_header.pdu_type),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::Data {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type Data, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::deserialize(&mut buffer);
-        let receiving_entity_id = EntityId::deserialize(&mut buffer);
-        let request_id = buffer.get_u32();
-        let padding = buffer.get_u32();
-        let number_of_fixed_datum_records = buffer.get_u32();
-        let number_of_variable_datum_records = buffer.get_u32();
-        let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
-        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
-        for _record in 0..number_of_fixed_datum_records as usize {
-            fixed_datum_records.push(FixedDatumRecord::deserialize(&mut buffer));
-        }
-        let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
-        variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
-        for _record in 0..number_of_variable_datum_records as usize {
-            variable_datum_records.push(VariableDatumRecord::deserialize(&mut buffer));
-        }
-
-        Ok(DataPdu {
-            pdu_header,
-            originating_entity_id,
-            receiving_entity_id,
-            request_id,
-            padding,
-            number_of_fixed_datum_records,
-            number_of_variable_datum_records,
-            fixed_datum_records,
-            variable_datum_records,
-        })
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 }
 
@@ -181,58 +128,85 @@ impl DataPdu {
         pdu.finalize();
         pdu
     }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let originating_entity_id = EntityId::deserialize(buf);
+        let receiving_entity_id = EntityId::deserialize(buf);
+        let request_id = buf.get_u32();
+        let padding = buf.get_u32();
+        let number_of_fixed_datum_records = buf.get_u32();
+        let number_of_variable_datum_records = buf.get_u32();
+        let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
+        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap_or_default());
+        for _record in 0..number_of_fixed_datum_records as usize {
+            fixed_datum_records.push(FixedDatumRecord::deserialize(buf));
+        }
+        let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
+        variable_datum_records.reserve(
+            number_of_variable_datum_records
+                .try_into()
+                .unwrap_or_default(),
+        );
+        for _record in 0..number_of_variable_datum_records as usize {
+            variable_datum_records.push(VariableDatumRecord::deserialize(buf));
+        }
+
+        DataPdu {
+            pdu_header: PduHeader::default(),
+            originating_entity_id,
+            receiving_entity_id,
+            request_id,
+            padding,
+            number_of_fixed_datum_records,
+            number_of_variable_datum_records,
+            fixed_datum_records,
+            variable_datum_records,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::DataPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType},
-    };
-    use bytes::BytesMut;
+    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let data_pdu = DataPdu::new();
+        let pdu = DataPdu::new();
         let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            data_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(pdu_header.exercise_id, data_pdu.pdu_header.exercise_id);
-        assert_eq!(pdu_header.pdu_type, data_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            data_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, data_pdu.pdu_header.length);
-        assert_eq!(pdu_header.status_record, data_pdu.pdu_header.status_record);
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
     }
 
     #[test]
     fn cast_to_any() {
-        let action_request_pdu = DataPdu::default();
-        let any_pdu = action_request_pdu.as_any();
+        let pdu = DataPdu::new();
+        let any_pdu = pdu.as_any();
 
         assert!(any_pdu.is::<DataPdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut data_pdu = DataPdu::default();
-        let mut buffer = BytesMut::new();
-        data_pdu.serialize(&mut buffer);
+        let mut pdu = DataPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_data_pdu = DataPdu::deserialize(buffer).unwrap();
-        assert_eq!(new_data_pdu.pdu_header, data_pdu.pdu_header);
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = DataPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
 
     #[test]
-    fn create_new_pdu() {
-        let data_pdu = DataPdu::new();
-
-        assert_eq!(data_pdu.header().pdu_type, PduType::Comment);
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 320 / 8;
+        let pdu = DataPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

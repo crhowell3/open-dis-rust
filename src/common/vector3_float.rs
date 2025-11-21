@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
 /// Custom vector type containing 3 single precision fields
 pub struct Vector3Float {
@@ -173,4 +175,8 @@ mod tests {
         let unit_x = Vector3Float::unit_x();
         assert_eq!(unit_x, Vector3Float::new(1.0, 0.0, 0.0));
     }
+}
+
+impl SerializedLength for Vector3Float {
+    const LENGTH: usize = 12;
 }
