@@ -27,24 +27,9 @@ pub struct AcknowledgeReliablePdu {
 }
 
 impl Default for AcknowledgeReliablePdu {
-    /// Creates a default Acknowledge Reliable PDU with arbitrary originating and receiving
-    /// entity IDs
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Acknowledge Reliable PDU:
-    /// ```
-    /// use open_dis_rust::simulation_management_with_reliability::acknowledge_reliable_pdu::AcknowledgeReliablePdu;
-    /// let acknowledge_reliable_pdu = AcknowledgeReliablePdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         AcknowledgeReliablePdu {
-            pdu_header: PduHeader::default(
-                PduType::AcknowledgeReliable,
-                ProtocolFamily::SimulationManagementWithReliability,
-                32,
-            ),
+            pdu_header: PduHeader::default(),
             originating_entity_id: EntityId::default(1),
             receiving_entity_id: EntityId::default(2),
             acknowledge_flag: AcknowledgeFlag::default(),

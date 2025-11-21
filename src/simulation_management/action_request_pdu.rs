@@ -8,11 +8,13 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    constants::MAX_PDU_SIZE_OCTETS,
     datum_records::{FixedDatumRecord, VariableDatumRecord},
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{PduType, ProtocolFamily},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 #[derive(Clone, Debug)]
@@ -62,9 +64,12 @@ impl Pdu for ActionRequestPdu {
         &mut self.pdu_header
     }
 
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
@@ -78,92 +83,36 @@ impl Pdu for ActionRequestPdu {
         for i in 0..self.variable_datum_records.len() {
             self.variable_datum_records[i].serialize(buf);
         }
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::ActionRequest {
-            let originating_entity_id = EntityId::deserialize(&mut buffer);
-            let receiving_entity_id = EntityId::deserialize(&mut buffer);
-            let request_id = buffer.get_u32();
-            let action_id = buffer.get_u32();
-            let number_of_fixed_datum_records = buffer.get_u32();
-            let number_of_variable_datum_records = buffer.get_u32();
-            let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
-            fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
-            for _record in 0..number_of_fixed_datum_records as usize {
-                fixed_datum_records.push(FixedDatumRecord::deserialize(&mut buffer));
-            }
-            let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
-            variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
-            for _record in 0..number_of_variable_datum_records as usize {
-                variable_datum_records.push(VariableDatumRecord::deserialize(&mut buffer));
-            }
-
-            Ok(ActionRequestPdu {
-                pdu_header,
-                originating_entity_id,
-                receiving_entity_id,
-                request_id,
-                action_id,
-                number_of_fixed_datum_records,
-                number_of_variable_datum_records,
-                fixed_datum_records,
-                variable_datum_records,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!(
-                    "Expected PDU type ActionRequest, got {:?}",
-                    pdu_header.pdu_type
-                ),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::ActionRequest {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type ActionRequest, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::deserialize(&mut buffer);
-        let receiving_entity_id = EntityId::deserialize(&mut buffer);
-        let request_id = buffer.get_u32();
-        let action_id = buffer.get_u32();
-        let number_of_fixed_datum_records = buffer.get_u32();
-        let number_of_variable_datum_records = buffer.get_u32();
-        let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
-        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
-        for _record in 0..number_of_fixed_datum_records as usize {
-            fixed_datum_records.push(FixedDatumRecord::deserialize(&mut buffer));
-        }
-        let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
-        variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
-        for _record in 0..number_of_variable_datum_records as usize {
-            variable_datum_records.push(VariableDatumRecord::deserialize(&mut buffer));
-        }
-
-        Ok(ActionRequestPdu {
-            pdu_header,
-            originating_entity_id,
-            receiving_entity_id,
-            request_id,
-            action_id,
-            number_of_fixed_datum_records,
-            number_of_variable_datum_records,
-            fixed_datum_records,
-            variable_datum_records,
-        })
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 }
 
@@ -185,57 +134,81 @@ impl ActionRequestPdu {
         pdu.finalize();
         pdu
     }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let originating_entity_id = EntityId::deserialize(buf);
+        let receiving_entity_id = EntityId::deserialize(buf);
+        let request_id = buf.get_u32();
+        let action_id = buf.get_u32();
+        let number_of_fixed_datum_records = buf.get_u32();
+        let number_of_variable_datum_records = buf.get_u32();
+        let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
+        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
+        for _record in 0..number_of_fixed_datum_records as usize {
+            fixed_datum_records.push(FixedDatumRecord::deserialize(buf));
+        }
+        let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
+        variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
+        for _record in 0..number_of_variable_datum_records as usize {
+            variable_datum_records.push(VariableDatumRecord::deserialize(buf));
+        }
+
+        ActionRequestPdu {
+            pdu_header: PduHeader::default(),
+            originating_entity_id,
+            receiving_entity_id,
+            request_id,
+            action_id,
+            number_of_fixed_datum_records,
+            number_of_variable_datum_records,
+            fixed_datum_records,
+            variable_datum_records,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::ActionRequestPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::BytesMut;
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn create_header() {
-        let action_request_pdu = ActionRequestPdu::new();
+        let pdu = ActionRequestPdu::new();
         let pdu_header = PduHeader::default();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            action_request_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            action_request_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, action_request_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            action_request_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, action_request_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            action_request_pdu.pdu_header.status_record
-        );
+        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
+        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
+        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
+        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
+        assert_eq!(pdu_header.length, pdu.pdu_header.length);
+        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
     }
 
     #[test]
     fn cast_to_any() {
-        let action_request_pdu = ActionRequestPdu::default();
-        let any_pdu = action_request_pdu.as_any();
+        let pdu = ActionRequestPdu::new();
+        let any_pdu = pdu.as_any();
 
         assert!(any_pdu.is::<ActionRequestPdu>());
     }
 
     #[test]
     fn deserialize_header() {
-        let mut action_request_pdu = ActionRequestPdu::new();
-        let mut buffer = BytesMut::new();
-        action_request_pdu.serialize(&mut buffer);
+        let mut pdu = ActionRequestPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        pdu.serialize(&mut serialize_buf);
 
-        let new_action_request_pdu = ActionRequestPdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_action_request_pdu.pdu_header,
-            action_request_pdu.pdu_header
-        );
+        let mut deserialize_buf = Bytes::new();
+        let new_pdu = ActionRequestPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
+        let pdu = ActionRequestPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }
