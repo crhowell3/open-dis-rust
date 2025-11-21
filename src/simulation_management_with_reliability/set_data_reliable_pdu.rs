@@ -95,9 +95,12 @@ impl Pdu for SetDataReliablePdu {
         Self: Sized,
     {
         let header: PduHeader = PduHeader::deserialize(buf);
-        if header.pdu_type != PduType::SetData {
+        if header.pdu_type != PduType::SetDataReliable {
             return Err(DISError::invalid_header(
-                format!("Expected PDU type SetData, got {:?}", header.pdu_type),
+                format!(
+                    "Expected PDU type SetDataReliable, got {:?}",
+                    header.pdu_type
+                ),
                 None,
             ));
         }
@@ -159,6 +162,9 @@ impl SetDataReliablePdu {
                 .try_into()
                 .unwrap_or_default(),
         );
+        for _record in 0..number_of_variable_datum_records as usize {
+            variable_datum_records.push(VariableDatumRecord::deserialize(buf));
+        }
 
         SetDataReliablePdu {
             pdu_header: PduHeader::default(),
