@@ -1,4 +1,4 @@
-use open_dis_rust::common::pdu_header::ProtocolFamily;
+use open_dis_rust::common::{Pdu, enums::ProtocolFamily};
 
 #[test]
 fn create_acknowledge_pdu() {
