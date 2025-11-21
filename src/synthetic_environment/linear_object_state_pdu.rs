@@ -190,7 +190,7 @@ mod tests {
         assert!(any_pdu.is::<LinearObjectStatePdu>());
     }
     #[test]
-    fn deserialize_header() {
+    fn serialize_then_deserialize() {
         let mut pdu = LinearObjectStatePdu::default();
         let mut serialize_buf = BytesMut::new();
         pdu.serialize(&mut serialize_buf);

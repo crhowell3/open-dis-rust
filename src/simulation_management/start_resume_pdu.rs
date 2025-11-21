@@ -154,7 +154,7 @@ mod tests {
     }
 
     #[test]
-    fn deserialize_header() {
+    fn serialize_then_deserialize() {
         let mut pdu = StartResumePdu::new();
         let mut serialize_buf = BytesMut::new();
         pdu.serialize(&mut serialize_buf);

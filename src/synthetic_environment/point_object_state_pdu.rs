@@ -209,7 +209,7 @@ mod tests {
     use bytes::BytesMut;
 
     #[test]
-    fn deserialize_header() {
+    fn serialize_then_deserialize() {
         let mut pdu = PointObjectStatePdu::default();
         let mut serialize_buf = BytesMut::new();
         let _ = pdu.serialize(&mut serialize_buf);
