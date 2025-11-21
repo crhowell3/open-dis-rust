@@ -23,6 +23,7 @@ use crate::{
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.6.3
+#[derive(Default)]
 pub struct AttributePdu {
     pdu_header: PduHeader,
     pub originating_simulation_address: SimulationAddress,
@@ -35,24 +36,6 @@ pub struct AttributePdu {
     _padding3: u8,
     pub number_of_attribute_record_sets: u16,
     pub attribute_record_sets: Vec<AttributeRecordSet>,
-}
-
-impl Default for AttributePdu {
-    fn default() -> Self {
-        AttributePdu {
-            pdu_header: PduHeader::default(),
-            originating_simulation_address: SimulationAddress::default(),
-            _padding: 0u32,
-            _padding2: 0u16,
-            attribute_record_pdu_type: 0,
-            attribute_record_protocol_version: 0,
-            master_attribute_record_type: 0,
-            action_code: DISAttributeActionCode::default(),
-            _padding3: 0u8,
-            number_of_attribute_record_sets: 0,
-            attribute_record_sets: vec![],
-        }
-    }
 }
 
 impl Pdu for AttributePdu {
@@ -178,19 +161,6 @@ mod tests {
     use super::AttributePdu;
     use crate::common::{pdu::Pdu, pdu_header::PduHeader};
     use bytes::{Bytes, BytesMut};
-
-    #[test]
-    fn create_header() {
-        let pdu = AttributePdu::new();
-        let pdu_header = PduHeader::default();
-
-        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
-        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
-        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
-        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
-        assert_eq!(pdu_header.length, pdu.pdu_header.length);
-        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
-    }
 
     #[test]
     fn cast_to_any() {

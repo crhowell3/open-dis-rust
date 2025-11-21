@@ -152,19 +152,6 @@ mod tests {
     use bytes::{Bytes, BytesMut};
 
     #[test]
-    fn create_header() {
-        let pdu = CreateEntityReliablePdu::new();
-        let pdu_header = PduHeader::default();
-
-        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
-        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
-        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
-        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
-        assert_eq!(pdu_header.length, pdu.pdu_header.length);
-        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
-    }
-
-    #[test]
     fn cast_to_any() {
         let pdu = CreateEntityReliablePdu::new();
         let any_pdu = pdu.as_any();

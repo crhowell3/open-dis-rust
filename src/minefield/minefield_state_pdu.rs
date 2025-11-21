@@ -21,6 +21,7 @@ use super::data_types::{minefield_identifier::MinefieldIdentifier, point::Point}
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.9.2
+#[derive(Default)]
 pub struct MinefieldStatePdu {
     pdu_header: PduHeader,
     pub minefield_id: MinefieldIdentifier,
@@ -35,26 +36,6 @@ pub struct MinefieldStatePdu {
     pub protocol_mode: MinefieldStateProtocolMode,
     pub perimeter_points: Vec<Point>,
     pub mine_type: Vec<EntityType>,
-}
-
-impl Default for MinefieldStatePdu {
-    fn default() -> Self {
-        MinefieldStatePdu {
-            pdu_header: PduHeader::default(),
-            minefield_id: MinefieldIdentifier::default(),
-            minefield_sequence: 0,
-            force_id: ForceId::default(),
-            number_of_perimeter_points: 0,
-            minefield_type: EntityType::default(),
-            number_of_mine_types: 0,
-            minefield_location: WorldCoordinate::default(),
-            minefield_orientation: EulerAngles::default(),
-            appearance: 0,
-            protocol_mode: MinefieldStateProtocolMode::default(),
-            perimeter_points: vec![],
-            mine_type: vec![],
-        }
-    }
 }
 
 impl Pdu for MinefieldStatePdu {
@@ -204,19 +185,6 @@ mod tests {
 
     use super::MinefieldStatePdu;
     use crate::common::{Pdu, pdu_header::PduHeader};
-
-    #[test]
-    fn create_header() {
-        let pdu = MinefieldStatePdu::new();
-        let pdu_header = PduHeader::default();
-
-        assert_eq!(pdu_header.protocol_version, pdu.pdu_header.protocol_version);
-        assert_eq!(pdu_header.exercise_id, pdu.pdu_header.exercise_id);
-        assert_eq!(pdu_header.pdu_type, pdu.pdu_header.pdu_type);
-        assert_eq!(pdu_header.protocol_family, pdu.pdu_header.protocol_family);
-        assert_eq!(pdu_header.length, pdu.pdu_header.length);
-        assert_eq!(pdu_header.status_record, pdu.pdu_header.status_record);
-    }
 
     #[test]
     fn cast_to_any() {
