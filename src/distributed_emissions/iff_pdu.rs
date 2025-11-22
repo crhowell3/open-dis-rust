@@ -45,7 +45,7 @@ impl Default for IFFPdu {
     fn default() -> Self {
         IFFPdu {
             pdu_header: PduHeader::default(),
-            emitting_entity_id: EntityId::default(1),
+            emitting_entity_id: EntityId::default(),
             event_id: EventId::default(1),
             relative_antenna_location: EntityCoordinateVector::default(),
             system_id: SystemId::default(),
@@ -194,8 +194,8 @@ impl IFFPdu {
 #[cfg(test)]
 mod tests {
     use super::IFFPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 604 / 8;
+        const DEFAULT_LENGTH: u16 = 604 / BITS_PER_BYTE;
         let pdu = IFFPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

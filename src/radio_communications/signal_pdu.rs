@@ -32,7 +32,7 @@ impl Default for SignalPdu {
     fn default() -> Self {
         SignalPdu {
             pdu_header: PduHeader::default(),
-            entity_id: EntityId::default(1),
+            entity_id: EntityId::default(),
             radio_id: 0,
             encoding_scheme: 0,
             tdl_type: SignalTDLType::default(),
@@ -164,8 +164,8 @@ impl SignalPdu {
 #[cfg(test)]
 mod tests {
     use super::SignalPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -188,7 +188,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / 8;
+        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
         let pdu = SignalPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

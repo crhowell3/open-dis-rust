@@ -159,8 +159,8 @@ impl AttributePdu {
 #[cfg(test)]
 mod tests {
     use super::AttributePdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -183,7 +183,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / 8;
+        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
         let pdu = AttributePdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

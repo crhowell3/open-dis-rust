@@ -41,22 +41,12 @@ pub struct DetonationPdu {
 }
 
 impl Default for DetonationPdu {
-    /// Creates a default Detonation PDU with arbitrary firing entity ID and target entity ID
-    ///
-    /// # Examples
-    ///
-    /// Initializing a Detonation PDU:
-    /// ```
-    /// use open_dis_rust::warfare::detonation_pdu::DetonationPdu;
-    /// let detonation_pdu = DetonationPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         DetonationPdu {
             pdu_header: PduHeader::default(),
-            firing_entity_id: EntityId::default(1),
-            target_entity_id: EntityId::default(2),
-            exploding_entity_id: EntityId::default(3),
+            firing_entity_id: EntityId::default(),
+            target_entity_id: EntityId::default(),
+            exploding_entity_id: EntityId::default(),
             event_id: EventId::default(1),
             velocity: LinearVelocity::default(),
             location_in_world_coordinates: WorldCoordinate::default(),
@@ -206,7 +196,7 @@ impl DetonationPdu {
 mod tests {
     use super::DetonationPdu;
     use crate::common::pdu::Pdu;
-    use bytes::{Bytes, BytesMut};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -218,7 +208,7 @@ mod tests {
 
     #[test]
     fn serialize_then_deserialize() {
-        let mut pdu = DetonationPdu::default();
+        let mut pdu = DetonationPdu::new();
         let mut serialize_buf = BytesMut::new();
         let _ = pdu.serialize(&mut serialize_buf);
 

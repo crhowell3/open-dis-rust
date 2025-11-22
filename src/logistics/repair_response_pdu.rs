@@ -32,8 +32,8 @@ impl Default for RepairResponsePdu {
     fn default() -> Self {
         RepairResponsePdu {
             pdu_header: PduHeader::default(),
-            receiving_entity_id: EntityId::default(1),
-            repairing_entity_id: EntityId::default(2),
+            receiving_entity_id: EntityId::default(),
+            repairing_entity_id: EntityId::default(),
             repair_result: RepairResponseRepairResult::default(),
             _padding: 0_u8,
             _padding2: 0_u16,
@@ -144,8 +144,8 @@ impl RepairResponsePdu {
 #[cfg(test)]
 mod tests {
     use super::RepairResponsePdu;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

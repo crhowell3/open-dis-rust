@@ -43,9 +43,9 @@ impl Default for DesignatorPdu {
     fn default() -> Self {
         DesignatorPdu {
             pdu_header: PduHeader::default(),
-            designating_entity_id: EntityId::default(1),
+            designating_entity_id: EntityId::default(),
             code_name: DesignatorSystemName::default(),
-            designated_entity_id: EntityId::default(2),
+            designated_entity_id: EntityId::default(),
             designator_code: DesignatorCode::default(),
             designator_power: 0.0,
             designator_wavelength: 0.0,
@@ -192,8 +192,8 @@ impl DesignatorPdu {
 #[cfg(test)]
 mod tests {
     use super::DesignatorPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -216,7 +216,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 704 / 8;
+        const DEFAULT_LENGTH: u16 = 704 / BITS_PER_BYTE;
         let pdu = DesignatorPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

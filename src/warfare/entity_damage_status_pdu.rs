@@ -33,7 +33,7 @@ impl Default for EntityDamageStatusPdu {
     fn default() -> Self {
         EntityDamageStatusPdu {
             pdu_header: PduHeader::default(),
-            damaged_entity_id: EntityId::default(3),
+            damaged_entity_id: EntityId::default(),
             _padding: 0u16,
             _padding2: 0u16,
             number_of_damage_descriptions: 0,
@@ -153,7 +153,7 @@ impl EntityDamageStatusPdu {
 mod tests {
     use super::EntityDamageStatusPdu;
     use crate::common::pdu::Pdu;
-    use bytes::{Bytes, BytesMut};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -165,7 +165,7 @@ mod tests {
 
     #[test]
     fn serialize_then_deserialize() {
-        let mut pdu = EntityDamageStatusPdu::default();
+        let mut pdu = EntityDamageStatusPdu::new();
         let mut serialize_buf = BytesMut::new();
         let _ = pdu.serialize(&mut serialize_buf);
 

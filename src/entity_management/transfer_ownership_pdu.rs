@@ -42,7 +42,7 @@ impl Default for TransferOwnershipPdu {
             request_id: 0,
             required_reliability_service: 0,
             transfer_type: 0,
-            transfer_entity_id: EntityId::default(1),
+            transfer_entity_id: EntityId::default(),
             record_information: RecordSpecification::default(),
         }
     }
@@ -158,8 +158,8 @@ impl TransferOwnershipPdu {
 #[cfg(test)]
 mod tests {
     use super::TransferOwnershipPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / 8;
+        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
         let pdu = TransferOwnershipPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

@@ -33,7 +33,7 @@ impl Default for IntercomSignalPdu {
     fn default() -> Self {
         IntercomSignalPdu {
             pdu_header: PduHeader::default(),
-            intercom_reference_id: EntityId::default(1),
+            intercom_reference_id: EntityId::default(),
             intercom_number: 0,
             encoding_scheme: 0,
             tdl_type: SignalTDLType::default(),

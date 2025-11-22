@@ -8,48 +8,61 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
-    SerializedLength,
+    ClockTime, EntityCoordinateVector, EntityType, EventId, SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
-    enums::{PduType, ProtocolFamily},
+    enums::{DEFirePulseShape, PduType, ProtocolFamily},
     pdu::Pdu,
     pdu_header::PduHeader,
 };
 
 use super::data_types::directed_energy_damage::DirectedEnergyDamage;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.3.4
 pub struct DirectedEnergyFirePdu {
     pdu_header: PduHeader,
     pub firing_entity_id: EntityId,
-    pub target_entity_id: EntityId,
-    pub damaged_entity_id: EntityId,
-    _padding: u16,
-    _padding2: u16,
-    pub number_of_damage_descriptions: u16,
+    pub event_id: EventId,
+    pub munition_type: EntityType,
+    pub shot_start_time: ClockTime,
+    pub cumulative_shot_time: f32,
+    pub aperture_emitter_location: EntityCoordinateVector,
+    pub aperture_diameter: f32,
+    pub wavelength: f32,
+    _padding: u32,
+    pub pulse_repetition_frequency: f32,
+    pub pulse_width: f32,
+    pub flags: u16,
+    pub pulse_shape: DEFirePulseShape,
+    _padding2: u8,
+    _padding3: u32,
+    _padding4: u16,
+    pub number_of_de_records: u16,
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
-}
-
-impl Default for DirectedEnergyFirePdu {
-    fn default() -> Self {
-        DirectedEnergyFirePdu {
-            pdu_header: PduHeader::default(),
-            firing_entity_id: EntityId::default(1),
-            target_entity_id: EntityId::default(2),
-            damaged_entity_id: EntityId::default(3),
-            _padding: 0u16,
-            _padding2: 0u16,
-            number_of_damage_descriptions: 0,
-            damage_descriptions: vec![],
-        }
-    }
 }
 
 impl Pdu for DirectedEnergyFirePdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + EntityId::LENGTH + 2 + 2 + 2;
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH
+            + EventId::LENGTH
+            + EntityType::LENGTH
+            + ClockTime::LENGTH
+            + 4
+            + EntityCoordinateVector::LENGTH
+            + 4
+            + 4
+            + 4
+            + 4
+            + 4
+            + 2
+            + 1
+            + 1
+            + 4
+            + 2
+            + 2;
 
         length as u16
     }
@@ -71,11 +84,22 @@ impl Pdu for DirectedEnergyFirePdu {
         })?;
         self.pdu_header.serialize(buf);
         self.firing_entity_id.serialize(buf);
-        self.target_entity_id.serialize(buf);
-        self.damaged_entity_id.serialize(buf);
-        buf.put_u16(self._padding);
-        buf.put_u16(self._padding2);
-        buf.put_u16(self.number_of_damage_descriptions);
+        self.event_id.serialize(buf);
+        self.munition_type.serialize(buf);
+        self.shot_start_time.serialize(buf);
+        buf.put_f32(self.cumulative_shot_time);
+        self.aperture_emitter_location.serialize(buf);
+        buf.put_f32(self.aperture_diameter);
+        buf.put_f32(self.wavelength);
+        buf.put_u32(self._padding);
+        buf.put_f32(self.pulse_repetition_frequency);
+        buf.put_f32(self.pulse_width);
+        buf.put_u16(self.flags);
+        buf.put_u8(self.pulse_shape as u8);
+        buf.put_u8(self._padding2);
+        buf.put_u32(self._padding3);
+        buf.put_u16(self._padding4);
+        buf.put_u16(self.number_of_de_records);
         for i in 0..self.damage_descriptions.len() {
             self.damage_descriptions[i].serialize(buf);
         }
@@ -138,24 +162,46 @@ impl DirectedEnergyFirePdu {
 
     fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
         let firing_entity_id = EntityId::deserialize(buf);
-        let target_entity_id = EntityId::deserialize(buf);
-        let damaged_entity_id = EntityId::deserialize(buf);
-        let _padding = buf.get_u16();
-        let _padding2 = buf.get_u16();
-        let number_of_damage_descriptions = buf.get_u16();
+        let event_id = EventId::deserialize(buf);
+        let munition_type = EntityType::deserialize(buf);
+        let shot_start_time = ClockTime::deserialize(buf);
+        let cumulative_shot_time = buf.get_f32();
+        let aperture_emitter_location = EntityCoordinateVector::deserialize(buf);
+        let aperture_diameter = buf.get_f32();
+        let wavelength = buf.get_f32();
+        let _padding = buf.get_u32();
+        let pulse_repetition_frequency = buf.get_f32();
+        let pulse_width = buf.get_f32();
+        let flags = buf.get_u16();
+        let pulse_shape = DEFirePulseShape::deserialize(buf);
+        let _padding2 = buf.get_u8();
+        let _padding3 = buf.get_u32();
+        let _padding4 = buf.get_u16();
+        let number_of_de_records = buf.get_u16();
         let mut damage_descriptions: Vec<DirectedEnergyDamage> = vec![];
-        for _ in 0..number_of_damage_descriptions {
+        for _ in 0..number_of_de_records {
             damage_descriptions.push(DirectedEnergyDamage::deserialize(buf));
         }
 
         DirectedEnergyFirePdu {
             pdu_header: PduHeader::default(),
             firing_entity_id,
-            target_entity_id,
-            damaged_entity_id,
+            event_id,
+            munition_type,
+            shot_start_time,
+            cumulative_shot_time,
+            aperture_emitter_location,
+            aperture_diameter,
+            wavelength,
             _padding,
+            pulse_repetition_frequency,
+            pulse_width,
+            flags,
+            pulse_shape,
             _padding2,
-            number_of_damage_descriptions,
+            _padding3,
+            _padding4,
+            number_of_de_records,
             damage_descriptions,
         }
     }
@@ -164,7 +210,7 @@ impl DirectedEnergyFirePdu {
 #[cfg(test)]
 mod tests {
     use super::DirectedEnergyFirePdu;
-    use crate::common::pdu::Pdu;
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
     use bytes::BytesMut;
 
     #[test]
@@ -188,7 +234,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 384 / 8;
+        const DEFAULT_LENGTH: u16 = 704 / BITS_PER_BYTE;
         let pdu = DirectedEnergyFirePdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

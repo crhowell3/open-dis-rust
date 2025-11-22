@@ -42,7 +42,7 @@ impl Default for MinefieldQueryPdu {
         MinefieldQueryPdu {
             pdu_header: PduHeader::default(),
             minefield_id: MinefieldIdentifier::default(),
-            requesting_entity_id: EntityId::default(2),
+            requesting_entity_id: EntityId::default(),
             request_id: 0,
             number_of_perimeter_points: 0,
             _padding: 0u8,
@@ -188,8 +188,8 @@ impl MinefieldQueryPdu {
 #[cfg(test)]
 mod tests {
     use super::MinefieldQueryPdu;
-    use crate::common::{Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 576 / 8;
+        const DEFAULT_LENGTH: u16 = 576 / BITS_PER_BYTE;
         let pdu = MinefieldQueryPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

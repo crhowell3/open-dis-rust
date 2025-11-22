@@ -36,8 +36,8 @@ impl Default for StartResumeReliablePdu {
     fn default() -> Self {
         StartResumeReliablePdu {
             pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(1),
-            receiving_entity_id: EntityId::default(2),
+            originating_entity_id: EntityId::default(),
+            receiving_entity_id: EntityId::default(),
             real_world_time: ClockTime::default(),
             simulation_time: ClockTime::default(),
             required_reliability_service: RequiredReliabilityService::default(),
@@ -161,8 +161,8 @@ impl StartResumeReliablePdu {
 #[cfg(test)]
 mod tests {
     use super::StartResumeReliablePdu;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

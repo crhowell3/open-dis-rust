@@ -32,8 +32,8 @@ impl Default for AcknowledgePdu {
     fn default() -> Self {
         AcknowledgePdu {
             pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(1),
-            receiving_entity_id: EntityId::default(2),
+            originating_entity_id: EntityId::default(),
+            receiving_entity_id: EntityId::default(),
             acknowledge_flag: AcknowledgeFlag::default(),
             response_flag: AcknowledgeResponseFlag::default(),
             request_id: 0,
@@ -141,8 +141,8 @@ impl AcknowledgePdu {
 #[cfg(test)]
 mod tests {
     use super::AcknowledgePdu;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

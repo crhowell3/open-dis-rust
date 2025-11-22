@@ -35,8 +35,8 @@ impl Default for ResupplyReceivedPdu {
     fn default() -> Self {
         ResupplyReceivedPdu {
             pdu_header: PduHeader::default(),
-            receiving_entity_id: EntityId::default(1),
-            supplying_entity_id: EntityId::default(2),
+            receiving_entity_id: EntityId::default(),
+            supplying_entity_id: EntityId::default(),
             number_of_supply_types: 0,
             _padding: 0,
             _padding2: 0,
@@ -156,8 +156,8 @@ impl ResupplyReceivedPdu {
 #[cfg(test)]
 mod tests {
     use super::ResupplyReceivedPdu;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

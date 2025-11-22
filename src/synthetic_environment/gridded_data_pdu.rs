@@ -49,7 +49,7 @@ impl Default for GriddedDataPdu {
     fn default() -> Self {
         GriddedDataPdu {
             pdu_header: PduHeader::default(),
-            environmental_simulation_id: EntityId::default(0),
+            environmental_simulation_id: EntityId::default(),
             field_number: 0,
             pdu_number: 0,
             pdu_total: 0,
@@ -214,8 +214,8 @@ impl GriddedDataPdu {
 #[cfg(test)]
 mod tests {
     use super::GriddedDataPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::pdu::Pdu;
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -227,7 +227,7 @@ mod tests {
 
     #[test]
     fn serialize_then_deserialize() {
-        let mut pdu = GriddedDataPdu::default();
+        let mut pdu = GriddedDataPdu::new();
         let mut serialize_buf = BytesMut::new();
         pdu.serialize(&mut serialize_buf);
 

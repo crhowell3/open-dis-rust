@@ -35,7 +35,7 @@ impl Default for ElectromagneticEmissionsPdu {
     fn default() -> Self {
         ElectromagneticEmissionsPdu {
             pdu_header: PduHeader::default(),
-            emitting_entity_id: EntityId::default(1),
+            emitting_entity_id: EntityId::default(),
             event_id: EventId::default(1),
             state_update_indicator: EEAttributeStateIndicator::default(),
             number_of_systems: 0u8,
@@ -163,8 +163,8 @@ impl ElectromagneticEmissionsPdu {
 #[cfg(test)]
 mod tests {
     use super::ElectromagneticEmissionsPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / 8;
+        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
         let pdu = ElectromagneticEmissionsPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

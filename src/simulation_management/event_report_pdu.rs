@@ -35,8 +35,8 @@ impl Default for EventReportPdu {
     fn default() -> Self {
         Self {
             pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(1),
-            receiving_entity_id: EntityId::default(2),
+            originating_entity_id: EntityId::default(),
+            receiving_entity_id: EntityId::default(),
             event_type: EventType::Other,
             _padding: 0,
             number_of_fixed_datum_records: 0,
@@ -169,8 +169,8 @@ impl EventReportPdu {
 #[cfg(test)]
 mod tests {
     use super::EventReportPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -193,7 +193,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 320 / 8;
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
         let pdu = EventReportPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

@@ -34,7 +34,7 @@ impl Default for IsGroupOfPdu {
     fn default() -> Self {
         IsGroupOfPdu {
             pdu_header: PduHeader::default(),
-            group_entity_id: EntityId::default(1),
+            group_entity_id: EntityId::default(),
             grouped_entity_category: IsGroupOfGroupedEntityCategory::default(),
             number_of_grouped_entities: 0,
             _padding: 0,
@@ -155,8 +155,8 @@ impl IsGroupOfPdu {
 #[cfg(test)]
 mod tests {
     use super::IsGroupOfPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -179,7 +179,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 320 / 8;
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
         let pdu = IsGroupOfPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

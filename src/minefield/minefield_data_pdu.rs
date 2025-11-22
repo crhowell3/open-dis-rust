@@ -58,7 +58,7 @@ impl Default for MinefieldDataPdu {
         MinefieldDataPdu {
             pdu_header: PduHeader::default(),
             minefield_id: MinefieldIdentifier::default(),
-            requesting_entity_id: EntityId::default(2),
+            requesting_entity_id: EntityId::default(),
             minefield_sequence_number: 0,
             request_id: 0,
             pdu_sequence_number: 0,
@@ -268,10 +268,9 @@ impl MinefieldDataPdu {
 
 #[cfg(test)]
 mod tests {
-    use bytes::{Bytes, BytesMut};
-
     use super::MinefieldDataPdu;
-    use crate::common::Pdu;
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -294,7 +293,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 352 / 8;
+        const DEFAULT_LENGTH: u16 = 352 / BITS_PER_BYTE;
         let pdu = MinefieldDataPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

@@ -36,7 +36,7 @@ impl Default for EnvironmentalProcessPdu {
     fn default() -> Self {
         EnvironmentalProcessPdu {
             pdu_header: PduHeader::default(),
-            environmental_process_id: EntityId::default(1),
+            environmental_process_id: EntityId::default(),
             environment_type: EntityType::default(),
             model_type: 0,
             environment_status: 0,
@@ -164,8 +164,8 @@ impl EnvironmentalProcessPdu {
 #[cfg(test)]
 mod tests {
     use super::EnvironmentalProcessPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::pdu::Pdu;
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

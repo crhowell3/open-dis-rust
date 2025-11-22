@@ -181,10 +181,9 @@ impl MinefieldStatePdu {
 
 #[cfg(test)]
 mod tests {
-    use bytes::{Bytes, BytesMut};
-
     use super::MinefieldStatePdu;
-    use crate::common::{Pdu, pdu_header::PduHeader};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -207,7 +206,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 576 / 8;
+        const DEFAULT_LENGTH: u16 = 576 / BITS_PER_BYTE;
         let pdu = MinefieldStatePdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

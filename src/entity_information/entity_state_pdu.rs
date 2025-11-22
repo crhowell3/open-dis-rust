@@ -48,7 +48,7 @@ impl Default for EntityStatePdu {
     fn default() -> Self {
         EntityStatePdu {
             pdu_header: PduHeader::default(),
-            entity_id: EntityId::default(2),
+            entity_id: EntityId::default(),
             force_id: ForceId::default(),
             number_of_articulation_parameters: 0,
             entity_type: EntityType::default(),
@@ -187,8 +187,8 @@ impl EntityStatePdu {
 #[cfg(test)]
 mod tests {
     use super::EntityStatePdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -211,7 +211,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 1152 / 8;
+        const DEFAULT_LENGTH: u16 = 1152 / BITS_PER_BYTE;
         let pdu = EntityStatePdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

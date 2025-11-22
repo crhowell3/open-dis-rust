@@ -5,7 +5,7 @@
 
 use crate::{
     common::{
-        EntityCoordinateVector, WorldCoordinate,
+        EntityCoordinateVector, SerializedLength, WorldCoordinate,
         constants::MAX_PDU_SIZE_OCTETS,
         dis_error::DISError,
         entity_id::EntityId,
@@ -58,7 +58,7 @@ impl Default for TransmitterPdu {
     fn default() -> Self {
         TransmitterPdu {
             pdu_header: PduHeader::default(),
-            entity_id: EntityId::default(1),
+            entity_id: EntityId::default(),
             radio_id: 0u16,
             radio_entity_type: RadioEntityType::default(),
             transmit_state: TransmitterTransmitState::default(),
@@ -86,8 +86,8 @@ impl Default for TransmitterPdu {
 
 impl Pdu for TransmitterPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>()
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH
             + std::mem::size_of::<u16>() * 5
             + std::mem::size_of::<RadioEntityType>()
             + std::mem::size_of::<TransmitterTransmitState>()
@@ -260,8 +260,8 @@ impl TransmitterPdu {
 #[cfg(test)]
 mod tests {
     use super::TransmitterPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -284,7 +284,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 832 / 8;
+        const DEFAULT_LENGTH: u16 = 832 / BITS_PER_BYTE;
         let pdu = TransmitterPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

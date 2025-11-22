@@ -54,7 +54,7 @@ impl Default for AggregateStatePdu {
     fn default() -> Self {
         AggregateStatePdu {
             pdu_header: PduHeader::default(),
-            aggregate_id: EntityId::default(1),
+            aggregate_id: EntityId::default(),
             force_id: 0,
             aggregate_state: 0,
             aggregate_type: EntityType::default(),
@@ -255,8 +255,8 @@ impl AggregateStatePdu {
 #[cfg(test)]
 mod tests {
     use super::AggregateStatePdu;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

@@ -4,6 +4,7 @@
 //     Licensed under the BSD-2-Clause License
 
 use crate::common::{
+    SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -31,12 +32,12 @@ impl Default for ReceiverPdu {
     fn default() -> Self {
         ReceiverPdu {
             pdu_header: PduHeader::default(),
-            entity_id: EntityId::default(1),
+            entity_id: EntityId::default(),
             radio_id: 0,
             receiver_state: ReceiverReceiverState::default(),
             _padding: 0u16,
             received_power: 0.0,
-            transmitter_radio_reference_id: EntityId::default(2),
+            transmitter_radio_reference_id: EntityId::default(),
             transmitter_radio_id: 0,
         }
     }
@@ -44,8 +45,8 @@ impl Default for ReceiverPdu {
 
 impl Pdu for ReceiverPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 2
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH * 2
             + std::mem::size_of::<u16>() * 3
             + std::mem::size_of::<ReceiverReceiverState>()
             + std::mem::size_of::<f32>();
@@ -151,8 +152,8 @@ impl ReceiverPdu {
 #[cfg(test)]
 mod tests {
     use super::ReceiverPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -175,7 +176,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / 8;
+        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
         let pdu = ReceiverPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

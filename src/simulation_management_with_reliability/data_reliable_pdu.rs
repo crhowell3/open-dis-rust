@@ -37,8 +37,8 @@ impl Default for DataReliablePdu {
     fn default() -> Self {
         DataReliablePdu {
             pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(1),
-            receiving_entity_id: EntityId::default(2),
+            originating_entity_id: EntityId::default(),
+            receiving_entity_id: EntityId::default(),
             request_id: 0,
             required_reliability_service: RequiredReliabilityService::default(),
             _padding: 0,
@@ -182,8 +182,8 @@ impl DataReliablePdu {
 #[cfg(test)]
 mod tests {
     use super::DataReliablePdu;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

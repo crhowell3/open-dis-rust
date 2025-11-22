@@ -39,9 +39,9 @@ impl Default for FirePdu {
     fn default() -> Self {
         FirePdu {
             pdu_header: PduHeader::default(),
-            firing_entity_id: EntityId::default(1),
-            target_entity_id: EntityId::default(2),
-            munition_expendable_id: EntityId::default(3),
+            firing_entity_id: EntityId::default(),
+            target_entity_id: EntityId::default(),
+            munition_expendable_id: EntityId::default(),
             event_id: EventId::default(1),
             fire_mission_index: 0,
             location_in_world_coordinates: WorldCoordinate::default(),
@@ -172,7 +172,7 @@ impl FirePdu {
 mod tests {
     use super::FirePdu;
     use crate::common::pdu::Pdu;
-    use bytes::{Bytes, BytesMut};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -184,7 +184,7 @@ mod tests {
 
     #[test]
     fn serialize_then_deserialize() {
-        let mut pdu = FirePdu::default();
+        let mut pdu = FirePdu::new();
         let mut serialize_buf = BytesMut::new();
         let _ = pdu.serialize(&mut serialize_buf);
 

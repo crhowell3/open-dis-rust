@@ -19,7 +19,7 @@ impl AttributeRecordSet {
     #[must_use]
     pub fn new() -> Self {
         Self {
-            entity_id: EntityId::default(0),
+            entity_id: EntityId::default(),
             number_of_attribute_records: 0u16,
             attribute_records: vec![],
         }

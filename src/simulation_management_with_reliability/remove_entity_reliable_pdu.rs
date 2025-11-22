@@ -33,8 +33,8 @@ impl Default for RemoveEntityReliablePdu {
     fn default() -> Self {
         RemoveEntityReliablePdu {
             pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(1),
-            receiving_entity_id: EntityId::default(2),
+            originating_entity_id: EntityId::default(),
+            receiving_entity_id: EntityId::default(),
             required_reliability_service: RequiredReliabilityService::default(),
             _padding: 0,
             _padding2: 0,
@@ -149,8 +149,8 @@ impl RemoveEntityReliablePdu {
 #[cfg(test)]
 mod tests {
     use super::RemoveEntityReliablePdu;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

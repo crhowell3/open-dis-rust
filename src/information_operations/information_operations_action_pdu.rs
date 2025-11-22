@@ -53,8 +53,8 @@ impl Default for InformationOperationsActionPdu {
             io_action_type: IOActionIOActionType::default(),
             io_action_phase: IOActionIOActionPhase::default(),
             _padding: 0u32,
-            io_attacker_entity_id: EntityId::default(3),
-            io_primary_target_entity_id: EntityId::default(4),
+            io_attacker_entity_id: EntityId::default(),
+            io_primary_target_entity_id: EntityId::default(),
             _padding2: 0u16,
             io_records: StandardVariableSpecification::default(),
         }
@@ -194,8 +194,8 @@ impl InformationOperationsActionPdu {
 #[cfg(test)]
 mod tests {
     use super::InformationOperationsActionPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 448 / 8;
+        const DEFAULT_LENGTH: u16 = 448 / BITS_PER_BYTE;
         let pdu = InformationOperationsActionPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

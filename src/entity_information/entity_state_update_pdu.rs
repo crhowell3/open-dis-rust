@@ -41,7 +41,7 @@ impl Default for EntityStateUpdatePdu {
     fn default() -> Self {
         EntityStateUpdatePdu {
             pdu_header: PduHeader::default(),
-            entity_id: EntityId::default(1),
+            entity_id: EntityId::default(),
             _padding: 0,
             number_of_variable_parameters: 0,
             entity_linear_velocity: LinearVelocity::default(),
@@ -176,8 +176,8 @@ impl EntityStateUpdatePdu {
 #[cfg(test)]
 mod tests {
     use super::EntityStateUpdatePdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -200,7 +200,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 576 / 8;
+        const DEFAULT_LENGTH: u16 = 576 / BITS_PER_BYTE;
         let pdu = EntityStateUpdatePdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

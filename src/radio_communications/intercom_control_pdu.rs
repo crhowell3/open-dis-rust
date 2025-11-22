@@ -42,13 +42,13 @@ impl Default for IntercomControlPdu {
             pdu_header: PduHeader::default(),
             control_type: IntercomControlControlType::default(),
             communications_channel_type: 0,
-            source_entity_id: EntityId::default(2),
+            source_entity_id: EntityId::default(),
             source_communications_device_id: 0,
             source_line_id: 0,
             transmit_priority: 0,
             transmit_line_state: IntercomControlTransmitLineState::default(),
             command: IntercomControlCommand::default(),
-            master_intercom_number: EntityId::default(3),
+            master_intercom_number: EntityId::default(),
             master_communications_device_id: 0,
             intercom_parameters_length: 0,
             intercom_parameters: vec![],
@@ -188,8 +188,8 @@ impl IntercomControlPdu {
 #[cfg(test)]
 mod tests {
     use super::IntercomControlPdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 320 / 8;
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
         let pdu = IntercomControlPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

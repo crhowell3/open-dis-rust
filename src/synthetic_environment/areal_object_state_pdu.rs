@@ -43,8 +43,8 @@ impl Default for ArealObjectStatePdu {
     fn default() -> Self {
         ArealObjectStatePdu {
             pdu_header: PduHeader::default(),
-            object_id: EntityId::default(1),
-            referenced_object_id: EntityId::default(2),
+            object_id: EntityId::default(),
+            referenced_object_id: EntityId::default(),
             update_number: 0,
             force_id: ForceId::default(),
             modifications: 0,
@@ -198,8 +198,8 @@ impl ArealObjectStatePdu {
 #[cfg(test)]
 mod tests {
     use super::ArealObjectStatePdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::pdu::Pdu;
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

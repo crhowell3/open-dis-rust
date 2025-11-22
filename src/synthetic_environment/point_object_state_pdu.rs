@@ -45,8 +45,8 @@ impl Default for PointObjectStatePdu {
     fn default() -> Self {
         PointObjectStatePdu {
             pdu_header: PduHeader::default(),
-            object_id: EntityId::default(1),
-            referenced_object_id: EntityId::default(2),
+            object_id: EntityId::default(),
+            referenced_object_id: EntityId::default(),
             update_number: 0,
             force_id: ForceId::default(),
             modifications: 0,

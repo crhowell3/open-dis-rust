@@ -17,7 +17,7 @@ pub struct TrackJamTarget {
 impl Default for TrackJamTarget {
     fn default() -> Self {
         TrackJamTarget {
-            track_jam: EntityId::default(1),
+            track_jam: EntityId::default(),
             emitter_id: 0,
             beam_id: 0,
         }

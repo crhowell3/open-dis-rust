@@ -35,8 +35,8 @@ impl Default for ServiceRequestPdu {
     fn default() -> Self {
         ServiceRequestPdu {
             pdu_header: PduHeader::default(),
-            receiving_entity_id: EntityId::default(1),
-            servicing_entity_id: EntityId::default(2),
+            receiving_entity_id: EntityId::default(),
+            servicing_entity_id: EntityId::default(),
             service_type_requested: ServiceRequestServiceTypeRequested::default(),
             number_of_supply_types: 0,
             _padding: 0,
@@ -156,8 +156,8 @@ impl ServiceRequestPdu {
 #[cfg(test)]
 mod tests {
     use super::ServiceRequestPdu;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

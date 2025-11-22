@@ -35,8 +35,8 @@ impl Default for EventReportReliablePdu {
     fn default() -> Self {
         EventReportReliablePdu {
             pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(1),
-            receiving_entity_id: EntityId::default(2),
+            originating_entity_id: EntityId::default(),
+            receiving_entity_id: EntityId::default(),
             event_type: EventType::default(),
             _padding: 0,
             number_of_fixed_datum_records: 0,
@@ -176,7 +176,7 @@ impl EventReportReliablePdu {
 mod tests {
     use super::EventReportReliablePdu;
     use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::{Bytes, BytesMut};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {

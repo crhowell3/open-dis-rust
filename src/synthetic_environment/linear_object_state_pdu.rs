@@ -40,8 +40,8 @@ impl Default for LinearObjectStatePdu {
     fn default() -> Self {
         LinearObjectStatePdu {
             pdu_header: PduHeader::default(),
-            object_id: EntityId::default(1),
-            referenced_object_id: EntityId::default(2),
+            object_id: EntityId::default(),
+            referenced_object_id: EntityId::default(),
             update_number: 0,
             force_id: ForceId::default(),
             number_of_segments: 0,
@@ -179,8 +179,8 @@ impl LinearObjectStatePdu {
 #[cfg(test)]
 mod tests {
     use super::LinearObjectStatePdu;
-    use crate::common::{pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::pdu::Pdu;
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
@@ -191,7 +191,7 @@ mod tests {
     }
     #[test]
     fn serialize_then_deserialize() {
-        let mut pdu = LinearObjectStatePdu::default();
+        let mut pdu = LinearObjectStatePdu::new();
         let mut serialize_buf = BytesMut::new();
         pdu.serialize(&mut serialize_buf);
 

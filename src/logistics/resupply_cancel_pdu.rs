@@ -29,8 +29,8 @@ impl Default for ResupplyCancelPdu {
     fn default() -> Self {
         ResupplyCancelPdu {
             pdu_header: PduHeader::default(),
-            receiving_entity_id: EntityId::default(1),
-            supplying_entity_id: EntityId::default(2),
+            receiving_entity_id: EntityId::default(),
+            supplying_entity_id: EntityId::default(),
         }
     }
 }
@@ -129,8 +129,8 @@ impl ResupplyCancelPdu {
 #[cfg(test)]
 mod tests {
     use super::ResupplyCancelPdu;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu, pdu_header::PduHeader};
-    use bytes::{Bytes, BytesMut};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
     fn cast_to_any() {
