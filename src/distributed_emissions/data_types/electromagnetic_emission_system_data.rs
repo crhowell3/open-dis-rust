@@ -28,7 +28,7 @@ impl ElectromagneticEmissionSystemData {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> ElectromagneticEmissionSystemData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> ElectromagneticEmissionSystemData {
         let system_data_length = buf.get_u8();
         let number_of_beams = buf.get_u8();
         let emissions_padding2 = buf.get_u16();

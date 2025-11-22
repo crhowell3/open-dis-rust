@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Clone, Debug, Default)]
 pub struct ObjectType {
     pub domain: u8,
@@ -31,7 +33,7 @@ impl ObjectType {
         buf.put_u8(self.subcategory);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> ObjectType {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> ObjectType {
         ObjectType {
             domain: buf.get_u8(),
             object_kind: buf.get_u8(),
@@ -39,4 +41,8 @@ impl ObjectType {
             subcategory: buf.get_u8(),
         }
     }
+}
+
+impl SerializedLength for ObjectType {
+    const LENGTH: usize = 4;
 }

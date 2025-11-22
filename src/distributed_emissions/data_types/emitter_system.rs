@@ -40,7 +40,7 @@ impl EmitterSystem {
     }
 
     #[must_use]
-    pub fn deserialize(buf: &mut BytesMut) -> EmitterSystem {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EmitterSystem {
         EmitterSystem {
             emitter_name: EmitterName::deserialize(buf),
             function: EmitterSystemFunction::deserialize(buf),

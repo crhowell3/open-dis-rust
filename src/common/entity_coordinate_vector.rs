@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.96
 pub struct EntityCoordinateVector {
@@ -33,11 +35,15 @@ impl EntityCoordinateVector {
         buf.put_f32(self.z_coordinate);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EntityCoordinateVector {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityCoordinateVector {
         EntityCoordinateVector {
             x_coordinate: buf.get_f32(),
             y_coordinate: buf.get_f32(),
             z_coordinate: buf.get_f32(),
         }
     }
+}
+
+impl SerializedLength for EntityCoordinateVector {
+    const LENGTH: usize = 12;
 }

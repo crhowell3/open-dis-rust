@@ -4,7 +4,7 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{BufMut, BytesMut};
+use bytes::{Buf, BufMut, BytesMut};
 
 use crate::common::{
     angular_velocity_vector::AngularVelocity, enums::DeadReckoningAlgorithm,
@@ -41,7 +41,7 @@ impl DeadReckoningParameters {
         self.entity_angular_velocity.serialize(buf);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> DeadReckoningParameters {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> DeadReckoningParameters {
         DeadReckoningParameters {
             dead_reckoning_algorithm: DeadReckoningAlgorithm::deserialize(buf),
             dead_reckoning_other_parameters: 0,

@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 pub struct LinearVelocity {
     pub first_vector_component: f32,
@@ -28,11 +30,15 @@ impl LinearVelocity {
         buf.put_f32(self.third_vector_component);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> LinearVelocity {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> LinearVelocity {
         LinearVelocity {
             first_vector_component: buf.get_f32(),
             second_vector_component: buf.get_f32(),
             third_vector_component: buf.get_f32(),
         }
     }
+}
+
+impl SerializedLength for LinearVelocity {
+    const LENGTH: usize = 12;
 }

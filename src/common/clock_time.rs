@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.14
 pub struct ClockTime {
@@ -29,10 +31,14 @@ impl ClockTime {
         buf.put_u32(self.time_past_hour);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> ClockTime {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> ClockTime {
         ClockTime {
             hour: buf.get_u32(),
             time_past_hour: buf.get_u32(),
         }
     }
+}
+
+impl SerializedLength for ClockTime {
+    const LENGTH: usize = 8;
 }

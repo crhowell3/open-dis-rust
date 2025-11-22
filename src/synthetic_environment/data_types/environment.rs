@@ -31,7 +31,7 @@ impl Environment {
         buf.put_u8(self.padding);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> Environment {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Environment {
         Environment {
             environment_type: buf.get_u32(),
             length: buf.get_u16(),

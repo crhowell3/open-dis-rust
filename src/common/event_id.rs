@@ -3,6 +3,8 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+use crate::common::SerializedLength;
+
 use super::simulation_address::SimulationAddress;
 
 use bytes::{Buf, BufMut, BytesMut};
@@ -35,10 +37,14 @@ impl EventId {
         buf.put_u16(self.event_identifier);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EventId {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EventId {
         EventId {
             simulation_address: SimulationAddress::deserialize(buf),
             event_identifier: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for EventId {
+    const LENGTH: usize = SimulationAddress::LENGTH + 2;
 }

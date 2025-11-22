@@ -32,7 +32,7 @@ impl StandardVariableSpecification {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> StandardVariableSpecification {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> StandardVariableSpecification {
         let number_of_standard_variable_records = buf.get_u16();
         let mut standard_variable_records: Vec<StandardVariableRecords> = vec![];
         for _i in 0..number_of_standard_variable_records {

@@ -44,7 +44,7 @@ impl AcousticBeamFundamentalParameter {
         buf.put_f32(self.de_beamwidth);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> AcousticBeamFundamentalParameter {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> AcousticBeamFundamentalParameter {
         AcousticBeamFundamentalParameter {
             active_emission_parameter_index: buf.get_u16(),
             scan_pattern: buf.get_u16(),

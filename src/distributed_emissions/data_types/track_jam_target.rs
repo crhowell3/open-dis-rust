@@ -17,7 +17,7 @@ pub struct TrackJamTarget {
 impl Default for TrackJamTarget {
     fn default() -> Self {
         TrackJamTarget {
-            track_jam: EntityId::default(1),
+            track_jam: EntityId::default(),
             emitter_id: 0,
             beam_id: 0,
         }
@@ -31,7 +31,7 @@ impl TrackJamTarget {
         buf.put_u8(self.beam_id);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> TrackJamTarget {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> TrackJamTarget {
         TrackJamTarget {
             track_jam: EntityId::deserialize(buf),
             emitter_id: buf.get_u8(),

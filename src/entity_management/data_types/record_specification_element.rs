@@ -44,7 +44,7 @@ impl RecordSpecificationElement {
         buf.put_u8(self.pad);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> RecordSpecificationElement {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> RecordSpecificationElement {
         RecordSpecificationElement {
             record_id: buf.get_u32(),
             record_set_serial_number: buf.get_u32(),

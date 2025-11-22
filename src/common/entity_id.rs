@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+use crate::common::SerializedLength;
+
 use super::simulation_address::SimulationAddress;
 use bytes::{Buf, BufMut, BytesMut};
 
@@ -26,10 +28,10 @@ impl EntityId {
     }
 
     #[must_use]
-    pub fn default(entity_id: u16) -> Self {
+    pub fn default() -> Self {
         EntityId {
             simulation_address: SimulationAddress::default(),
-            entity_id,
+            entity_id: 0,
         }
     }
 
@@ -38,17 +40,21 @@ impl EntityId {
         buf.put_u16(self.entity_id);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EntityId {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityId {
         EntityId {
             simulation_address: EntityId::deserialize_simulation_address(buf),
             entity_id: buf.get_u16(),
         }
     }
 
-    fn deserialize_simulation_address(buf: &mut BytesMut) -> SimulationAddress {
+    fn deserialize_simulation_address<B: Buf>(buf: &mut B) -> SimulationAddress {
         SimulationAddress {
             site_id: buf.get_u16(),
             application_id: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for EntityId {
+    const LENGTH: usize = 6;
 }

@@ -3,7 +3,10 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::enums::{Country, EntityKind};
+use crate::common::{
+    SerializedLength,
+    enums::{Country, EntityKind},
+};
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Copy, Clone, Default, Debug, PartialEq)]
@@ -49,7 +52,7 @@ impl EntityType {
         buf.put_u8(self.extra);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EntityType {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityType {
         EntityType {
             kind: EntityKind::deserialize(buf),
             domain: buf.get_u8(),
@@ -60,4 +63,8 @@ impl EntityType {
             extra: buf.get_u8(),
         }
     }
+}
+
+impl SerializedLength for EntityType {
+    const LENGTH: usize = 8;
 }

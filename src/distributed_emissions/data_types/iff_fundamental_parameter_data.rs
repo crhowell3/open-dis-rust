@@ -64,7 +64,7 @@ impl IFFFundamentalParameterData {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> IFFFundamentalParameterData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> IFFFundamentalParameterData {
         let erp = buf.get_f32();
         let frequency = buf.get_f32();
         let pgrf = buf.get_f32();

@@ -58,7 +58,9 @@ mod udp {
     async fn send(writer: &UdpSocket) -> Result<(), io::Error> {
         let mut bytes = BytesMut::new();
         let mut ack_pdu = AcknowledgePdu::default();
-        ack_pdu.serialize(&mut bytes);
+        let _ = ack_pdu
+            .serialize(&mut bytes)
+            .map_err(|_| io::ErrorKind::InvalidData);
         writer.send(&bytes[..]).await?;
 
         Ok(())
@@ -70,7 +72,7 @@ mod udp {
             let n = reader.recv(&mut buf[..]).await?;
 
             if n > 0 {
-                dbg!(AcknowledgePdu::deserialize(BytesMut::from(buf.as_slice())).unwrap());
+                dbg!(AcknowledgePdu::deserialize(&mut BytesMut::from(buf.as_slice())).unwrap());
                 break;
             }
         }

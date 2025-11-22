@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Clone, Debug, Default)]
 pub struct NamedLocation {
     pub station_name: u16,
@@ -25,10 +27,14 @@ impl NamedLocation {
         buf.put_u16(self.station_number);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> NamedLocation {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> NamedLocation {
         NamedLocation {
             station_name: buf.get_u16(),
             station_number: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for NamedLocation {
+    const LENGTH: usize = 4;
 }
