@@ -8,7 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
-    ClockTime,
+    ClockTime, SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -71,9 +71,21 @@ impl Default for GriddedDataPdu {
 
 impl Pdu for GriddedDataPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 3
-            + std::mem::size_of::<u16>() * 3;
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH
+            + 2
+            + 2
+            + 2
+            + 2
+            + 1
+            + 1
+            + EntityType::LENGTH
+            + EulerAngles::LENGTH
+            + ClockTime::LENGTH
+            + 4
+            + 1
+            + 1
+            + 2;
 
         length as u16
     }
@@ -214,7 +226,7 @@ impl GriddedDataPdu {
 #[cfg(test)]
 mod tests {
     use super::GriddedDataPdu;
-    use crate::common::pdu::Pdu;
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
     use bytes::BytesMut;
 
     #[test]
@@ -238,7 +250,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 512 / 8;
+        const DEFAULT_LENGTH: u16 = 512 / BITS_PER_BYTE;
         let pdu = GriddedDataPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

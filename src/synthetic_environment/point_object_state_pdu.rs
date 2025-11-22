@@ -210,7 +210,7 @@ mod tests {
 
     #[test]
     fn serialize_then_deserialize() {
-        let mut pdu = PointObjectStatePdu::default();
+        let mut pdu = PointObjectStatePdu::new();
         let mut serialize_buf = BytesMut::new();
         let _ = pdu.serialize(&mut serialize_buf);
 

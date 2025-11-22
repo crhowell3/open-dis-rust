@@ -48,7 +48,7 @@ impl Default for StopFreezePdu {
 
 impl Pdu for StopFreezePdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + EntityId::LENGTH * 2; // TODO(@anyone): Get length
+        let length = PduHeader::LENGTH + EntityId::LENGTH + ClockTime::LENGTH + 1 + 1 + 2 + 4;
 
         length as u16
     }
@@ -176,7 +176,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
         let pdu = StopFreezePdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

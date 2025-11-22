@@ -8,6 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -27,8 +28,8 @@ pub struct EnvironmentalProcessPdu {
     pub environment_type: EntityType,
     pub model_type: u8,
     pub environment_status: u8,
-    pub number_of_environment_records: u8,
-    pub sequence_number: u8,
+    pub number_of_environment_records: u16,
+    pub sequence_number: u16,
     pub environment_records: Vec<Environment>,
 }
 
@@ -49,10 +50,7 @@ impl Default for EnvironmentalProcessPdu {
 
 impl Pdu for EnvironmentalProcessPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>()
-            + std::mem::size_of::<EntityType>()
-            + std::mem::size_of::<u8>() * 4;
+        let length = PduHeader::LENGTH + EntityId::LENGTH + EntityType::LENGTH + 1 + 1 + 2 + 2;
 
         length as u16
     }
@@ -76,8 +74,8 @@ impl Pdu for EnvironmentalProcessPdu {
         self.environment_type.serialize(buf);
         buf.put_u8(self.model_type);
         buf.put_u8(self.environment_status);
-        buf.put_u8(self.number_of_environment_records);
-        buf.put_u8(self.sequence_number);
+        buf.put_u16(self.number_of_environment_records);
+        buf.put_u16(self.sequence_number);
         for i in 0..self.environment_records.len() {
             self.environment_records[i].serialize(buf);
         }
@@ -89,10 +87,10 @@ impl Pdu for EnvironmentalProcessPdu {
         Self: Sized,
     {
         let header: PduHeader = PduHeader::deserialize(buf);
-        if header.pdu_type != PduType::DirectedEnergyFire {
+        if header.pdu_type != PduType::EnvironmentalProcess {
             return Err(DISError::invalid_header(
                 format!(
-                    "Expected PDU type DirectedEnergyFire, got {:?}",
+                    "Expected PDU type EnvironmentalProcess, got {:?}",
                     header.pdu_type
                 ),
                 None,
@@ -141,8 +139,8 @@ impl EnvironmentalProcessPdu {
         let environment_type = EntityType::deserialize(buf);
         let model_type = buf.get_u8();
         let environment_status = buf.get_u8();
-        let number_of_environment_records = buf.get_u8();
-        let sequence_number = buf.get_u8();
+        let number_of_environment_records = buf.get_u16();
+        let sequence_number = buf.get_u16();
         let mut environment_records: Vec<Environment> = vec![];
         for _i in 0..number_of_environment_records {
             environment_records.push(Environment::deserialize(buf));

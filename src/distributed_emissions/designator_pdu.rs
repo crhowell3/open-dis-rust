@@ -10,7 +10,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
-    EntityCoordinateVector, LinearAcceleration, WorldCoordinate,
+    EntityCoordinateVector, LinearAcceleration, SerializedLength, WorldCoordinate,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -61,13 +61,13 @@ impl Default for DesignatorPdu {
 
 impl Pdu for DesignatorPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 2
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH * 2
             + std::mem::size_of::<DesignatorSystemName>()
             + std::mem::size_of::<DesignatorCode>()
             + std::mem::size_of::<f32>() * 2
-            + std::mem::size_of::<EntityCoordinateVector>()
-            + std::mem::size_of::<WorldCoordinate>()
+            + EntityCoordinateVector::LENGTH
+            + WorldCoordinate::LENGTH
             + std::mem::size_of::<DeadReckoningAlgorithm>()
             + std::mem::size_of::<u8>()
             + std::mem::size_of::<u16>()

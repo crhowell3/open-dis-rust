@@ -5,6 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
+    SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     datum_records::{FixedDatumRecord, VariableDatumRecord},
     dis_error::DISError,
@@ -49,11 +50,9 @@ impl Default for ActionResponsePdu {
 
 impl Pdu for ActionResponsePdu {
     fn length(&self) -> u16 {
-        std::mem::size_of::<PduHeader>() as u16
-            + std::mem::size_of::<EntityId>() as u16 * 2
-            + std::mem::size_of::<u32>() as u16
-            + std::mem::size_of::<ActionResponseRequestStatus>() as u16
-            + std::mem::size_of::<u32>() as u16 * 2
+        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 4 + 4 + 4 + 4;
+
+        length as u16
     }
 
     fn header(&self) -> &PduHeader {

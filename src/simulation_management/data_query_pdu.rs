@@ -192,7 +192,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
         let pdu = DataQueryPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

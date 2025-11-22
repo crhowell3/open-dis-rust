@@ -141,7 +141,7 @@ impl LinearObjectStatePdu {
     ///
     pub fn new() -> Self {
         let mut pdu = Self::default();
-        pdu.pdu_header.pdu_type = PduType::DirectedEnergyFire;
+        pdu.pdu_header.pdu_type = PduType::LinearObjectState;
         pdu.pdu_header.protocol_family = ProtocolFamily::SyntheticEnvironment;
         pdu.finalize();
         pdu

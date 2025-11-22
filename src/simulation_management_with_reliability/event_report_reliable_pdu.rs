@@ -49,7 +49,7 @@ impl Default for EventReportReliablePdu {
 
 impl Pdu for EventReportReliablePdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 1 + 4 + 4 + 4;
+        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 4 + 4 + 4 + 4;
 
         length as u16
     }

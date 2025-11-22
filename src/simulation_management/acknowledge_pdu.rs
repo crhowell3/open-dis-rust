@@ -43,7 +43,7 @@ impl Default for AcknowledgePdu {
 
 impl Pdu for AcknowledgePdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 1 + 1 + 4;
+        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 2 + 2 + 4;
 
         length as u16
     }

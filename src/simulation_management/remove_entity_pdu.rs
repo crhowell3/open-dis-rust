@@ -108,7 +108,7 @@ impl RemoveEntityPdu {
     ///
     pub fn new() -> Self {
         let mut pdu = Self::default();
-        pdu.pdu_header.pdu_type = PduType::SetData;
+        pdu.pdu_header.pdu_type = PduType::RemoveEntity;
         pdu.pdu_header.protocol_family = ProtocolFamily::SimulationManagement;
         pdu.finalize();
         pdu
