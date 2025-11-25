@@ -106,11 +106,11 @@ impl Pdu for RecordQueryReliablePdu {
 
 impl RecordQueryReliablePdu {
     #[must_use]
-    /// Creates an RecordQueryReliable PDU
+    /// Creates a `RecordQueryReliablePdu`
     ///
     /// # Examples
     ///
-    /// Initializing an RecordQueryReliable PDU:
+    /// Initializing a `RecordQueryReliablePdu`:
     /// ```
     /// use open_dis_rust::simulation_management_with_reliability::RecordQueryReliablePdu;
     /// let mut pdu = RecordQueryReliablePdu::new();

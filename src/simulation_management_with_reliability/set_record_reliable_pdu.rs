@@ -105,11 +105,11 @@ impl Pdu for SetRecordReliablePdu {
 
 impl SetRecordReliablePdu {
     #[must_use]
-    /// Creates an SetRecordReliable PDU
+    /// Creates a `SetRecordReliablePdu`
     ///
     /// # Examples
     ///
-    /// Initializing an SetRecordReliable PDU:
+    /// Initializing a `SetRecordReliablePdu`:
     /// ```
     /// use open_dis_rust::simulation_management_with_reliability::SetRecordReliablePdu;
     /// let mut acknowledge_pdu = SetRecordReliablePdu::new();

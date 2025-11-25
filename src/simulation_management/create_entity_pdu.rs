@@ -89,11 +89,11 @@ impl Pdu for CreateEntityPdu {
 
 impl CreateEntityPdu {
     #[must_use]
-    /// Creates a CreateEntity PDU
+    /// Creates a `CreateEntityPdu`
     ///
     /// # Examples
     ///
-    /// Initializing an CreateEntity PDU:
+    /// Initializing a `CreateEntityPdu`:
     /// ```
     /// use open_dis_rust::simulation_management::CreateEntityPdu;
     /// let mut create_entity_pdu = CreateEntityPdu::new();

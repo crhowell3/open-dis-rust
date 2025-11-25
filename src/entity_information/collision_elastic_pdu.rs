@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+#![allow(clippy::similar_names)]
+
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 

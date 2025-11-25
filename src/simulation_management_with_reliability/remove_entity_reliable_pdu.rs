@@ -98,11 +98,11 @@ impl Pdu for RemoveEntityReliablePdu {
 
 impl RemoveEntityReliablePdu {
     #[must_use]
-    /// Creates a RemoveEntityReliable PDU
+    /// Creates a `RemoveEntityReliablePdu`
     ///
     /// # Examples
     ///
-    /// Initializing a RemoveEntityReliable PDU:
+    /// Initializing a `RemoveEntityReliablePdu`:
     /// ```
     /// use open_dis_rust::simulation_management_with_reliability::RemoveEntityReliablePdu;
     /// let mut pdu = RemoveEntityReliablePdu::new();

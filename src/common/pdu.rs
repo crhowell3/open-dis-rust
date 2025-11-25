@@ -9,6 +9,9 @@ use bytes::{Buf, BytesMut};
 use std::any::Any;
 
 pub trait Pdu {
+    /// # Errors
+    ///
+    /// Will return `DISError` if the calculated PDU length is greater than the maximum allowed size
     fn length(&self) -> Result<u16, DISError>;
 
     fn header(&self) -> &PduHeader;
@@ -20,6 +23,10 @@ pub trait Pdu {
         self.header_mut().length = len.unwrap_or_default();
     }
 
+    /// # Errors
+    ///
+    /// Will return `DISError` if serialization fails, especially if the dynamically calculated PDU
+    /// length is greater than the maximum allowed size
     fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError>;
 
     /// # Errors

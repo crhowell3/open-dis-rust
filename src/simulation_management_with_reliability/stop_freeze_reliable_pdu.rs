@@ -104,11 +104,11 @@ impl Pdu for StopFreezeReliablePdu {
 
 impl StopFreezeReliablePdu {
     #[must_use]
-    /// Creates an StopFreezeReliable PDU
+    /// Creates a `StopFreezeReliablePdu`
     ///
     /// # Examples
     ///
-    /// Initializing an StopFreezeReliable PDU:
+    /// Initializing a `StopFreezeReliablePdu`:
     /// ```
     /// use open_dis_rust::simulation_management_with_reliability::StopFreezeReliablePdu;
     /// let mut pdu = StopFreezeReliablePdu::new();

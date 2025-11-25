@@ -104,11 +104,11 @@ impl Pdu for StartResumeReliablePdu {
 
 impl StartResumeReliablePdu {
     #[must_use]
-    /// Creates an StartResumeReliable PDU
+    /// Creates a `StartResumeReliablePdu`
     ///
     /// # Examples
     ///
-    /// Initializing an StartResumeReliable PDU:
+    /// Initializing a `StartResumeReliablePdu`:
     /// ```
     /// use open_dis_rust::simulation_management_with_reliability::StartResumeReliablePdu;
     /// let mut acknowledge_pdu = StartResumeReliablePdu::new();
