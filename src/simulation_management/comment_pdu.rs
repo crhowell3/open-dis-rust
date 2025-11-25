@@ -29,12 +29,15 @@ pub struct CommentPdu {
 }
 
 impl Pdu for CommentPdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = std::mem::size_of::<PduHeader>()
             + std::mem::size_of::<EntityId>() * 2
             + std::mem::size_of::<u32>() * 2;
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

@@ -34,11 +34,14 @@ pub struct TransferOwnershipPdu {
 }
 
 impl Pdu for TransferOwnershipPdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length =
             PduHeader::LENGTH + SimulationAddress::LENGTH * 2 + 4 + 1 + 1 + EntityId::LENGTH;
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

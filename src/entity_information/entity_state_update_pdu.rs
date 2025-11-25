@@ -38,7 +38,7 @@ pub struct EntityStateUpdatePdu {
 }
 
 impl Pdu for EntityStateUpdatePdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
             + EntityId::LENGTH
             + 1
@@ -48,7 +48,10 @@ impl Pdu for EntityStateUpdatePdu {
             + EulerAngles::LENGTH
             + 4;
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

@@ -53,7 +53,7 @@ impl Default for FirePdu {
 }
 
 impl Pdu for FirePdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
             + EntityId::LENGTH * 3
             + std::mem::size_of::<EventId>()
@@ -63,7 +63,10 @@ impl Pdu for FirePdu {
             + std::mem::size_of::<LinearVelocity>()
             + std::mem::size_of::<f32>();
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

@@ -55,7 +55,7 @@ pub struct TransmitterPdu {
 }
 
 impl Pdu for TransmitterPdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
             + EntityId::LENGTH +
             std::mem::size_of::<u16>() + // radio_id
@@ -78,7 +78,10 @@ impl Pdu for TransmitterPdu {
             std::mem::size_of::<u16>() + // padding2
             1 + 1;
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

@@ -9,7 +9,7 @@ use bytes::{Buf, BytesMut};
 use std::any::Any;
 
 pub trait Pdu {
-    fn length(&self) -> u16;
+    fn length(&self) -> Result<u16, DISError>;
 
     fn header(&self) -> &PduHeader;
 
@@ -17,7 +17,7 @@ pub trait Pdu {
 
     fn finalize(&mut self) {
         let len = self.length();
-        self.header_mut().length = len;
+        self.header_mut().length = len.unwrap_or_default();
     }
 
     fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError>;

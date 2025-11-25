@@ -39,14 +39,17 @@ pub struct AttributePdu {
 }
 
 impl Pdu for AttributePdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
             + SimulationAddress::LENGTH
             + std::mem::size_of::<u8>() * 4
             + std::mem::size_of::<u16>() * 2
             + std::mem::size_of::<u32>() * 2;
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

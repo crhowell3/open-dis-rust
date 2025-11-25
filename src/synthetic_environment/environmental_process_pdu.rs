@@ -34,10 +34,13 @@ pub struct EnvironmentalProcessPdu {
 }
 
 impl Pdu for EnvironmentalProcessPdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH + EntityId::LENGTH + EntityType::LENGTH + 1 + 1 + 2 + 2;
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

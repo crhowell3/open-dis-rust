@@ -60,7 +60,7 @@ impl Default for DesignatorPdu {
 }
 
 impl Pdu for DesignatorPdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
             + EntityId::LENGTH * 2
             + std::mem::size_of::<u8>() * 2
@@ -70,7 +70,10 @@ impl Pdu for DesignatorPdu {
             + WorldCoordinate::LENGTH
             + LinearAcceleration::LENGTH;
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

@@ -61,7 +61,7 @@ impl Default for DetonationPdu {
 }
 
 impl Pdu for DetonationPdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = std::mem::size_of::<PduHeader>()
             + std::mem::size_of::<EntityId>() * 3
             + std::mem::size_of::<EventId>()
@@ -73,7 +73,10 @@ impl Pdu for DetonationPdu {
             + std::mem::size_of::<u8>()
             + std::mem::size_of::<u16>();
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

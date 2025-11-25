@@ -61,14 +61,17 @@ impl Default for UnderwaterAcousticPdu {
 }
 
 impl Pdu for UnderwaterAcousticPdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
             + EntityId::LENGTH
             + EventId::LENGTH
             + std::mem::size_of::<u8>() * 6
             + std::mem::size_of::<u16>();
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

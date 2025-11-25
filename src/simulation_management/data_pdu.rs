@@ -5,6 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
+    SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     datum_records::{FixedDatumRecord, VariableDatumRecord},
     dis_error::DISError,
@@ -31,12 +32,13 @@ pub struct DataPdu {
 }
 
 impl Pdu for DataPdu {
-    fn length(&self) -> u16 {
-        let fixed_section = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 2
-            + std::mem::size_of::<u32>() * 4;
+    fn length(&self) -> Result<u16, DISError> {
+        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + std::mem::size_of::<u32>() * 4;
 
-        fixed_section as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {

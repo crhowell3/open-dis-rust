@@ -34,10 +34,13 @@ pub struct DataReliablePdu {
 }
 
 impl Pdu for DataReliablePdu {
-    fn length(&self) -> u16 {
+    fn length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 4 + 1 + 1 + 2 + 4 + 4;
 
-        length as u16
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
     }
 
     fn header(&self) -> &PduHeader {
