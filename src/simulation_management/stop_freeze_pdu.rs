@@ -48,7 +48,7 @@ impl Default for StopFreezePdu {
 
 impl Pdu for StopFreezePdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + EntityId::LENGTH + ClockTime::LENGTH + 1 + 1 + 2 + 4;
+        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + ClockTime::LENGTH + 1 + 1 + 2 + 4;
 
         length as u16
     }

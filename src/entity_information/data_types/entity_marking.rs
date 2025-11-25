@@ -1,4 +1,4 @@
-use crate::common::enums::EntityMarkingCharacterSet;
+use crate::common::{SerializedLength, enums::EntityMarkingCharacterSet};
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Clone, Debug)]
@@ -39,4 +39,8 @@ impl EntityMarking {
             entity_marking_string: buf.remaining().to_string(),
         }
     }
+}
+
+impl SerializedLength for EntityMarking {
+    const LENGTH: usize = 12;
 }

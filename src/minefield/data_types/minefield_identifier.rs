@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::simulation_address::SimulationAddress;
+use crate::common::{SerializedLength, simulation_address::SimulationAddress};
 
 #[derive(Clone, Debug, Default)]
 pub struct MinefieldIdentifier {
@@ -33,4 +33,8 @@ impl MinefieldIdentifier {
             minefield_number: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for MinefieldIdentifier {
+    const LENGTH: usize = SimulationAddress::LENGTH + 2;
 }

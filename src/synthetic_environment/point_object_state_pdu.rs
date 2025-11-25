@@ -154,7 +154,7 @@ impl PointObjectStatePdu {
     ///
     /// Initializing a `PointObjectStatePdu`:
     /// ```
-    /// use open_dis_rust::warfare::PointObjectStatePdu;
+    /// use open_dis_rust::synthetic_environment::PointObjectStatePdu;
     /// let pdu = PointObjectStatePdu::new();
     /// ```
     ///

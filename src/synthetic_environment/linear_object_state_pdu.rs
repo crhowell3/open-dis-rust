@@ -135,7 +135,7 @@ impl LinearObjectStatePdu {
     ///
     /// Initializing an `LinearObjectStatePdu`:
     /// ```
-    /// use open_dis_rust::warfare::LinearObjectStatePdu;
+    /// use open_dis_rust::synthetic_environment::LinearObjectStatePdu;
     /// let pdu = LinearObjectStatePdu::new();
     /// ```
     ///

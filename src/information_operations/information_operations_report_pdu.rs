@@ -9,7 +9,7 @@ use std::any::Any;
 
 use crate::{
     common::{
-        SimulationIdentifier,
+        SerializedLength, SimulationIdentifier,
         constants::MAX_PDU_SIZE_OCTETS,
         dis_error::DISError,
         entity_id::EntityId,
@@ -54,14 +54,11 @@ impl Default for InformationOperationsReportPdu {
 
 impl Pdu for InformationOperationsReportPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<SimulationIdentifier>()
-            + std::mem::size_of::<EntityId>() * 2
-            + std::mem::size_of::<u8>()
-            + std::mem::size_of::<u16>() * 2
-            + std::mem::size_of::<IOReportIOReportType>()
-            + std::mem::size_of::<IOActionIOSimulationSource>()
-            + std::mem::size_of::<StandardVariableSpecification>();
+        let length = PduHeader::LENGTH
+            + SimulationIdentifier::LENGTH
+            + EntityId::LENGTH * 2
+            + std::mem::size_of::<u8>() * 2
+            + std::mem::size_of::<u16>() * 4;
 
         length as u16
     }
@@ -189,7 +186,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = InformationOperationsReportPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = InformationOperationsReportPdu::deserialize(&mut deserialize_buf).unwrap();

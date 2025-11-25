@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 pub struct FundamentalOperationalData {
     pub system_status: u8,
@@ -75,4 +77,8 @@ impl FundamentalOperationalData {
             parameter6: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for FundamentalOperationalData {
+    const LENGTH: usize = 16;
 }

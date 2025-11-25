@@ -191,7 +191,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = EntityStateUpdatePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = EntityStateUpdatePdu::deserialize(&mut deserialize_buf).unwrap();

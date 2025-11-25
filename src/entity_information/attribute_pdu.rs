@@ -40,7 +40,11 @@ pub struct AttributePdu {
 
 impl Pdu for AttributePdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + 4; // TODO(@anyone): Get length
+        let length = PduHeader::LENGTH
+            + SimulationAddress::LENGTH
+            + std::mem::size_of::<u8>() * 4
+            + std::mem::size_of::<u16>() * 2
+            + std::mem::size_of::<u32>() * 2;
 
         length as u16
     }
@@ -174,7 +178,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = AttributePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = AttributePdu::deserialize(&mut deserialize_buf).unwrap();

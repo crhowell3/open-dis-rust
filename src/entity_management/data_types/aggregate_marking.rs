@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Clone, Debug, Default)]
 pub struct AggregateMarking {
     pub character_set: u8,
@@ -38,4 +40,8 @@ impl AggregateMarking {
             characters,
         }
     }
+}
+
+impl SerializedLength for AggregateMarking {
+    const LENGTH: usize = 32;
 }

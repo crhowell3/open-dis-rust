@@ -5,7 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
-    WorldCoordinate,
+    SerializedLength, WorldCoordinate,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_type::EntityType,
@@ -40,17 +40,13 @@ pub struct MinefieldStatePdu {
 
 impl Pdu for MinefieldStatePdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<MinefieldIdentifier>()
-            + std::mem::size_of::<u16>()
-            + std::mem::size_of::<ForceId>()
-            + std::mem::size_of::<u8>()
-            + std::mem::size_of::<EntityType>()
-            + std::mem::size_of::<u16>()
-            + std::mem::size_of::<WorldCoordinate>()
-            + std::mem::size_of::<EulerAngles>()
-            + std::mem::size_of::<u16>()
-            + std::mem::size_of::<MinefieldStateProtocolMode>();
+        let length = PduHeader::LENGTH
+            + MinefieldIdentifier::LENGTH
+            + std::mem::size_of::<u16>() * 4
+            + std::mem::size_of::<u8>() * 2
+            + EntityType::LENGTH
+            + WorldCoordinate::LENGTH
+            + EulerAngles::LENGTH;
 
         length as u16
     }
@@ -197,7 +193,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = MinefieldStatePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = MinefieldStatePdu::deserialize(&mut deserialize_buf).unwrap();

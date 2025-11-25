@@ -63,15 +63,12 @@ impl Pdu for DesignatorPdu {
     fn length(&self) -> u16 {
         let length = PduHeader::LENGTH
             + EntityId::LENGTH * 2
-            + std::mem::size_of::<DesignatorSystemName>()
-            + std::mem::size_of::<DesignatorCode>()
+            + std::mem::size_of::<u8>() * 2
+            + std::mem::size_of::<u16>() * 3
             + std::mem::size_of::<f32>() * 2
             + EntityCoordinateVector::LENGTH
             + WorldCoordinate::LENGTH
-            + std::mem::size_of::<DeadReckoningAlgorithm>()
-            + std::mem::size_of::<u8>()
-            + std::mem::size_of::<u16>()
-            + std::mem::size_of::<LinearAcceleration>();
+            + LinearAcceleration::LENGTH;
 
         length as u16
     }
@@ -207,7 +204,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = DesignatorPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = DesignatorPdu::deserialize(&mut deserialize_buf).unwrap();

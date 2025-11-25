@@ -50,7 +50,13 @@ impl Default for CollisionPdu {
 
 impl Pdu for CollisionPdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + EntityId::LENGTH * 2;
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH * 2
+            + EventId::LENGTH
+            + LinearVelocity::LENGTH
+            + EntityCoordinateVector::LENGTH
+            + std::mem::size_of::<u8>() * 2
+            + std::mem::size_of::<f32>();
 
         length as u16
     }
@@ -171,7 +177,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = CollisionPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = CollisionPdu::deserialize(&mut deserialize_buf).unwrap();
@@ -180,7 +186,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
+        const DEFAULT_LENGTH: u16 = 480 / BITS_PER_BYTE;
         let pdu = CollisionPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

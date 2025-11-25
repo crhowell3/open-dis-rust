@@ -5,6 +5,7 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
+    SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -41,9 +42,7 @@ impl Default for MinefieldResponseNackPdu {
 
 impl Pdu for MinefieldResponseNackPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 2
-            + std::mem::size_of::<u8>() * 2;
+        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + std::mem::size_of::<u8>() * 2;
 
         length as u16
     }
@@ -164,7 +163,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = MinefieldResponseNackPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = MinefieldResponseNackPdu::deserialize(&mut deserialize_buf).unwrap();
@@ -173,7 +172,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 576 / BITS_PER_BYTE;
+        const DEFAULT_LENGTH: u16 = 208 / BITS_PER_BYTE;
         let pdu = MinefieldResponseNackPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

@@ -127,7 +127,7 @@ impl TransferOwnershipPdu {
     ///
     pub fn new() -> Self {
         let mut pdu = Self::default();
-        pdu.pdu_header.pdu_type = PduType::SetData;
+        pdu.pdu_header.pdu_type = PduType::TransferOwnership;
         pdu.pdu_header.protocol_family = ProtocolFamily::EntityManagement;
         pdu.finalize();
         pdu
@@ -173,7 +173,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = TransferOwnershipPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = TransferOwnershipPdu::deserialize(&mut deserialize_buf).unwrap();

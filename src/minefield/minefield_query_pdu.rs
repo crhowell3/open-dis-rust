@@ -6,6 +6,7 @@
 
 use crate::{
     common::{
+        SerializedLength,
         constants::MAX_PDU_SIZE_OCTETS,
         dis_error::DISError,
         entity_id::EntityId,
@@ -43,11 +44,11 @@ impl Default for MinefieldQueryPdu {
             pdu_header: PduHeader::default(),
             minefield_id: MinefieldIdentifier::default(),
             requesting_entity_id: EntityId::default(),
-            request_id: 0,
-            number_of_perimeter_points: 0,
+            request_id: 0u8,
+            number_of_perimeter_points: 0u8,
             _padding: 0u8,
-            number_of_sensor_types: 0,
-            data_filter: 0,
+            number_of_sensor_types: 0u8,
+            data_filter: 0u32,
             requested_mine_type: EntityType::default(),
             requested_perimeter_points: vec![],
             sensor_types: vec![],
@@ -57,12 +58,12 @@ impl Default for MinefieldQueryPdu {
 
 impl Pdu for MinefieldQueryPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<MinefieldIdentifier>()
-            + std::mem::size_of::<EntityId>()
+        let length = PduHeader::LENGTH
+            + MinefieldIdentifier::LENGTH
+            + EntityId::LENGTH
             + std::mem::size_of::<u8>() * 4
             + std::mem::size_of::<u32>()
-            + std::mem::size_of::<EntityType>();
+            + EntityType::LENGTH;
 
         length as u16
     }
@@ -145,7 +146,7 @@ impl MinefieldQueryPdu {
     ///
     pub fn new() -> Self {
         let mut pdu = Self::default();
-        pdu.pdu_header.pdu_type = PduType::MinefieldState;
+        pdu.pdu_header.pdu_type = PduType::MinefieldQuery;
         pdu.pdu_header.protocol_family = ProtocolFamily::Minefield;
         pdu.finalize();
         pdu
@@ -203,7 +204,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = MinefieldQueryPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = MinefieldQueryPdu::deserialize(&mut deserialize_buf).unwrap();
@@ -212,7 +213,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 576 / BITS_PER_BYTE;
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
         let pdu = MinefieldQueryPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

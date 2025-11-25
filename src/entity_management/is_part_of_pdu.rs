@@ -169,7 +169,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = IsPartOfPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = IsPartOfPdu::deserialize(&mut deserialize_buf).unwrap();
@@ -178,7 +178,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
+        const DEFAULT_LENGTH: u16 = 416 / BITS_PER_BYTE;
         let pdu = IsPartOfPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

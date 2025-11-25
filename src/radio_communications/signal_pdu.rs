@@ -4,6 +4,7 @@
 //     Licensed under the BSD-2-Clause License
 
 use crate::common::{
+    SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -46,11 +47,7 @@ impl Default for SignalPdu {
 
 impl Pdu for SignalPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>()
-            + std::mem::size_of::<u16>() * 4
-            + std::mem::size_of::<SignalTDLType>()
-            + std::mem::size_of::<u32>();
+        let length = PduHeader::LENGTH + EntityId::LENGTH + 2 + 2 + 2 + 2 + 2 + 4;
 
         length as u16
     }
@@ -179,7 +176,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = SignalPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = SignalPdu::deserialize(&mut deserialize_buf).unwrap();

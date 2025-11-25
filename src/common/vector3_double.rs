@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 /// Custom vector type containing 3 double precision fields
 pub struct Vector3Double {
@@ -36,4 +38,8 @@ impl Vector3Double {
             z: buf.get_f64(),
         }
     }
+}
+
+impl SerializedLength for Vector3Double {
+    const LENGTH: usize = 24;
 }

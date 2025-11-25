@@ -8,7 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
-    EntityCoordinateVector,
+    EntityCoordinateVector, SerializedLength,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -62,16 +62,16 @@ impl Default for IFFPdu {
 
 impl Pdu for IFFPdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>()
-            + std::mem::size_of::<EventId>()
-            + std::mem::size_of::<EntityCoordinateVector>()
-            + std::mem::size_of::<SystemId>()
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH
+            + EventId::LENGTH
+            + EntityCoordinateVector::LENGTH
+            + SystemId::LENGTH
             + std::mem::size_of::<u8>() * 2
-            + std::mem::size_of::<FundamentalOperationalData>()
-            + std::mem::size_of::<LayerHeader>()
-            + std::mem::size_of::<BeamData>()
-            + std::mem::size_of::<SecondaryOperationalData>();
+            + FundamentalOperationalData::LENGTH
+            + LayerHeader::LENGTH
+            + BeamData::LENGTH
+            + SecondaryOperationalData::LENGTH;
 
         length as u16
     }
@@ -209,7 +209,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = IFFPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = IFFPdu::deserialize(&mut deserialize_buf).unwrap();
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn check_default_pdu_length() {
-        const DEFAULT_LENGTH: u16 = 604 / BITS_PER_BYTE;
+        const DEFAULT_LENGTH: u16 = 704 / BITS_PER_BYTE;
         let pdu = IFFPdu::new();
         assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }

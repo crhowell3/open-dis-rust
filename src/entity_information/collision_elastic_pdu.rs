@@ -66,7 +66,13 @@ impl Default for CollisionElasticPdu {
 
 impl Pdu for CollisionElasticPdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + EntityId::LENGTH * 2; // TODO(@anyone): Get length
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH * 2
+            + EventId::LENGTH
+            + LinearVelocity::LENGTH
+            + EntityCoordinateVector::LENGTH * 2
+            + std::mem::size_of::<u16>()
+            + std::mem::size_of::<f32>() * 8;
 
         length as u16
     }
@@ -211,7 +217,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = CollisionElasticPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = CollisionElasticPdu::deserialize(&mut deserialize_buf).unwrap();

@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 pub struct SecondaryOperationalData {
     pub operational_data1: u8,
@@ -39,4 +41,8 @@ impl SecondaryOperationalData {
             number_of_iff_fundamental_parameter_records: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for SecondaryOperationalData {
+    const LENGTH: usize = 4;
 }

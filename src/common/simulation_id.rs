@@ -6,7 +6,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SimulationAddress;
+use crate::common::{SerializedLength, SimulationAddress};
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct SimulationIdentifier {
@@ -34,4 +34,8 @@ impl SimulationIdentifier {
             reference_number: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for SimulationIdentifier {
+    const LENGTH: usize = SimulationAddress::LENGTH + 2;
 }

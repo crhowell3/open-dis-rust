@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 pub struct SystemId {
     pub system_type: u16,
@@ -39,4 +41,8 @@ impl SystemId {
             change_options: buf.get_u8(),
         }
     }
+}
+
+impl SerializedLength for SystemId {
+    const LENGTH: usize = 6;
 }

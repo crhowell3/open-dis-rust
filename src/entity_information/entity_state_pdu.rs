@@ -67,7 +67,16 @@ impl Default for EntityStatePdu {
 
 impl Pdu for EntityStatePdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH;
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH
+            + EntityType::LENGTH * 2
+            + LinearVelocity::LENGTH
+            + WorldCoordinate::LENGTH
+            + EulerAngles::LENGTH
+            + DeadReckoningParameters::LENGTH
+            + EntityMarking::LENGTH
+            + std::mem::size_of::<u8>() * 2
+            + std::mem::size_of::<u32>() * 2;
 
         length as u16
     }

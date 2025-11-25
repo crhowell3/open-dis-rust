@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.11
 pub struct BeamData {
@@ -51,4 +53,8 @@ impl BeamData {
             beam_sweep_sync: buf.get_f32(),
         }
     }
+}
+
+impl SerializedLength for BeamData {
+    const LENGTH: usize = 20;
 }

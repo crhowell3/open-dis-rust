@@ -7,7 +7,7 @@
 use bytes::{Buf, BufMut, BytesMut};
 
 use crate::common::{
-    angular_velocity_vector::AngularVelocity, enums::DeadReckoningAlgorithm,
+    SerializedLength, angular_velocity_vector::AngularVelocity, enums::DeadReckoningAlgorithm,
     linear_acceleration::LinearAcceleration,
 };
 
@@ -49,4 +49,8 @@ impl DeadReckoningParameters {
             entity_angular_velocity: AngularVelocity::deserialize(buf),
         }
     }
+}
+
+impl SerializedLength for DeadReckoningParameters {
+    const LENGTH: usize = 40;
 }

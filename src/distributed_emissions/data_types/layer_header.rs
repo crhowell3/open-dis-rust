@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::common::SerializedLength;
+
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.51
 pub struct LayerHeader {
@@ -37,4 +39,8 @@ impl LayerHeader {
             length: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for LayerHeader {
+    const LENGTH: usize = 4;
 }

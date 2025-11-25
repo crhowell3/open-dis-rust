@@ -8,7 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
-    SerializedLength,
+    LinearVelocity, SerializedLength, WorldCoordinate,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -17,7 +17,6 @@ use crate::common::{
     euler_angles::EulerAngles,
     pdu::Pdu,
     pdu_header::PduHeader,
-    vector3_double::Vector3Double,
     vector3_float::Vector3Float,
 };
 
@@ -35,8 +34,8 @@ pub struct AggregateStatePdu {
     pub aggregate_marking: AggregateMarking,
     pub dimensions: Vector3Float,
     pub orientation: EulerAngles,
-    pub center_of_mass: Vector3Double,
-    pub velocity: Vector3Float,
+    pub center_of_mass: WorldCoordinate,
+    pub velocity: LinearVelocity,
     pub number_of_dis_aggregates: u16,
     pub number_of_dis_entities: u16,
     pub number_of_silent_aggregate_types: u16,
@@ -62,8 +61,8 @@ impl Default for AggregateStatePdu {
             aggregate_marking: AggregateMarking::default(),
             dimensions: Vector3Float::default(),
             orientation: EulerAngles::default(),
-            center_of_mass: Vector3Double::default(),
-            velocity: Vector3Float::default(),
+            center_of_mass: WorldCoordinate::default(),
+            velocity: LinearVelocity::default(),
             number_of_dis_aggregates: 0,
             number_of_dis_entities: 0,
             number_of_silent_aggregate_types: 0,
@@ -81,7 +80,17 @@ impl Default for AggregateStatePdu {
 
 impl Pdu for AggregateStatePdu {
     fn length(&self) -> u16 {
-        let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 4 + 4 + 4 + 4;
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH
+            + EntityType::LENGTH
+            + Vector3Float::LENGTH
+            + AggregateMarking::LENGTH
+            + LinearVelocity::LENGTH
+            + EulerAngles::LENGTH
+            + WorldCoordinate::LENGTH
+            + std::mem::size_of::<u8>() * 2
+            + std::mem::size_of::<u16>() * 4
+            + std::mem::size_of::<u32>() * 2;
 
         length as u16
     }
@@ -196,8 +205,8 @@ impl AggregateStatePdu {
         let aggregate_marking = AggregateMarking::deserialize(buf);
         let dimensions = Vector3Float::deserialize(buf);
         let orientation = EulerAngles::deserialize(buf);
-        let center_of_mass = Vector3Double::deserialize(buf);
-        let velocity = Vector3Float::deserialize(buf);
+        let center_of_mass = WorldCoordinate::deserialize(buf);
+        let velocity = LinearVelocity::deserialize(buf);
         let number_of_dis_aggregates = buf.get_u16();
         let number_of_dis_entities = buf.get_u16();
         let number_of_silent_aggregate_types = buf.get_u16();
@@ -270,7 +279,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = AggregateStatePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = AggregateStatePdu::deserialize(&mut deserialize_buf).unwrap();

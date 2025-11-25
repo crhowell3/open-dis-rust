@@ -87,21 +87,26 @@ impl Default for TransmitterPdu {
 impl Pdu for TransmitterPdu {
     fn length(&self) -> u16 {
         let length = PduHeader::LENGTH
-            + EntityId::LENGTH
-            + std::mem::size_of::<u16>() * 5
-            + std::mem::size_of::<RadioEntityType>()
-            + std::mem::size_of::<TransmitterTransmitState>()
-            + std::mem::size_of::<TransmitterInputSource>()
-            + std::mem::size_of::<WorldCoordinate>()
-            + std::mem::size_of::<EntityCoordinateVector>()
-            + std::mem::size_of::<TransmitterAntennaPatternType>()
-            + std::mem::size_of::<u64>()
-            + std::mem::size_of::<f32>() * 2
-            + std::mem::size_of::<ModulationType>()
-            + std::mem::size_of::<TransmitterCryptoSystem>()
-            + std::mem::size_of::<u8>() * 2
-            + std::mem::size_of::<Option<ModulationParameters>>()
-            + std::mem::size_of::<Option<AntennaPattern>>();
+            + EntityId::LENGTH +
+            std::mem::size_of::<u16>() + // radio_id
+            std::mem::size_of::<RadioEntityType>() +
+            std::mem::size_of::<TransmitterTransmitState>() +
+            std::mem::size_of::<TransmitterInputSource>() +
+            std::mem::size_of::<u16>() + // number_of_variable_transmitter_parameters_records
+            std::mem::size_of::<WorldCoordinate>() +
+            std::mem::size_of::<EntityCoordinateVector>() +
+            std::mem::size_of::<TransmitterAntennaPatternType>() +
+            std::mem::size_of::<u16>() + // antenna_pattern_length
+            std::mem::size_of::<u64>() + // frequency
+            std::mem::size_of::<f32>() + // transmit_frequency_bandwidth
+            std::mem::size_of::<f32>() + // power
+            std::mem::size_of::<ModulationType>() +
+            std::mem::size_of::<TransmitterCryptoSystem>() +
+            std::mem::size_of::<u16>() + // crypto_key_id
+            std::mem::size_of::<u8>() +  // modulation_parameter_length
+            std::mem::size_of::<u8>() +  // _padding
+            std::mem::size_of::<u16>() + // _padding2
+            1 + 1;
 
         length as u16
     }
@@ -275,7 +280,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = TransmitterPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = TransmitterPdu::deserialize(&mut deserialize_buf).unwrap();
