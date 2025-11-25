@@ -1,4 +1,4 @@
-name: Github Pages (Unstable)
+name: GitHub Pages (Unstable)
 
 on:
   workflow_dispatch:
