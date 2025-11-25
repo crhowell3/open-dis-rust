@@ -103,6 +103,7 @@ impl Pdu for ActionResponsePdu {
 }
 
 impl ActionResponsePdu {
+    #[must_use]
     /// Creates a new `ActionResponsePdu`
     ///
     /// # Examples

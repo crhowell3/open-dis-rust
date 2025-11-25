@@ -94,6 +94,7 @@ impl Pdu for RemoveEntityReliablePdu {
 }
 
 impl RemoveEntityReliablePdu {
+    #[must_use]
     /// Creates a RemoveEntityReliable PDU
     ///
     /// # Examples

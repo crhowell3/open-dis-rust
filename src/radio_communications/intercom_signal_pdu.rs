@@ -98,6 +98,7 @@ impl Pdu for IntercomSignalPdu {
 }
 
 impl IntercomSignalPdu {
+    #[must_use]
     /// Creates a new `IntercomSignalPdu`
     ///
     /// # Examples

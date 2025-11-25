@@ -107,6 +107,7 @@ impl Pdu for DataQueryReliablePdu {
 }
 
 impl DataQueryReliablePdu {
+    #[must_use]
     /// Creates a new `DataQueryReliablePdu`
     ///
     /// # Examples

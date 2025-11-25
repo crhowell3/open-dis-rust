@@ -89,6 +89,7 @@ impl Pdu for AcknowledgePdu {
 }
 
 impl AcknowledgePdu {
+    #[must_use]
     /// Creates an Acknowledge PDU
     ///
     /// # Examples

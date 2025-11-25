@@ -110,6 +110,7 @@ impl Pdu for IsGroupOfPdu {
 }
 
 impl IsGroupOfPdu {
+    #[must_use]
     /// Creates a new `IsGroupOfPdu`
     ///
     /// # Examples

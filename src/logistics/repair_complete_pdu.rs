@@ -90,6 +90,7 @@ impl Pdu for RepairCompletePdu {
 }
 
 impl RepairCompletePdu {
+    #[must_use]
     /// Creates a new `RepairCompletePdu`
     ///
     /// # Examples

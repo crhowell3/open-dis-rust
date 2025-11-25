@@ -126,6 +126,7 @@ impl Pdu for PointObjectStatePdu {
 }
 
 impl PointObjectStatePdu {
+    #[must_use]
     /// Creates a new `PointObjectStatePdu`
     ///
     /// # Examples

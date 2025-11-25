@@ -116,6 +116,7 @@ impl Pdu for InformationOperationsActionPdu {
 }
 
 impl InformationOperationsActionPdu {
+    #[must_use]
     /// Creates a new `InformationOperationsActionPdu`
     ///
     /// # Examples

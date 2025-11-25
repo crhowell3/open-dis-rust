@@ -124,6 +124,7 @@ impl Pdu for FirePdu {
 }
 
 impl FirePdu {
+    #[must_use]
     /// Creates a new Fire PDU
     ///
     /// # Examples

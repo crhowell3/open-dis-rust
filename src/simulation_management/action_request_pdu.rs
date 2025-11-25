@@ -101,6 +101,7 @@ impl Pdu for ActionRequestPdu {
 }
 
 impl ActionRequestPdu {
+    #[must_use]
     /// Creates an Action Request PDU
     ///
     /// # Examples

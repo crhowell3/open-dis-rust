@@ -98,6 +98,7 @@ impl Pdu for ResupplyReceivedPdu {
 }
 
 impl ResupplyReceivedPdu {
+    #[must_use]
     /// Creates a new `ResupplyReceivedPdu`
     ///
     /// # Examples

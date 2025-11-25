@@ -102,6 +102,7 @@ impl Pdu for RecordQueryReliablePdu {
 }
 
 impl RecordQueryReliablePdu {
+    #[must_use]
     /// Creates an RecordQueryReliable PDU
     ///
     /// # Examples

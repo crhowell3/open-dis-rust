@@ -101,6 +101,7 @@ impl Pdu for EnvironmentalProcessPdu {
 }
 
 impl EnvironmentalProcessPdu {
+    #[must_use]
     /// Creates a new `EnvironmentalProcessPdu`
     ///
     /// # Examples

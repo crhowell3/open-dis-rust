@@ -100,6 +100,7 @@ impl Pdu for StopFreezeReliablePdu {
 }
 
 impl StopFreezeReliablePdu {
+    #[must_use]
     /// Creates an StopFreezeReliable PDU
     ///
     /// # Examples

@@ -96,6 +96,7 @@ impl Pdu for CommentPdu {
 }
 
 impl CommentPdu {
+    #[must_use]
     /// Creates a Comment PDU
     ///
     /// # Examples

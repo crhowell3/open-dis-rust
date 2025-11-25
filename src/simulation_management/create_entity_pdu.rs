@@ -85,6 +85,7 @@ impl Pdu for CreateEntityPdu {
 }
 
 impl CreateEntityPdu {
+    #[must_use]
     /// Creates a CreateEntity PDU
     ///
     /// # Examples

@@ -98,6 +98,7 @@ impl Pdu for CommentReliablePdu {
 }
 
 impl CommentReliablePdu {
+    #[must_use]
     /// Creates a new `CommentReliablePdu`
     ///
     /// # Examples

@@ -119,6 +119,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
 }
 
 impl ElectromagneticEmissionsPdu {
+    #[must_use]
     /// Creates a new `ElectromagneticEmissionsPdu`
     ///
     /// # Examples

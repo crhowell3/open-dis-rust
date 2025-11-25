@@ -143,6 +143,7 @@ impl Pdu for UnderwaterAcousticPdu {
 }
 
 impl UnderwaterAcousticPdu {
+    #[must_use]
     /// Creates a new `UnderwaterAcousticPdu`
     ///
     /// # Examples

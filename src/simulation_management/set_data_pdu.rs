@@ -99,6 +99,7 @@ impl Pdu for SetDataPdu {
 }
 
 impl SetDataPdu {
+    #[must_use]
     /// Creates a new `SetDataPdu`
     ///
     /// # Examples

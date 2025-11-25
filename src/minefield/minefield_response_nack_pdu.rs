@@ -93,6 +93,7 @@ impl Pdu for MinefieldResponseNackPdu {
 }
 
 impl MinefieldResponseNackPdu {
+    #[must_use]
     /// Creates a new `MinefieldResponseNackPdu`
     ///
     /// # Examples

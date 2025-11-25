@@ -112,6 +112,7 @@ impl Pdu for LinearObjectStatePdu {
 }
 
 impl LinearObjectStatePdu {
+    #[must_use]
     /// Creates a new `LinearObjectStatePdu`
     ///
     /// # Examples

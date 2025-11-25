@@ -118,6 +118,7 @@ impl Pdu for CollisionPdu {
 }
 
 impl CollisionPdu {
+    #[must_use]
     /// Creates a new `CollisionPdu`
     ///
     /// # Examples

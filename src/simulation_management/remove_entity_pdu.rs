@@ -85,6 +85,7 @@ impl Pdu for RemoveEntityPdu {
 }
 
 impl RemoveEntityPdu {
+    #[must_use]
     /// Creates a new `RemoveEntityPdu`
     ///
     /// # Examples

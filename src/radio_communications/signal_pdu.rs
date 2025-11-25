@@ -95,6 +95,7 @@ impl Pdu for SignalPdu {
 }
 
 impl SignalPdu {
+    #[must_use]
     /// Creates a new `SignalPdu`
     ///
     /// # Examples

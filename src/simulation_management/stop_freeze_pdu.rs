@@ -94,6 +94,7 @@ impl Pdu for StopFreezePdu {
 }
 
 impl StopFreezePdu {
+    #[must_use]
     /// Creates a new `StopFreezePdu`
     ///
     /// # Examples

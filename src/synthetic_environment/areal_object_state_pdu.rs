@@ -121,6 +121,7 @@ impl Pdu for ArealObjectStatePdu {
 }
 
 impl ArealObjectStatePdu {
+    #[must_use]
     /// Creates a new `ArealObjectStatePdu`
     ///
     /// # Examples

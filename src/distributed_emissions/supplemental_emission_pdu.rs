@@ -110,6 +110,7 @@ impl Pdu for SupplementalEmissionPdu {
 }
 
 impl SupplementalEmissionPdu {
+    #[must_use]
     /// Creates a new `SupplementalEmissionPdu`
     ///
     /// # Examples

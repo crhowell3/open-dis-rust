@@ -133,6 +133,7 @@ impl Pdu for MinefieldDataPdu {
 }
 
 impl MinefieldDataPdu {
+    #[must_use]
     /// Creates a new `MinefieldDataPdu`
     ///
     /// # Examples

@@ -139,6 +139,7 @@ impl Pdu for DetonationPdu {
 }
 
 impl DetonationPdu {
+    #[must_use]
     /// Creates a new Entity Damage Status PDU
     ///
     /// # Examples

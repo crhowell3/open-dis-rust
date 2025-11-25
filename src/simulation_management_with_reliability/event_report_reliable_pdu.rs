@@ -102,6 +102,7 @@ impl Pdu for EventReportReliablePdu {
 }
 
 impl EventReportReliablePdu {
+    #[must_use]
     /// Creates a new `EventReportReliablePdu`
     ///
     /// # Examples

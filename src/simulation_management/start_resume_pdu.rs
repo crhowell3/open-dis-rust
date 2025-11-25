@@ -90,6 +90,7 @@ impl Pdu for StartResumePdu {
 }
 
 impl StartResumePdu {
+    #[must_use]
     /// Creates a new `StartResumePdu`
     ///
     /// # Examples

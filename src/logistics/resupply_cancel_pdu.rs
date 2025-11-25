@@ -86,6 +86,7 @@ impl Pdu for ResupplyCancelPdu {
 }
 
 impl ResupplyCancelPdu {
+    #[must_use]
     /// Creates a new `ResupplyCancelPdu`
     ///
     /// # Examples

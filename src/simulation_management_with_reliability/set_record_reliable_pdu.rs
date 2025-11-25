@@ -101,6 +101,7 @@ impl Pdu for SetRecordReliablePdu {
 }
 
 impl SetRecordReliablePdu {
+    #[must_use]
     /// Creates an SetRecordReliable PDU
     ///
     /// # Examples

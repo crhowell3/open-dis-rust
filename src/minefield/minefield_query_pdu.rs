@@ -116,6 +116,7 @@ impl Pdu for MinefieldQueryPdu {
 }
 
 impl MinefieldQueryPdu {
+    #[must_use]
     /// Creates a new `MinefieldQueryPdu`
     ///
     /// # Examples

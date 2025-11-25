@@ -99,6 +99,7 @@ impl Pdu for DataQueryPdu {
 }
 
 impl DataQueryPdu {
+    #[must_use]
     /// Creates a new `DataQueryPdu`
     ///
     /// # Examples

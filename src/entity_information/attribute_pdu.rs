@@ -112,6 +112,7 @@ impl Pdu for AttributePdu {
 }
 
 impl AttributePdu {
+    #[must_use]
     /// Creates a new `AttributePdu`
     ///
     /// # Examples

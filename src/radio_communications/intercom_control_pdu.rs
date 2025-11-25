@@ -114,6 +114,7 @@ impl Pdu for IntercomControlPdu {
 }
 
 impl IntercomControlPdu {
+    #[must_use]
     /// Creates a new `IntercomControlPdu`
     ///
     /// # Examples

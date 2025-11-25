@@ -92,6 +92,7 @@ impl Pdu for RepairResponsePdu {
 }
 
 impl RepairResponsePdu {
+    #[must_use]
     /// Creates a new `RepairResponsePdu`
     ///
     /// # Examples

@@ -92,6 +92,7 @@ impl Pdu for AcknowledgeReliablePdu {
 }
 
 impl AcknowledgeReliablePdu {
+    #[must_use]
     /// Creates a new `AcknowledgeReliablePdu`
     ///
     /// # Examples

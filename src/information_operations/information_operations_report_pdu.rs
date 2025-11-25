@@ -107,6 +107,7 @@ impl Pdu for InformationOperationsReportPdu {
 }
 
 impl InformationOperationsReportPdu {
+    #[must_use]
     /// Creates a new `InformationOperationsReportPdu`
     ///
     /// # Examples

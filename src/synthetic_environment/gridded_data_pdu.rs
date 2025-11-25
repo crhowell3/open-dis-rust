@@ -135,6 +135,7 @@ impl Pdu for GriddedDataPdu {
 }
 
 impl GriddedDataPdu {
+    #[must_use]
     /// Creates a new Entity Damage Status PDU
     ///
     /// # Examples

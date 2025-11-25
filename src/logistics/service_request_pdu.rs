@@ -98,6 +98,7 @@ impl Pdu for ServiceRequestPdu {
 }
 
 impl ServiceRequestPdu {
+    #[must_use]
     /// Creates a new `ServiceRequestPdu`
     ///
     /// # Examples

@@ -144,6 +144,7 @@ impl Pdu for CollisionElasticPdu {
 }
 
 impl CollisionElasticPdu {
+    #[must_use]
     /// Creates a new `CollisionElasticPdu`
     ///
     /// # Examples

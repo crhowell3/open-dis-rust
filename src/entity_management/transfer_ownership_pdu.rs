@@ -100,6 +100,7 @@ impl Pdu for TransferOwnershipPdu {
 }
 
 impl TransferOwnershipPdu {
+    #[must_use]
     /// Creates a new `TransferOwnershipPdu`
     ///
     /// # Examples

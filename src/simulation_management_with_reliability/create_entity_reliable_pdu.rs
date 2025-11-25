@@ -93,6 +93,7 @@ impl Pdu for CreateEntityReliablePdu {
 }
 
 impl CreateEntityReliablePdu {
+    #[must_use]
     /// Creates a new `CreateEntityReliablePdu`
     ///
     /// # Examples

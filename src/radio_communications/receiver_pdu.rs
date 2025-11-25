@@ -15,7 +15,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.7.4
 pub struct ReceiverPdu {
     pdu_header: PduHeader,
@@ -26,21 +26,6 @@ pub struct ReceiverPdu {
     pub received_power: f32,
     pub transmitter_radio_reference_id: EntityId,
     pub transmitter_radio_id: u16,
-}
-
-impl Default for ReceiverPdu {
-    fn default() -> Self {
-        ReceiverPdu {
-            pdu_header: PduHeader::default(),
-            entity_id: EntityId::default(),
-            radio_id: 0,
-            receiver_state: ReceiverReceiverState::default(),
-            padding: 0u16,
-            received_power: 0.0,
-            transmitter_radio_reference_id: EntityId::default(),
-            transmitter_radio_id: 0,
-        }
-    }
 }
 
 impl Pdu for ReceiverPdu {
@@ -109,6 +94,7 @@ impl Pdu for ReceiverPdu {
 }
 
 impl ReceiverPdu {
+    #[must_use]
     /// Creates a new `ReceiverPdu`
     ///
     /// # Examples

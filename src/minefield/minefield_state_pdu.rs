@@ -119,6 +119,7 @@ impl Pdu for MinefieldStatePdu {
 }
 
 impl MinefieldStatePdu {
+    #[must_use]
     /// Creates a new `MinefieldStatePdu`
     ///
     /// # Examples

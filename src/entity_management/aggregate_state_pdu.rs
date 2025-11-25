@@ -149,6 +149,7 @@ impl Pdu for AggregateStatePdu {
 }
 
 impl AggregateStatePdu {
+    #[must_use]
     /// Creates a new `AggregateStatePdu`
     ///
     /// # Examples

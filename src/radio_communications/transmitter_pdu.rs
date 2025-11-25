@@ -26,7 +26,7 @@ use std::any::Any;
 
 use super::data_types::{modulation_type::ModulationType, radio_entity_type::RadioEntityType};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.7.2
 pub struct TransmitterPdu {
     pdu_header: PduHeader,
@@ -52,36 +52,6 @@ pub struct TransmitterPdu {
     pub modulation_parameters: Option<ModulationParameters>,
     pub antenna_pattern: Option<AntennaPattern>,
     pub variable_transmitter_parameters: Vec<VariableTransmitterParameters>,
-}
-
-impl Default for TransmitterPdu {
-    fn default() -> Self {
-        TransmitterPdu {
-            pdu_header: PduHeader::default(),
-            entity_id: EntityId::default(),
-            radio_id: 0u16,
-            radio_entity_type: RadioEntityType::default(),
-            transmit_state: TransmitterTransmitState::default(),
-            input_source: TransmitterInputSource::default(),
-            number_of_variable_transmitter_parameters_records: 0u16,
-            antenna_location: WorldCoordinate::default(),
-            relative_antenna_location: EntityCoordinateVector::default(),
-            antenna_pattern_type: TransmitterAntennaPatternType::default(),
-            antenna_pattern_length: 0u16,
-            frequency: 0u64,
-            transmit_frequency_bandwidth: 0.0,
-            power: 0.0,
-            modulation_type: ModulationType::default(),
-            crypto_system: TransmitterCryptoSystem::default(),
-            crypto_key_id: 0u16,
-            modulation_parameter_length: 0u8,
-            padding: 0u8,
-            padding2: 0u16,
-            modulation_parameters: None,
-            antenna_pattern: None,
-            variable_transmitter_parameters: vec![],
-        }
-    }
 }
 
 impl Pdu for TransmitterPdu {
@@ -188,6 +158,7 @@ impl Pdu for TransmitterPdu {
 }
 
 impl TransmitterPdu {
+    #[must_use]
     /// Creates a new `TransmitterPdu`
     ///
     /// # Examples

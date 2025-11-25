@@ -113,6 +113,7 @@ impl Pdu for EntityStateUpdatePdu {
 }
 
 impl EntityStateUpdatePdu {
+    #[must_use]
     /// Creates a new `EntityStateUpdatePdu`
     ///
     /// # Examples

@@ -140,6 +140,7 @@ impl Pdu for IFFPdu {
 }
 
 impl IFFPdu {
+    #[must_use]
     /// Creates a new `IFFPdu`
     ///
     /// # Examples

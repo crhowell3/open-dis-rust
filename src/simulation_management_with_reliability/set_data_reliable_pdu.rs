@@ -106,6 +106,7 @@ impl Pdu for SetDataReliablePdu {
 }
 
 impl SetDataReliablePdu {
+    #[must_use]
     /// Creates a new `SetDataReliablePdu`
     ///
     /// # Examples

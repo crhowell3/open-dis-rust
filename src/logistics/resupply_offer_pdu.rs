@@ -95,6 +95,7 @@ impl Pdu for ResupplyOfferPdu {
 }
 
 impl ResupplyOfferPdu {
+    #[must_use]
     /// Creates a new `ResupplyOfferPdu`
     ///
     /// # Examples

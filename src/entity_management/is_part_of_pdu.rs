@@ -100,6 +100,7 @@ impl Pdu for IsPartOfPdu {
 }
 
 impl IsPartOfPdu {
+    #[must_use]
     /// Creates a new `IsPartOfPdu`
     ///
     /// # Examples

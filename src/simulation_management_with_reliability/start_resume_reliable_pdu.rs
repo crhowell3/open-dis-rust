@@ -100,6 +100,7 @@ impl Pdu for StartResumeReliablePdu {
 }
 
 impl StartResumeReliablePdu {
+    #[must_use]
     /// Creates an StartResumeReliable PDU
     ///
     /// # Examples

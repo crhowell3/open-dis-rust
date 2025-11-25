@@ -136,6 +136,7 @@ impl Pdu for DesignatorPdu {
 }
 
 impl DesignatorPdu {
+    #[must_use]
     /// Creates a new `DesignatorPdu`
     ///
     /// # Examples

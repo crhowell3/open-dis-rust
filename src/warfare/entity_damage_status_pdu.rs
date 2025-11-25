@@ -97,6 +97,7 @@ impl Pdu for EntityDamageStatusPdu {
 }
 
 impl EntityDamageStatusPdu {
+    #[must_use]
     /// Creates a new Entity Damage Status PDU
     ///
     /// # Examples

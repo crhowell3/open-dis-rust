@@ -142,6 +142,7 @@ impl Pdu for DirectedEnergyFirePdu {
 }
 
 impl DirectedEnergyFirePdu {
+    #[must_use]
     /// Creates a new Entity Damage Status PDU
     ///
     /// # Examples

@@ -100,6 +100,7 @@ impl Pdu for DataPdu {
 }
 
 impl DataPdu {
+    #[must_use]
     /// Creates a Data PDU
     ///
     /// # Examples

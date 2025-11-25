@@ -111,6 +111,7 @@ impl Pdu for ActionRequestReliablePdu {
 }
 
 impl ActionRequestReliablePdu {
+    #[must_use]
     /// Creates a new `ActionRequestReliablePdu`
     ///
     /// # Examples

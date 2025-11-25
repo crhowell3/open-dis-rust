@@ -103,6 +103,7 @@ impl Pdu for DataReliablePdu {
 }
 
 impl DataReliablePdu {
+    #[must_use]
     /// Creates a new `DataReliablePdu`
     ///
     /// # Examples
