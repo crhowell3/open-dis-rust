@@ -27,7 +27,7 @@ pub struct ServiceRequestPdu {
     pub servicing_entity_id: EntityId,
     pub service_type_requested: ServiceRequestServiceTypeRequested,
     pub number_of_supply_types: u8,
-    _padding: u16,
+    padding: u16,
     pub supplies: Vec<SupplyQuantity>,
 }
 
@@ -57,7 +57,7 @@ impl Pdu for ServiceRequestPdu {
         self.servicing_entity_id.serialize(buf);
         buf.put_u8(self.service_type_requested as u8);
         buf.put_u8(self.number_of_supply_types);
-        buf.put_u16(self._padding);
+        buf.put_u16(self.padding);
         for i in 0..self.supplies.len() {
             self.supplies[i].serialize(buf);
         }
@@ -121,7 +121,7 @@ impl ServiceRequestPdu {
         let servicing_entity_id = EntityId::deserialize(buf);
         let service_type_requested = ServiceRequestServiceTypeRequested::deserialize(buf);
         let number_of_supply_types = buf.get_u8();
-        let _padding = buf.get_u16();
+        let padding = buf.get_u16();
         let mut supplies: Vec<SupplyQuantity> = vec![];
         for _i in 0..number_of_supply_types {
             supplies.push(SupplyQuantity::deserialize(buf));
@@ -133,7 +133,7 @@ impl ServiceRequestPdu {
             servicing_entity_id,
             service_type_requested,
             number_of_supply_types,
-            _padding,
+            padding,
             supplies,
         }
     }

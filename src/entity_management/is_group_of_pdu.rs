@@ -24,7 +24,7 @@ pub struct IsGroupOfPdu {
     pub group_entity_id: EntityId,
     pub grouped_entity_category: IsGroupOfGroupedEntityCategory,
     pub number_of_grouped_entities: u8,
-    _padding: u32,
+    padding: u32,
     pub latitude: f64,
     pub longitude: f64,
     pub grouped_entity_descriptions: Vec<u64>,
@@ -37,7 +37,7 @@ impl Default for IsGroupOfPdu {
             group_entity_id: EntityId::default(),
             grouped_entity_category: IsGroupOfGroupedEntityCategory::default(),
             number_of_grouped_entities: 0,
-            _padding: 0,
+            padding: 0,
             latitude: 0.0,
             longitude: 0.0,
             grouped_entity_descriptions: vec![],
@@ -70,7 +70,7 @@ impl Pdu for IsGroupOfPdu {
         self.group_entity_id.serialize(buf);
         buf.put_u8(self.grouped_entity_category as u8);
         buf.put_u8(self.number_of_grouped_entities);
-        buf.put_u32(self._padding);
+        buf.put_u32(self.padding);
         buf.put_f64(self.latitude);
         buf.put_f64(self.longitude);
         for i in 0..self.grouped_entity_descriptions.len() {
@@ -132,7 +132,7 @@ impl IsGroupOfPdu {
         let group_entity_id = EntityId::deserialize(buf);
         let grouped_entity_category = IsGroupOfGroupedEntityCategory::deserialize(buf);
         let number_of_grouped_entities = buf.get_u8();
-        let _padding = buf.get_u32();
+        let padding = buf.get_u32();
         let latitude = buf.get_f64();
         let longitude = buf.get_f64();
         let mut grouped_entity_descriptions: Vec<u64> = vec![];
@@ -144,7 +144,7 @@ impl IsGroupOfPdu {
             group_entity_id,
             grouped_entity_category,
             number_of_grouped_entities,
-            _padding,
+            padding,
             latitude,
             longitude,
             grouped_entity_descriptions,

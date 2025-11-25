@@ -32,7 +32,7 @@ pub struct MinefieldDataPdu {
     pub number_of_pdus: u8,
     pub number_of_mines_in_this_pdu: u8,
     pub number_of_sensor_types: u8,
-    _padding: u8,
+    padding: u8,
     pub data_filter: u32,
     pub mine_type: EntityType,
     pub sensor_types: Vec<MinefieldSensorTypes>,
@@ -89,7 +89,7 @@ impl Pdu for MinefieldDataPdu {
         buf.put_u8(self.number_of_pdus);
         buf.put_u8(self.number_of_mines_in_this_pdu);
         buf.put_u8(self.number_of_sensor_types);
-        buf.put_u8(self._padding);
+        buf.put_u8(self.padding);
         buf.put_u32(self.data_filter);
         self.mine_type.serialize(buf);
         for i in 0..self.sensor_types.len() {
@@ -160,7 +160,7 @@ impl MinefieldDataPdu {
         let number_of_pdus = buf.get_u8();
         let number_of_mines_in_this_pdu = buf.get_u8();
         let number_of_sensor_types = buf.get_u8();
-        let _padding = buf.get_u8();
+        let padding = buf.get_u8();
         let data_filter = buf.get_u32();
         let mine_type = EntityType::deserialize(buf);
         let mut sensor_types: Vec<MinefieldSensorTypes> = vec![];
@@ -214,7 +214,7 @@ impl MinefieldDataPdu {
             number_of_pdus,
             number_of_mines_in_this_pdu,
             number_of_sensor_types,
-            _padding,
+            padding,
             data_filter,
             mine_type,
             sensor_types,

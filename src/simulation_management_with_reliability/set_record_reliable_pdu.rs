@@ -28,9 +28,9 @@ pub struct SetRecordReliablePdu {
     pub receiving_entity_id: EntityId,
     pub request_id: u32,
     pub required_reliability_service: RequiredReliabilityService,
-    _padding: u8,
-    _padding2: u16,
-    _padding3: u32,
+    padding: u8,
+    padding2: u16,
+    padding3: u32,
     pub record_sets: RecordSpecification,
 }
 
@@ -60,9 +60,9 @@ impl Pdu for SetRecordReliablePdu {
         self.receiving_entity_id.serialize(buf);
         buf.put_u32(self.request_id);
         buf.put_u8(self.required_reliability_service as u8);
-        buf.put_u8(self._padding);
-        buf.put_u16(self._padding2);
-        buf.put_u32(self._padding3);
+        buf.put_u8(self.padding);
+        buf.put_u16(self.padding2);
+        buf.put_u32(self.padding3);
         self.record_sets.serialize(buf);
         Ok(())
     }
@@ -124,9 +124,9 @@ impl SetRecordReliablePdu {
         let receiving_entity_id = EntityId::deserialize(buf);
         let request_id = buf.get_u32();
         let required_reliability_service = RequiredReliabilityService::deserialize(buf);
-        let _padding = buf.get_u8();
-        let _padding2 = buf.get_u16();
-        let _padding3 = buf.get_u32();
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
+        let padding3 = buf.get_u32();
         let record_sets = RecordSpecification::deserialize(buf);
 
         SetRecordReliablePdu {
@@ -135,9 +135,9 @@ impl SetRecordReliablePdu {
             receiving_entity_id,
             request_id,
             required_reliability_service,
-            _padding,
-            _padding2,
-            _padding3,
+            padding,
+            padding2,
+            padding3,
             record_sets,
         }
     }

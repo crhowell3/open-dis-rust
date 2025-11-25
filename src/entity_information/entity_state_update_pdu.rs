@@ -28,7 +28,7 @@ use crate::{
 pub struct EntityStateUpdatePdu {
     pdu_header: PduHeader,
     pub entity_id: EntityId,
-    _padding: u8,
+    padding: u8,
     pub number_of_variable_parameters: u8,
     pub entity_linear_velocity: LinearVelocity,
     pub entity_location: WorldCoordinate,
@@ -67,7 +67,7 @@ impl Pdu for EntityStateUpdatePdu {
         })?;
         self.pdu_header.serialize(buf);
         self.entity_id.serialize(buf);
-        buf.put_u8(self._padding);
+        buf.put_u8(self.padding);
         buf.put_u8(self.number_of_variable_parameters);
         self.entity_linear_velocity.serialize(buf);
         self.entity_location.serialize(buf);
@@ -133,7 +133,7 @@ impl EntityStateUpdatePdu {
 
     fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
         let entity_id = EntityId::deserialize(buf);
-        let _padding = buf.get_u8();
+        let padding = buf.get_u8();
         let number_of_variable_parameters = buf.get_u8();
         let entity_linear_velocity = LinearVelocity::deserialize(buf);
         let entity_location = WorldCoordinate::deserialize(buf);
@@ -146,7 +146,7 @@ impl EntityStateUpdatePdu {
         EntityStateUpdatePdu {
             pdu_header: PduHeader::default(),
             entity_id,
-            _padding,
+            padding,
             number_of_variable_parameters,
             entity_linear_velocity,
             entity_location,

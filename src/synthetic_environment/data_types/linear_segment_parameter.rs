@@ -19,7 +19,7 @@ pub struct LinearSegmentParameter {
     pub segment_width: f32,
     pub segment_height: f32,
     pub segment_depth: f32,
-    _padding: u32,
+    padding: u32,
 }
 
 impl LinearSegmentParameter {
@@ -48,7 +48,7 @@ impl LinearSegmentParameter {
             segment_width,
             segment_height,
             segment_depth,
-            _padding: 0_u32,
+            padding: 0_u32,
         }
     }
 
@@ -63,7 +63,7 @@ impl LinearSegmentParameter {
         buf.put_f32(self.segment_width);
         buf.put_f32(self.segment_height);
         buf.put_f32(self.segment_depth);
-        buf.put_u32(self._padding);
+        buf.put_u32(self.padding);
     }
 
     pub fn deserialize<B: Buf>(buf: &mut B) -> LinearSegmentParameter {
@@ -78,7 +78,7 @@ impl LinearSegmentParameter {
             segment_width: buf.get_f32(),
             segment_height: buf.get_f32(),
             segment_depth: buf.get_f32(),
-            _padding: buf.get_u32(),
+            padding: buf.get_u32(),
         }
     }
 }

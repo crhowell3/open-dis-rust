@@ -69,7 +69,7 @@ impl VariableDatumRecord {
 
         let mut value = vec![0u8; value_bytes];
         for _ in 0..value_bytes {
-            value.push(buf.get_u8())
+            value.push(buf.get_u8());
         }
 
         Self {

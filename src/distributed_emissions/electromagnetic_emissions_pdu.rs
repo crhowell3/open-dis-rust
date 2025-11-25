@@ -27,7 +27,7 @@ pub struct ElectromagneticEmissionsPdu {
     pub event_id: EventId,
     pub state_update_indicator: EEAttributeStateIndicator,
     pub number_of_systems: u8,
-    pub _padding: u16,
+    pub padding: u16,
     pub systems: Vec<ElectromagneticEmissionSystemData>,
 }
 
@@ -39,7 +39,7 @@ impl Default for ElectromagneticEmissionsPdu {
             event_id: EventId::default(1),
             state_update_indicator: EEAttributeStateIndicator::default(),
             number_of_systems: 0u8,
-            _padding: 0u16,
+            padding: 0u16,
             systems: vec![],
         }
     }
@@ -77,7 +77,7 @@ impl Pdu for ElectromagneticEmissionsPdu {
         self.event_id.serialize(buf);
         buf.put_u8(self.state_update_indicator as u8);
         buf.put_u8(self.number_of_systems);
-        buf.put_u16(self._padding);
+        buf.put_u16(self.padding);
         for i in 0..self.number_of_systems {
             self.systems[i as usize].serialize(buf);
         }
@@ -142,7 +142,7 @@ impl ElectromagneticEmissionsPdu {
         let event_id = EventId::deserialize(buf);
         let state_update_indicator = EEAttributeStateIndicator::deserialize(buf);
         let number_of_systems = buf.get_u8();
-        let _padding = buf.get_u16();
+        let padding = buf.get_u16();
         let mut systems: Vec<ElectromagneticEmissionSystemData> = vec![];
         for _i in 0..number_of_systems {
             systems.push(ElectromagneticEmissionSystemData::deserialize(buf));
@@ -154,7 +154,7 @@ impl ElectromagneticEmissionsPdu {
             event_id,
             state_update_indicator,
             number_of_systems,
-            _padding,
+            padding,
             systems,
         }
     }

@@ -27,7 +27,7 @@ pub struct CollisionElasticPdu {
     pub issuing_entity_id: EntityId,
     pub colliding_entity_id: EntityId,
     pub event_id: EventId,
-    _padding: u16,
+    padding: u16,
     pub contact_velocity: LinearVelocity,
     pub mass: f32,
     pub location_of_impact: EntityCoordinateVector,
@@ -48,7 +48,7 @@ impl Default for CollisionElasticPdu {
             issuing_entity_id: EntityId::default(),
             colliding_entity_id: EntityId::default(),
             event_id: EventId::default(1),
-            _padding: 0,
+            padding: 0,
             contact_velocity: LinearVelocity::default(),
             mass: 0.0,
             location_of_impact: EntityCoordinateVector::default(),
@@ -95,7 +95,7 @@ impl Pdu for CollisionElasticPdu {
         self.issuing_entity_id.serialize(buf);
         self.colliding_entity_id.serialize(buf);
         self.event_id.serialize(buf);
-        buf.put_u16(self._padding);
+        buf.put_u16(self.padding);
         self.contact_velocity.serialize(buf);
         buf.put_f32(self.mass);
         self.location_of_impact.serialize(buf);
@@ -166,7 +166,7 @@ impl CollisionElasticPdu {
         let issuing_entity_id = EntityId::deserialize(buf);
         let colliding_entity_id = EntityId::deserialize(buf);
         let event_id = EventId::deserialize(buf);
-        let _padding = buf.get_u16();
+        let padding = buf.get_u16();
         let contact_velocity = LinearVelocity::deserialize(buf);
         let mass = buf.get_f32();
         let location_of_impact = EntityCoordinateVector::deserialize(buf);
@@ -183,7 +183,7 @@ impl CollisionElasticPdu {
             issuing_entity_id,
             colliding_entity_id,
             event_id,
-            _padding,
+            padding,
             contact_velocity,
             mass,
             location_of_impact,

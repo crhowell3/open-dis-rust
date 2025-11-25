@@ -24,7 +24,7 @@ pub struct EventReportPdu {
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub event_type: EventType,
-    _padding: u32,
+    padding: u32,
     pub number_of_fixed_datum_records: u32,
     pub number_of_variable_datum_records: u32,
     pub fixed_datum_records: Vec<FixedDatumRecord>,
@@ -38,7 +38,7 @@ impl Default for EventReportPdu {
             originating_entity_id: EntityId::default(),
             receiving_entity_id: EntityId::default(),
             event_type: EventType::Other,
-            _padding: 0,
+            padding: 0,
             number_of_fixed_datum_records: 0,
             number_of_variable_datum_records: 0,
             fixed_datum_records: vec![],
@@ -72,7 +72,7 @@ impl Pdu for EventReportPdu {
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         buf.put_u32(self.event_type as u32);
-        buf.put_u32(self._padding);
+        buf.put_u32(self.padding);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
         for i in 0..self.fixed_datum_records.len() {
@@ -137,7 +137,7 @@ impl EventReportPdu {
         let originating_entity_id = EntityId::deserialize(buf);
         let receiving_entity_id = EntityId::deserialize(buf);
         let event_type = EventType::deserialize(buf);
-        let _padding = buf.get_u32();
+        let padding = buf.get_u32();
         let number_of_fixed_datum_records = buf.get_u32();
         let number_of_variable_datum_records = buf.get_u32();
         let mut fixed_datum_records: Vec<FixedDatumRecord> =
@@ -159,7 +159,7 @@ impl EventReportPdu {
             originating_entity_id,
             receiving_entity_id,
             event_type,
-            _padding,
+            padding,
             number_of_fixed_datum_records,
             number_of_variable_datum_records,
             fixed_datum_records,

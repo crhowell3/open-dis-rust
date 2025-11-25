@@ -27,11 +27,11 @@ pub struct InformationOperationsReportPdu {
     pub originating_simulation_id: SimulationIdentifier,
     pub io_simulation_source: IOActionIOSimulationSource,
     pub io_report_type: IOReportIOReportType,
-    _padding: u8,
+    padding: u8,
     pub io_attacker_entity_id: EntityId,
     pub primary_target_entity_id: EntityId,
-    _padding2: u16,
-    _padding3: u16,
+    padding2: u16,
+    padding3: u16,
     pub io_records: StandardVariableSpecification,
 }
 
@@ -64,11 +64,11 @@ impl Pdu for InformationOperationsReportPdu {
         self.originating_simulation_id.serialize(buf);
         buf.put_u16(self.io_simulation_source as u16);
         buf.put_u8(self.io_report_type as u8);
-        buf.put_u8(self._padding);
+        buf.put_u8(self.padding);
         self.io_attacker_entity_id.serialize(buf);
         self.primary_target_entity_id.serialize(buf);
-        buf.put_u16(self._padding2);
-        buf.put_u16(self._padding3);
+        buf.put_u16(self.padding2);
+        buf.put_u16(self.padding3);
         self.io_records.serialize(buf);
         Ok(())
     }
@@ -129,11 +129,11 @@ impl InformationOperationsReportPdu {
         let originating_simulation_id = SimulationIdentifier::deserialize(buf);
         let io_simulation_source = IOActionIOSimulationSource::deserialize(buf);
         let io_report_type = IOReportIOReportType::deserialize(buf);
-        let _padding = buf.get_u8();
+        let padding = buf.get_u8();
         let io_attacker_entity_id = EntityId::deserialize(buf);
         let primary_target_entity_id = EntityId::deserialize(buf);
-        let _padding2 = buf.get_u16();
-        let _padding3 = buf.get_u16();
+        let padding2 = buf.get_u16();
+        let padding3 = buf.get_u16();
         let io_records = StandardVariableSpecification::deserialize(buf);
 
         InformationOperationsReportPdu {
@@ -141,11 +141,11 @@ impl InformationOperationsReportPdu {
             originating_simulation_id,
             io_simulation_source,
             io_report_type,
-            _padding,
+            padding,
             io_attacker_entity_id,
             primary_target_entity_id,
-            _padding2,
-            _padding3,
+            padding2,
+            padding3,
             io_records,
         }
     }

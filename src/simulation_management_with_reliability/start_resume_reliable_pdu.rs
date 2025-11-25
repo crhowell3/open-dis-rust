@@ -27,8 +27,8 @@ pub struct StartResumeReliablePdu {
     pub real_world_time: ClockTime,
     pub simulation_time: ClockTime,
     pub required_reliability_service: RequiredReliabilityService,
-    _padding: u8,
-    _padding2: u16,
+    padding: u8,
+    padding2: u16,
     pub request_id: u32,
 }
 
@@ -60,8 +60,8 @@ impl Pdu for StartResumeReliablePdu {
         self.real_world_time.serialize(buf);
         self.simulation_time.serialize(buf);
         buf.put_u8(self.required_reliability_service as u8);
-        buf.put_u8(self._padding);
-        buf.put_u16(self._padding2);
+        buf.put_u8(self.padding);
+        buf.put_u16(self.padding2);
         buf.put_u32(self.request_id);
         Ok(())
     }
@@ -124,8 +124,8 @@ impl StartResumeReliablePdu {
         let real_world_time = ClockTime::deserialize(buf);
         let simulation_time = ClockTime::deserialize(buf);
         let required_reliability_service = RequiredReliabilityService::deserialize(buf);
-        let _padding = buf.get_u8();
-        let _padding2 = buf.get_u16();
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
         let request_id = buf.get_u32();
 
         StartResumeReliablePdu {
@@ -135,8 +135,8 @@ impl StartResumeReliablePdu {
             real_world_time,
             simulation_time,
             required_reliability_service,
-            _padding,
-            _padding2,
+            padding,
+            padding2,
             request_id,
         }
     }

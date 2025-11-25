@@ -22,7 +22,7 @@ pub struct ReceiverPdu {
     pub entity_id: EntityId,
     pub radio_id: u16,
     pub receiver_state: ReceiverReceiverState,
-    _padding: u16,
+    padding: u16,
     pub received_power: f32,
     pub transmitter_radio_reference_id: EntityId,
     pub transmitter_radio_id: u16,
@@ -35,7 +35,7 @@ impl Default for ReceiverPdu {
             entity_id: EntityId::default(),
             radio_id: 0,
             receiver_state: ReceiverReceiverState::default(),
-            _padding: 0u16,
+            padding: 0u16,
             received_power: 0.0,
             transmitter_radio_reference_id: EntityId::default(),
             transmitter_radio_id: 0,
@@ -71,7 +71,7 @@ impl Pdu for ReceiverPdu {
         self.entity_id.serialize(buf);
         buf.put_u16(self.radio_id);
         buf.put_u16(self.receiver_state as u16);
-        buf.put_u16(self._padding);
+        buf.put_u16(self.padding);
         buf.put_f32(self.received_power);
         self.transmitter_radio_reference_id.serialize(buf);
         buf.put_u16(self.transmitter_radio_id);
@@ -131,7 +131,7 @@ impl ReceiverPdu {
         let entity_id = EntityId::deserialize(buf);
         let radio_id = buf.get_u16();
         let receiver_state = ReceiverReceiverState::deserialize(buf);
-        let _padding = buf.get_u16();
+        let padding = buf.get_u16();
         let received_power = buf.get_f32();
         let transmitter_radio_reference_id = EntityId::deserialize(buf);
         let transmitter_radio_id = buf.get_u16();
@@ -140,7 +140,7 @@ impl ReceiverPdu {
             entity_id,
             radio_id,
             receiver_state,
-            _padding,
+            padding,
             received_power,
             transmitter_radio_reference_id,
             transmitter_radio_id,

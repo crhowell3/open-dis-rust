@@ -47,8 +47,8 @@ pub struct TransmitterPdu {
     pub crypto_system: TransmitterCryptoSystem,
     pub crypto_key_id: u16,
     pub modulation_parameter_length: u8,
-    _padding: u8,
-    _padding2: u16,
+    padding: u8,
+    padding2: u16,
     pub modulation_parameters: Option<ModulationParameters>,
     pub antenna_pattern: Option<AntennaPattern>,
     pub variable_transmitter_parameters: Vec<VariableTransmitterParameters>,
@@ -75,8 +75,8 @@ impl Default for TransmitterPdu {
             crypto_system: TransmitterCryptoSystem::default(),
             crypto_key_id: 0u16,
             modulation_parameter_length: 0u8,
-            _padding: 0u8,
-            _padding2: 0u16,
+            padding: 0u8,
+            padding2: 0u16,
             modulation_parameters: None,
             antenna_pattern: None,
             variable_transmitter_parameters: vec![],
@@ -104,8 +104,8 @@ impl Pdu for TransmitterPdu {
             std::mem::size_of::<TransmitterCryptoSystem>() +
             std::mem::size_of::<u16>() + // crypto_key_id
             std::mem::size_of::<u8>() +  // modulation_parameter_length
-            std::mem::size_of::<u8>() +  // _padding
-            std::mem::size_of::<u16>() + // _padding2
+            std::mem::size_of::<u8>() +  // padding
+            std::mem::size_of::<u16>() + // padding2
             1 + 1;
 
         length as u16
@@ -143,8 +143,8 @@ impl Pdu for TransmitterPdu {
         buf.put_u16(self.crypto_system as u16);
         buf.put_u16(self.crypto_key_id);
         buf.put_u8(self.modulation_parameter_length);
-        buf.put_u8(self._padding);
-        buf.put_u16(self._padding2);
+        buf.put_u8(self.padding);
+        buf.put_u16(self.padding2);
         if let Some(modulation_parameters) = &self.modulation_parameters {
             modulation_parameters.serialize(buf);
         }
@@ -224,8 +224,8 @@ impl TransmitterPdu {
         let crypto_system = TransmitterCryptoSystem::deserialize(buf);
         let crypto_key_id = buf.get_u16();
         let modulation_parameter_length = buf.get_u8();
-        let _padding = buf.get_u8();
-        let _padding2 = buf.get_u16();
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
         let modulation_parameters =
             ModulationParameters::deserialize(buf, modulation_parameter_length);
         let antenna_pattern = AntennaPattern::deserialize(buf, antenna_pattern_length);
@@ -253,8 +253,8 @@ impl TransmitterPdu {
             crypto_system,
             crypto_key_id,
             modulation_parameter_length,
-            _padding,
-            _padding2,
+            padding,
+            padding2,
             modulation_parameters,
             antenna_pattern,
             variable_transmitter_parameters,

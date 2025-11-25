@@ -23,7 +23,7 @@ pub struct DataPdu {
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub request_id: u32,
-    _padding: u32,
+    padding: u32,
     pub number_of_fixed_datum_records: u32,
     pub number_of_variable_datum_records: u32,
     pub fixed_datum_records: Vec<FixedDatumRecord>,
@@ -57,7 +57,7 @@ impl Pdu for DataPdu {
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         buf.put_u32(self.request_id);
-        buf.put_u32(self._padding);
+        buf.put_u32(self.padding);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
         for i in 0..self.fixed_datum_records.len() {
@@ -122,7 +122,7 @@ impl DataPdu {
         let originating_entity_id = EntityId::deserialize(buf);
         let receiving_entity_id = EntityId::deserialize(buf);
         let request_id = buf.get_u32();
-        let _padding = buf.get_u32();
+        let padding = buf.get_u32();
         let number_of_fixed_datum_records = buf.get_u32();
         let number_of_variable_datum_records = buf.get_u32();
         let mut fixed_datum_records: Vec<FixedDatumRecord> =
@@ -144,7 +144,7 @@ impl DataPdu {
             originating_entity_id,
             receiving_entity_id,
             request_id,
-            _padding,
+            padding,
             number_of_fixed_datum_records,
             number_of_variable_datum_records,
             fixed_datum_records,

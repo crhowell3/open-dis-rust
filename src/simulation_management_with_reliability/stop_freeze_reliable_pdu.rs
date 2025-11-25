@@ -28,7 +28,7 @@ pub struct StopFreezeReliablePdu {
     pub reason: Reason,
     pub frozen_behavior: FrozenBehavior,
     pub required_reliability_service: u8,
-    _padding: u8,
+    padding: u8,
     pub request_id: u32,
 }
 
@@ -61,7 +61,7 @@ impl Pdu for StopFreezeReliablePdu {
         buf.put_u8(self.reason as u8);
         buf.put_u8(self.frozen_behavior.as_u8());
         buf.put_u8(self.required_reliability_service);
-        buf.put_u8(self._padding);
+        buf.put_u8(self.padding);
         buf.put_u32(self.request_id);
         Ok(())
     }
@@ -125,7 +125,7 @@ impl StopFreezeReliablePdu {
         let reason = Reason::deserialize(buf);
         let frozen_behavior = FrozenBehavior::from_u8(buf.get_u8()).unwrap();
         let required_reliability_service = buf.get_u8();
-        let _padding = buf.get_u8();
+        let padding = buf.get_u8();
         let request_id = buf.get_u32();
 
         StopFreezeReliablePdu {
@@ -136,7 +136,7 @@ impl StopFreezeReliablePdu {
             reason,
             frozen_behavior,
             required_reliability_service,
-            _padding,
+            padding,
             request_id,
         }
     }

@@ -25,11 +25,11 @@ pub struct ActionRequestReliablePdu {
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub required_reliability_service: RequiredReliabilityService,
-    _padding: u8,
-    _padding2: u16,
+    padding: u8,
+    padding2: u16,
     pub request_id: u32,
     pub action_id: u32,
-    _padding3: u32,
+    padding3: u32,
     pub number_of_fixed_datum_records: u32,
     pub number_of_variable_datum_records: u32,
     pub fixed_datum_records: Vec<FixedDatumRecord>,
@@ -61,11 +61,11 @@ impl Pdu for ActionRequestReliablePdu {
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         buf.put_u8(self.required_reliability_service as u8);
-        buf.put_u8(self._padding);
-        buf.put_u16(self._padding2);
+        buf.put_u8(self.padding);
+        buf.put_u16(self.padding2);
         buf.put_u32(self.request_id);
         buf.put_u32(self.action_id);
-        buf.put_u32(self._padding3);
+        buf.put_u32(self.padding3);
         buf.put_u32(self.number_of_fixed_datum_records);
         buf.put_u32(self.number_of_variable_datum_records);
         for i in 0..self.fixed_datum_records.len() {
@@ -133,11 +133,11 @@ impl ActionRequestReliablePdu {
         let originating_entity_id = EntityId::deserialize(buf);
         let receiving_entity_id = EntityId::deserialize(buf);
         let required_reliability_service = RequiredReliabilityService::deserialize(buf);
-        let _padding = buf.get_u8();
-        let _padding2 = buf.get_u16();
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
         let request_id = buf.get_u32();
         let action_id = buf.get_u32();
-        let _padding3 = buf.get_u32();
+        let padding3 = buf.get_u32();
         let number_of_fixed_datum_records = buf.get_u32();
         let number_of_variable_datum_records = buf.get_u32();
         let mut fixed_datum_records: Vec<FixedDatumRecord> =
@@ -159,11 +159,11 @@ impl ActionRequestReliablePdu {
             originating_entity_id,
             receiving_entity_id,
             required_reliability_service,
-            _padding,
-            _padding2,
+            padding,
+            padding2,
             request_id,
             action_id,
-            _padding3,
+            padding3,
             number_of_fixed_datum_records,
             number_of_variable_datum_records,
             fixed_datum_records,

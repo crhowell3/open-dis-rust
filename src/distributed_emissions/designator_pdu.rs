@@ -34,8 +34,8 @@ pub struct DesignatorPdu {
     pub designator_spot_wrt_designated: EntityCoordinateVector,
     pub designator_spot_location: WorldCoordinate,
     pub dead_reckoning_algorithm: DeadReckoningAlgorithm,
-    _padding: u8,
-    _padding2: u16,
+    padding: u8,
+    padding2: u16,
     pub entity_linear_acceleration: LinearAcceleration,
 }
 
@@ -52,8 +52,8 @@ impl Default for DesignatorPdu {
             designator_spot_wrt_designated: EntityCoordinateVector::new(0.0, 0.0, 0.0),
             designator_spot_location: WorldCoordinate::new(0.0, 0.0, 0.0),
             dead_reckoning_algorithm: DeadReckoningAlgorithm::default(),
-            _padding: 0,
-            _padding2: 0,
+            padding: 0,
+            padding2: 0,
             entity_linear_acceleration: LinearAcceleration::new(0.0, 0.0, 0.0),
         }
     }
@@ -98,8 +98,8 @@ impl Pdu for DesignatorPdu {
         self.designator_spot_wrt_designated.serialize(buf);
         self.designator_spot_location.serialize(buf);
         buf.put_u8(self.dead_reckoning_algorithm as u8);
-        buf.put_u8(self._padding);
-        buf.put_u16(self._padding2);
+        buf.put_u8(self.padding);
+        buf.put_u16(self.padding2);
         self.entity_linear_acceleration.serialize(buf);
         Ok(())
     }
@@ -164,8 +164,8 @@ impl DesignatorPdu {
         let designator_spot_wrt_designated = EntityCoordinateVector::deserialize(buf);
         let designator_spot_location = WorldCoordinate::deserialize(buf);
         let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(buf);
-        let _padding = buf.get_u8();
-        let _padding2 = buf.get_u16();
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
         let entity_linear_acceleration = LinearAcceleration::deserialize(buf);
 
         DesignatorPdu {
@@ -179,8 +179,8 @@ impl DesignatorPdu {
             designator_spot_wrt_designated,
             designator_spot_location,
             dead_reckoning_algorithm,
-            _padding,
-            _padding2,
+            padding,
+            padding2,
             entity_linear_acceleration,
         }
     }

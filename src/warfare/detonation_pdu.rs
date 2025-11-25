@@ -36,7 +36,7 @@ pub struct DetonationPdu {
     pub location_in_entitys_coordinates: EntityCoordinateVector,
     pub detonation_result: DetonationResult,
     pub number_of_variable_parameters: u8,
-    _padding: u16,
+    padding: u16,
     pub variable_parameters: Vec<VariableParameter>,
 }
 
@@ -54,7 +54,7 @@ impl Default for DetonationPdu {
             location_in_entitys_coordinates: EntityCoordinateVector::default(),
             detonation_result: DetonationResult::default(),
             number_of_variable_parameters: 0,
-            _padding: 0u16,
+            padding: 0u16,
             variable_parameters: vec![],
         }
     }
@@ -101,7 +101,7 @@ impl Pdu for DetonationPdu {
         self.location_in_entitys_coordinates.serialize(buf);
         buf.put_u8(self.detonation_result as u8);
         buf.put_u8(self.number_of_variable_parameters);
-        buf.put_u16(self._padding);
+        buf.put_u16(self.padding);
         for i in 0..self.variable_parameters.len() {
             self.variable_parameters[i].serialize(buf);
         }
@@ -168,7 +168,7 @@ impl DetonationPdu {
         let location_in_entitys_coordinates = EntityCoordinateVector::deserialize(buf);
         let detonation_result = DetonationResult::deserialize(buf);
         let number_of_variable_parameters = buf.get_u8();
-        let _padding = buf.get_u16();
+        let padding = buf.get_u16();
         let mut variable_parameters: Vec<VariableParameter> = vec![];
         for _ in 0..number_of_variable_parameters {
             variable_parameters.push(VariableParameter::deserialize(buf));
@@ -186,7 +186,7 @@ impl DetonationPdu {
             location_in_entitys_coordinates,
             detonation_result,
             number_of_variable_parameters,
-            _padding,
+            padding,
             variable_parameters,
         }
     }

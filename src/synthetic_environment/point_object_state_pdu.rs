@@ -35,10 +35,10 @@ pub struct PointObjectStatePdu {
     pub object_orientation: EulerAngles,
     pub specific_object_appearance: u32,
     pub general_object_appearance: u16,
-    _padding: u16,
+    padding: u16,
     pub requester_id: SimulationAddress,
     pub receiving_id: SimulationAddress,
-    _padding2: u32,
+    padding2: u32,
 }
 
 impl Pdu for PointObjectStatePdu {
@@ -85,10 +85,10 @@ impl Pdu for PointObjectStatePdu {
         self.object_orientation.serialize(buf);
         buf.put_u32(self.specific_object_appearance);
         buf.put_u16(self.general_object_appearance);
-        buf.put_u16(self._padding);
+        buf.put_u16(self.padding);
         self.requester_id.serialize(buf);
         self.receiving_id.serialize(buf);
-        buf.put_u32(self._padding2);
+        buf.put_u32(self.padding2);
         Ok(())
     }
 
@@ -155,10 +155,10 @@ impl PointObjectStatePdu {
         let object_orientation = EulerAngles::deserialize(buf);
         let specific_object_appearance = buf.get_u32();
         let general_object_appearance = buf.get_u16();
-        let _padding = buf.get_u16();
+        let padding = buf.get_u16();
         let requester_id = SimulationAddress::deserialize(buf);
         let receiving_id = SimulationAddress::deserialize(buf);
-        let _padding2 = buf.get_u32();
+        let padding2 = buf.get_u32();
 
         PointObjectStatePdu {
             pdu_header: PduHeader::default(),
@@ -172,10 +172,10 @@ impl PointObjectStatePdu {
             object_orientation,
             specific_object_appearance,
             general_object_appearance,
-            _padding,
+            padding,
             requester_id,
             receiving_id,
-            _padding2,
+            padding2,
         }
     }
 }

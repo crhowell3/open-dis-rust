@@ -39,8 +39,8 @@ pub struct GriddedDataPdu {
     pub sample_time: ClockTime,
     pub total_values: u32,
     pub vector_dimension: u8,
-    _padding: u8,
-    _padding2: u16,
+    padding: u8,
+    padding2: u16,
     pub grid_axis_descriptors: Vec<GridAxisDescriptor>,
     pub grid_data_list: Vec<GridDataRecord>,
 }
@@ -93,8 +93,8 @@ impl Pdu for GriddedDataPdu {
         self.sample_time.serialize(buf);
         buf.put_u32(self.total_values);
         buf.put_u8(self.vector_dimension);
-        buf.put_u8(self._padding);
-        buf.put_u16(self._padding2);
+        buf.put_u8(self.padding);
+        buf.put_u16(self.padding2);
         for i in 0..self.grid_axis_descriptors.len() {
             self.grid_axis_descriptors[i].serialize(buf);
         }
@@ -166,8 +166,8 @@ impl GriddedDataPdu {
         let sample_time = ClockTime::deserialize(buf);
         let total_values = buf.get_u32();
         let vector_dimension = buf.get_u8();
-        let _padding = buf.get_u8();
-        let _padding2 = buf.get_u16();
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
         let mut grid_axis_descriptors: Vec<GridAxisDescriptor> = vec![];
         for _ in 0..number_of_grid_axes {
             grid_axis_descriptors.push(GridAxisDescriptor::deserialize(buf));
@@ -191,8 +191,8 @@ impl GriddedDataPdu {
             sample_time,
             total_values,
             vector_dimension,
-            _padding,
-            _padding2,
+            padding,
+            padding2,
             grid_axis_descriptors,
             grid_data_list,
         }

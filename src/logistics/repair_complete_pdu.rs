@@ -24,7 +24,7 @@ pub struct RepairCompletePdu {
     pub receiving_entity_id: EntityId,
     pub repairing_entity_id: EntityId,
     pub repair: RepairGroups,
-    _padding: u16,
+    padding: u16,
 }
 
 impl Pdu for RepairCompletePdu {
@@ -52,7 +52,7 @@ impl Pdu for RepairCompletePdu {
         self.receiving_entity_id.serialize(buf);
         self.repairing_entity_id.serialize(buf);
         buf.put_u16(self.repair as u16);
-        buf.put_u16(self._padding);
+        buf.put_u16(self.padding);
         Ok(())
     }
 
@@ -112,14 +112,14 @@ impl RepairCompletePdu {
         let receiving_entity_id = EntityId::deserialize(buf);
         let repairing_entity_id = EntityId::deserialize(buf);
         let repair = RepairGroups::deserialize(buf);
-        let _padding = buf.get_u16();
+        let padding = buf.get_u16();
 
         RepairCompletePdu {
             pdu_header: PduHeader::default(),
             receiving_entity_id,
             repairing_entity_id,
             repair,
-            _padding,
+            padding,
         }
     }
 }

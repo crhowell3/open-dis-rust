@@ -23,8 +23,8 @@ use super::data_types::directed_energy_damage::DirectedEnergyDamage;
 pub struct EntityDamageStatusPdu {
     pdu_header: PduHeader,
     pub damaged_entity_id: EntityId,
-    _padding: u16,
-    _padding2: u16,
+    padding: u16,
+    padding2: u16,
     pub number_of_damage_descriptions: u16,
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
 }
@@ -54,8 +54,8 @@ impl Pdu for EntityDamageStatusPdu {
         })?;
         self.pdu_header.serialize(buf);
         self.damaged_entity_id.serialize(buf);
-        buf.put_u16(self._padding);
-        buf.put_u16(self._padding2);
+        buf.put_u16(self.padding);
+        buf.put_u16(self.padding2);
         buf.put_u16(self.number_of_damage_descriptions);
         for i in 0..self.damage_descriptions.len() {
             self.damage_descriptions[i].serialize(buf);
@@ -117,8 +117,8 @@ impl EntityDamageStatusPdu {
 
     fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
         let damaged_entity_id = EntityId::deserialize(buf);
-        let _padding = buf.get_u16();
-        let _padding2 = buf.get_u16();
+        let padding = buf.get_u16();
+        let padding2 = buf.get_u16();
         let number_of_damage_descriptions = buf.get_u16();
         let mut damage_descriptions: Vec<DirectedEnergyDamage> = vec![];
         for _ in 0..number_of_damage_descriptions {
@@ -128,8 +128,8 @@ impl EntityDamageStatusPdu {
         EntityDamageStatusPdu {
             pdu_header: PduHeader::default(),
             damaged_entity_id,
-            _padding,
-            _padding2,
+            padding,
+            padding2,
             number_of_damage_descriptions,
             damage_descriptions,
         }

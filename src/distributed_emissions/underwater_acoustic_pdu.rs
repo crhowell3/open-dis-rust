@@ -29,7 +29,7 @@ pub struct UnderwaterAcousticPdu {
     pub emitting_entity_id: EntityId,
     pub event_id: EventId,
     pub state_change_update_indicator: UAStateChangeUpdateIndicator,
-    _padding: u8,
+    padding: u8,
     pub passive_parameter_index: UAPassiveParameterIndex,
     pub propulsion_plant_configuration: u8,
     pub number_of_shafts: u8,
@@ -47,7 +47,7 @@ impl Default for UnderwaterAcousticPdu {
             emitting_entity_id: EntityId::default(),
             event_id: EventId::default(1),
             state_change_update_indicator: UAStateChangeUpdateIndicator::default(),
-            _padding: 0u8,
+            padding: 0u8,
             passive_parameter_index: UAPassiveParameterIndex::default(),
             propulsion_plant_configuration: 0u8,
             number_of_shafts: 0u8,
@@ -90,7 +90,7 @@ impl Pdu for UnderwaterAcousticPdu {
         self.emitting_entity_id.serialize(buf);
         self.event_id.serialize(buf);
         buf.put_u8(self.state_change_update_indicator as u8);
-        buf.put_u8(self._padding);
+        buf.put_u8(self.padding);
         buf.put_u16(self.passive_parameter_index as u16);
         buf.put_u8(self.propulsion_plant_configuration);
         buf.put_u8(self.number_of_shafts);
@@ -165,7 +165,7 @@ impl UnderwaterAcousticPdu {
         let emitting_entity_id = EntityId::deserialize(buf);
         let event_id = EventId::deserialize(buf);
         let state_change_update_indicator = UAStateChangeUpdateIndicator::deserialize(buf);
-        let _padding = buf.get_u8();
+        let padding = buf.get_u8();
         let passive_parameter_index = UAPassiveParameterIndex::deserialize(buf);
         let propulsion_plant_configuration = buf.get_u8();
         let number_of_shafts = buf.get_u8();
@@ -188,7 +188,7 @@ impl UnderwaterAcousticPdu {
             emitting_entity_id,
             event_id,
             state_change_update_indicator,
-            _padding,
+            padding,
             passive_parameter_index,
             propulsion_plant_configuration,
             number_of_shafts,

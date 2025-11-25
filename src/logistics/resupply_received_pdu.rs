@@ -26,8 +26,8 @@ pub struct ResupplyReceivedPdu {
     pub receiving_entity_id: EntityId,
     pub supplying_entity_id: EntityId,
     pub number_of_supply_types: u8,
-    _padding: u8,
-    _padding2: u16,
+    padding: u8,
+    padding2: u16,
     pub supplies: Vec<SupplyQuantity>,
 }
 
@@ -56,8 +56,8 @@ impl Pdu for ResupplyReceivedPdu {
         self.receiving_entity_id.serialize(buf);
         self.supplying_entity_id.serialize(buf);
         buf.put_u8(self.number_of_supply_types);
-        buf.put_u8(self._padding);
-        buf.put_u16(self._padding2);
+        buf.put_u8(self.padding);
+        buf.put_u16(self.padding2);
         for i in 0..self.supplies.len() {
             self.supplies[i].serialize(buf);
         }
@@ -120,8 +120,8 @@ impl ResupplyReceivedPdu {
         let receiving_entity_id = EntityId::deserialize(buf);
         let supplying_entity_id = EntityId::deserialize(buf);
         let number_of_supply_types = buf.get_u8();
-        let _padding = buf.get_u8();
-        let _padding2 = buf.get_u16();
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
         let mut supplies: Vec<SupplyQuantity> = vec![];
         for _i in 0..number_of_supply_types {
             supplies.push(SupplyQuantity::deserialize(buf));
@@ -132,8 +132,8 @@ impl ResupplyReceivedPdu {
             receiving_entity_id,
             supplying_entity_id,
             number_of_supply_types,
-            _padding,
-            _padding2,
+            padding,
+            padding2,
             supplies,
         }
     }

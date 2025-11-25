@@ -34,10 +34,10 @@ pub struct InformationOperationsActionPdu {
     pub io_simulation_source: IOActionIOSimulationSource,
     pub io_action_type: IOActionIOActionType,
     pub io_action_phase: IOActionIOActionPhase,
-    _padding: u32,
+    padding: u32,
     pub io_attacker_entity_id: EntityId,
     pub io_primary_target_entity_id: EntityId,
-    _padding2: u16,
+    padding2: u16,
     pub io_records: StandardVariableSpecification,
 }
 
@@ -74,10 +74,10 @@ impl Pdu for InformationOperationsActionPdu {
         buf.put_u8(self.io_simulation_source as u8);
         buf.put_u8(self.io_action_type as u8);
         buf.put_u8(self.io_action_phase as u8);
-        buf.put_u32(self._padding);
+        buf.put_u32(self.padding);
         self.io_attacker_entity_id.serialize(buf);
         self.io_primary_target_entity_id.serialize(buf);
-        buf.put_u16(self._padding2);
+        buf.put_u16(self.padding2);
         self.io_records.serialize(buf);
         Ok(())
     }
@@ -142,10 +142,10 @@ impl InformationOperationsActionPdu {
         let io_simulation_source = IOActionIOSimulationSource::deserialize(buf);
         let io_action_type = IOActionIOActionType::deserialize(buf);
         let io_action_phase = IOActionIOActionPhase::deserialize(buf);
-        let _padding = buf.get_u32();
+        let padding = buf.get_u32();
         let io_attacker_entity_id = EntityId::deserialize(buf);
         let io_primary_target_entity_id = EntityId::deserialize(buf);
-        let _padding2 = buf.get_u16();
+        let padding2 = buf.get_u16();
         let io_records = StandardVariableSpecification::deserialize(buf);
 
         InformationOperationsActionPdu {
@@ -157,10 +157,10 @@ impl InformationOperationsActionPdu {
             io_simulation_source,
             io_action_type,
             io_action_phase,
-            _padding,
+            padding,
             io_attacker_entity_id,
             io_primary_target_entity_id,
-            _padding2,
+            padding2,
             io_records,
         }
     }

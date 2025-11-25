@@ -27,13 +27,13 @@ use crate::{
 pub struct AttributePdu {
     pdu_header: PduHeader,
     pub originating_simulation_address: SimulationAddress,
-    _padding: u32,
-    _padding2: u16,
+    padding: u32,
+    padding2: u16,
     pub attribute_record_pdu_type: u8,
     pub attribute_record_protocol_version: u8,
     pub master_attribute_record_type: u32,
     pub action_code: DISAttributeActionCode,
-    _padding3: u8,
+    padding3: u8,
     pub number_of_attribute_record_sets: u16,
     pub attribute_record_sets: Vec<AttributeRecordSet>,
 }
@@ -66,13 +66,13 @@ impl Pdu for AttributePdu {
         })?;
         self.pdu_header.serialize(buf);
         self.originating_simulation_address.serialize(buf);
-        buf.put_u32(self._padding);
-        buf.put_u16(self._padding2);
+        buf.put_u32(self.padding);
+        buf.put_u16(self.padding2);
         buf.put_u8(self.attribute_record_pdu_type);
         buf.put_u8(self.attribute_record_protocol_version);
         buf.put_u32(self.master_attribute_record_type);
         buf.put_u8(self.action_code as u8);
-        buf.put_u8(self._padding3);
+        buf.put_u8(self.padding3);
         buf.put_u16(self.number_of_attribute_record_sets);
         for i in 0..self.attribute_record_sets.len() {
             self.attribute_record_sets[i].serialize(buf);
@@ -132,13 +132,13 @@ impl AttributePdu {
 
     fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
         let originating_simulation_address = SimulationAddress::deserialize(buf);
-        let _padding = buf.get_u32();
-        let _padding2 = buf.get_u16();
+        let padding = buf.get_u32();
+        let padding2 = buf.get_u16();
         let attribute_record_pdu_type = buf.get_u8();
         let attribute_record_protocol_version = buf.get_u8();
         let master_attribute_record_type = buf.get_u32();
         let action_code = DISAttributeActionCode::deserialize(buf);
-        let _padding3 = buf.get_u8();
+        let padding3 = buf.get_u8();
         let number_of_attribute_record_sets = buf.get_u16();
         let mut attribute_record_sets: Vec<AttributeRecordSet> = vec![];
         for _ in 0..number_of_attribute_record_sets {
@@ -147,13 +147,13 @@ impl AttributePdu {
         AttributePdu {
             pdu_header: PduHeader::default(),
             originating_simulation_address,
-            _padding,
-            _padding2,
+            padding,
+            padding2,
             attribute_record_pdu_type,
             attribute_record_protocol_version,
             master_attribute_record_type,
             action_code,
-            _padding3,
+            padding3,
             number_of_attribute_record_sets,
             attribute_record_sets,
         }

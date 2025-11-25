@@ -31,14 +31,14 @@ pub struct DirectedEnergyFirePdu {
     pub aperture_emitter_location: EntityCoordinateVector,
     pub aperture_diameter: f32,
     pub wavelength: f32,
-    _padding: u32,
+    padding: u32,
     pub pulse_repetition_frequency: f32,
     pub pulse_width: f32,
     pub flags: u16,
     pub pulse_shape: DEFirePulseShape,
-    _padding2: u8,
-    _padding3: u32,
-    _padding4: u16,
+    padding2: u8,
+    padding3: u32,
+    padding4: u16,
     pub number_of_de_records: u16,
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
 }
@@ -91,14 +91,14 @@ impl Pdu for DirectedEnergyFirePdu {
         self.aperture_emitter_location.serialize(buf);
         buf.put_f32(self.aperture_diameter);
         buf.put_f32(self.wavelength);
-        buf.put_u32(self._padding);
+        buf.put_u32(self.padding);
         buf.put_f32(self.pulse_repetition_frequency);
         buf.put_f32(self.pulse_width);
         buf.put_u16(self.flags);
         buf.put_u8(self.pulse_shape as u8);
-        buf.put_u8(self._padding2);
-        buf.put_u32(self._padding3);
-        buf.put_u16(self._padding4);
+        buf.put_u8(self.padding2);
+        buf.put_u32(self.padding3);
+        buf.put_u16(self.padding4);
         buf.put_u16(self.number_of_de_records);
         for i in 0..self.damage_descriptions.len() {
             self.damage_descriptions[i].serialize(buf);
@@ -169,14 +169,14 @@ impl DirectedEnergyFirePdu {
         let aperture_emitter_location = EntityCoordinateVector::deserialize(buf);
         let aperture_diameter = buf.get_f32();
         let wavelength = buf.get_f32();
-        let _padding = buf.get_u32();
+        let padding = buf.get_u32();
         let pulse_repetition_frequency = buf.get_f32();
         let pulse_width = buf.get_f32();
         let flags = buf.get_u16();
         let pulse_shape = DEFirePulseShape::deserialize(buf);
-        let _padding2 = buf.get_u8();
-        let _padding3 = buf.get_u32();
-        let _padding4 = buf.get_u16();
+        let padding2 = buf.get_u8();
+        let padding3 = buf.get_u32();
+        let padding4 = buf.get_u16();
         let number_of_de_records = buf.get_u16();
         let mut damage_descriptions: Vec<DirectedEnergyDamage> = vec![];
         for _ in 0..number_of_de_records {
@@ -193,14 +193,14 @@ impl DirectedEnergyFirePdu {
             aperture_emitter_location,
             aperture_diameter,
             wavelength,
-            _padding,
+            padding,
             pulse_repetition_frequency,
             pulse_width,
             flags,
             pulse_shape,
-            _padding2,
-            _padding3,
-            _padding4,
+            padding2,
+            padding3,
+            padding4,
             number_of_de_records,
             damage_descriptions,
         }

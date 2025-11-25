@@ -24,8 +24,8 @@ pub struct RemoveEntityReliablePdu {
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub required_reliability_service: RequiredReliabilityService,
-    _padding: u8,
-    _padding2: u16,
+    padding: u8,
+    padding2: u16,
     pub request_id: u32,
 }
 
@@ -54,8 +54,8 @@ impl Pdu for RemoveEntityReliablePdu {
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         buf.put_u8(self.required_reliability_service as u8);
-        buf.put_u8(self._padding);
-        buf.put_u16(self._padding2);
+        buf.put_u8(self.padding);
+        buf.put_u16(self.padding2);
         buf.put_u32(self.request_id);
         Ok(())
     }
@@ -116,8 +116,8 @@ impl RemoveEntityReliablePdu {
         let originating_entity_id = EntityId::deserialize(buf);
         let receiving_entity_id = EntityId::deserialize(buf);
         let required_reliability_service = RequiredReliabilityService::deserialize(buf);
-        let _padding = buf.get_u8();
-        let _padding2 = buf.get_u16();
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
         let request_id = buf.get_u32();
 
         RemoveEntityReliablePdu {
@@ -125,8 +125,8 @@ impl RemoveEntityReliablePdu {
             originating_entity_id,
             receiving_entity_id,
             required_reliability_service,
-            _padding,
-            _padding2,
+            padding,
+            padding2,
             request_id,
         }
     }
