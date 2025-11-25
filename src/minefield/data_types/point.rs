@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -22,7 +22,7 @@ impl Point {
         buf.put_f32(self.y);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> Point {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Point {
         Point {
             x: buf.get_f32(),
             y: buf.get_f32(),

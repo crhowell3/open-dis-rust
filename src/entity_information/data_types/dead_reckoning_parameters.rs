@@ -1,13 +1,13 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
 //                     (DIS) application protocol v6 and v7
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{BufMut, BytesMut};
+use bytes::{Buf, BufMut, BytesMut};
 
 use crate::common::{
-    angular_velocity_vector::AngularVelocity, enums::DeadReckoningAlgorithm,
+    SerializedLength, angular_velocity_vector::AngularVelocity, enums::DeadReckoningAlgorithm,
     linear_acceleration::LinearAcceleration,
 };
 
@@ -41,7 +41,7 @@ impl DeadReckoningParameters {
         self.entity_angular_velocity.serialize(buf);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> DeadReckoningParameters {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> DeadReckoningParameters {
         DeadReckoningParameters {
             dead_reckoning_algorithm: DeadReckoningAlgorithm::deserialize(buf),
             dead_reckoning_other_parameters: 0,
@@ -49,4 +49,8 @@ impl DeadReckoningParameters {
             entity_angular_velocity: AngularVelocity::deserialize(buf),
         }
     }
+}
+
+impl SerializedLength for DeadReckoningParameters {
+    const LENGTH: usize = 40;
 }

@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -30,7 +30,7 @@ impl StandardVariableRecords {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> StandardVariableRecords {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> StandardVariableRecords {
         let record_type = buf.get_u32();
         let record_length = buf.get_u16();
         let mut record_specific_fields: Vec<u8> = vec![];

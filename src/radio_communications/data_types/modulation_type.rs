@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -31,7 +31,7 @@ impl ModulationType {
         buf.put_u16(self.system);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> ModulationType {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> ModulationType {
         ModulationType {
             spread_spectrum: buf.get_u16(),
             major: buf.get_u16(),

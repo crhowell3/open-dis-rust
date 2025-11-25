@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -29,7 +29,7 @@ impl RecordSpecification {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> RecordSpecification {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> RecordSpecification {
         let number_of_record_sets = buf.get_u32();
         let mut record_sets: Vec<RecordSpecificationElement> = vec![];
         for _i in 0..number_of_record_sets {

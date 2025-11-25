@@ -1,65 +1,78 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
-use crate::common::{
-    dis_error::DISError,
-    entity_id::EntityId,
-    entity_type::EntityType,
-    pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+use crate::{
+    common::{
+        SerializedLength,
+        constants::MAX_PDU_SIZE_OCTETS,
+        dis_error::DISError,
+        entity_id::EntityId,
+        entity_type::EntityType,
+        enums::{MinefieldSensorTypes, PduType, ProtocolFamily},
+        pdu::Pdu,
+        pdu_header::PduHeader,
+    },
+    minefield::data_types::minefield_identifier::MinefieldIdentifier,
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use super::data_types::point::Point;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.9.3
 pub struct MinefieldQueryPdu {
-    pub pdu_header: PduHeader,
-    pub minefield_id: EntityId,
+    pdu_header: PduHeader,
+    pub minefield_id: MinefieldIdentifier,
     pub requesting_entity_id: EntityId,
     pub request_id: u8,
     pub number_of_perimeter_points: u8,
-    pub pad2: u8,
+    padding: u8,
     pub number_of_sensor_types: u8,
     pub data_filter: u32,
     pub requested_mine_type: EntityType,
     pub requested_perimeter_points: Vec<Point>,
-    pub sensor_types: Vec<u16>,
-}
-
-impl Default for MinefieldQueryPdu {
-    fn default() -> Self {
-        MinefieldQueryPdu {
-            pdu_header: PduHeader::default(PduType::MinefieldQuery, ProtocolFamily::Minefield, 56),
-            minefield_id: EntityId::default(1),
-            requesting_entity_id: EntityId::default(2),
-            request_id: 0,
-            number_of_perimeter_points: 0,
-            pad2: 0,
-            number_of_sensor_types: 0,
-            data_filter: 0,
-            requested_mine_type: EntityType::default(),
-            requested_perimeter_points: vec![Point::default()],
-            sensor_types: vec![0],
-        }
-    }
+    pub sensor_types: Vec<MinefieldSensorTypes>,
 }
 
 impl Pdu for MinefieldQueryPdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> Result<u16, DISError> {
+        let length = PduHeader::LENGTH
+            + MinefieldIdentifier::LENGTH
+            + EntityId::LENGTH
+            + std::mem::size_of::<u8>() * 4
+            + std::mem::size_of::<u32>()
+            + EntityType::LENGTH;
+
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.minefield_id.serialize(buf);
         self.requesting_entity_id.serialize(buf);
         buf.put_u8(self.request_id);
         buf.put_u8(self.number_of_perimeter_points);
-        buf.put_u8(self.pad2);
+        buf.put_u8(self.padding);
         buf.put_u8(self.number_of_sensor_types);
         buf.put_u32(self.data_filter);
         self.requested_mine_type.serialize(buf);
@@ -67,129 +80,127 @@ impl Pdu for MinefieldQueryPdu {
             self.requested_perimeter_points[i].serialize(buf);
         }
         for i in 0..self.sensor_types.len() {
-            buf.put_u16(self.sensor_types[i]);
+            buf.put_u16(self.sensor_types[i] as u16);
         }
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::MinefieldQuery {
-            let minefield_id = EntityId::deserialize(&mut buffer);
-            let requesting_entity_id = EntityId::deserialize(&mut buffer);
-            let request_id = buffer.get_u8();
-            let number_of_perimeter_points = buffer.get_u8();
-            let pad2 = buffer.get_u8();
-            let number_of_sensor_types = buffer.get_u8();
-            let data_filter = buffer.get_u32();
-            let requested_mine_type = EntityType::deserialize(&mut buffer);
-            let mut requested_perimeter_points: Vec<Point> = vec![];
-            for _i in 0..number_of_perimeter_points as usize {
-                requested_perimeter_points.push(Point::deserialize(&mut buffer));
-            }
-            let mut sensor_types: Vec<u16> = vec![];
-            for _i in 0..number_of_sensor_types as usize {
-                sensor_types.push(buffer.get_u16());
-            }
-
-            Ok(MinefieldQueryPdu {
-                pdu_header,
-                minefield_id,
-                requesting_entity_id,
-                request_id,
-                number_of_perimeter_points,
-                pad2,
-                number_of_sensor_types,
-                data_filter,
-                requested_mine_type,
-                requested_perimeter_points,
-                sensor_types,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::MinefieldQuery {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type MinefieldQuery, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let minefield_id = EntityId::deserialize(&mut buffer);
-        let requesting_entity_id = EntityId::deserialize(&mut buffer);
-        let request_id = buffer.get_u8();
-        let number_of_perimeter_points = buffer.get_u8();
-        let pad2 = buffer.get_u8();
-        let number_of_sensor_types = buffer.get_u8();
-        let data_filter = buffer.get_u32();
-        let requested_mine_type = EntityType::deserialize(&mut buffer);
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl MinefieldQueryPdu {
+    #[must_use]
+    /// Creates a new `MinefieldQueryPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `MinefieldQueryPdu`:
+    /// ```
+    /// use open_dis_rust::minefield::MinefieldQueryPdu;
+    /// let pdu = MinefieldQueryPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::MinefieldQuery;
+        pdu.pdu_header.protocol_family = ProtocolFamily::Minefield;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let minefield_id = MinefieldIdentifier::deserialize(buf);
+        let requesting_entity_id = EntityId::deserialize(buf);
+        let request_id = buf.get_u8();
+        let number_of_perimeter_points = buf.get_u8();
+        let padding = buf.get_u8();
+        let number_of_sensor_types = buf.get_u8();
+        let data_filter = buf.get_u32();
+        let requested_mine_type = EntityType::deserialize(buf);
         let mut requested_perimeter_points: Vec<Point> = vec![];
         for _i in 0..number_of_perimeter_points as usize {
-            requested_perimeter_points.push(Point::deserialize(&mut buffer));
+            requested_perimeter_points.push(Point::deserialize(buf));
         }
-        let mut sensor_types: Vec<u16> = vec![];
+        let mut sensor_types: Vec<MinefieldSensorTypes> = vec![];
         for _i in 0..number_of_sensor_types as usize {
-            sensor_types.push(buffer.get_u16());
+            sensor_types.push(MinefieldSensorTypes::deserialize(buf));
         }
 
-        Ok(MinefieldQueryPdu {
-            pdu_header,
+        MinefieldQueryPdu {
+            pdu_header: PduHeader::default(),
             minefield_id,
             requesting_entity_id,
             request_id,
             number_of_perimeter_points,
-            pad2,
+            padding,
             number_of_sensor_types,
             data_filter,
             requested_mine_type,
             requested_perimeter_points,
             sensor_types,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::MinefieldQueryPdu;
-    use crate::common::pdu_header::{PduHeader, PduType, ProtocolFamily};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
-    fn create_header() {
-        let minefield_query_pdu = MinefieldQueryPdu::default();
-        let pdu_header =
-            PduHeader::default(PduType::MinefieldQuery, ProtocolFamily::Minefield, 448 / 8);
+    fn cast_to_any() {
+        let pdu = MinefieldQueryPdu::new();
+        let any_pdu = pdu.as_any();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            minefield_query_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            minefield_query_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, minefield_query_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            minefield_query_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, minefield_query_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            minefield_query_pdu.pdu_header.status_record
-        );
+        assert!(any_pdu.is::<MinefieldQueryPdu>());
+    }
+
+    #[test]
+    fn serialize_then_deserialize() {
+        let mut pdu = MinefieldQueryPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
+
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = MinefieldQueryPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
+        let pdu = MinefieldQueryPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

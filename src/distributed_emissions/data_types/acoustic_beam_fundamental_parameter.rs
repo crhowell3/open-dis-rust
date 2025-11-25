@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -44,7 +44,7 @@ impl AcousticBeamFundamentalParameter {
         buf.put_f32(self.de_beamwidth);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> AcousticBeamFundamentalParameter {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> AcousticBeamFundamentalParameter {
         AcousticBeamFundamentalParameter {
             active_emission_parameter_index: buf.get_u16(),
             scan_pattern: buf.get_u16(),

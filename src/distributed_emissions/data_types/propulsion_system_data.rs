@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -25,7 +25,7 @@ impl PropulsionSystemData {
         buf.put_f32(self.engine_rpm);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> PropulsionSystemData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> PropulsionSystemData {
         PropulsionSystemData {
             power_setting: buf.get_f32(),
             engine_rpm: buf.get_f32(),

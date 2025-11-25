@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -27,7 +27,7 @@ impl ApaData {
         buf.put_i16(self.parameter_value);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> ApaData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> ApaData {
         ApaData {
             parameter_index: buf.get_u16(),
             parameter_value: buf.get_i16(),

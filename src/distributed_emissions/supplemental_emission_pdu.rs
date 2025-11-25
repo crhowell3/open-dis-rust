@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -8,10 +8,12 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{PduType, ProtocolFamily},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 use super::data_types::{
@@ -19,10 +21,10 @@ use super::data_types::{
     vectoring_nozzle_system_data::VectoringNozzleSystemData,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.6.6
 pub struct SupplementalEmissionPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
     pub infrared_signature_representation_index: u16,
     pub acoustic_signature_representation_index: u16,
@@ -33,41 +35,33 @@ pub struct SupplementalEmissionPdu {
     pub vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData>,
 }
 
-impl Default for SupplementalEmissionPdu {
-    /// Creates a default-initialized Supplemental Emission PDU
-    ///
-    /// # Examples
-    ///
-    /// Initializing a Supplemental Emission PDU:
-    /// ```
-    /// use open_dis_rust::distributed_emissions::supplemental_emission_pdu::SupplementalEmissionPdu;
-    /// let mut supplemental_emission_pdu = SupplementalEmissionPdu::default();
-    /// ```
-    ///
-    fn default() -> Self {
-        SupplementalEmissionPdu {
-            pdu_header: PduHeader::default(
-                PduType::SupplementalEmission,
-                ProtocolFamily::DistributedEmissionRegeneration,
-                56,
-            ),
-            originating_entity_id: EntityId::default(1),
-            infrared_signature_representation_index: 0,
-            acoustic_signature_representation_index: 0,
-            radar_cross_section_signature_representation_index: 0,
-            number_of_propulsion_systems: 0,
-            number_of_vectoring_nozzle_systems: 0,
-            propulsion_system_data: vec![],
-            vectoring_nozzle_system_data: vec![],
-        }
-    }
-}
-
 impl Pdu for SupplementalEmissionPdu {
-    /// Serialize contents of `SupplementalEmissionPdu` into `BytesMut` buffer
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> Result<u16, DISError> {
+        let length = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<EntityId>()
+            + std::mem::size_of::<u16>() * 5;
+
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    /// Serialize contents of `SupplementalEmissionPdu` into `BytesMut` buf
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         buf.put_u16(self.infrared_signature_representation_index);
@@ -81,81 +75,80 @@ impl Pdu for SupplementalEmissionPdu {
         for i in 0..self.vectoring_nozzle_system_data.len() {
             self.vectoring_nozzle_system_data[i].serialize(buf);
         }
+        Ok(())
     }
 
-    /// Deserialize bytes from `BytesMut` buffer and interpret as `SupplementalEmissionPdu`
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    /// Deserialize bytes from `BytesMut` buf and interpret as `SupplementalEmissionPdu`
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::SupplementalEmission {
-            let originating_entity_id = EntityId::deserialize(&mut buffer);
-            let infrared_signature_representation_index = buffer.get_u16();
-            let acoustic_signature_representation_index = buffer.get_u16();
-            let radar_cross_section_signature_representation_index = buffer.get_u16();
-            let number_of_propulsion_systems = buffer.get_u16();
-            let number_of_vectoring_nozzle_systems = buffer.get_u16();
-            let mut propulsion_system_data: Vec<PropulsionSystemData> = vec![];
-            for _i in 0..number_of_propulsion_systems {
-                propulsion_system_data.push(PropulsionSystemData::deserialize(&mut buffer));
-            }
-            let mut vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData> = vec![];
-            for _i in 0..number_of_vectoring_nozzle_systems {
-                vectoring_nozzle_system_data
-                    .push(VectoringNozzleSystemData::deserialize(&mut buffer));
-            }
-            Ok(SupplementalEmissionPdu {
-                pdu_header,
-                originating_entity_id,
-                infrared_signature_representation_index,
-                acoustic_signature_representation_index,
-                radar_cross_section_signature_representation_index,
-                number_of_propulsion_systems,
-                number_of_vectoring_nozzle_systems,
-                propulsion_system_data,
-                vectoring_nozzle_system_data,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::SupplementalEmission {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type SupplementalEmission, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
-    /// Treat `SupplementalEmissionPdu` as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    /// Deserialize bytes from `BytesMut` buffer, but assume PDU header exists already
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let originating_entity_id = EntityId::deserialize(&mut buffer);
-        let infrared_signature_representation_index = buffer.get_u16();
-        let acoustic_signature_representation_index = buffer.get_u16();
-        let radar_cross_section_signature_representation_index = buffer.get_u16();
-        let number_of_propulsion_systems = buffer.get_u16();
-        let number_of_vectoring_nozzle_systems = buffer.get_u16();
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl SupplementalEmissionPdu {
+    #[must_use]
+    /// Creates a new `SupplementalEmissionPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `SupplementalEmissionPdu`:
+    /// ```
+    /// use open_dis_rust::distributed_emissions::SupplementalEmissionPdu;
+    /// let pdu = SupplementalEmissionPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::SupplementalEmission;
+        pdu.pdu_header.protocol_family = ProtocolFamily::DistributedEmissionRegeneration;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let originating_entity_id = EntityId::deserialize(buf);
+        let infrared_signature_representation_index = buf.get_u16();
+        let acoustic_signature_representation_index = buf.get_u16();
+        let radar_cross_section_signature_representation_index = buf.get_u16();
+        let number_of_propulsion_systems = buf.get_u16();
+        let number_of_vectoring_nozzle_systems = buf.get_u16();
         let mut propulsion_system_data: Vec<PropulsionSystemData> = vec![];
         for _i in 0..number_of_propulsion_systems {
-            propulsion_system_data.push(PropulsionSystemData::deserialize(&mut buffer));
+            propulsion_system_data.push(PropulsionSystemData::deserialize(buf));
         }
         let mut vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData> = vec![];
         for _i in 0..number_of_vectoring_nozzle_systems {
-            vectoring_nozzle_system_data.push(VectoringNozzleSystemData::deserialize(&mut buffer));
+            vectoring_nozzle_system_data.push(VectoringNozzleSystemData::deserialize(buf));
         }
-        Ok(SupplementalEmissionPdu {
-            pdu_header,
+        SupplementalEmissionPdu {
+            pdu_header: PduHeader::default(),
             originating_entity_id,
             infrared_signature_representation_index,
             acoustic_signature_representation_index,
@@ -164,72 +157,39 @@ impl Pdu for SupplementalEmissionPdu {
             number_of_vectoring_nozzle_systems,
             propulsion_system_data,
             vectoring_nozzle_system_data,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::SupplementalEmissionPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
     use bytes::BytesMut;
 
     #[test]
-    fn create_header() {
-        let supplemental_emission_pdu = SupplementalEmissionPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::SupplementalEmission,
-            ProtocolFamily::DistributedEmissionRegeneration,
-            448 / 8,
-        );
-
-        assert_eq!(
-            pdu_header.protocol_version,
-            supplemental_emission_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            supplemental_emission_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(
-            pdu_header.pdu_type,
-            supplemental_emission_pdu.pdu_header.pdu_type
-        );
-        assert_eq!(
-            pdu_header.protocol_family,
-            supplemental_emission_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(
-            pdu_header.length,
-            supplemental_emission_pdu.pdu_header.length
-        );
-        assert_eq!(
-            pdu_header.status_record,
-            supplemental_emission_pdu.pdu_header.status_record
-        );
-    }
-
-    #[test]
     fn cast_to_any() {
-        let supplemental_emission_pdu = SupplementalEmissionPdu::default();
-        let any_pdu = supplemental_emission_pdu.as_any();
+        let pdu = SupplementalEmissionPdu::new();
+        let any_pdu = pdu.as_any();
 
         assert!(any_pdu.is::<SupplementalEmissionPdu>());
     }
 
     #[test]
-    fn deserialize_header() {
-        let mut supplemental_emission_pdu = SupplementalEmissionPdu::default();
-        let mut buffer = BytesMut::new();
-        supplemental_emission_pdu.serialize(&mut buffer);
+    fn serialize_then_deserialize() {
+        let mut pdu = SupplementalEmissionPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
 
-        let new_supplemental_emission_pdu = SupplementalEmissionPdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_supplemental_emission_pdu.pdu_header,
-            supplemental_emission_pdu.pdu_header
-        );
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = SupplementalEmissionPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
+        let pdu = SupplementalEmissionPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

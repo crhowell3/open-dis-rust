@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -8,191 +8,167 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{PduType, ProtocolFamily},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 use super::data_types::directed_energy_damage::DirectedEnergyDamage;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.3.5
 pub struct EntityDamageStatusPdu {
-    pub pdu_header: PduHeader,
-    pub firing_entity_id: EntityId,
-    pub target_entity_id: EntityId,
+    pdu_header: PduHeader,
     pub damaged_entity_id: EntityId,
-    pub padding1: u16,
-    pub padding2: u16,
+    padding: u16,
+    padding2: u16,
     pub number_of_damage_descriptions: u16,
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
 }
 
-impl Default for EntityDamageStatusPdu {
-    /// Creates a default Entity Damage Status PDU with arbitrary firing entity ID and target entity ID
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Entity Damage Status PDU:
-    /// ```
-    /// use open_dis_rust::warfare::entity_damage_status_pdu::EntityDamageStatusPdu;
-    /// let entity_damage_status_pdu = EntityDamageStatusPdu::default();
-    /// ```
-    ///
-    fn default() -> Self {
-        EntityDamageStatusPdu {
-            pdu_header: PduHeader::default(
-                PduType::EntityDamageStatus,
-                ProtocolFamily::Warfare,
-                56,
-            ),
-            firing_entity_id: EntityId::default(1),
-            target_entity_id: EntityId::default(2),
-            damaged_entity_id: EntityId::default(3),
-            padding1: 0,
-            padding2: 0,
-            number_of_damage_descriptions: 0,
-            damage_descriptions: vec![],
-        }
-    }
-}
-
 impl Pdu for EntityDamageStatusPdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> Result<u16, DISError> {
+        let length = std::mem::size_of::<PduHeader>()
+            + std::mem::size_of::<EntityId>()
+            + std::mem::size_of::<u16>() * 3;
+
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
-        self.firing_entity_id.serialize(buf);
-        self.target_entity_id.serialize(buf);
         self.damaged_entity_id.serialize(buf);
-        buf.put_u16(self.padding1);
+        buf.put_u16(self.padding);
         buf.put_u16(self.padding2);
         buf.put_u16(self.number_of_damage_descriptions);
         for i in 0..self.damage_descriptions.len() {
             self.damage_descriptions[i].serialize(buf);
         }
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::EntityDamageStatus {
-            let firing_entity_id = EntityId::deserialize(&mut buffer);
-            let target_entity_id = EntityId::deserialize(&mut buffer);
-            let damaged_entity_id = EntityId::deserialize(&mut buffer);
-            let padding1 = buffer.get_u16();
-            let padding2 = buffer.get_u16();
-            let number_of_damage_descriptions = buffer.get_u16();
-            let damage_descriptions: Vec<DirectedEnergyDamage> = vec![];
-            Ok(EntityDamageStatusPdu {
-                pdu_header,
-                firing_entity_id,
-                target_entity_id,
-                damaged_entity_id,
-                padding1,
-                padding2,
-                number_of_damage_descriptions,
-                damage_descriptions,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::EntityDamageStatus {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type EntityDamageStatus, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let firing_entity_id = EntityId::deserialize(&mut buffer);
-        let target_entity_id = EntityId::deserialize(&mut buffer);
-        let damaged_entity_id = EntityId::deserialize(&mut buffer);
-        let padding1 = buffer.get_u16();
-        let padding2 = buffer.get_u16();
-        let number_of_damage_descriptions = buffer.get_u16();
-        let damage_descriptions: Vec<DirectedEnergyDamage> = vec![];
-        Ok(EntityDamageStatusPdu {
-            pdu_header,
-            firing_entity_id,
-            target_entity_id,
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl EntityDamageStatusPdu {
+    #[must_use]
+    /// Creates a new Entity Damage Status PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing an Entity Damage Status PDU:
+    /// ```
+    /// use open_dis_rust::warfare::EntityDamageStatusPdu;
+    /// let pdu = EntityDamageStatusPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::EntityDamageStatus;
+        pdu.pdu_header.protocol_family = ProtocolFamily::Warfare;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let damaged_entity_id = EntityId::deserialize(buf);
+        let padding = buf.get_u16();
+        let padding2 = buf.get_u16();
+        let number_of_damage_descriptions = buf.get_u16();
+        let mut damage_descriptions: Vec<DirectedEnergyDamage> = vec![];
+        for _ in 0..number_of_damage_descriptions {
+            damage_descriptions.push(DirectedEnergyDamage::deserialize(buf));
+        }
+
+        EntityDamageStatusPdu {
+            pdu_header: PduHeader::default(),
             damaged_entity_id,
-            padding1,
+            padding,
             padding2,
             number_of_damage_descriptions,
             damage_descriptions,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::EntityDamageStatusPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
+    use crate::common::pdu::Pdu;
     use bytes::BytesMut;
 
     #[test]
-    fn create_header() {
-        let entity_damage_status_pdu = EntityDamageStatusPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::EntityDamageStatus,
-            ProtocolFamily::Warfare,
-            448 / 8,
-        );
+    fn cast_to_any() {
+        let entity_damage_status_pdu = EntityDamageStatusPdu::new();
+        let any_pdu = entity_damage_status_pdu.as_any();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            entity_damage_status_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            entity_damage_status_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(
-            pdu_header.pdu_type,
-            entity_damage_status_pdu.pdu_header.pdu_type
-        );
-        assert_eq!(
-            pdu_header.protocol_family,
-            entity_damage_status_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(
-            pdu_header.length,
-            entity_damage_status_pdu.pdu_header.length
-        );
-        assert_eq!(
-            pdu_header.status_record,
-            entity_damage_status_pdu.pdu_header.status_record
-        );
+        assert!(any_pdu.is::<EntityDamageStatusPdu>());
     }
 
     #[test]
-    fn deserialize_header() {
-        let mut entity_damage_status_pdu = EntityDamageStatusPdu::default();
-        let mut buffer = BytesMut::new();
-        entity_damage_status_pdu.serialize(&mut buffer);
+    fn serialize_then_deserialize() {
+        let mut pdu = EntityDamageStatusPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
 
-        let new_entity_damage_status_pdu = EntityDamageStatusPdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_entity_damage_status_pdu.pdu_header,
-            entity_damage_status_pdu.pdu_header
-        );
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = EntityDamageStatusPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 192 / 8;
+        let pdu = EntityDamageStatusPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

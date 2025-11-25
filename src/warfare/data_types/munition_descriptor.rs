@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -42,7 +42,7 @@ impl MunitionDescriptor {
         buf.put_u16(self.rate);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> MunitionDescriptor {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> MunitionDescriptor {
         MunitionDescriptor {
             munition_type: EntityType::deserialize(buf),
             warhead: buf.get_u16(),

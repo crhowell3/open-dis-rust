@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -34,7 +34,7 @@ impl ShaftRPMs {
         buf.put_i32(self.shaft_rpm_rate_of_change);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> ShaftRPMs {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> ShaftRPMs {
         ShaftRPMs {
             current_shaft_rpms: buf.get_i16(),
             ordered_shaft_rpms: buf.get_i16(),

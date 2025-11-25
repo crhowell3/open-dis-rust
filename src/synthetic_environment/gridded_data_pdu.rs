@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -8,23 +8,25 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    ClockTime, SerializedLength,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
     entity_type::EntityType,
-    enums::{GriddedDataConstantGrid, GriddedDataCoordinateSystem},
+    enums::{GriddedDataConstantGrid, GriddedDataCoordinateSystem, PduType, ProtocolFamily},
     euler_angles::EulerAngles,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 use super::data_types::{
     grid_axis_descriptor::GridAxisDescriptor, grid_data_record::GridDataRecord,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.10.3
 pub struct GriddedDataPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub environmental_simulation_id: EntityId,
     pub field_number: u16,
     pub pdu_number: u16,
@@ -34,57 +36,53 @@ pub struct GriddedDataPdu {
     pub constant_grid: GriddedDataConstantGrid,
     pub environment_type: EntityType,
     pub orientation: EulerAngles,
-    pub sample_time: u64,
+    pub sample_time: ClockTime,
     pub total_values: u32,
     pub vector_dimension: u8,
-    pub padding1: u8,
-    pub padding2: u16,
+    padding: u8,
+    padding2: u16,
     pub grid_axis_descriptors: Vec<GridAxisDescriptor>,
     pub grid_data_list: Vec<GridDataRecord>,
 }
 
-impl Default for GriddedDataPdu {
-    /// Creates a default Gridded Data PDU with arbitrary environmental process ID
-    ///
-    /// # Examples
-    ///
-    /// Initializing a Gridded Data PDU:
-    /// ```
-    /// use open_dis_rust::synthetic_environment::gridded_data_pdu::GriddedDataPdu;
-    /// let gridded_data_pdu = GriddedDataPdu::default();
-    /// ```
-    ///
-    fn default() -> Self {
-        GriddedDataPdu {
-            pdu_header: PduHeader::default(
-                PduType::GriddedData,
-                ProtocolFamily::SyntheticEnvironment,
-                112,
-            ),
-            environmental_simulation_id: EntityId::default(0),
-            field_number: 0,
-            pdu_number: 0,
-            pdu_total: 0,
-            coordinate_system: GriddedDataCoordinateSystem::default(),
-            number_of_grid_axes: 0,
-            constant_grid: GriddedDataConstantGrid::default(),
-            environment_type: EntityType::default(),
-            orientation: EulerAngles::default(),
-            sample_time: 0,
-            total_values: 0,
-            vector_dimension: 0,
-            padding1: 0,
-            padding2: 0,
-            grid_axis_descriptors: vec![],
-            grid_data_list: vec![],
-        }
-    }
-}
-
 impl Pdu for GriddedDataPdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> Result<u16, DISError> {
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH
+            + 2
+            + 2
+            + 2
+            + 2
+            + 1
+            + 1
+            + EntityType::LENGTH
+            + EulerAngles::LENGTH
+            + ClockTime::LENGTH
+            + 4
+            + 1
+            + 1
+            + 2;
+
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.environmental_simulation_id.serialize(buf);
         buf.put_u16(self.field_number);
@@ -95,10 +93,10 @@ impl Pdu for GriddedDataPdu {
         buf.put_u8(self.constant_grid as u8);
         self.environment_type.serialize(buf);
         self.orientation.serialize(buf);
-        buf.put_u64(self.sample_time);
+        self.sample_time.serialize(buf);
         buf.put_u32(self.total_values);
         buf.put_u8(self.vector_dimension);
-        buf.put_u8(self.padding1);
+        buf.put_u8(self.padding);
         buf.put_u16(self.padding2);
         for i in 0..self.grid_axis_descriptors.len() {
             self.grid_axis_descriptors[i].serialize(buf);
@@ -106,102 +104,85 @@ impl Pdu for GriddedDataPdu {
         for i in 0..self.grid_data_list.len() {
             self.grid_data_list[i].serialize(buf);
         }
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::GriddedData {
-            let environmental_simulation_id = EntityId::deserialize(&mut buffer);
-            let field_number = buffer.get_u16();
-            let pdu_number = buffer.get_u16();
-            let pdu_total = buffer.get_u16();
-            let coordinate_system = GriddedDataCoordinateSystem::deserialize(&mut buffer);
-            let number_of_grid_axes = buffer.get_u8();
-            let constant_grid = GriddedDataConstantGrid::deserialize(&mut buffer);
-            let environment_type = EntityType::deserialize(&mut buffer);
-            let orientation = EulerAngles::deserialize(&mut buffer);
-            let sample_time = buffer.get_u64();
-            let total_values = buffer.get_u32();
-            let vector_dimension = buffer.get_u8();
-            let padding1 = buffer.get_u8();
-            let padding2 = buffer.get_u16();
-            let mut grid_axis_descriptors: Vec<GridAxisDescriptor> = vec![];
-            for _ in 0..number_of_grid_axes {
-                grid_axis_descriptors.push(GridAxisDescriptor::deserialize(&mut buffer));
-            }
-            let mut grid_data_list: Vec<GridDataRecord> = vec![];
-            while buffer.has_remaining() {
-                grid_data_list.push(GridDataRecord::deserialize(&mut buffer));
-            }
-
-            Ok(GriddedDataPdu {
-                pdu_header,
-                environmental_simulation_id,
-                field_number,
-                pdu_number,
-                pdu_total,
-                coordinate_system,
-                number_of_grid_axes,
-                constant_grid,
-                environment_type,
-                orientation,
-                sample_time,
-                total_values,
-                vector_dimension,
-                padding1,
-                padding2,
-                grid_axis_descriptors,
-                grid_data_list,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!(
-                    "Expected PDU type GriddedData, got {:?}",
-                    pdu_header.pdu_type
-                ),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::GriddedData {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type GriddedData, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let environmental_simulation_id = EntityId::deserialize(&mut buffer);
-        let field_number = buffer.get_u16();
-        let pdu_number = buffer.get_u16();
-        let pdu_total = buffer.get_u16();
-        let coordinate_system = GriddedDataCoordinateSystem::deserialize(&mut buffer);
-        let number_of_grid_axes = buffer.get_u8();
-        let constant_grid = GriddedDataConstantGrid::deserialize(&mut buffer);
-        let environment_type = EntityType::deserialize(&mut buffer);
-        let orientation = EulerAngles::deserialize(&mut buffer);
-        let sample_time = buffer.get_u64();
-        let total_values = buffer.get_u32();
-        let vector_dimension = buffer.get_u8();
-        let padding1 = buffer.get_u8();
-        let padding2 = buffer.get_u16();
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl GriddedDataPdu {
+    #[must_use]
+    /// Creates a new Entity Damage Status PDU
+    ///
+    /// # Examples
+    ///
+    /// Initializing an Entity Damage Status PDU:
+    /// ```
+    /// use open_dis_rust::synthetic_environment::GriddedDataPdu;
+    /// let pdu = GriddedDataPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::GriddedData;
+        pdu.pdu_header.protocol_family = ProtocolFamily::SyntheticEnvironment;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let environmental_simulation_id = EntityId::deserialize(buf);
+        let field_number = buf.get_u16();
+        let pdu_number = buf.get_u16();
+        let pdu_total = buf.get_u16();
+        let coordinate_system = GriddedDataCoordinateSystem::deserialize(buf);
+        let number_of_grid_axes = buf.get_u8();
+        let constant_grid = GriddedDataConstantGrid::deserialize(buf);
+        let environment_type = EntityType::deserialize(buf);
+        let orientation = EulerAngles::deserialize(buf);
+        let sample_time = ClockTime::deserialize(buf);
+        let total_values = buf.get_u32();
+        let vector_dimension = buf.get_u8();
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
         let mut grid_axis_descriptors: Vec<GridAxisDescriptor> = vec![];
         for _ in 0..number_of_grid_axes {
-            grid_axis_descriptors.push(GridAxisDescriptor::deserialize(&mut buffer));
+            grid_axis_descriptors.push(GridAxisDescriptor::deserialize(buf));
         }
         let mut grid_data_list: Vec<GridDataRecord> = vec![];
-        while buffer.has_remaining() {
-            grid_data_list.push(GridDataRecord::deserialize(&mut buffer));
+        while buf.has_remaining() {
+            grid_data_list.push(GridDataRecord::deserialize(buf));
         }
-        Ok(GriddedDataPdu {
-            pdu_header,
+
+        GriddedDataPdu {
+            pdu_header: PduHeader::default(),
             environmental_simulation_id,
             field_number,
             pdu_number,
@@ -214,69 +195,43 @@ impl Pdu for GriddedDataPdu {
             sample_time,
             total_values,
             vector_dimension,
-            padding1,
+            padding,
             padding2,
             grid_axis_descriptors,
             grid_data_list,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::GriddedDataPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
     use bytes::BytesMut;
 
     #[test]
-    fn create_header() {
-        let gridded_data_pdu = GriddedDataPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::GriddedData,
-            ProtocolFamily::SyntheticEnvironment,
-            112,
-        );
+    fn cast_to_any() {
+        let pdu = GriddedDataPdu::new();
+        let any_pdu = pdu.as_any();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            gridded_data_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            gridded_data_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, gridded_data_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            gridded_data_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, gridded_data_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            gridded_data_pdu.pdu_header.status_record
-        );
+        assert!(any_pdu.is::<GriddedDataPdu>());
     }
 
     #[test]
-    fn deserialize_header() {
-        let mut gridded_data_pdu = GriddedDataPdu::default();
-        let mut buffer = BytesMut::new();
-        gridded_data_pdu.serialize(&mut buffer);
+    fn serialize_then_deserialize() {
+        let mut pdu = GriddedDataPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
 
-        let new_gridded_data_pdu = GriddedDataPdu::deserialize(buffer).unwrap();
-        assert_eq!(new_gridded_data_pdu.pdu_header, gridded_data_pdu.pdu_header);
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = GriddedDataPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
     }
 
     #[test]
-    fn check_pdu_size() {
-        let gridded_data_pdu = GriddedDataPdu::default();
-
-        assert_eq!(
-            gridded_data_pdu.pdu_header.length,
-            gridded_data_pdu.pdu_header.length
-        );
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 512 / BITS_PER_BYTE;
+        let pdu = GriddedDataPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

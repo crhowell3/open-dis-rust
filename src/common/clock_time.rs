@@ -1,10 +1,12 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
+
+use crate::common::SerializedLength;
 
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.14
@@ -29,10 +31,14 @@ impl ClockTime {
         buf.put_u32(self.time_past_hour);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> ClockTime {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> ClockTime {
         ClockTime {
             hour: buf.get_u32(),
             time_past_hour: buf.get_u32(),
         }
     }
+}
+
+impl SerializedLength for ClockTime {
+    const LENGTH: usize = 8;
 }

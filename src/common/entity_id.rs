@@ -1,8 +1,10 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
+
+use crate::common::SerializedLength;
 
 use super::simulation_address::SimulationAddress;
 use bytes::{Buf, BufMut, BytesMut};
@@ -25,30 +27,26 @@ impl EntityId {
         }
     }
 
-    #[must_use]
-    pub fn default(entity_id: u16) -> Self {
-        EntityId {
-            simulation_address: SimulationAddress::default(),
-            entity_id,
-        }
-    }
-
     pub fn serialize(&self, buf: &mut BytesMut) {
         self.simulation_address.serialize(buf);
         buf.put_u16(self.entity_id);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EntityId {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityId {
         EntityId {
             simulation_address: EntityId::deserialize_simulation_address(buf),
             entity_id: buf.get_u16(),
         }
     }
 
-    fn deserialize_simulation_address(buf: &mut BytesMut) -> SimulationAddress {
+    fn deserialize_simulation_address<B: Buf>(buf: &mut B) -> SimulationAddress {
         SimulationAddress {
             site_id: buf.get_u16(),
             application_id: buf.get_u16(),
         }
     }
+}
+
+impl SerializedLength for EntityId {
+    const LENGTH: usize = 6;
 }

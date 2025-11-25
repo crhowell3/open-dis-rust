@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -27,7 +27,7 @@ impl SupplyQuantity {
         buf.put_f32(self.quantity);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> SupplyQuantity {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> SupplyQuantity {
         SupplyQuantity {
             supply_type: EntityType::deserialize(buf),
             quantity: buf.get_f32(),

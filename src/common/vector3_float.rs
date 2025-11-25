@@ -1,10 +1,12 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
+
+use crate::common::SerializedLength;
 
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
 /// Custom vector type containing 3 single precision fields
@@ -93,7 +95,7 @@ impl Vector3Float {
         buf.put_f32(self.z);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> Vector3Float {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Vector3Float {
         Vector3Float {
             x: buf.get_f32(),
             y: buf.get_f32(),
@@ -132,6 +134,10 @@ impl std::ops::Div<f32> for Vector3Float {
     fn div(self, scalar: f32) -> Self {
         Self::new(self.x / scalar, self.y / scalar, self.z / scalar)
     }
+}
+
+impl SerializedLength for Vector3Float {
+    const LENGTH: usize = 12;
 }
 
 #[cfg(test)]

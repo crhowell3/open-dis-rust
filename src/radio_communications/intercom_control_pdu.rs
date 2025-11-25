@@ -1,182 +1,159 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
 use super::data_types::intercom_communications_parameters::IntercomCommunicationsParameters;
 use crate::common::{
+    SerializedLength,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{
+        IntercomControlCommand, IntercomControlControlType, IntercomControlTransmitLineState,
+        PduType, ProtocolFamily,
+    },
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.7.6
 pub struct IntercomControlPdu {
-    pub pdu_header: PduHeader,
-    pub entity_id: EntityId,
-    pub radio_id: u16,
-    pub control_type: u8,
+    pdu_header: PduHeader,
+    pub control_type: IntercomControlControlType,
     pub communications_channel_type: u8,
     pub source_entity_id: EntityId,
     pub source_communications_device_id: u8,
     pub source_line_id: u8,
     pub transmit_priority: u8,
-    pub transmit_line_state: u8,
-    pub command: u8,
-    pub master_entity_id: EntityId,
+    pub transmit_line_state: IntercomControlTransmitLineState,
+    pub command: IntercomControlCommand,
+    pub master_intercom_number: EntityId,
     pub master_communications_device_id: u16,
     pub intercom_parameters_length: u32,
     pub intercom_parameters: Vec<IntercomCommunicationsParameters>,
 }
 
-impl Default for IntercomControlPdu {
-    /// Creates a default Intercom Control PDU with arbitrary originating and receiving
-    /// entity IDs
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Intercom Control PDU:
-    /// ```
-    /// use open_dis_rust::radio_communications::intercom_control_pdu::IntercomControlPdu;
-    /// let intercom_control_pdu = IntercomControlPdu::default();
-    /// ```
-    ///
-    fn default() -> Self {
-        IntercomControlPdu {
-            pdu_header: PduHeader::default(
-                PduType::IntercomControl,
-                ProtocolFamily::RadioCommunications,
-                56,
-            ),
-            entity_id: EntityId::default(1),
-            radio_id: 0,
-            control_type: 0,
-            communications_channel_type: 0,
-            source_entity_id: EntityId::default(2),
-            source_communications_device_id: 0,
-            source_line_id: 0,
-            transmit_priority: 0,
-            transmit_line_state: 0,
-            command: 0,
-            master_entity_id: EntityId::default(3),
-            master_communications_device_id: 0,
-            intercom_parameters_length: 0,
-            intercom_parameters: vec![],
-        }
-    }
-}
-
 impl Pdu for IntercomControlPdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> Result<u16, DISError> {
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH * 2
+            + std::mem::size_of::<u16>() * 3
+            + std::mem::size_of::<u8>() * 6
+            + std::mem::size_of::<u32>();
+
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
-        self.entity_id.serialize(buf);
-        buf.put_u16(self.radio_id);
-        buf.put_u8(self.control_type);
+        buf.put_u8(self.control_type as u8);
         buf.put_u8(self.communications_channel_type);
         self.source_entity_id.serialize(buf);
         buf.put_u8(self.source_communications_device_id);
         buf.put_u8(self.source_line_id);
         buf.put_u8(self.transmit_priority);
-        buf.put_u8(self.transmit_line_state);
-        buf.put_u8(self.command);
-        self.master_entity_id.serialize(buf);
+        buf.put_u8(self.transmit_line_state as u8);
+        buf.put_u8(self.command as u8);
+        self.master_intercom_number.serialize(buf);
         buf.put_u16(self.master_communications_device_id);
         buf.put_u32(self.intercom_parameters_length);
         for i in 0usize..self.intercom_parameters_length as usize {
             self.intercom_parameters[i].serialize(buf);
         }
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::IntercomControl {
-            let entity_id = EntityId::deserialize(&mut buffer);
-            let radio_id = buffer.get_u16();
-            let control_type = buffer.get_u8();
-            let communications_channel_type = buffer.get_u8();
-            let source_entity_id = EntityId::deserialize(&mut buffer);
-            let source_communications_device_id = buffer.get_u8();
-            let source_line_id = buffer.get_u8();
-            let transmit_priority = buffer.get_u8();
-            let transmit_line_state = buffer.get_u8();
-            let command = buffer.get_u8();
-            let master_entity_id = EntityId::deserialize(&mut buffer);
-            let master_communications_device_id = buffer.get_u16();
-            let intercom_parameters_length = buffer.get_u32();
-            let mut intercom_parameters: Vec<IntercomCommunicationsParameters> = vec![];
-            for _i in 0..intercom_parameters_length {
-                intercom_parameters
-                    .push(IntercomCommunicationsParameters::deserialize(&mut buffer));
-            }
-            Ok(IntercomControlPdu {
-                pdu_header,
-                entity_id,
-                radio_id,
-                control_type,
-                communications_channel_type,
-                source_entity_id,
-                source_communications_device_id,
-                source_line_id,
-                transmit_priority,
-                transmit_line_state,
-                command,
-                master_entity_id,
-                master_communications_device_id,
-                intercom_parameters_length,
-                intercom_parameters,
-            })
-        } else {
-            Err(DISError::invalid_header(
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::IntercomControl {
+            return Err(DISError::invalid_header(
                 format!(
                     "Expected PDU type IntercomControl, got {:?}",
-                    pdu_header.pdu_type
+                    header.pdu_type
                 ),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let entity_id = EntityId::deserialize(&mut buffer);
-        let radio_id = buffer.get_u16();
-        let control_type = buffer.get_u8();
-        let communications_channel_type = buffer.get_u8();
-        let source_entity_id = EntityId::deserialize(&mut buffer);
-        let source_communications_device_id = buffer.get_u8();
-        let source_line_id = buffer.get_u8();
-        let transmit_priority = buffer.get_u8();
-        let transmit_line_state = buffer.get_u8();
-        let command = buffer.get_u8();
-        let master_entity_id = EntityId::deserialize(&mut buffer);
-        let master_communications_device_id = buffer.get_u16();
-        let intercom_parameters_length = buffer.get_u32();
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl IntercomControlPdu {
+    #[must_use]
+    /// Creates a new `IntercomControlPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `IntercomControlPdu`:
+    /// ```
+    /// use open_dis_rust::radio_communications::IntercomControlPdu;
+    /// let pdu = IntercomControlPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::IntercomControl;
+        pdu.pdu_header.protocol_family = ProtocolFamily::RadioCommunications;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let control_type = IntercomControlControlType::deserialize(buf);
+        let communications_channel_type = buf.get_u8();
+        let source_entity_id = EntityId::deserialize(buf);
+        let source_communications_device_id = buf.get_u8();
+        let source_line_id = buf.get_u8();
+        let transmit_priority = buf.get_u8();
+        let transmit_line_state = IntercomControlTransmitLineState::deserialize(buf);
+        let command = IntercomControlCommand::deserialize(buf);
+        let master_intercom_number = EntityId::deserialize(buf);
+        let master_communications_device_id = buf.get_u16();
+        let intercom_parameters_length = buf.get_u32();
         let mut intercom_parameters: Vec<IntercomCommunicationsParameters> = vec![];
         for _i in 0..intercom_parameters_length {
-            intercom_parameters.push(IntercomCommunicationsParameters::deserialize(&mut buffer));
+            intercom_parameters.push(IntercomCommunicationsParameters::deserialize(buf));
         }
-        Ok(IntercomControlPdu {
-            pdu_header,
-            entity_id,
-            radio_id,
+        IntercomControlPdu {
+            pdu_header: PduHeader::default(),
             control_type,
             communications_channel_type,
             source_entity_id,
@@ -185,65 +162,43 @@ impl Pdu for IntercomControlPdu {
             transmit_priority,
             transmit_line_state,
             command,
-            master_entity_id,
+            master_intercom_number,
             master_communications_device_id,
             intercom_parameters_length,
             intercom_parameters,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::IntercomControlPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
     use bytes::BytesMut;
 
     #[test]
-    fn create_header() {
-        let intercom_control_pdu = IntercomControlPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::IntercomControl,
-            ProtocolFamily::RadioCommunications,
-            448 / 8,
-        );
+    fn cast_to_any() {
+        let pdu = IntercomControlPdu::new();
+        let any_pdu = pdu.as_any();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            intercom_control_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            intercom_control_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(
-            pdu_header.pdu_type,
-            intercom_control_pdu.pdu_header.pdu_type
-        );
-        assert_eq!(
-            pdu_header.protocol_family,
-            intercom_control_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, intercom_control_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            intercom_control_pdu.pdu_header.status_record
-        );
+        assert!(any_pdu.is::<IntercomControlPdu>());
     }
 
     #[test]
-    fn deserialize_header() {
-        let mut intercom_control_pdu = IntercomControlPdu::default();
-        let mut buffer = BytesMut::new();
-        intercom_control_pdu.serialize(&mut buffer);
+    fn serialize_then_deserialize() {
+        let mut pdu = IntercomControlPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
 
-        let new_intercom_control_pdu = IntercomControlPdu::deserialize(buffer).unwrap();
-        assert_eq!(
-            new_intercom_control_pdu.pdu_header,
-            intercom_control_pdu.pdu_header
-        );
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = IntercomControlPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
+        let pdu = IntercomControlPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

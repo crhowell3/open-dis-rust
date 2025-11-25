@@ -1,11 +1,11 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::{euler_angles::EulerAngles, vector3_double::Vector3Double};
+use crate::common::{WorldCoordinate, euler_angles::EulerAngles};
 
 #[derive(Clone, Debug, Default)]
 pub struct LinearSegmentParameter {
@@ -13,12 +13,13 @@ pub struct LinearSegmentParameter {
     pub segment_modification: u8,
     pub general_segment_appearance: u32,
     pub specific_segment_appearance: u32, // TODO(@anyone) Implement Specific Object Appearance
-    pub segment_location: Vector3Double,
+    pub segment_location: WorldCoordinate,
     pub segment_orientation: EulerAngles,
-    pub segment_length: u16,
-    pub segment_width: u16,
-    pub segment_height: u16,
-    pub segment_depth: u16,
+    pub segment_length: f32,
+    pub segment_width: f32,
+    pub segment_height: f32,
+    pub segment_depth: f32,
+    padding: u32,
 }
 
 impl LinearSegmentParameter {
@@ -29,12 +30,12 @@ impl LinearSegmentParameter {
         segment_modification: u8,
         general_segment_appearance: u32,
         specific_segment_appearance: u32,
-        segment_location: Vector3Double,
+        segment_location: WorldCoordinate,
         segment_orientation: EulerAngles,
-        segment_length: u16,
-        segment_width: u16,
-        segment_height: u16,
-        segment_depth: u16,
+        segment_length: f32,
+        segment_width: f32,
+        segment_height: f32,
+        segment_depth: f32,
     ) -> Self {
         LinearSegmentParameter {
             segment_number,
@@ -47,6 +48,7 @@ impl LinearSegmentParameter {
             segment_width,
             segment_height,
             segment_depth,
+            padding: 0_u32,
         }
     }
 
@@ -57,24 +59,26 @@ impl LinearSegmentParameter {
         buf.put_u32(self.specific_segment_appearance);
         self.segment_location.serialize(buf);
         self.segment_orientation.serialize(buf);
-        buf.put_u16(self.segment_length);
-        buf.put_u16(self.segment_width);
-        buf.put_u16(self.segment_height);
-        buf.put_u16(self.segment_depth);
+        buf.put_f32(self.segment_length);
+        buf.put_f32(self.segment_width);
+        buf.put_f32(self.segment_height);
+        buf.put_f32(self.segment_depth);
+        buf.put_u32(self.padding);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> LinearSegmentParameter {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> LinearSegmentParameter {
         LinearSegmentParameter {
             segment_number: buf.get_u8(),
             segment_modification: buf.get_u8(),
             general_segment_appearance: buf.get_u32(),
             specific_segment_appearance: buf.get_u32(),
-            segment_location: Vector3Double::deserialize(buf),
+            segment_location: WorldCoordinate::deserialize(buf),
             segment_orientation: EulerAngles::deserialize(buf),
-            segment_length: buf.get_u16(),
-            segment_width: buf.get_u16(),
-            segment_height: buf.get_u16(),
-            segment_depth: buf.get_u16(),
+            segment_length: buf.get_f32(),
+            segment_width: buf.get_f32(),
+            segment_height: buf.get_f32(),
+            segment_depth: buf.get_f32(),
+            padding: buf.get_u32(),
         }
     }
 }

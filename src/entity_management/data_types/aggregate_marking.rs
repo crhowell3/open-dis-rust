@@ -1,9 +1,11 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
+
+use crate::common::SerializedLength;
 
 #[derive(Clone, Debug, Default)]
 pub struct AggregateMarking {
@@ -27,7 +29,7 @@ impl AggregateMarking {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> AggregateMarking {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> AggregateMarking {
         let character_set = buf.get_u8();
         let mut characters: [i8; 31] = [0; 31];
         for char in &mut characters {
@@ -38,4 +40,8 @@ impl AggregateMarking {
             characters,
         }
     }
+}
+
+impl SerializedLength for AggregateMarking {
+    const LENGTH: usize = 32;
 }

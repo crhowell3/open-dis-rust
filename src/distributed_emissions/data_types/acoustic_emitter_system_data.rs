@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -50,7 +50,7 @@ impl AcousticEmitterSystemData {
         }
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> AcousticEmitterSystemData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> AcousticEmitterSystemData {
         let emitter_system_data_length = buf.get_u8();
         let number_of_beams = buf.get_u8();
         let pad2 = buf.get_u16();

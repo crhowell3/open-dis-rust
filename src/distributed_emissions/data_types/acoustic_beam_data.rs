@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -39,7 +39,7 @@ impl AcousticBeamData {
         self.fundamental_data_parameters.serialize(buf);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> AcousticBeamData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> AcousticBeamData {
         AcousticBeamData {
             beam_data_length: buf.get_u16(),
             beam_id_number: buf.get_u8(),

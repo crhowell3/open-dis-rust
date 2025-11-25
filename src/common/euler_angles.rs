@@ -1,10 +1,12 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
+
+use crate::common::SerializedLength;
 
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.32
@@ -30,11 +32,15 @@ impl EulerAngles {
         buf.put_f32(self.phi);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EulerAngles {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EulerAngles {
         EulerAngles {
             psi: buf.get_f32(),
             theta: buf.get_f32(),
             phi: buf.get_f32(),
         }
     }
+}
+
+impl SerializedLength for EulerAngles {
+    const LENGTH: usize = 12;
 }

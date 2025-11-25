@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -25,7 +25,7 @@ impl VectoringNozzleSystemData {
         buf.put_f32(self.vertical_deflection_angle);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> VectoringNozzleSystemData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> VectoringNozzleSystemData {
         VectoringNozzleSystemData {
             horizontal_deflection_angle: buf.get_f32(),
             vertical_deflection_angle: buf.get_f32(),

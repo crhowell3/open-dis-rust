@@ -74,7 +74,7 @@ open-dis-rust = "<insert version>"
 ```
 
 ### Examples
-This package contains some examples for transmitting PDUs via UDP. To run the example, both the 
+This package contains some examples for transmitting PDUs via UDP. To run the example, both the
 client and the server applications need to be executed. Start by running the server as follows:
 ```shell
 cargo run --example udp_server
@@ -89,7 +89,7 @@ An Acknowledge PDU will be transmitted from the client to the server, and then t
 will be echoed back to the client and displayed in the terminal.
 
 <p align="center">
-  Copyright &copy; 2023-present
+  Copyright &copy; 2025
   <a href="https://github.com/crhowell3" target="_blank">Cameron Howell</a>
 </p>
 <p align="center">
@@ -98,5 +98,3 @@ will be echoed back to the client and displayed in the terminal.
       src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=BSD-2-Clause&logoColor=d9e0ee&colorA=282a36&colorB=b16286"
   /></a>
 </p>
-
-

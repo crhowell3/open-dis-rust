@@ -1,25 +1,30 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
-use crate::common::{
-    dis_error::DISError,
-    entity_id::EntityId,
-    entity_type::EntityType,
-    pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
-    vector3_float::Vector3Float,
+use crate::{
+    common::{
+        ClockTime, EntityCoordinateVector, EulerAngles, SerializedLength,
+        constants::MAX_PDU_SIZE_OCTETS,
+        dis_error::DISError,
+        entity_id::EntityId,
+        entity_type::EntityType,
+        enums::{MinefieldSensorTypes, PduType, ProtocolFamily},
+        pdu::Pdu,
+        pdu_header::PduHeader,
+    },
+    minefield::data_types::minefield_identifier::MinefieldIdentifier,
 };
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.9.4
 pub struct MinefieldDataPdu {
-    pub pdu_header: PduHeader,
-    pub minefield_id: EntityId,
+    pdu_header: PduHeader,
+    pub minefield_id: MinefieldIdentifier,
     pub requesting_entity_id: EntityId,
     pub minefield_sequence_number: u16,
     pub request_id: u8,
@@ -27,40 +32,57 @@ pub struct MinefieldDataPdu {
     pub number_of_pdus: u8,
     pub number_of_mines_in_this_pdu: u8,
     pub number_of_sensor_types: u8,
-    pub pad2: u8,
+    padding: u8,
     pub data_filter: u32,
     pub mine_type: EntityType,
-    pub sensor_types: Vec<u16>,
-    pub pad3: u8,
-    pub mine_location: Vec<Vector3Float>,
-}
-
-impl Default for MinefieldDataPdu {
-    fn default() -> Self {
-        MinefieldDataPdu {
-            pdu_header: PduHeader::default(PduType::MinefieldData, ProtocolFamily::Minefield, 56),
-            minefield_id: EntityId::default(1),
-            requesting_entity_id: EntityId::default(2),
-            minefield_sequence_number: 0,
-            request_id: 0,
-            pdu_sequence_number: 0,
-            number_of_pdus: 0,
-            number_of_mines_in_this_pdu: 0,
-            number_of_sensor_types: 0,
-            pad2: 0,
-            data_filter: 0,
-            mine_type: EntityType::default(),
-            sensor_types: vec![0],
-            pad3: 0,
-            mine_location: vec![Vector3Float::new(0.0, 0.0, 0.0)],
-        }
-    }
+    pub sensor_types: Vec<MinefieldSensorTypes>,
+    pub mine_location: Vec<EntityCoordinateVector>,
+    pub ground_burial_depth_offset: Vec<Option<f32>>,
+    pub water_burial_depth_offset: Vec<Option<f32>>,
+    pub snow_burial_depth_offset: Vec<Option<f32>>,
+    pub mine_orientation: Vec<Option<EulerAngles>>,
+    pub thermal_contrast: Vec<Option<f32>>,
+    pub reflectance: Vec<Option<f32>>,
+    pub mine_emplacement_time: Vec<Option<ClockTime>>,
+    pub mine_entity_id: Vec<Option<u16>>,
+    pub fusing: Vec<Option<u16>>,
+    pub scalar_detection_coefficient: Vec<Option<u8>>,
+    pub paint_scheme: Vec<Option<u8>>,
+    pub number_of_trip_wires: Vec<Option<u8>>,
+    pub number_of_vertices: Vec<Option<u8>>,
+    pub vertices: Vec<Option<Vec<EntityCoordinateVector>>>,
 }
 
 impl Pdu for MinefieldDataPdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> Result<u16, DISError> {
+        let length = PduHeader::LENGTH
+            + MinefieldIdentifier::LENGTH
+            + EntityId::LENGTH
+            + EntityType::LENGTH
+            + std::mem::size_of::<u8>() * 6
+            + std::mem::size_of::<u16>()
+            + std::mem::size_of::<u32>();
+
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.minefield_id.serialize(buf);
         self.requesting_entity_id.serialize(buf);
@@ -70,107 +92,184 @@ impl Pdu for MinefieldDataPdu {
         buf.put_u8(self.number_of_pdus);
         buf.put_u8(self.number_of_mines_in_this_pdu);
         buf.put_u8(self.number_of_sensor_types);
-        buf.put_u8(self.pad2);
+        buf.put_u8(self.padding);
         buf.put_u32(self.data_filter);
         self.mine_type.serialize(buf);
-        for i in 0..self.sensor_types.len() {
-            buf.put_u16(self.sensor_types[i]);
+        for s in &self.sensor_types {
+            buf.put_u16(*s as u16);
         }
-        buf.put_u8(self.pad3);
-        for i in 0..self.mine_location.len() {
-            self.mine_location[i].serialize(buf);
+
+        for loc in &self.mine_location {
+            loc.serialize(buf);
         }
+
+        for v in &self.ground_burial_depth_offset {
+            buf.put_f32(v.unwrap_or(0.0));
+        }
+        for v in &self.water_burial_depth_offset {
+            buf.put_f32(v.unwrap_or(0.0));
+        }
+        for v in &self.snow_burial_depth_offset {
+            buf.put_f32(v.unwrap_or(0.0));
+        }
+
+        for ori in &self.mine_orientation {
+            match ori {
+                Some(e) => e.serialize(buf),
+                None => EulerAngles::default().serialize(buf),
+            }
+        }
+
+        for tc in &self.thermal_contrast {
+            buf.put_f32(tc.unwrap_or(0.0));
+        }
+        for r in &self.reflectance {
+            buf.put_f32(r.unwrap_or(0.0));
+        }
+
+        for t in &self.mine_emplacement_time {
+            match t {
+                Some(clk) => clk.serialize(buf),
+                None => ClockTime::default().serialize(buf),
+            }
+        }
+
+        for id in &self.mine_entity_id {
+            buf.put_u16(id.unwrap_or(0));
+        }
+        for f in &self.fusing {
+            buf.put_u16(f.unwrap_or(0));
+        }
+
+        for s in &self.scalar_detection_coefficient {
+            buf.put_u8(s.unwrap_or(0));
+        }
+        for p in &self.paint_scheme {
+            buf.put_u8(p.unwrap_or(0));
+        }
+        for tw in &self.number_of_trip_wires {
+            buf.put_u8(tw.unwrap_or(0));
+        }
+
+        for (count_opt, verts_opt) in self.number_of_vertices.iter().zip(self.vertices.iter()) {
+            let count = count_opt.unwrap_or(0);
+            buf.put_u8(count);
+
+            if let Some(verts) = verts_opt {
+                for v in verts {
+                    v.serialize(buf);
+                }
+            }
+        }
+
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::MinefieldData {
-            let minefield_id = EntityId::deserialize(&mut buffer);
-            let requesting_entity_id = EntityId::deserialize(&mut buffer);
-            let minefield_sequence_number = buffer.get_u16();
-            let request_id = buffer.get_u8();
-            let pdu_sequence_number = buffer.get_u8();
-            let number_of_pdus = buffer.get_u8();
-            let number_of_mines_in_this_pdu = buffer.get_u8();
-            let number_of_sensor_types = buffer.get_u8();
-            let pad2 = buffer.get_u8();
-            let data_filter = buffer.get_u32();
-            let mine_type = EntityType::deserialize(&mut buffer);
-            let mut sensor_types: Vec<u16> = vec![];
-            for _i in 0..number_of_sensor_types as usize {
-                sensor_types.push(buffer.get_u16());
-            }
-            let pad3 = buffer.get_u8();
-            let mut mine_location: Vec<Vector3Float> = vec![];
-            for _i in 0..number_of_mines_in_this_pdu as usize {
-                mine_location.push(Vector3Float::deserialize(&mut buffer));
-            }
-
-            Ok(MinefieldDataPdu {
-                pdu_header,
-                minefield_id,
-                requesting_entity_id,
-                minefield_sequence_number,
-                request_id,
-                pdu_sequence_number,
-                number_of_pdus,
-                number_of_mines_in_this_pdu,
-                number_of_sensor_types,
-                pad2,
-                data_filter,
-                mine_type,
-                sensor_types,
-                pad3,
-                mine_location,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!(
-                    "Expected PDU type MinefieldData, got {:?}",
-                    pdu_header.pdu_type
-                ),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::MinefieldData {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type MinefieldData, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let minefield_id = EntityId::deserialize(&mut buffer);
-        let requesting_entity_id = EntityId::deserialize(&mut buffer);
-        let minefield_sequence_number = buffer.get_u16();
-        let request_id = buffer.get_u8();
-        let pdu_sequence_number = buffer.get_u8();
-        let number_of_pdus = buffer.get_u8();
-        let number_of_mines_in_this_pdu = buffer.get_u8();
-        let number_of_sensor_types = buffer.get_u8();
-        let pad2 = buffer.get_u8();
-        let data_filter = buffer.get_u32();
-        let mine_type = EntityType::deserialize(&mut buffer);
-        let mut sensor_types: Vec<u16> = vec![];
-        for _i in 0..number_of_sensor_types as usize {
-            sensor_types.push(buffer.get_u16());
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl MinefieldDataPdu {
+    #[must_use]
+    /// Creates a new `MinefieldDataPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `MinefieldDataPdu`:
+    /// ```
+    /// use open_dis_rust::minefield::MinefieldDataPdu;
+    /// let pdu = MinefieldDataPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::MinefieldData;
+        pdu.pdu_header.protocol_family = ProtocolFamily::Minefield;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let minefield_id = MinefieldIdentifier::deserialize(buf);
+        let requesting_entity_id = EntityId::deserialize(buf);
+        let minefield_sequence_number = buf.get_u16();
+        let request_id = buf.get_u8();
+        let pdu_sequence_number = buf.get_u8();
+        let number_of_pdus = buf.get_u8();
+        let number_of_mines_in_this_pdu = buf.get_u8();
+        let number_of_sensor_types = buf.get_u8();
+        let padding = buf.get_u8();
+        let data_filter = buf.get_u32();
+        let mine_type = EntityType::deserialize(buf);
+        let mut sensor_types: Vec<MinefieldSensorTypes> = vec![];
+        for _ in 0..number_of_sensor_types as usize {
+            sensor_types.push(MinefieldSensorTypes::deserialize(buf));
         }
-        let pad3 = buffer.get_u8();
-        let mut mine_location: Vec<Vector3Float> = vec![];
-        for _i in 0..number_of_mines_in_this_pdu as usize {
-            mine_location.push(Vector3Float::deserialize(&mut buffer));
+        let mut mine_location: Vec<EntityCoordinateVector> = vec![];
+        let mut ground_burial_depth_offset: Vec<Option<f32>> = vec![];
+        let mut water_burial_depth_offset: Vec<Option<f32>> = vec![];
+        let mut snow_burial_depth_offset: Vec<Option<f32>> = vec![];
+        let mut mine_orientation: Vec<Option<EulerAngles>> = vec![];
+        let mut thermal_contrast: Vec<Option<f32>> = vec![];
+        let mut reflectance: Vec<Option<f32>> = vec![];
+        let mut mine_emplacement_time: Vec<Option<ClockTime>> = vec![];
+        let mut mine_entity_id: Vec<Option<u16>> = vec![];
+        let mut fusing: Vec<Option<u16>> = vec![];
+        let mut scalar_detection_coefficient: Vec<Option<u8>> = vec![];
+        let mut paint_scheme: Vec<Option<u8>> = vec![];
+        let mut number_of_trip_wires: Vec<Option<u8>> = vec![];
+        let mut number_of_vertices: Vec<Option<u8>> = vec![];
+        let mut vertices: Vec<Option<Vec<EntityCoordinateVector>>> = vec![];
+        for i in 0..number_of_mines_in_this_pdu as usize {
+            mine_location.push(EntityCoordinateVector::deserialize(buf));
+            ground_burial_depth_offset.push(Some(buf.get_f32()));
+            water_burial_depth_offset.push(Some(buf.get_f32()));
+            snow_burial_depth_offset.push(Some(buf.get_f32()));
+            mine_orientation.push(Some(EulerAngles::deserialize(buf)));
+            thermal_contrast.push(Some(buf.get_f32()));
+            reflectance.push(Some(buf.get_f32()));
+            mine_emplacement_time.push(Some(ClockTime::deserialize(buf)));
+            mine_entity_id.push(Some(buf.get_u16()));
+            fusing.push(Some(buf.get_u16()));
+            scalar_detection_coefficient.push(Some(buf.get_u8()));
+            paint_scheme.push(Some(buf.get_u8()));
+            number_of_trip_wires.push(Some(buf.get_u8()));
+            number_of_vertices.push(Some(buf.get_u8()));
+            let mut vertices_vector: Vec<EntityCoordinateVector> = vec![];
+            for _ in 0..number_of_vertices[i].unwrap() {
+                vertices_vector.push(EntityCoordinateVector::deserialize(buf));
+            }
+            vertices.push(Some(vertices_vector));
         }
 
-        Ok(MinefieldDataPdu {
-            pdu_header,
+        MinefieldDataPdu {
+            pdu_header: PduHeader::default(),
             minefield_id,
             requesting_entity_id,
             minefield_sequence_number,
@@ -179,44 +278,58 @@ impl Pdu for MinefieldDataPdu {
             number_of_pdus,
             number_of_mines_in_this_pdu,
             number_of_sensor_types,
-            pad2,
+            padding,
             data_filter,
             mine_type,
             sensor_types,
-            pad3,
             mine_location,
-        })
+            ground_burial_depth_offset,
+            water_burial_depth_offset,
+            snow_burial_depth_offset,
+            mine_orientation,
+            thermal_contrast,
+            reflectance,
+            mine_emplacement_time,
+            mine_entity_id,
+            fusing,
+            scalar_detection_coefficient,
+            paint_scheme,
+            number_of_trip_wires,
+            number_of_vertices,
+            vertices,
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::MinefieldDataPdu;
-    use crate::common::pdu_header::{PduHeader, PduType, ProtocolFamily};
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
+    use bytes::BytesMut;
 
     #[test]
-    fn create_header() {
-        let minefield_data_pdu = MinefieldDataPdu::default();
-        let pdu_header =
-            PduHeader::default(PduType::MinefieldData, ProtocolFamily::Minefield, 448 / 8);
+    fn cast_to_any() {
+        let pdu = MinefieldDataPdu::new();
+        let any_pdu = pdu.as_any();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            minefield_data_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            minefield_data_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, minefield_data_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            minefield_data_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, minefield_data_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            minefield_data_pdu.pdu_header.status_record
-        );
+        assert!(any_pdu.is::<MinefieldDataPdu>());
+    }
+
+    #[test]
+    fn serialize_then_deserialize() {
+        let mut pdu = MinefieldDataPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
+
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = MinefieldDataPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 352 / BITS_PER_BYTE;
+        let pdu = MinefieldDataPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

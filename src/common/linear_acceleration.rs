@@ -1,9 +1,11 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
+
+use crate::common::SerializedLength;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct LinearAcceleration {
@@ -28,11 +30,15 @@ impl LinearAcceleration {
         buf.put_f32(self.third_vector_component);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> LinearAcceleration {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> LinearAcceleration {
         LinearAcceleration {
             first_vector_component: buf.get_f32(),
             second_vector_component: buf.get_f32(),
             third_vector_component: buf.get_f32(),
         }
     }
+}
+
+impl SerializedLength for LinearAcceleration {
+    const LENGTH: usize = 12;
 }

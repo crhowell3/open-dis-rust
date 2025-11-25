@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -8,47 +8,36 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    SerializedLength,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{IsGroupOfGroupedEntityCategory, PduType, ProtocolFamily},
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.8.3
 pub struct IsGroupOfPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub group_entity_id: EntityId,
-    pub grouped_entity_category: u8,
+    pub grouped_entity_category: IsGroupOfGroupedEntityCategory,
     pub number_of_grouped_entities: u8,
-    pub pad2: u32,
+    padding: u32,
     pub latitude: f64,
     pub longitude: f64,
     pub grouped_entity_descriptions: Vec<u64>,
 }
 
 impl Default for IsGroupOfPdu {
-    /// Creates a default Is Group Of PDU with arbitrary aggregate ID
-    ///
-    /// # Examples
-    ///
-    /// Initializing an Is Group Of PDU:
-    /// ```
-    /// use open_dis_rust::entity_management::is_group_of_pdu::IsGroupOfPdu;
-    /// let is_group_of_pdu = IsGroupOfPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         IsGroupOfPdu {
-            pdu_header: PduHeader::default(
-                PduType::IsGroupOf,
-                ProtocolFamily::EntityManagement,
-                56,
-            ),
-            group_entity_id: EntityId::default(1),
-            grouped_entity_category: 0,
+            pdu_header: PduHeader::default(),
+            group_entity_id: EntityId::default(),
+            grouped_entity_category: IsGroupOfGroupedEntityCategory::default(),
             number_of_grouped_entities: 0,
-            pad2: 0,
+            padding: 0,
             latitude: 0.0,
             longitude: 0.0,
             grouped_entity_descriptions: vec![],
@@ -57,134 +46,145 @@ impl Default for IsGroupOfPdu {
 }
 
 impl Pdu for IsGroupOfPdu {
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> Result<u16, DISError> {
+        let length = PduHeader::LENGTH + EntityId::LENGTH + 1 + 1 + 4 + 8 + 8;
+
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.group_entity_id.serialize(buf);
-        buf.put_u8(self.grouped_entity_category);
+        buf.put_u8(self.grouped_entity_category as u8);
         buf.put_u8(self.number_of_grouped_entities);
-        buf.put_u32(self.pad2);
+        buf.put_u32(self.padding);
         buf.put_f64(self.latitude);
         buf.put_f64(self.longitude);
         for i in 0..self.grouped_entity_descriptions.len() {
             buf.put_u64(self.grouped_entity_descriptions[i]);
         }
+        Ok(())
     }
 
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::IsGroupOf {
-            let group_entity_id = EntityId::deserialize(&mut buffer);
-            let grouped_entity_category = buffer.get_u8();
-            let number_of_grouped_entities = buffer.get_u8();
-            let pad2 = buffer.get_u32();
-            let latitude = buffer.get_f64();
-            let longitude = buffer.get_f64();
-            let mut grouped_entity_descriptions: Vec<u64> = vec![];
-            for _i in 0..number_of_grouped_entities {
-                grouped_entity_descriptions.push(buffer.get_u64());
-            }
-            Ok(IsGroupOfPdu {
-                pdu_header,
-                group_entity_id,
-                grouped_entity_category,
-                number_of_grouped_entities,
-                pad2,
-                latitude,
-                longitude,
-                grouped_entity_descriptions,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!("Expected PDU type IsGroupOf, got {:?}", pdu_header.pdu_type),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::IsGroupOf {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type IsGroupOf, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let group_entity_id = EntityId::deserialize(&mut buffer);
-        let grouped_entity_category = buffer.get_u8();
-        let number_of_grouped_entities = buffer.get_u8();
-        let pad2 = buffer.get_u32();
-        let latitude = buffer.get_f64();
-        let longitude = buffer.get_f64();
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl IsGroupOfPdu {
+    #[must_use]
+    /// Creates a new `IsGroupOfPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `IsGroupOfPdu`:
+    /// ```
+    /// use open_dis_rust::entity_management::IsGroupOfPdu;
+    /// let pdu = IsGroupOfPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::IsGroupOf;
+        pdu.pdu_header.protocol_family = ProtocolFamily::EntityManagement;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let group_entity_id = EntityId::deserialize(buf);
+        let grouped_entity_category = IsGroupOfGroupedEntityCategory::deserialize(buf);
+        let number_of_grouped_entities = buf.get_u8();
+        let padding = buf.get_u32();
+        let latitude = buf.get_f64();
+        let longitude = buf.get_f64();
         let mut grouped_entity_descriptions: Vec<u64> = vec![];
         for _i in 0..number_of_grouped_entities {
-            grouped_entity_descriptions.push(buffer.get_u64());
+            grouped_entity_descriptions.push(buf.get_u64());
         }
-        Ok(IsGroupOfPdu {
-            pdu_header,
+        IsGroupOfPdu {
+            pdu_header: PduHeader::default(),
             group_entity_id,
             grouped_entity_category,
             number_of_grouped_entities,
-            pad2,
+            padding,
             latitude,
             longitude,
             grouped_entity_descriptions,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::IsGroupOfPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
     use bytes::BytesMut;
 
     #[test]
-    fn create_header() {
-        let is_group_of_pdu = IsGroupOfPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::IsGroupOf,
-            ProtocolFamily::EntityManagement,
-            448 / 8,
-        );
+    fn cast_to_any() {
+        let pdu = IsGroupOfPdu::new();
+        let any_pdu = pdu.as_any();
 
-        assert_eq!(
-            pdu_header.protocol_version,
-            is_group_of_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(
-            pdu_header.exercise_id,
-            is_group_of_pdu.pdu_header.exercise_id
-        );
-        assert_eq!(pdu_header.pdu_type, is_group_of_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            is_group_of_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, is_group_of_pdu.pdu_header.length);
-        assert_eq!(
-            pdu_header.status_record,
-            is_group_of_pdu.pdu_header.status_record
-        );
+        assert!(any_pdu.is::<IsGroupOfPdu>());
     }
 
     #[test]
-    fn deserialize_header() {
-        let mut is_group_of_pdu = IsGroupOfPdu::default();
-        let mut buffer = BytesMut::new();
-        is_group_of_pdu.serialize(&mut buffer);
+    fn serialize_then_deserialize() {
+        let mut pdu = IsGroupOfPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
 
-        let new_is_group_of_pdu = IsGroupOfPdu::deserialize(buffer).unwrap();
-        assert_eq!(new_is_group_of_pdu.pdu_header, is_group_of_pdu.pdu_header);
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = IsGroupOfPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
+        let pdu = IsGroupOfPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }

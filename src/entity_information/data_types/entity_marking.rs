@@ -1,4 +1,4 @@
-use crate::common::enums::EntityMarkingCharacterSet;
+use crate::common::{SerializedLength, enums::EntityMarkingCharacterSet};
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Clone, Debug)]
@@ -33,10 +33,14 @@ impl EntityMarking {
         buf.put_slice(&marking.into_bytes()[..]);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> EntityMarking {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityMarking {
         EntityMarking {
             entity_marking_character_set: EntityMarkingCharacterSet::deserialize(buf),
             entity_marking_string: buf.remaining().to_string(),
         }
     }
+}
+
+impl SerializedLength for EntityMarking {
+    const LENGTH: usize = 12;
 }

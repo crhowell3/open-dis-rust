@@ -1,9 +1,11 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
+
+use crate::common::SerializedLength;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct SystemId {
@@ -31,7 +33,7 @@ impl SystemId {
         buf.put_u8(self.change_options);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> SystemId {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> SystemId {
         SystemId {
             system_type: buf.get_u16(),
             system_name: buf.get_u16(),
@@ -39,4 +41,8 @@ impl SystemId {
             change_options: buf.get_u8(),
         }
     }
+}
+
+impl SerializedLength for SystemId {
+    const LENGTH: usize = 6;
 }

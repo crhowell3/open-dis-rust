@@ -1,26 +1,30 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::{event_id::EventId, vector3_float::Vector3Float};
+use crate::common::{
+    EntityCoordinateVector,
+    enums::{ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor},
+    event_id::EventId,
+};
 
 #[derive(Copy, Clone, Debug)]
 pub struct DirectedEnergyDamage {
     pub record_type: u32,
     pub record_length: u16,
-    pub padding: u16,
-    pub damage_location: Vector3Float,
+    padding: u16,
+    pub damage_location: EntityCoordinateVector,
     pub damage_diameter: f32,
     pub temperature: f32,
-    pub component_identification: u8,
-    pub component_damage_status: u8,
-    pub component_visual_damage_status: u8,
-    pub component_visual_smoke_color: u8,
+    pub component_identification: ComponentIdentification,
+    pub component_damage_status: ComponentDamageStatus,
+    pub component_visual_damage_status: u8, // TODO(cameron): implement ComponentVisualDamageStatus record
+    pub component_visual_smoke_color: ComponentVisualSmokeColor,
     pub fire_event_id: EventId,
-    pub padding2: u16,
+    padding2: u16,
 }
 
 impl Default for DirectedEnergyDamage {
@@ -28,16 +32,16 @@ impl Default for DirectedEnergyDamage {
         DirectedEnergyDamage {
             record_type: 0,
             record_length: 0,
-            padding: 0,
-            damage_location: Vector3Float::default(),
+            padding: 0_u16,
+            damage_location: EntityCoordinateVector::default(),
             damage_diameter: 0.0,
             temperature: 0.0,
-            component_identification: 0,
-            component_damage_status: 0,
+            component_identification: ComponentIdentification::default(),
+            component_damage_status: ComponentDamageStatus::default(),
             component_visual_damage_status: 0,
-            component_visual_smoke_color: 0,
+            component_visual_smoke_color: ComponentVisualSmokeColor::default(),
             fire_event_id: EventId::default(1),
-            padding2: 0,
+            padding2: 0_u16,
         }
     }
 }
@@ -48,21 +52,19 @@ impl DirectedEnergyDamage {
     pub fn new(
         record_type: u32,
         record_length: u16,
-        padding: u16,
-        damage_location: Vector3Float,
+        damage_location: EntityCoordinateVector,
         damage_diameter: f32,
         temperature: f32,
-        component_identification: u8,
-        component_damage_status: u8,
+        component_identification: ComponentIdentification,
+        component_damage_status: ComponentDamageStatus,
         component_visual_damage_status: u8,
-        component_visual_smoke_color: u8,
+        component_visual_smoke_color: ComponentVisualSmokeColor,
         fire_event_id: EventId,
-        padding2: u16,
     ) -> Self {
         DirectedEnergyDamage {
             record_type,
             record_length,
-            padding,
+            padding: 0_u16,
             damage_location,
             damage_diameter,
             temperature,
@@ -71,7 +73,7 @@ impl DirectedEnergyDamage {
             component_visual_damage_status,
             component_visual_smoke_color,
             fire_event_id,
-            padding2,
+            padding2: 0_u16,
         }
     }
 
@@ -82,26 +84,26 @@ impl DirectedEnergyDamage {
         self.damage_location.serialize(buf);
         buf.put_f32(self.damage_diameter);
         buf.put_f32(self.temperature);
-        buf.put_u8(self.component_identification);
-        buf.put_u8(self.component_damage_status);
+        buf.put_u8(self.component_identification as u8);
+        buf.put_u8(self.component_damage_status as u8);
         buf.put_u8(self.component_visual_damage_status);
-        buf.put_u8(self.component_visual_smoke_color);
+        buf.put_u8(self.component_visual_smoke_color as u8);
         self.fire_event_id.serialize(buf);
         buf.put_u16(self.padding2);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> DirectedEnergyDamage {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> DirectedEnergyDamage {
         DirectedEnergyDamage {
             record_type: buf.get_u32(),
             record_length: buf.get_u16(),
             padding: buf.get_u16(),
-            damage_location: Vector3Float::deserialize(buf),
+            damage_location: EntityCoordinateVector::deserialize(buf),
             damage_diameter: buf.get_f32(),
             temperature: buf.get_f32(),
-            component_identification: buf.get_u8(),
-            component_damage_status: buf.get_u8(),
+            component_identification: ComponentIdentification::deserialize(buf),
+            component_damage_status: ComponentDamageStatus::deserialize(buf),
             component_visual_damage_status: buf.get_u8(),
-            component_visual_smoke_color: buf.get_u8(),
+            component_visual_smoke_color: ComponentVisualSmokeColor::deserialize(buf),
             fire_event_id: EventId::deserialize(buf),
             padding2: buf.get_u16(),
         }

@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -31,7 +31,7 @@ impl Environment {
         buf.put_u8(self.padding);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> Environment {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Environment {
         Environment {
             environment_type: buf.get_u32(),
             length: buf.get_u16(),

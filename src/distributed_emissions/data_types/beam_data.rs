@@ -1,10 +1,12 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
+
+use crate::common::SerializedLength;
 
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.11
@@ -42,7 +44,7 @@ impl BeamData {
         buf.put_f32(self.beam_sweep_sync);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> BeamData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> BeamData {
         BeamData {
             beam_azimuth_center: buf.get_f32(),
             beam_azimuth_sweep: buf.get_f32(),
@@ -51,4 +53,8 @@ impl BeamData {
             beam_sweep_sync: buf.get_f32(),
         }
     }
+}
+
+impl SerializedLength for BeamData {
+    const LENGTH: usize = 20;
 }

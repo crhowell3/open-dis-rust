@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -44,7 +44,7 @@ impl RadioEntityType {
         buf.put_u16(self.nomenclature);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> RadioEntityType {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> RadioEntityType {
         RadioEntityType {
             entity_kind: buf.get_u8(),
             domain: buf.get_u8(),

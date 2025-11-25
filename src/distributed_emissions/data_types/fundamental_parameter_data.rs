@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -33,7 +33,7 @@ impl FundamentalParameterData {
         buf.put_f32(self.beam_sweep_sync);
     }
 
-    pub fn deserialize(buf: &mut BytesMut) -> FundamentalParameterData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> FundamentalParameterData {
         FundamentalParameterData {
             frequency: buf.get_f32(),
             frequency_range: buf.get_f32(),

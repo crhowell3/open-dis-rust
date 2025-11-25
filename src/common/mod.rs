@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -9,6 +9,7 @@
 pub mod angular_velocity_vector;
 pub mod clock_time;
 pub mod constants;
+pub mod datum_records;
 pub mod dis_error;
 pub mod entity_coordinate_vector;
 pub mod entity_id;
@@ -20,7 +21,9 @@ pub mod linear_acceleration;
 pub mod linear_velocity;
 pub mod pdu;
 pub mod pdu_header;
+pub mod serialized_length;
 pub mod simulation_address;
+pub mod simulation_id;
 pub mod vector3_double;
 pub mod vector3_float;
 pub mod velocity_vector;
@@ -37,8 +40,10 @@ pub use event_id::EventId;
 pub use linear_acceleration::LinearAcceleration;
 pub use linear_velocity::LinearVelocity;
 pub use pdu::Pdu;
-pub use pdu_header::{PduHeader, PduType, ProtocolFamily, ProtocolVersion};
+pub use pdu_header::PduHeader;
+pub use serialized_length::SerializedLength;
 pub use simulation_address::SimulationAddress;
+pub use simulation_id::SimulationIdentifier;
 pub use vector3_double::Vector3Double;
 pub use vector3_float::Vector3Float;
 pub use velocity_vector::VelocityVector;

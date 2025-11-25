@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2023 Cameron Howell
+//     Copyright (C) 2025 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -8,12 +8,14 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    EntityCoordinateVector, SerializedLength,
+    constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
+    enums::{PduType, ProtocolFamily},
     event_id::EventId,
     pdu::Pdu,
-    pdu_header::{PduHeader, PduType, ProtocolFamily},
-    vector3_float::Vector3Float,
+    pdu_header::PduHeader,
 };
 
 use super::data_types::{
@@ -25,11 +27,10 @@ use super::data_types::{
 #[derive(Clone, Debug)]
 /// Implemented according to IEEE 1278.1-2012 §7.6.5
 pub struct IFFPdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub emitting_entity_id: EntityId,
     pub event_id: EventId,
-    pub relative_antenna_location: Vector3Float,
-    pub number_of_iff_parameters: u32,
+    pub relative_antenna_location: EntityCoordinateVector,
     pub system_id: SystemId,
     pub system_designator: u8,
     pub system_specific_data: u8,
@@ -41,30 +42,15 @@ pub struct IFFPdu {
 }
 
 impl Default for IFFPdu {
-    /// Creates a default-initialized IFF PDU
-    ///
-    /// # Examples
-    ///
-    /// Initializing an IFF PDU:
-    /// ```
-    /// use open_dis_rust::distributed_emissions::iff_pdu::IFFPdu;
-    /// let mut iff_pdu = IFFPdu::default();
-    /// ```
-    ///
     fn default() -> Self {
         IFFPdu {
-            pdu_header: PduHeader::default(
-                PduType::IFF,
-                ProtocolFamily::DistributedEmissionRegeneration,
-                56,
-            ),
-            emitting_entity_id: EntityId::default(1),
+            pdu_header: PduHeader::default(),
+            emitting_entity_id: EntityId::default(),
             event_id: EventId::default(1),
-            relative_antenna_location: Vector3Float::default(),
-            number_of_iff_parameters: 0,
+            relative_antenna_location: EntityCoordinateVector::default(),
             system_id: SystemId::default(),
-            system_designator: 0,
-            system_specific_data: 0,
+            system_designator: 0u8,
+            system_specific_data: 0u8,
             fundamental_operational_data: FundamentalOperationalData::default(),
             layer_header: LayerHeader::default(),
             beam_data: BeamData::default(),
@@ -75,15 +61,43 @@ impl Default for IFFPdu {
 }
 
 impl Pdu for IFFPdu {
-    /// Serialize contents of `IFFPdu` into `BytesMut` buffer
-    fn serialize(&mut self, buf: &mut BytesMut) {
-        self.pdu_header.length = u16::try_from(std::mem::size_of_val(self))
-            .expect("The length of the PDU should fit in a u16.");
+    fn length(&self) -> Result<u16, DISError> {
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH
+            + EventId::LENGTH
+            + EntityCoordinateVector::LENGTH
+            + SystemId::LENGTH
+            + std::mem::size_of::<u8>() * 2
+            + FundamentalOperationalData::LENGTH
+            + LayerHeader::LENGTH
+            + BeamData::LENGTH
+            + SecondaryOperationalData::LENGTH;
+
+        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
+            size: length,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })
+    }
+
+    fn header(&self) -> &PduHeader {
+        &self.pdu_header
+    }
+
+    fn header_mut(&mut self) -> &mut PduHeader {
+        &mut self.pdu_header
+    }
+
+    /// Serialize contents of `IFFPdu` into `BytesMut` buf
+    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
+        let size = std::mem::size_of_val(self);
+        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
+            size,
+            max_size: MAX_PDU_SIZE_OCTETS,
+        })?;
         self.pdu_header.serialize(buf);
         self.emitting_entity_id.serialize(buf);
         self.event_id.serialize(buf);
         self.relative_antenna_location.serialize(buf);
-        buf.put_u32(self.number_of_iff_parameters);
         self.system_id.serialize(buf);
         buf.put_u8(self.system_designator);
         buf.put_u8(self.system_specific_data);
@@ -94,87 +108,81 @@ impl Pdu for IFFPdu {
         for i in 0..self.iff_parameters.len() {
             self.iff_parameters[i].serialize(buf);
         }
+        Ok(())
     }
 
-    /// Deserialize bytes from `BytesMut` buffer and interpret as `IFFPdu`
-    fn deserialize(mut buffer: BytesMut) -> Result<Self, DISError>
+    /// Deserialize bytes from `BytesMut` buf and interpret as `IFFPdu`
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let pdu_header = PduHeader::deserialize(&mut buffer);
-        if pdu_header.pdu_type == PduType::IFF {
-            let emitting_entity_id = EntityId::deserialize(&mut buffer);
-            let event_id = EventId::deserialize(&mut buffer);
-            let relative_antenna_location = Vector3Float::deserialize(&mut buffer);
-            let number_of_iff_parameters = buffer.get_u32();
-            let system_id = SystemId::deserialize(&mut buffer);
-            let system_designator = buffer.get_u8();
-            let system_specific_data = buffer.get_u8();
-            let fundamental_operational_data = FundamentalOperationalData::deserialize(&mut buffer);
-            let layer_header = LayerHeader::deserialize(&mut buffer);
-            let beam_data = BeamData::deserialize(&mut buffer);
-            let secondary_operational_data = SecondaryOperationalData::deserialize(&mut buffer);
-            let mut iff_parameters: Vec<IFFFundamentalParameterData> = vec![];
-            for _i in 0..number_of_iff_parameters {
-                iff_parameters.push(IFFFundamentalParameterData::deserialize(&mut buffer));
-            }
-            Ok(IFFPdu {
-                pdu_header,
-                emitting_entity_id,
-                event_id,
-                relative_antenna_location,
-                number_of_iff_parameters,
-                system_id,
-                system_designator,
-                system_specific_data,
-                fundamental_operational_data,
-                layer_header,
-                beam_data,
-                secondary_operational_data,
-                iff_parameters,
-            })
-        } else {
-            Err(DISError::invalid_header(
-                format!("Expected PDU type IFF, got {:?}", pdu_header.pdu_type),
+        let header: PduHeader = PduHeader::deserialize(buf);
+        if header.pdu_type != PduType::IFF {
+            return Err(DISError::invalid_header(
+                format!("Expected PDU type IFF, got {:?}", header.pdu_type),
                 None,
-            ))
+            ));
         }
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
     }
 
-    /// Treat `IFFPdu` as Any type
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    /// Deserialize bytes from `BytesMut` buffer, but assume PDU header exists already
-    fn deserialize_without_header(
-        mut buffer: BytesMut,
-        pdu_header: PduHeader,
-    ) -> Result<Self, DISError>
+    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
     where
         Self: Sized,
     {
-        let emitting_entity_id = EntityId::deserialize(&mut buffer);
-        let event_id = EventId::deserialize(&mut buffer);
-        let relative_antenna_location = Vector3Float::deserialize(&mut buffer);
-        let number_of_iff_parameters = buffer.get_u32();
-        let system_id = SystemId::deserialize(&mut buffer);
-        let system_designator = buffer.get_u8();
-        let system_specific_data = buffer.get_u8();
-        let fundamental_operational_data = FundamentalOperationalData::deserialize(&mut buffer);
-        let layer_header = LayerHeader::deserialize(&mut buffer);
-        let beam_data = BeamData::deserialize(&mut buffer);
-        let secondary_operational_data = SecondaryOperationalData::deserialize(&mut buffer);
+        let mut body = Self::deserialize_body(buf);
+        body.pdu_header = header;
+        Ok(body)
+    }
+}
+
+impl IFFPdu {
+    #[must_use]
+    /// Creates a new `IFFPdu`
+    ///
+    /// # Examples
+    ///
+    /// Initializing an `IFFPdu`:
+    /// ```
+    /// use open_dis_rust::distributed_emissions::IFFPdu;
+    /// let pdu = IFFPdu::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        let mut pdu = Self::default();
+        pdu.pdu_header.pdu_type = PduType::IFF;
+        pdu.pdu_header.protocol_family = ProtocolFamily::DistributedEmissionRegeneration;
+        pdu.finalize();
+        pdu
+    }
+
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let emitting_entity_id = EntityId::deserialize(buf);
+        let event_id = EventId::deserialize(buf);
+        let relative_antenna_location = EntityCoordinateVector::deserialize(buf);
+        let system_id = SystemId::deserialize(buf);
+        let system_designator = buf.get_u8();
+        let system_specific_data = buf.get_u8();
+        let fundamental_operational_data = FundamentalOperationalData::deserialize(buf);
+        let layer_header = LayerHeader::deserialize(buf);
+        let beam_data = BeamData::deserialize(buf);
+        let secondary_operational_data = SecondaryOperationalData::deserialize(buf);
         let mut iff_parameters: Vec<IFFFundamentalParameterData> = vec![];
-        for _i in 0..number_of_iff_parameters {
-            iff_parameters.push(IFFFundamentalParameterData::deserialize(&mut buffer));
+        for _i in 0..secondary_operational_data.number_of_iff_fundamental_parameter_records {
+            iff_parameters.push(IFFFundamentalParameterData::deserialize(buf));
         }
-        Ok(IFFPdu {
-            pdu_header,
+
+        IFFPdu {
+            pdu_header: PduHeader::default(),
             emitting_entity_id,
             event_id,
             relative_antenna_location,
-            number_of_iff_parameters,
             system_id,
             system_designator,
             system_specific_data,
@@ -183,57 +191,39 @@ impl Pdu for IFFPdu {
             beam_data,
             secondary_operational_data,
             iff_parameters,
-        })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::IFFPdu;
-    use crate::common::{
-        pdu::Pdu,
-        pdu_header::{PduHeader, PduType, ProtocolFamily},
-    };
+    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
     use bytes::BytesMut;
 
     #[test]
-    fn create_header() {
-        let iff_pdu = IFFPdu::default();
-        let pdu_header = PduHeader::default(
-            PduType::IFF,
-            ProtocolFamily::DistributedEmissionRegeneration,
-            448 / 8,
-        );
-
-        assert_eq!(
-            pdu_header.protocol_version,
-            iff_pdu.pdu_header.protocol_version
-        );
-        assert_eq!(pdu_header.exercise_id, iff_pdu.pdu_header.exercise_id);
-        assert_eq!(pdu_header.pdu_type, iff_pdu.pdu_header.pdu_type);
-        assert_eq!(
-            pdu_header.protocol_family,
-            iff_pdu.pdu_header.protocol_family
-        );
-        assert_eq!(pdu_header.length, iff_pdu.pdu_header.length);
-        assert_eq!(pdu_header.status_record, iff_pdu.pdu_header.status_record);
-    }
-
-    #[test]
     fn cast_to_any() {
-        let iff_pdu = IFFPdu::default();
-        let any_pdu = iff_pdu.as_any();
+        let pdu = IFFPdu::new();
+        let any_pdu = pdu.as_any();
 
         assert!(any_pdu.is::<IFFPdu>());
     }
 
     #[test]
-    fn deserialize_header() {
-        let mut iff_pdu = IFFPdu::default();
-        let mut buffer = BytesMut::new();
-        iff_pdu.serialize(&mut buffer);
+    fn serialize_then_deserialize() {
+        let mut pdu = IFFPdu::new();
+        let mut serialize_buf = BytesMut::new();
+        let _ = pdu.serialize(&mut serialize_buf);
 
-        let new_iff_pdu = IFFPdu::deserialize(buffer).unwrap();
-        assert_eq!(new_iff_pdu.pdu_header, iff_pdu.pdu_header);
+        let mut deserialize_buf = serialize_buf.freeze();
+        let new_pdu = IFFPdu::deserialize(&mut deserialize_buf).unwrap();
+        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+    }
+
+    #[test]
+    fn check_default_pdu_length() {
+        const DEFAULT_LENGTH: u16 = 704 / BITS_PER_BYTE;
+        let pdu = IFFPdu::new();
+        assert_eq!(pdu.header().length, DEFAULT_LENGTH);
     }
 }
