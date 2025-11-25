@@ -27,7 +27,7 @@ pub struct ElectromagneticEmissionsPdu {
     pub event_id: EventId,
     pub state_update_indicator: EEAttributeStateIndicator,
     pub number_of_systems: u8,
-    pub padding: u16,
+    padding: u16,
     pub systems: Vec<ElectromagneticEmissionSystemData>,
 }
 

@@ -20,7 +20,7 @@ use std::any::Any;
 #[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.11.13
 pub struct CommentReliablePdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub number_of_fixed_datum_records: u32,

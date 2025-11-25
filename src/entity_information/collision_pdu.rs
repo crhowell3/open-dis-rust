@@ -26,7 +26,7 @@ pub struct CollisionPdu {
     pub colliding_entity_id: EntityId,
     pub event_id: EventId,
     pub collision_type: u8,
-    pub padding: u8,
+    padding: u8,
     pub velocity: LinearVelocity,
     pub mass: f32,
     pub location_wrt_entity: EntityCoordinateVector,

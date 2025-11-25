@@ -20,7 +20,7 @@ use crate::common::{
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.4.6
 pub struct RepairCompletePdu {
-    pub pdu_header: PduHeader,
+    pdu_header: PduHeader,
     pub receiving_entity_id: EntityId,
     pub repairing_entity_id: EntityId,
     pub repair: RepairGroups,

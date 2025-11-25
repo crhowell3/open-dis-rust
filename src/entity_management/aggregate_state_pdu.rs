@@ -42,7 +42,7 @@ pub struct AggregateStatePdu {
     pub number_of_silent_entity_types: u16,
     pub aggregate_id_list: Vec<AggregateId>,
     pub entity_id_list: Vec<EntityId>,
-    pub pad2: u8,
+    padding: u8,
     pub silent_aggregate_system_list: Vec<EntityType>,
     pub silent_entity_system_list: Vec<EntityType>,
     pub number_of_variable_datum_records: u32,
@@ -104,7 +104,7 @@ impl Pdu for AggregateStatePdu {
         for i in 0..self.entity_id_list.len() {
             self.entity_id_list[i].serialize(buf);
         }
-        buf.put_u8(self.pad2);
+        buf.put_u8(self.padding);
         for i in 0..self.silent_aggregate_system_list.len() {
             self.silent_aggregate_system_list[i].serialize(buf);
         }
@@ -194,7 +194,7 @@ impl AggregateStatePdu {
         for _i in 0..number_of_dis_entities {
             entity_id_list.push(EntityId::deserialize(buf));
         }
-        let pad2 = buf.get_u8();
+        let padding = buf.get_u8();
         let mut silent_aggregate_system_list: Vec<EntityType> = vec![];
         for _i in 0..number_of_silent_aggregate_types {
             silent_aggregate_system_list.push(EntityType::deserialize(buf));
@@ -227,7 +227,7 @@ impl AggregateStatePdu {
             number_of_silent_entity_types,
             aggregate_id_list,
             entity_id_list,
-            pad2,
+            padding,
             silent_aggregate_system_list,
             silent_entity_system_list,
             number_of_variable_datum_records,
