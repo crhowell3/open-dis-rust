@@ -7,14 +7,17 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-use crate::common::{
-    constants::MAX_PDU_SIZE_OCTETS,
-    dis_error::DISError,
-    entity_id::EntityId,
-    enums::{ForceId, PduType, ProtocolFamily},
-    pdu::Pdu,
-    pdu_header::PduHeader,
-    simulation_address::SimulationAddress,
+use crate::{
+    common::{
+        SerializedLength,
+        constants::MAX_PDU_SIZE_OCTETS,
+        dis_error::DISError,
+        enums::{ForceId, PduType, ProtocolFamily},
+        pdu::Pdu,
+        pdu_header::PduHeader,
+        simulation_address::SimulationAddress,
+    },
+    synthetic_environment::data_types::object_identifier::ObjectIdentifier,
 };
 
 use super::data_types::{
@@ -25,8 +28,8 @@ use super::data_types::{
 /// Implemented according to IEEE 1278.1-2012 §7.10.5
 pub struct LinearObjectStatePdu {
     pdu_header: PduHeader,
-    pub object_id: EntityId,            // TODO(@anyone) Replace with ObjectId
-    pub referenced_object_id: EntityId, // TODO(@anyone) Replace with ObjectId
+    pub object_id: ObjectIdentifier,
+    pub referenced_object_id: ObjectIdentifier,
     pub update_number: u16,
     pub force_id: ForceId,
     pub number_of_segments: u8,
@@ -38,13 +41,13 @@ pub struct LinearObjectStatePdu {
 
 impl Pdu for LinearObjectStatePdu {
     fn length(&self) -> Result<u16, DISError> {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 2
+        let length = PduHeader::LENGTH
+            + ObjectIdentifier::LENGTH * 2
             + std::mem::size_of::<u16>()
             + std::mem::size_of::<ForceId>()
             + std::mem::size_of::<u8>()
-            + std::mem::size_of::<SimulationAddress>() * 2
-            + std::mem::size_of::<ObjectType>();
+            + SimulationAddress::LENGTH * 2
+            + ObjectType::LENGTH;
 
         u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
             size: length,
@@ -135,8 +138,8 @@ impl LinearObjectStatePdu {
     }
 
     fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
-        let object_id = EntityId::deserialize(buf);
-        let referenced_object_id = EntityId::deserialize(buf);
+        let object_id = ObjectIdentifier::deserialize(buf);
+        let referenced_object_id = ObjectIdentifier::deserialize(buf);
         let update_number = buf.get_u16();
         let force_id = ForceId::deserialize(buf);
         let number_of_segments = buf.get_u8();

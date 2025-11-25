@@ -8,4 +8,5 @@ pub mod environment;
 pub mod grid_axis_descriptor;
 pub mod grid_data_record;
 pub mod linear_segment_parameter;
+pub mod object_identifier;
 pub mod object_type;

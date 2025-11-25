@@ -12,21 +12,22 @@ use crate::{
         SerializedLength, WorldCoordinate,
         constants::MAX_PDU_SIZE_OCTETS,
         dis_error::DISError,
-        entity_id::EntityId,
         enums::{ForceId, ObjectStateAppearanceGeneral, PduType, ProtocolFamily},
         pdu::Pdu,
         pdu_header::PduHeader,
         simulation_address::SimulationAddress,
     },
-    synthetic_environment::data_types::object_type::ObjectType,
+    synthetic_environment::data_types::{
+        object_identifier::ObjectIdentifier, object_type::ObjectType,
+    },
 };
 
 #[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.10.6
 pub struct ArealObjectStatePdu {
     pdu_header: PduHeader,
-    pub object_id: EntityId, // TODO(@anyone) Create an ObjectId type and replace this
-    pub referenced_object_id: EntityId, // TODO(@anyone) Same as above
+    pub object_id: ObjectIdentifier,
+    pub referenced_object_id: ObjectIdentifier,
     pub update_number: u16,
     pub force_id: ForceId,
     pub modifications: u8, // TODO(@anyone) Replace with Modifications UID 242
@@ -42,7 +43,7 @@ pub struct ArealObjectStatePdu {
 impl Pdu for ArealObjectStatePdu {
     fn length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
-            + EntityId::LENGTH * 2
+            + ObjectIdentifier::LENGTH * 2
             + std::mem::size_of::<u16>()
             + std::mem::size_of::<ForceId>()
             + std::mem::size_of::<u8>()
@@ -144,8 +145,8 @@ impl ArealObjectStatePdu {
     }
 
     fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
-        let object_id = EntityId::deserialize(buf);
-        let referenced_object_id = EntityId::deserialize(buf);
+        let object_id = ObjectIdentifier::deserialize(buf);
+        let referenced_object_id = ObjectIdentifier::deserialize(buf);
         let update_number = buf.get_u16();
         let force_id = ForceId::deserialize(buf);
         let modifications = buf.get_u8();
