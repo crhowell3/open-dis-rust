@@ -95,13 +95,73 @@ impl Pdu for MinefieldDataPdu {
         buf.put_u8(self.padding);
         buf.put_u32(self.data_filter);
         self.mine_type.serialize(buf);
-        for i in 0..self.sensor_types.len() {
-            buf.put_u16(self.sensor_types[i] as u16);
+        for s in &self.sensor_types {
+            buf.put_u16(*s as u16);
         }
-        for i in 0..self.mine_location.len() {
-            self.mine_location[i].serialize(buf);
+
+        for loc in &self.mine_location {
+            loc.serialize(buf);
         }
-        // TODO(@crhowell3): Finish serialization logic
+
+        for v in &self.ground_burial_depth_offset {
+            buf.put_f32(v.unwrap_or(0.0));
+        }
+        for v in &self.water_burial_depth_offset {
+            buf.put_f32(v.unwrap_or(0.0));
+        }
+        for v in &self.snow_burial_depth_offset {
+            buf.put_f32(v.unwrap_or(0.0));
+        }
+
+        for ori in &self.mine_orientation {
+            match ori {
+                Some(e) => e.serialize(buf),
+                None => EulerAngles::default().serialize(buf),
+            }
+        }
+
+        for tc in &self.thermal_contrast {
+            buf.put_f32(tc.unwrap_or(0.0));
+        }
+        for r in &self.reflectance {
+            buf.put_f32(r.unwrap_or(0.0));
+        }
+
+        for t in &self.mine_emplacement_time {
+            match t {
+                Some(clk) => clk.serialize(buf),
+                None => ClockTime::default().serialize(buf),
+            }
+        }
+
+        for id in &self.mine_entity_id {
+            buf.put_u16(id.unwrap_or(0));
+        }
+        for f in &self.fusing {
+            buf.put_u16(f.unwrap_or(0));
+        }
+
+        for s in &self.scalar_detection_coefficient {
+            buf.put_u8(s.unwrap_or(0));
+        }
+        for p in &self.paint_scheme {
+            buf.put_u8(p.unwrap_or(0));
+        }
+        for tw in &self.number_of_trip_wires {
+            buf.put_u8(tw.unwrap_or(0));
+        }
+
+        for (count_opt, verts_opt) in self.number_of_vertices.iter().zip(self.vertices.iter()) {
+            let count = count_opt.unwrap_or(0);
+            buf.put_u8(count);
+
+            if let Some(verts) = verts_opt {
+                for v in verts {
+                    v.serialize(buf);
+                }
+            }
+        }
+
         Ok(())
     }
 
