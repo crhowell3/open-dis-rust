@@ -140,17 +140,19 @@ impl EventReportPdu {
         let _padding = buf.get_u32();
         let number_of_fixed_datum_records = buf.get_u32();
         let number_of_variable_datum_records = buf.get_u32();
-        let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
-        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap_or_default());
+        let mut fixed_datum_records: Vec<FixedDatumRecord> =
+            Vec::with_capacity(number_of_fixed_datum_records.try_into().unwrap_or_default());
         for _record in 0..number_of_fixed_datum_records as usize {
             fixed_datum_records.push(FixedDatumRecord::deserialize(buf));
         }
-        let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
-        variable_datum_records.reserve(
+        let mut variable_datum_records: Vec<VariableDatumRecord> = Vec::with_capacity(
             number_of_variable_datum_records
                 .try_into()
                 .unwrap_or_default(),
         );
+        for _record in 0..number_of_variable_datum_records as usize {
+            variable_datum_records.push(VariableDatumRecord::deserialize(buf));
+        }
 
         EventReportPdu {
             pdu_header: PduHeader::default(),
@@ -184,7 +186,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = EventReportPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = EventReportPdu::deserialize(&mut deserialize_buf).unwrap();

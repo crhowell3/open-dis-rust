@@ -17,7 +17,7 @@ use crate::common::{
     pdu_header::PduHeader,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.5.7
 pub struct ActionRequestPdu {
     pdu_header: PduHeader,
@@ -29,22 +29,6 @@ pub struct ActionRequestPdu {
     pub number_of_variable_datum_records: u32,
     pub fixed_datum_records: Vec<FixedDatumRecord>,
     pub variable_datum_records: Vec<VariableDatumRecord>,
-}
-
-impl Default for ActionRequestPdu {
-    fn default() -> Self {
-        ActionRequestPdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            request_id: 0,
-            action_id: 0,
-            number_of_fixed_datum_records: 0,
-            number_of_variable_datum_records: 0,
-            fixed_datum_records: vec![],
-            variable_datum_records: vec![],
-        }
-    }
 }
 
 impl Pdu for ActionRequestPdu {
@@ -142,13 +126,16 @@ impl ActionRequestPdu {
         let action_id = buf.get_u32();
         let number_of_fixed_datum_records = buf.get_u32();
         let number_of_variable_datum_records = buf.get_u32();
-        let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
-        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap());
+        let mut fixed_datum_records: Vec<FixedDatumRecord> =
+            Vec::with_capacity(number_of_fixed_datum_records.try_into().unwrap_or_default());
         for _record in 0..number_of_fixed_datum_records as usize {
             fixed_datum_records.push(FixedDatumRecord::deserialize(buf));
         }
-        let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
-        variable_datum_records.reserve(number_of_variable_datum_records.try_into().unwrap());
+        let mut variable_datum_records: Vec<VariableDatumRecord> = Vec::with_capacity(
+            number_of_variable_datum_records
+                .try_into()
+                .unwrap_or_default(),
+        );
         for _record in 0..number_of_variable_datum_records as usize {
             variable_datum_records.push(VariableDatumRecord::deserialize(buf));
         }
@@ -185,7 +172,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = ActionRequestPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = ActionRequestPdu::deserialize(&mut deserialize_buf).unwrap();

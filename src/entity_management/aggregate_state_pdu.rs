@@ -22,7 +22,7 @@ use crate::common::{
 
 use super::data_types::{aggregate_id::AggregateId, aggregate_marking::AggregateMarking};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.8.2
 pub struct AggregateStatePdu {
     pdu_header: PduHeader,
@@ -47,35 +47,6 @@ pub struct AggregateStatePdu {
     pub silent_entity_system_list: Vec<EntityType>,
     pub number_of_variable_datum_records: u32,
     pub variable_datum_list: Vec<u64>,
-}
-
-impl Default for AggregateStatePdu {
-    fn default() -> Self {
-        AggregateStatePdu {
-            pdu_header: PduHeader::default(),
-            aggregate_id: EntityId::default(),
-            force_id: 0,
-            aggregate_state: 0,
-            aggregate_type: EntityType::default(),
-            formation: 0,
-            aggregate_marking: AggregateMarking::default(),
-            dimensions: Vector3Float::default(),
-            orientation: EulerAngles::default(),
-            center_of_mass: WorldCoordinate::default(),
-            velocity: LinearVelocity::default(),
-            number_of_dis_aggregates: 0,
-            number_of_dis_entities: 0,
-            number_of_silent_aggregate_types: 0,
-            number_of_silent_entity_types: 0,
-            aggregate_id_list: vec![],
-            entity_id_list: vec![],
-            pad2: 0,
-            silent_aggregate_system_list: vec![],
-            silent_entity_system_list: vec![],
-            number_of_variable_datum_records: 0,
-            variable_datum_list: vec![],
-        }
-    }
 }
 
 impl Pdu for AggregateStatePdu {

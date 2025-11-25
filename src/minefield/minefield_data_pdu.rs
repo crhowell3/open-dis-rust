@@ -20,7 +20,7 @@ use crate::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.9.4
 pub struct MinefieldDataPdu {
     pdu_header: PduHeader,
@@ -51,41 +51,6 @@ pub struct MinefieldDataPdu {
     pub number_of_trip_wires: Vec<Option<u8>>,
     pub number_of_vertices: Vec<Option<u8>>,
     pub vertices: Vec<Option<Vec<EntityCoordinateVector>>>,
-}
-
-impl Default for MinefieldDataPdu {
-    fn default() -> Self {
-        MinefieldDataPdu {
-            pdu_header: PduHeader::default(),
-            minefield_id: MinefieldIdentifier::default(),
-            requesting_entity_id: EntityId::default(),
-            minefield_sequence_number: 0,
-            request_id: 0,
-            pdu_sequence_number: 0,
-            number_of_pdus: 0,
-            number_of_mines_in_this_pdu: 0,
-            number_of_sensor_types: 0,
-            _padding: 0u8,
-            data_filter: 0,
-            mine_type: EntityType::default(),
-            sensor_types: vec![],
-            mine_location: vec![],
-            ground_burial_depth_offset: vec![],
-            water_burial_depth_offset: vec![],
-            snow_burial_depth_offset: vec![],
-            mine_orientation: vec![],
-            thermal_contrast: vec![],
-            reflectance: vec![],
-            mine_emplacement_time: vec![],
-            mine_entity_id: vec![],
-            fusing: vec![],
-            scalar_detection_coefficient: vec![],
-            paint_scheme: vec![],
-            number_of_trip_wires: vec![],
-            number_of_vertices: vec![],
-            vertices: vec![],
-        }
-    }
 }
 
 impl Pdu for MinefieldDataPdu {

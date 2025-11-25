@@ -18,7 +18,7 @@ use crate::common::{
     pdu_header::PduHeader,
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.11.5
 pub struct StopFreezeReliablePdu {
     pdu_header: PduHeader,
@@ -30,22 +30,6 @@ pub struct StopFreezeReliablePdu {
     pub required_reliability_service: u8,
     _padding: u8,
     pub request_id: u32,
-}
-
-impl Default for StopFreezeReliablePdu {
-    fn default() -> Self {
-        StopFreezeReliablePdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            real_world_time: ClockTime::default(),
-            reason: Reason::default(),
-            frozen_behavior: FrozenBehavior::default(),
-            required_reliability_service: 0,
-            _padding: 0,
-            request_id: 0,
-        }
-    }
 }
 
 impl Pdu for StopFreezeReliablePdu {
@@ -176,7 +160,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = StopFreezeReliablePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = StopFreezeReliablePdu::deserialize(&mut deserialize_buf).unwrap();

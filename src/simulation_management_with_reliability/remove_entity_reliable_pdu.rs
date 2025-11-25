@@ -17,7 +17,7 @@ use crate::common::{
     pdu_header::PduHeader,
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.11.3
 pub struct RemoveEntityReliablePdu {
     pdu_header: PduHeader,
@@ -27,20 +27,6 @@ pub struct RemoveEntityReliablePdu {
     _padding: u8,
     _padding2: u16,
     pub request_id: u32,
-}
-
-impl Default for RemoveEntityReliablePdu {
-    fn default() -> Self {
-        RemoveEntityReliablePdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            required_reliability_service: RequiredReliabilityService::default(),
-            _padding: 0,
-            _padding2: 0,
-            request_id: 0,
-        }
-    }
 }
 
 impl Pdu for RemoveEntityReliablePdu {
@@ -164,7 +150,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = RemoveEntityReliablePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = RemoveEntityReliablePdu::deserialize(&mut deserialize_buf).unwrap();

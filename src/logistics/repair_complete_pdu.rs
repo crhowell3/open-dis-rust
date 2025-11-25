@@ -17,7 +17,7 @@ use crate::common::{
     pdu_header::PduHeader,
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.4.6
 pub struct RepairCompletePdu {
     pub pdu_header: PduHeader,
@@ -25,18 +25,6 @@ pub struct RepairCompletePdu {
     pub repairing_entity_id: EntityId,
     pub repair: RepairGroups,
     _padding: u16,
-}
-
-impl Default for RepairCompletePdu {
-    fn default() -> Self {
-        RepairCompletePdu {
-            pdu_header: PduHeader::default(),
-            receiving_entity_id: EntityId::default(),
-            repairing_entity_id: EntityId::default(),
-            repair: RepairGroups::default(),
-            _padding: 0_u16,
-        }
-    }
 }
 
 impl Pdu for RepairCompletePdu {
@@ -154,7 +142,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = RepairCompletePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = RepairCompletePdu::deserialize(&mut deserialize_buf).unwrap();

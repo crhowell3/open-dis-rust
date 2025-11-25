@@ -56,8 +56,8 @@ impl VariableDatumRecord {
         let pad_bytes = (pad_bits / 8) as usize;
         if pad_bytes > 0 {
             let zeros = vec![0u8; pad_bytes];
-            for i in 0..pad_bytes {
-                buf.put_u8(zeros[i]);
+            for z in zeros {
+                buf.put_u8(z);
             }
         }
     }
@@ -68,8 +68,8 @@ impl VariableDatumRecord {
         let value_bytes = Self::bytes_count(length_bits);
 
         let mut value = vec![0u8; value_bytes];
-        for i in 0..value_bytes {
-            value[i] = buf.get_u8();
+        for _ in 0..value_bytes {
+            value.push(buf.get_u8())
         }
 
         Self {

@@ -18,7 +18,7 @@ use crate::common::{
     pdu_header::PduHeader,
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.5.4
 pub struct StartResumePdu {
     pdu_header: PduHeader,
@@ -27,19 +27,6 @@ pub struct StartResumePdu {
     pub real_world_time: ClockTime,
     pub simulation_time: ClockTime,
     pub request_id: u32,
-}
-
-impl Default for StartResumePdu {
-    fn default() -> Self {
-        StartResumePdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            real_world_time: ClockTime::default(),
-            simulation_time: ClockTime::default(),
-            request_id: 0,
-        }
-    }
 }
 
 impl Pdu for StartResumePdu {
@@ -157,7 +144,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = StartResumePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = StartResumePdu::deserialize(&mut deserialize_buf).unwrap();

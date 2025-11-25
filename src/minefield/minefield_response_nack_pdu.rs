@@ -16,7 +16,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.9.5
 pub struct MinefieldResponseNackPdu {
     pdu_header: PduHeader,
@@ -25,19 +25,6 @@ pub struct MinefieldResponseNackPdu {
     pub request_id: u8,
     pub number_of_missing_pdus: u8,
     pub missing_pdu_sequence_numbers: Vec<u64>,
-}
-
-impl Default for MinefieldResponseNackPdu {
-    fn default() -> Self {
-        MinefieldResponseNackPdu {
-            pdu_header: PduHeader::default(),
-            minefield_id: EntityId::default(),
-            requesting_entity_id: EntityId::default(),
-            request_id: 0,
-            number_of_missing_pdus: 0,
-            missing_pdu_sequence_numbers: vec![],
-        }
-    }
 }
 
 impl Pdu for MinefieldResponseNackPdu {

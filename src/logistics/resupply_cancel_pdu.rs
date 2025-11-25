@@ -17,22 +17,12 @@ use crate::common::{
     pdu_header::PduHeader,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.4.5
 pub struct ResupplyCancelPdu {
     pdu_header: PduHeader,
     pub receiving_entity_id: EntityId,
     pub supplying_entity_id: EntityId,
-}
-
-impl Default for ResupplyCancelPdu {
-    fn default() -> Self {
-        ResupplyCancelPdu {
-            pdu_header: PduHeader::default(),
-            receiving_entity_id: EntityId::default(),
-            supplying_entity_id: EntityId::default(),
-        }
-    }
 }
 
 impl Pdu for ResupplyCancelPdu {
@@ -144,7 +134,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = ResupplyCancelPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = ResupplyCancelPdu::deserialize(&mut deserialize_buf).unwrap();

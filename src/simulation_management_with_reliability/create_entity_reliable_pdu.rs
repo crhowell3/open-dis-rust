@@ -16,7 +16,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.11.2
 pub struct CreateEntityReliablePdu {
     pdu_header: PduHeader,
@@ -26,20 +26,6 @@ pub struct CreateEntityReliablePdu {
     _padding: u8,
     _padding2: u16,
     pub request_id: u32,
-}
-
-impl Default for CreateEntityReliablePdu {
-    fn default() -> Self {
-        CreateEntityReliablePdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            required_reliability_service: RequiredReliabilityService::default(),
-            _padding: 0,
-            _padding2: 0,
-            request_id: 0,
-        }
-    }
 }
 
 impl Pdu for CreateEntityReliablePdu {
@@ -163,7 +149,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = CreateEntityReliablePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = CreateEntityReliablePdu::deserialize(&mut deserialize_buf).unwrap();

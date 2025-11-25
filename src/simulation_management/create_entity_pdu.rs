@@ -15,24 +15,13 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.5.2
 pub struct CreateEntityPdu {
     pdu_header: PduHeader,
     pub originating_entity_id: EntityId,
     pub receiving_entity_id: EntityId,
     pub request_id: u32,
-}
-
-impl Default for CreateEntityPdu {
-    fn default() -> Self {
-        CreateEntityPdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            request_id: 0,
-        }
-    }
 }
 
 impl Pdu for CreateEntityPdu {
@@ -146,7 +135,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = CreateEntityPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = CreateEntityPdu::deserialize(&mut deserialize_buf).unwrap();

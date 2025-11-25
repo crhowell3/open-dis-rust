@@ -17,7 +17,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.5.10
 pub struct SetDataPdu {
     pdu_header: PduHeader,
@@ -29,22 +29,6 @@ pub struct SetDataPdu {
     pub number_of_variable_datum_records: u32,
     pub fixed_datum_records: Vec<FixedDatumRecord>,
     pub variable_datum_records: Vec<VariableDatumRecord>,
-}
-
-impl Default for SetDataPdu {
-    fn default() -> Self {
-        SetDataPdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            request_id: 0,
-            _padding: 0,
-            number_of_fixed_datum_records: 0,
-            number_of_variable_datum_records: 0,
-            fixed_datum_records: vec![],
-            variable_datum_records: vec![],
-        }
-    }
 }
 
 impl Pdu for SetDataPdu {
@@ -140,13 +124,12 @@ impl SetDataPdu {
         let _padding = buf.get_u32();
         let number_of_fixed_datum_records = buf.get_u32();
         let number_of_variable_datum_records = buf.get_u32();
-        let mut fixed_datum_records: Vec<FixedDatumRecord> = vec![];
-        fixed_datum_records.reserve(number_of_fixed_datum_records.try_into().unwrap_or_default());
+        let mut fixed_datum_records: Vec<FixedDatumRecord> =
+            Vec::with_capacity(number_of_fixed_datum_records.try_into().unwrap_or_default());
         for _record in 0..number_of_fixed_datum_records as usize {
             fixed_datum_records.push(FixedDatumRecord::deserialize(buf));
         }
-        let mut variable_datum_records: Vec<VariableDatumRecord> = vec![];
-        variable_datum_records.reserve(
+        let mut variable_datum_records: Vec<VariableDatumRecord> = Vec::with_capacity(
             number_of_variable_datum_records
                 .try_into()
                 .unwrap_or_default(),
@@ -187,7 +170,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = SetDataPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = SetDataPdu::deserialize(&mut deserialize_buf).unwrap();

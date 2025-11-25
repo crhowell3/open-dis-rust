@@ -18,7 +18,7 @@ use crate::common::{
 
 use super::data_types::directed_energy_damage::DirectedEnergyDamage;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.3.5
 pub struct EntityDamageStatusPdu {
     pdu_header: PduHeader,
@@ -27,19 +27,6 @@ pub struct EntityDamageStatusPdu {
     _padding2: u16,
     pub number_of_damage_descriptions: u16,
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
-}
-
-impl Default for EntityDamageStatusPdu {
-    fn default() -> Self {
-        EntityDamageStatusPdu {
-            pdu_header: PduHeader::default(),
-            damaged_entity_id: EntityId::default(),
-            _padding: 0u16,
-            _padding2: 0u16,
-            number_of_damage_descriptions: 0,
-            damage_descriptions: vec![],
-        }
-    }
 }
 
 impl Pdu for EntityDamageStatusPdu {

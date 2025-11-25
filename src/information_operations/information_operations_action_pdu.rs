@@ -23,7 +23,7 @@ use crate::{
     warfare::data_types::standard_variable_specification::StandardVariableSpecification,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.12.2
 pub struct InformationOperationsActionPdu {
     pdu_header: PduHeader,
@@ -39,26 +39,6 @@ pub struct InformationOperationsActionPdu {
     pub io_primary_target_entity_id: EntityId,
     _padding2: u16,
     pub io_records: StandardVariableSpecification,
-}
-
-impl Default for InformationOperationsActionPdu {
-    fn default() -> Self {
-        Self {
-            pdu_header: PduHeader::default(),
-            originating_simulation_id: SimulationIdentifier::default(),
-            receiving_simulation_id: SimulationIdentifier::default(),
-            request_id: 0u32,
-            io_warfare_type: IOActionIOWarfareType::default(),
-            io_simulation_source: IOActionIOSimulationSource::default(),
-            io_action_type: IOActionIOActionType::default(),
-            io_action_phase: IOActionIOActionPhase::default(),
-            _padding: 0u32,
-            io_attacker_entity_id: EntityId::default(),
-            io_primary_target_entity_id: EntityId::default(),
-            _padding2: 0u16,
-            io_records: StandardVariableSpecification::default(),
-        }
-    }
 }
 
 impl Pdu for InformationOperationsActionPdu {

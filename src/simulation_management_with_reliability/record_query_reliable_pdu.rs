@@ -17,7 +17,7 @@ use crate::common::{
     pdu_header::PduHeader,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.11.14
 pub struct RecordQueryReliablePdu {
     pdu_header: PduHeader,
@@ -30,23 +30,6 @@ pub struct RecordQueryReliablePdu {
     pub time: u32,
     pub number_of_records: u32,
     pub record_ids: Vec<u32>,
-}
-
-impl Default for RecordQueryReliablePdu {
-    fn default() -> Self {
-        RecordQueryReliablePdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            request_id: 0,
-            required_reliability_service: RequiredReliabilityService::default(),
-            _padding: 0,
-            event_type: EventType::default(),
-            time: 0,
-            number_of_records: 0,
-            record_ids: vec![],
-        }
-    }
 }
 
 impl Pdu for RecordQueryReliablePdu {
@@ -183,7 +166,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = RecordQueryReliablePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = RecordQueryReliablePdu::deserialize(&mut deserialize_buf).unwrap();

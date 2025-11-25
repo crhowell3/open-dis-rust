@@ -23,7 +23,7 @@ use crate::{
     warfare::data_types::variable_parameter::VariableParameter,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.2.5
 pub struct EntityStateUpdatePdu {
     pdu_header: PduHeader,
@@ -35,22 +35,6 @@ pub struct EntityStateUpdatePdu {
     pub entity_orientation: EulerAngles,
     pub entity_appearance: u32,
     pub variable_parameter_records: Vec<VariableParameter>,
-}
-
-impl Default for EntityStateUpdatePdu {
-    fn default() -> Self {
-        EntityStateUpdatePdu {
-            pdu_header: PduHeader::default(),
-            entity_id: EntityId::default(),
-            _padding: 0,
-            number_of_variable_parameters: 0,
-            entity_linear_velocity: LinearVelocity::default(),
-            entity_location: WorldCoordinate::default(),
-            entity_orientation: EulerAngles::default(),
-            entity_appearance: 0,
-            variable_parameter_records: vec![],
-        }
-    }
 }
 
 impl Pdu for EntityStateUpdatePdu {

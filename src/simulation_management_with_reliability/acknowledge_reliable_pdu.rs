@@ -17,7 +17,7 @@ use crate::common::{
     pdu_header::PduHeader,
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.11.6
 pub struct AcknowledgeReliablePdu {
     pdu_header: PduHeader,
@@ -26,19 +26,6 @@ pub struct AcknowledgeReliablePdu {
     pub acknowledge_flag: AcknowledgeFlag,
     pub response_flag: AcknowledgeResponseFlag,
     pub request_id: u32,
-}
-
-impl Default for AcknowledgeReliablePdu {
-    fn default() -> Self {
-        AcknowledgeReliablePdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            acknowledge_flag: AcknowledgeFlag::default(),
-            response_flag: AcknowledgeResponseFlag::default(),
-            request_id: 0,
-        }
-    }
 }
 
 impl Pdu for AcknowledgeReliablePdu {
@@ -159,7 +146,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = AcknowledgeReliablePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = AcknowledgeReliablePdu::deserialize(&mut deserialize_buf).unwrap();

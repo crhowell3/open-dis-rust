@@ -22,7 +22,7 @@ use std::any::Any;
 
 use super::data_types::point::Point;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.9.3
 pub struct MinefieldQueryPdu {
     pdu_header: PduHeader,
@@ -36,24 +36,6 @@ pub struct MinefieldQueryPdu {
     pub requested_mine_type: EntityType,
     pub requested_perimeter_points: Vec<Point>,
     pub sensor_types: Vec<MinefieldSensorTypes>,
-}
-
-impl Default for MinefieldQueryPdu {
-    fn default() -> Self {
-        MinefieldQueryPdu {
-            pdu_header: PduHeader::default(),
-            minefield_id: MinefieldIdentifier::default(),
-            requesting_entity_id: EntityId::default(),
-            request_id: 0u8,
-            number_of_perimeter_points: 0u8,
-            _padding: 0u8,
-            number_of_sensor_types: 0u8,
-            data_filter: 0u32,
-            requested_mine_type: EntityType::default(),
-            requested_perimeter_points: vec![],
-            sensor_types: vec![],
-        }
-    }
 }
 
 impl Pdu for MinefieldQueryPdu {

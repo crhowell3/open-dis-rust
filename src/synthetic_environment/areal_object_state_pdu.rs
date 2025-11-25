@@ -9,7 +9,7 @@ use std::any::Any;
 
 use crate::{
     common::{
-        WorldCoordinate,
+        SerializedLength, WorldCoordinate,
         constants::MAX_PDU_SIZE_OCTETS,
         dis_error::DISError,
         entity_id::EntityId,
@@ -21,7 +21,7 @@ use crate::{
     synthetic_environment::data_types::object_type::ObjectType,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.10.6
 pub struct ArealObjectStatePdu {
     pdu_header: PduHeader,
@@ -39,30 +39,10 @@ pub struct ArealObjectStatePdu {
     pub object_location: Vec<WorldCoordinate>,
 }
 
-impl Default for ArealObjectStatePdu {
-    fn default() -> Self {
-        ArealObjectStatePdu {
-            pdu_header: PduHeader::default(),
-            object_id: EntityId::default(),
-            referenced_object_id: EntityId::default(),
-            update_number: 0,
-            force_id: ForceId::default(),
-            modifications: 0,
-            object_type: ObjectType::default(),
-            specific_object_appearance: 0,
-            general_object_appearance: ObjectStateAppearanceGeneral::default(),
-            number_of_points: 0,
-            requester_id: SimulationAddress::default(),
-            receiving_id: SimulationAddress::default(),
-            object_location: vec![],
-        }
-    }
-}
-
 impl Pdu for ArealObjectStatePdu {
     fn length(&self) -> u16 {
-        let length = std::mem::size_of::<PduHeader>()
-            + std::mem::size_of::<EntityId>() * 2
+        let length = PduHeader::LENGTH
+            + EntityId::LENGTH * 2
             + std::mem::size_of::<u16>()
             + std::mem::size_of::<ForceId>()
             + std::mem::size_of::<u8>()
@@ -70,7 +50,7 @@ impl Pdu for ArealObjectStatePdu {
             + std::mem::size_of::<u32>()
             + std::mem::size_of::<ObjectStateAppearanceGeneral>()
             + std::mem::size_of::<u16>()
-            + std::mem::size_of::<SimulationAddress>() * 2;
+            + SimulationAddress::LENGTH * 2;
 
         length as u16
     }
@@ -213,7 +193,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = ArealObjectStatePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = ArealObjectStatePdu::deserialize(&mut deserialize_buf).unwrap();

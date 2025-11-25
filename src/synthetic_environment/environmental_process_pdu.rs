@@ -20,7 +20,7 @@ use crate::common::{
 
 use super::data_types::environment::Environment;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.10.2
 pub struct EnvironmentalProcessPdu {
     pdu_header: PduHeader,
@@ -31,21 +31,6 @@ pub struct EnvironmentalProcessPdu {
     pub number_of_environment_records: u16,
     pub sequence_number: u16,
     pub environment_records: Vec<Environment>,
-}
-
-impl Default for EnvironmentalProcessPdu {
-    fn default() -> Self {
-        EnvironmentalProcessPdu {
-            pdu_header: PduHeader::default(),
-            environmental_process_id: EntityId::default(),
-            environment_type: EntityType::default(),
-            model_type: 0,
-            environment_status: 0,
-            number_of_environment_records: 0,
-            sequence_number: 0,
-            environment_records: vec![],
-        }
-    }
 }
 
 impl Pdu for EnvironmentalProcessPdu {
@@ -177,7 +162,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = EnvironmentalProcessPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = EnvironmentalProcessPdu::deserialize(&mut deserialize_buf).unwrap();

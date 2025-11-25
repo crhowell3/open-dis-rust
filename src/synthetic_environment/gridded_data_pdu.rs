@@ -23,7 +23,7 @@ use super::data_types::{
     grid_axis_descriptor::GridAxisDescriptor, grid_data_record::GridDataRecord,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.10.3
 pub struct GriddedDataPdu {
     pdu_header: PduHeader,
@@ -43,30 +43,6 @@ pub struct GriddedDataPdu {
     _padding2: u16,
     pub grid_axis_descriptors: Vec<GridAxisDescriptor>,
     pub grid_data_list: Vec<GridDataRecord>,
-}
-
-impl Default for GriddedDataPdu {
-    fn default() -> Self {
-        GriddedDataPdu {
-            pdu_header: PduHeader::default(),
-            environmental_simulation_id: EntityId::default(),
-            field_number: 0,
-            pdu_number: 0,
-            pdu_total: 0,
-            coordinate_system: GriddedDataCoordinateSystem::default(),
-            number_of_grid_axes: 0,
-            constant_grid: GriddedDataConstantGrid::default(),
-            environment_type: EntityType::default(),
-            orientation: EulerAngles::default(),
-            sample_time: ClockTime::default(),
-            total_values: 0,
-            vector_dimension: 0,
-            _padding: 0u8,
-            _padding2: 0,
-            grid_axis_descriptors: vec![],
-            grid_data_list: vec![],
-        }
-    }
 }
 
 impl Pdu for GriddedDataPdu {
@@ -241,7 +217,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = GriddedDataPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = GriddedDataPdu::deserialize(&mut deserialize_buf).unwrap();

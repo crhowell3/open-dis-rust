@@ -21,7 +21,7 @@ use crate::common::{
 
 use super::data_types::{named_location::NamedLocation, relationship::Relationship};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.8.5
 pub struct IsPartOfPdu {
     pdu_header: PduHeader,
@@ -31,20 +31,6 @@ pub struct IsPartOfPdu {
     pub part_location: Vector3Float,
     pub named_location_id: NamedLocation,
     pub part_entity_type: EntityType,
-}
-
-impl Default for IsPartOfPdu {
-    fn default() -> Self {
-        IsPartOfPdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            relationship: Relationship::default(),
-            part_location: Vector3Float::default(),
-            named_location_id: NamedLocation::default(),
-            part_entity_type: EntityType::default(),
-        }
-    }
 }
 
 impl Pdu for IsPartOfPdu {

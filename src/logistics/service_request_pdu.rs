@@ -19,7 +19,7 @@ use crate::common::{
 
 use super::data_types::supply_quantity::SupplyQuantity;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.4.2
 pub struct ServiceRequestPdu {
     pdu_header: PduHeader,
@@ -29,20 +29,6 @@ pub struct ServiceRequestPdu {
     pub number_of_supply_types: u8,
     _padding: u16,
     pub supplies: Vec<SupplyQuantity>,
-}
-
-impl Default for ServiceRequestPdu {
-    fn default() -> Self {
-        ServiceRequestPdu {
-            pdu_header: PduHeader::default(),
-            receiving_entity_id: EntityId::default(),
-            servicing_entity_id: EntityId::default(),
-            service_type_requested: ServiceRequestServiceTypeRequested::default(),
-            number_of_supply_types: 0,
-            _padding: 0,
-            supplies: vec![],
-        }
-    }
 }
 
 impl Pdu for ServiceRequestPdu {
@@ -171,7 +157,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = ServiceRequestPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = ServiceRequestPdu::deserialize(&mut deserialize_buf).unwrap();

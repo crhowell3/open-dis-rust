@@ -7,21 +7,11 @@ use bytes::{Buf, BufMut, BytesMut};
 
 use crate::common::entity_id::EntityId;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Default, Debug)]
 pub struct TrackJamTarget {
     pub track_jam: EntityId,
     pub emitter_id: u8,
     pub beam_id: u8,
-}
-
-impl Default for TrackJamTarget {
-    fn default() -> Self {
-        TrackJamTarget {
-            track_jam: EntityId::default(),
-            emitter_id: 0,
-            beam_id: 0,
-        }
-    }
 }
 
 impl TrackJamTarget {

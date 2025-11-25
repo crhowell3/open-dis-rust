@@ -27,14 +27,6 @@ impl EntityId {
         }
     }
 
-    #[must_use]
-    pub fn default() -> Self {
-        EntityId {
-            simulation_address: SimulationAddress::default(),
-            entity_id: 0,
-        }
-    }
-
     pub fn serialize(&self, buf: &mut BytesMut) {
         self.simulation_address.serialize(buf);
         buf.put_u16(self.entity_id);

@@ -21,7 +21,7 @@ use super::data_types::{
     linear_segment_parameter::LinearSegmentParameter, object_type::ObjectType,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.10.5
 pub struct LinearObjectStatePdu {
     pdu_header: PduHeader,
@@ -34,23 +34,6 @@ pub struct LinearObjectStatePdu {
     pub receiving_id: SimulationAddress,
     pub object_type: ObjectType,
     pub linear_segment_parameters: Vec<LinearSegmentParameter>,
-}
-
-impl Default for LinearObjectStatePdu {
-    fn default() -> Self {
-        LinearObjectStatePdu {
-            pdu_header: PduHeader::default(),
-            object_id: EntityId::default(),
-            referenced_object_id: EntityId::default(),
-            update_number: 0,
-            force_id: ForceId::default(),
-            number_of_segments: 0,
-            requester_id: SimulationAddress::default(),
-            receiving_id: SimulationAddress::default(),
-            object_type: ObjectType::default(),
-            linear_segment_parameters: vec![],
-        }
-    }
 }
 
 impl Pdu for LinearObjectStatePdu {
@@ -193,7 +176,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = LinearObjectStatePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = LinearObjectStatePdu::deserialize(&mut deserialize_buf).unwrap();

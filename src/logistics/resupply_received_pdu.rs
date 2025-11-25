@@ -19,7 +19,7 @@ use crate::common::{
 
 use super::data_types::supply_quantity::SupplyQuantity;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.4.4
 pub struct ResupplyReceivedPdu {
     pdu_header: PduHeader,
@@ -29,20 +29,6 @@ pub struct ResupplyReceivedPdu {
     _padding: u8,
     _padding2: u16,
     pub supplies: Vec<SupplyQuantity>,
-}
-
-impl Default for ResupplyReceivedPdu {
-    fn default() -> Self {
-        ResupplyReceivedPdu {
-            pdu_header: PduHeader::default(),
-            receiving_entity_id: EntityId::default(),
-            supplying_entity_id: EntityId::default(),
-            number_of_supply_types: 0,
-            _padding: 0,
-            _padding2: 0,
-            supplies: vec![],
-        }
-    }
 }
 
 impl Pdu for ResupplyReceivedPdu {
@@ -171,7 +157,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = ResupplyReceivedPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = ResupplyReceivedPdu::deserialize(&mut deserialize_buf).unwrap();

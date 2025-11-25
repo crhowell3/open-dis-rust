@@ -21,7 +21,7 @@ use super::data_types::{
     vectoring_nozzle_system_data::VectoringNozzleSystemData,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.6.6
 pub struct SupplementalEmissionPdu {
     pdu_header: PduHeader,
@@ -33,22 +33,6 @@ pub struct SupplementalEmissionPdu {
     pub number_of_vectoring_nozzle_systems: u16,
     pub propulsion_system_data: Vec<PropulsionSystemData>,
     pub vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData>,
-}
-
-impl Default for SupplementalEmissionPdu {
-    fn default() -> Self {
-        SupplementalEmissionPdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            infrared_signature_representation_index: 0u16,
-            acoustic_signature_representation_index: 0u16,
-            radar_cross_section_signature_representation_index: 0u16,
-            number_of_propulsion_systems: 0u16,
-            number_of_vectoring_nozzle_systems: 0u16,
-            propulsion_system_data: vec![],
-            vectoring_nozzle_system_data: vec![],
-        }
-    }
 }
 
 impl Pdu for SupplementalEmissionPdu {
@@ -191,7 +175,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = SupplementalEmissionPdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = SupplementalEmissionPdu::deserialize(&mut deserialize_buf).unwrap();

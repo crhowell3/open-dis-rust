@@ -15,7 +15,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.7.5
 pub struct IntercomSignalPdu {
     pdu_header: PduHeader,
@@ -27,22 +27,6 @@ pub struct IntercomSignalPdu {
     pub data_length: u16,
     pub samples: u16,
     pub data: Vec<u8>,
-}
-
-impl Default for IntercomSignalPdu {
-    fn default() -> Self {
-        IntercomSignalPdu {
-            pdu_header: PduHeader::default(),
-            intercom_reference_id: EntityId::default(),
-            intercom_number: 0,
-            encoding_scheme: 0,
-            tdl_type: SignalTDLType::default(),
-            sample_rate: 0,
-            data_length: 0,
-            samples: 0,
-            data: vec![],
-        }
-    }
 }
 
 impl Pdu for IntercomSignalPdu {

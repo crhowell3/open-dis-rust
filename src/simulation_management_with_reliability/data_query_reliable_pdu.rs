@@ -16,7 +16,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.11.9
 pub struct DataQueryReliablePdu {
     pdu_header: PduHeader,
@@ -31,25 +31,6 @@ pub struct DataQueryReliablePdu {
     pub number_of_variable_datum_records: u32,
     pub fixed_datum_ids: Vec<VariableRecordTypes>,
     pub variable_datum_ids: Vec<VariableRecordTypes>,
-}
-
-impl Default for DataQueryReliablePdu {
-    fn default() -> Self {
-        DataQueryReliablePdu {
-            pdu_header: PduHeader::default(),
-            originating_entity_id: EntityId::default(),
-            receiving_entity_id: EntityId::default(),
-            required_reliability_service: RequiredReliabilityService::default(),
-            _padding: 0,
-            _padding2: 0,
-            request_id: 0,
-            time_interval: 0,
-            number_of_fixed_datum_records: 0,
-            number_of_variable_datum_records: 0,
-            fixed_datum_ids: vec![],
-            variable_datum_ids: vec![],
-        }
-    }
 }
 
 impl Pdu for DataQueryReliablePdu {
@@ -198,7 +179,7 @@ mod tests {
     fn serialize_then_deserialize() {
         let mut pdu = DataQueryReliablePdu::new();
         let mut serialize_buf = BytesMut::new();
-        pdu.serialize(&mut serialize_buf);
+        let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
         let new_pdu = DataQueryReliablePdu::deserialize(&mut deserialize_buf).unwrap();

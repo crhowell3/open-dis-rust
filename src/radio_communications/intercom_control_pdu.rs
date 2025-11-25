@@ -19,7 +19,7 @@ use crate::common::{
 use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.7.6
 pub struct IntercomControlPdu {
     pdu_header: PduHeader,
@@ -35,26 +35,6 @@ pub struct IntercomControlPdu {
     pub master_communications_device_id: u16,
     pub intercom_parameters_length: u32,
     pub intercom_parameters: Vec<IntercomCommunicationsParameters>,
-}
-
-impl Default for IntercomControlPdu {
-    fn default() -> Self {
-        IntercomControlPdu {
-            pdu_header: PduHeader::default(),
-            control_type: IntercomControlControlType::default(),
-            communications_channel_type: 0,
-            source_entity_id: EntityId::default(),
-            source_communications_device_id: 0,
-            source_line_id: 0,
-            transmit_priority: 0,
-            transmit_line_state: IntercomControlTransmitLineState::default(),
-            command: IntercomControlCommand::default(),
-            master_intercom_number: EntityId::default(),
-            master_communications_device_id: 0,
-            intercom_parameters_length: 0,
-            intercom_parameters: vec![],
-        }
-    }
 }
 
 impl Pdu for IntercomControlPdu {

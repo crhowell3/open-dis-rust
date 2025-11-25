@@ -21,7 +21,7 @@ use crate::common::{
 
 use super::data_types::object_type::ObjectType;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.10.4
 pub struct PointObjectStatePdu {
     pdu_header: PduHeader,
@@ -39,28 +39,6 @@ pub struct PointObjectStatePdu {
     pub requester_id: SimulationAddress,
     pub receiving_id: SimulationAddress,
     _padding2: u32,
-}
-
-impl Default for PointObjectStatePdu {
-    fn default() -> Self {
-        PointObjectStatePdu {
-            pdu_header: PduHeader::default(),
-            object_id: EntityId::default(),
-            referenced_object_id: EntityId::default(),
-            update_number: 0,
-            force_id: ForceId::default(),
-            modifications: 0,
-            object_type: ObjectType::default(),
-            object_location: WorldCoordinate::default(),
-            object_orientation: EulerAngles::default(),
-            specific_object_appearance: 0u32,
-            general_object_appearance: 0u16,
-            _padding: 0u16,
-            requester_id: SimulationAddress::default(),
-            receiving_id: SimulationAddress::default(),
-            _padding2: 0u32,
-        }
-    }
 }
 
 impl Pdu for PointObjectStatePdu {

@@ -20,7 +20,7 @@ use crate::common::{
 
 use super::data_types::record_specification::RecordSpecification;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §7.8.4
 pub struct TransferOwnershipPdu {
     pdu_header: PduHeader,
@@ -31,21 +31,6 @@ pub struct TransferOwnershipPdu {
     pub transfer_type: u8,
     pub transfer_entity_id: EntityId,
     pub record_information: RecordSpecification,
-}
-
-impl Default for TransferOwnershipPdu {
-    fn default() -> Self {
-        TransferOwnershipPdu {
-            pdu_header: PduHeader::default(),
-            originating_id: SimulationAddress::default(),
-            receiving_id: SimulationAddress::default(),
-            request_id: 0,
-            required_reliability_service: 0,
-            transfer_type: 0,
-            transfer_entity_id: EntityId::default(),
-            record_information: RecordSpecification::default(),
-        }
-    }
 }
 
 impl Pdu for TransferOwnershipPdu {
