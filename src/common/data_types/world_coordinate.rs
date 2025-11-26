@@ -26,13 +26,13 @@ impl WorldCoordinate {
     ///
     /// Instantiating a new `WorldCoordinate`:
     /// ```
-    /// use open_dis_rust::common::WorldCoordinate;
+    /// use open_dis_rust::common::data_types::WorldCoordinate;
     /// let mut world_coordinate = WorldCoordinate::new(0.0, 0.0, 0.0);
     /// ```
     ///
     #[must_use]
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
-        WorldCoordinate { x, y, z }
+    pub const fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { x, y, z }
     }
 
     pub fn serialize(&self, buf: &mut BytesMut) {
@@ -41,8 +41,8 @@ impl WorldCoordinate {
         buf.put_f64(self.z);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> WorldCoordinate {
-        WorldCoordinate {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             x: buf.get_f64(),
             y: buf.get_f64(),
             z: buf.get_f64(),

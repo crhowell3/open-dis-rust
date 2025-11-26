@@ -8,7 +8,7 @@ use crate::common::generic_header::GenericHeader;
 use crate::{
     common::{
         SerializedLength,
-        entity_id::EntityId,
+        data_types::entity_id::EntityId,
         enums::{AcknowledgeFlag, AcknowledgeResponseFlag, PduType, ProtocolFamily},
         pdu::Pdu,
         pdu_header::PduHeader,

@@ -9219,12 +9219,29 @@ pub enum IOActionIOWarfareType {
 impl IOActionIOWarfareType {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+impl FieldSerialize for IOActionIOWarfareType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for IOActionIOWarfareType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IOActionIOWarfareType {
+    fn field_len(&self) -> usize {
+        2
     }
 }
 
 // SISO-REF-010-2023 IOActionIOSimulationSource [UID 286]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum IOActionIOSimulationSource {
     #[default]
     NoStatement = 0,
@@ -9233,12 +9250,30 @@ pub enum IOActionIOSimulationSource {
 impl IOActionIOSimulationSource {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
+impl FieldSerialize for IOActionIOSimulationSource {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for IOActionIOSimulationSource {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IOActionIOSimulationSource {
+    fn field_len(&self) -> usize {
+        2
     }
 }
 
 // SISO-REF-010-2023 IOActionIOActionType [UID 287]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum IOActionIOActionType {
     #[default]
     NoStatement = 0,
@@ -9251,12 +9286,30 @@ pub enum IOActionIOActionType {
 impl IOActionIOActionType {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
+impl FieldSerialize for IOActionIOActionType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for IOActionIOActionType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IOActionIOActionType {
+    fn field_len(&self) -> usize {
+        2
     }
 }
 
 // SISO-REF-010-2023 IOActionIOActionPhase [UID 288]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum IOActionIOActionPhase {
     #[default]
     NoStatement = 0,
@@ -9271,7 +9324,25 @@ pub enum IOActionIOActionPhase {
 impl IOActionIOActionPhase {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+        Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
+impl FieldSerialize for IOActionIOActionPhase {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for IOActionIOActionPhase {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IOActionIOActionPhase {
+    fn field_len(&self) -> usize {
+        2
     }
 }
 
@@ -9289,6 +9360,24 @@ impl IOReportIOReportType {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or(Self::default())
+    }
+}
+
+impl FieldSerialize for IOReportIOReportType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for IOReportIOReportType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IOReportIOReportType {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 

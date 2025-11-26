@@ -22,7 +22,7 @@ pub struct EntityType {
 
 impl EntityType {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         kind: EntityKind,
         domain: u8,
         country: Country,
@@ -31,7 +31,7 @@ impl EntityType {
         specific: u8,
         extra: u8,
     ) -> Self {
-        EntityType {
+        Self {
             kind,
             domain,
             country,
@@ -52,8 +52,8 @@ impl EntityType {
         buf.put_u8(self.extra);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityType {
-        EntityType {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             kind: EntityKind::deserialize(buf),
             domain: buf.get_u8(),
             country: Country::deserialize(buf),

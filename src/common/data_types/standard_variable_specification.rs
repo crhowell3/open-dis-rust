@@ -3,9 +3,9 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
 use super::standard_variable_records::StandardVariableRecords;
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Clone, Debug, Default)]
 pub struct StandardVariableSpecification {
@@ -42,5 +42,32 @@ impl StandardVariableSpecification {
             number_of_standard_variable_records,
             standard_variable_records,
         }
+    }
+}
+
+impl FieldSerialize for StandardVariableSpecification {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(self.number_of_standard_variable_records);
+        self.standard_variable_records.serialize_field(buf);
+    }
+}
+
+impl FieldDeserialize for StandardVariableSpecification {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        let number_of_standard_variable_records = buf.get_u16();
+        let mut records = Vec::with_capacity(number_of_standard_variable_records as usize);
+        for _ in 0..number_of_standard_variable_records {
+            records.push(StandardVariableRecords::deserialize_field(buf));
+        }
+        Self {
+            number_of_standard_variable_records,
+            standard_variable_records: records,
+        }
+    }
+}
+
+impl FieldLen for StandardVariableSpecification {
+    fn field_len(&self) -> usize {
+        2 + self.standard_variable_records.field_len()
     }
 }

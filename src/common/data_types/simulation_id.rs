@@ -6,7 +6,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::{SerializedLength, SimulationAddress};
+use crate::{
+    common::{SerializedLength, data_types::SimulationAddress},
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct SimulationIdentifier {
@@ -33,6 +36,24 @@ impl SimulationIdentifier {
             simulation_address: SimulationAddress::deserialize(buf),
             reference_number: buf.get_u16(),
         }
+    }
+}
+
+impl FieldSerialize for SimulationIdentifier {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for SimulationIdentifier {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for SimulationIdentifier {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

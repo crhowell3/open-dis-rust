@@ -32,7 +32,7 @@ pub mod pdu_macro;
 //pub mod distributed_emissions;
 //pub mod entity_information;
 //pub mod entity_management;
-//pub mod information_operations;
+pub mod information_operations;
 //pub mod live_entity_information;
 //pub mod logistics;
 //pub mod minefield;

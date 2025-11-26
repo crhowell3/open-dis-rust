@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+
 #[derive(Clone, Debug, Default)]
 pub struct StandardVariableRecords {
     pub record_type: u32,
@@ -14,8 +16,12 @@ pub struct StandardVariableRecords {
 
 impl StandardVariableRecords {
     #[must_use]
-    pub fn new(record_type: u32, record_length: u16, record_specific_fields: Vec<u8>) -> Self {
-        StandardVariableRecords {
+    pub const fn new(
+        record_type: u32,
+        record_length: u16,
+        record_specific_fields: Vec<u8>,
+    ) -> Self {
+        Self {
             record_type,
             record_length,
             record_specific_fields,
@@ -30,17 +36,35 @@ impl StandardVariableRecords {
         }
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> StandardVariableRecords {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let record_type = buf.get_u32();
         let record_length = buf.get_u16();
         let mut record_specific_fields: Vec<u8> = vec![];
         for _i in 0..record_length {
             record_specific_fields.push(buf.get_u8());
         }
-        StandardVariableRecords {
+        Self {
             record_type,
             record_length,
             record_specific_fields,
         }
+    }
+}
+
+impl FieldSerialize for StandardVariableRecords {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for StandardVariableRecords {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for StandardVariableRecords {
+    fn field_len(&self) -> usize {
+        4 + 2 + self.record_specific_fields.field_len()
     }
 }
