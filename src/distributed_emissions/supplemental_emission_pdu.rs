@@ -8,6 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
+    GenericHeader,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -36,7 +37,9 @@ pub struct SupplementalEmissionPdu {
 }
 
 impl Pdu for SupplementalEmissionPdu {
-    fn length(&self) -> Result<u16, DISError> {
+    type Header = PduHeader;
+
+    fn calculate_length(&self) -> Result<u16, DISError> {
         let length = std::mem::size_of::<PduHeader>()
             + std::mem::size_of::<EntityId>()
             + std::mem::size_of::<u16>() * 5;
@@ -57,11 +60,8 @@ impl Pdu for SupplementalEmissionPdu {
 
     /// Serialize contents of `SupplementalEmissionPdu` into `BytesMut` buf
     fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
-        let size = std::mem::size_of_val(self);
-        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
-            size,
-            max_size: MAX_PDU_SIZE_OCTETS,
-        })?;
+        let length = self.calculate_length()?;
+        self.pdu_header.set_length(length);
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         buf.put_u16(self.infrared_signature_representation_index);

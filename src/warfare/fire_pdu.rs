@@ -53,7 +53,7 @@ impl Default for FirePdu {
 }
 
 impl Pdu for FirePdu {
-    fn length(&self) -> Result<u16, DISError> {
+    fn calculate_length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
             + EntityId::LENGTH * 3
             + std::mem::size_of::<EventId>()
@@ -78,11 +78,8 @@ impl Pdu for FirePdu {
     }
 
     fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
-        let size = std::mem::size_of_val(self);
-        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
-            size,
-            max_size: MAX_PDU_SIZE_OCTETS,
-        })?;
+        let length = self.calculate_length()?;
+        self.pdu_header.set_length(length);
         self.pdu_header.serialize(buf);
         self.firing_entity_id.serialize(buf);
         self.target_entity_id.serialize(buf);

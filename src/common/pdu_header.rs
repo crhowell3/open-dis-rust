@@ -10,14 +10,17 @@ use bytes::{Buf, BufMut, BytesMut};
 use chrono::{Timelike, Utc};
 use modular_bitfield::prelude::*;
 
-use crate::common::{
-    SerializedLength,
-    enums::{
-        ActiveInterrogationIndicator, CoupledExtensionIndicator, DetonationTypeIndicator,
-        FireTypeIndicator, IntercomAttachedIndicator, LVCIndicator, PduStatusIFFSimulationMode,
-        PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator,
-        TransferredEntityIndicator,
+use crate::{
+    common::{
+        GenericHeader, SerializedLength,
+        enums::{
+            ActiveInterrogationIndicator, CoupledExtensionIndicator, DetonationTypeIndicator,
+            FireTypeIndicator, IntercomAttachedIndicator, LVCIndicator, PduStatusIFFSimulationMode,
+            PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator,
+            TransferredEntityIndicator,
+        },
     },
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
 
 #[bitfield(bits = 8)]
@@ -161,6 +164,54 @@ impl Default for PduHeader {
     }
 }
 
+impl GenericHeader for PduHeader {
+    fn pdu_type(&self) -> PduType {
+        self.pdu_type
+    }
+
+    fn set_pdu_type(&mut self, value: PduType) {
+        self.pdu_type = value;
+    }
+
+    fn protocol_family(&self) -> ProtocolFamily {
+        self.protocol_family
+    }
+
+    fn set_protocol_family(&mut self, value: ProtocolFamily) {
+        self.protocol_family = value;
+    }
+
+    fn length(&self) -> u16 {
+        self.length
+    }
+
+    fn set_length(&mut self, value: u16) {
+        self.length = value;
+    }
+
+    fn serialize(&self, buf: &mut BytesMut) {
+        buf.put_u8(self.protocol_version as u8);
+        buf.put_u8(self.exercise_id);
+        buf.put_u8(self.pdu_type as u8);
+        buf.put_u8(self.protocol_family as u8);
+        buf.put_u32(self.timestamp);
+        buf.put_u16(self.length);
+        buf.put_u8(self.status_record.to_u8());
+    }
+
+    fn deserialize<B: Buf>(buf: &mut B) -> PduHeader {
+        PduHeader {
+            protocol_version: ProtocolVersion::deserialize(buf),
+            exercise_id: buf.get_u8(),
+            pdu_type: PduType::deserialize(buf),
+            protocol_family: ProtocolFamily::deserialize(buf),
+            timestamp: buf.get_u32(),
+            length: buf.get_u16(),
+            status_record: PduStatusRecord::from_u8(buf.get_u8()),
+        }
+    }
+}
+
 impl PduHeader {
     #[must_use]
     pub fn new(
@@ -194,27 +245,23 @@ impl PduHeader {
         let dis_time = (second_curr + minute_curr + nanosecond_curr) as f32 / 1.68;
         dis_time as u32
     }
+}
 
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.protocol_version as u8);
-        buf.put_u8(self.exercise_id);
-        buf.put_u8(self.pdu_type as u8);
-        buf.put_u8(self.protocol_family as u8);
-        buf.put_u32(self.timestamp);
-        buf.put_u16(self.length);
-        buf.put_u8(self.status_record.to_u8());
+impl FieldSerialize for PduHeader {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
     }
+}
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> PduHeader {
-        PduHeader {
-            protocol_version: ProtocolVersion::deserialize(buf),
-            exercise_id: buf.get_u8(),
-            pdu_type: PduType::deserialize(buf),
-            protocol_family: ProtocolFamily::deserialize(buf),
-            timestamp: buf.get_u32(),
-            length: buf.get_u16(),
-            status_record: PduStatusRecord::from_u8(buf.get_u8()),
-        }
+impl FieldDeserialize for PduHeader {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for PduHeader {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

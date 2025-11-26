@@ -7,10 +7,12 @@
 #![allow(deprecated)]
 
 use bitflags::bitflags;
-use bytes::{Buf, BytesMut};
+use bytes::{Buf, BufMut, BytesMut};
 use modular_bitfield::Specifier;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
 
 // SISO-REF-010-2023 Protocol Version [UID 3]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
@@ -84,11 +86,11 @@ pub enum PduType {
     PointObjectState = 43,
     LinearObjectState = 44,
     ArealObjectState = 45,
-    TSPI = 46,
+    TimeSpacePositionInformation = 46,
     Appearance = 47,
     ArticulatedParts = 48,
-    LEFire = 49,
-    LEDetonation = 50,
+    LiveEntityFire = 49,
+    LiveEntityDetonation = 50,
     CreateEntityReliable = 51,
     RemoveEntityReliable = 52,
     StartResumeReliable = 53,
@@ -3527,6 +3529,24 @@ impl AcknowledgeFlag {
     }
 }
 
+impl FieldSerialize for AcknowledgeFlag {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for AcknowledgeFlag {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for AcknowledgeFlag {
+    fn field_len(&self) -> usize {
+        2
+    }
+}
+
 // SISO-REF-010-2023 AcknowledgeResponseFlag [UID 70]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq)]
 pub enum AcknowledgeResponseFlag {
@@ -3541,6 +3561,24 @@ impl AcknowledgeResponseFlag {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or(Self::default())
+    }
+}
+
+impl FieldSerialize for AcknowledgeResponseFlag {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for AcknowledgeResponseFlag {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for AcknowledgeResponseFlag {
+    fn field_len(&self) -> usize {
+        2
     }
 }
 

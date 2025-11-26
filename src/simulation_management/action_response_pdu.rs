@@ -33,7 +33,7 @@ pub struct ActionResponsePdu {
 }
 
 impl Pdu for ActionResponsePdu {
-    fn length(&self) -> Result<u16, DISError> {
+    fn calculate_length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 4 + 4 + 4 + 4;
 
         u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
@@ -51,11 +51,8 @@ impl Pdu for ActionResponsePdu {
     }
 
     fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
-        let size = std::mem::size_of_val(self);
-        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
-            size,
-            max_size: MAX_PDU_SIZE_OCTETS,
-        })?;
+        let length = self.calculate_length()?;
+        self.pdu_header.set_length(length);
         self.pdu_header.serialize(buf);
         self.originating_entity_id.serialize(buf);
         self.receiving_entity_id.serialize(buf);

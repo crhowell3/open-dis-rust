@@ -10,7 +10,8 @@ use bytes::{Buf, BufMut, BytesMut};
 use std::any::Any;
 
 use crate::common::{
-    EntityCoordinateVector, LinearAcceleration, SerializedLength, WorldCoordinate,
+    EntityCoordinateVector, GenericHeader, LinearAcceleration, PduBody, SerializedLength,
+    WorldCoordinate,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -60,7 +61,9 @@ impl Default for DesignatorPdu {
 }
 
 impl Pdu for DesignatorPdu {
-    fn length(&self) -> Result<u16, DISError> {
+    type Header = PduHeader;
+
+    fn calculate_length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
             + EntityId::LENGTH * 2
             + std::mem::size_of::<u8>() * 2
@@ -86,11 +89,8 @@ impl Pdu for DesignatorPdu {
 
     /// Serialize contents of `DesignatorPdu` into `BytesMut` buf
     fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
-        let size = std::mem::size_of_val(self);
-        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
-            size,
-            max_size: MAX_PDU_SIZE_OCTETS,
-        })?;
+        let length = self.calculate_length()?;
+        self.pdu_header.set_length(length);
         self.pdu_header.serialize(buf);
         self.designating_entity_id.serialize(buf);
         buf.put_u16(self.designator_code as u16);
@@ -112,7 +112,7 @@ impl Pdu for DesignatorPdu {
     where
         Self: Sized,
     {
-        let header: PduHeader = PduHeader::deserialize(buf);
+        let header: Self::Header = Self::Header::deserialize(buf);
         if header.pdu_type != PduType::Designator {
             return Err(DISError::invalid_header(
                 format!("Expected PDU type Designator, got {:?}", header.pdu_type),
@@ -138,6 +138,39 @@ impl Pdu for DesignatorPdu {
     }
 }
 
+impl PduBody for DesignatorPdu {
+    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
+        let designating_entity_id = EntityId::deserialize(buf);
+        let code_name = DesignatorSystemName::deserialize(buf);
+        let designated_entity_id = EntityId::deserialize(buf);
+        let designator_code = DesignatorCode::deserialize(buf);
+        let designator_power = buf.get_f32();
+        let designator_wavelength = buf.get_f32();
+        let designator_spot_wrt_designated = EntityCoordinateVector::deserialize(buf);
+        let designator_spot_location = WorldCoordinate::deserialize(buf);
+        let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(buf);
+        let padding = buf.get_u8();
+        let padding2 = buf.get_u16();
+        let entity_linear_acceleration = LinearAcceleration::deserialize(buf);
+
+        DesignatorPdu {
+            pdu_header: <Self as Pdu>::Header::default(),
+            designating_entity_id,
+            code_name,
+            designated_entity_id,
+            designator_code,
+            designator_power,
+            designator_wavelength,
+            designator_spot_wrt_designated,
+            designator_spot_location,
+            dead_reckoning_algorithm,
+            padding,
+            padding2,
+            entity_linear_acceleration,
+        }
+    }
+}
+
 impl DesignatorPdu {
     #[must_use]
     /// Creates a new `DesignatorPdu`
@@ -156,37 +189,6 @@ impl DesignatorPdu {
         pdu.pdu_header.protocol_family = ProtocolFamily::DistributedEmissionRegeneration;
         pdu.finalize();
         pdu
-    }
-
-    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
-        let designating_entity_id = EntityId::deserialize(buf);
-        let code_name = DesignatorSystemName::deserialize(buf);
-        let designated_entity_id = EntityId::deserialize(buf);
-        let designator_code = DesignatorCode::deserialize(buf);
-        let designator_power = buf.get_f32();
-        let designator_wavelength = buf.get_f32();
-        let designator_spot_wrt_designated = EntityCoordinateVector::deserialize(buf);
-        let designator_spot_location = WorldCoordinate::deserialize(buf);
-        let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(buf);
-        let padding = buf.get_u8();
-        let padding2 = buf.get_u16();
-        let entity_linear_acceleration = LinearAcceleration::deserialize(buf);
-
-        DesignatorPdu {
-            pdu_header: PduHeader::default(),
-            designating_entity_id,
-            code_name,
-            designated_entity_id,
-            designator_code,
-            designator_power,
-            designator_wavelength,
-            designator_spot_wrt_designated,
-            designator_spot_location,
-            dead_reckoning_algorithm,
-            padding,
-            padding2,
-            entity_linear_acceleration,
-        }
     }
 }
 

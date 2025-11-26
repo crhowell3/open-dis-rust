@@ -4,23 +4,26 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use super::{dis_error::DISError, pdu_header::PduHeader};
+use crate::common::GenericHeader;
+
+use super::dis_error::DISError;
 use bytes::{Buf, BytesMut};
 use std::any::Any;
 
 pub trait Pdu {
+    type Header: GenericHeader + Default;
+
     /// # Errors
     ///
     /// Will return `DISError` if the calculated PDU length is greater than the maximum allowed size
-    fn length(&self) -> Result<u16, DISError>;
+    fn calculate_length(&self) -> Result<u16, DISError>;
 
-    fn header(&self) -> &PduHeader;
-
-    fn header_mut(&mut self) -> &mut PduHeader;
+    fn header(&self) -> &Self::Header;
+    fn header_mut(&mut self) -> &mut Self::Header;
 
     fn finalize(&mut self) {
-        let len = self.length();
-        self.header_mut().length = len.unwrap_or_default();
+        let len = self.calculate_length();
+        self.header_mut().set_length(len.unwrap_or_default());
     }
 
     /// # Errors
@@ -40,7 +43,7 @@ pub trait Pdu {
     /// Will return `DISError` if the PDU header provided is invalid
     fn deserialize_without_header<B: Buf>(
         buffer: &mut B,
-        pdu_header: PduHeader,
+        pdu_header: Self::Header,
     ) -> Result<Self, DISError>
     where
         Self: Sized;

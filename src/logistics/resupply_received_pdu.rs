@@ -32,7 +32,7 @@ pub struct ResupplyReceivedPdu {
 }
 
 impl Pdu for ResupplyReceivedPdu {
-    fn length(&self) -> Result<u16, DISError> {
+    fn calculate_length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH + EntityId::LENGTH * 2 + 1 + 1 + 2;
 
         u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
@@ -50,11 +50,8 @@ impl Pdu for ResupplyReceivedPdu {
     }
 
     fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
-        let size = std::mem::size_of_val(self);
-        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
-            size,
-            max_size: MAX_PDU_SIZE_OCTETS,
-        })?;
+        let length = self.calculate_length()?;
+        self.pdu_header.set_length(length);
         self.pdu_header.serialize(buf);
         self.receiving_entity_id.serialize(buf);
         self.supplying_entity_id.serialize(buf);

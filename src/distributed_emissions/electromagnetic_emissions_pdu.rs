@@ -10,6 +10,7 @@ use std::any::Any;
 use super::data_types::electromagnetic_emission_system_data::ElectromagneticEmissionSystemData;
 
 use crate::common::{
+    GenericHeader,
     constants::MAX_PDU_SIZE_OCTETS,
     dis_error::DISError,
     entity_id::EntityId,
@@ -46,7 +47,9 @@ impl Default for ElectromagneticEmissionsPdu {
 }
 
 impl Pdu for ElectromagneticEmissionsPdu {
-    fn length(&self) -> Result<u16, DISError> {
+    type Header = PduHeader;
+
+    fn calculate_length(&self) -> Result<u16, DISError> {
         let length = std::mem::size_of::<PduHeader>()
             + std::mem::size_of::<EntityId>()
             + std::mem::size_of::<EventId>()
@@ -70,11 +73,8 @@ impl Pdu for ElectromagneticEmissionsPdu {
 
     /// Serialize contents of `ElectromagneticEmissionsPdu` into `BytesMut` buf
     fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
-        let size = std::mem::size_of_val(self);
-        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
-            size,
-            max_size: MAX_PDU_SIZE_OCTETS,
-        })?;
+        let length = self.calculate_length()?;
+        self.pdu_header.set_length(length);
         self.pdu_header.serialize(buf);
         self.emitting_entity_id.serialize(buf);
         self.event_id.serialize(buf);

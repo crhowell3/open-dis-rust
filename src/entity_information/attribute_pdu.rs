@@ -11,7 +11,7 @@ use std::any::Any;
 
 use crate::{
     common::{
-        SerializedLength, SimulationAddress,
+        GenericHeader, SerializedLength, SimulationAddress,
         constants::MAX_PDU_SIZE_OCTETS,
         dis_error::DISError,
         enums::{DISAttributeActionCode, PduType, ProtocolFamily},
@@ -39,7 +39,9 @@ pub struct AttributePdu {
 }
 
 impl Pdu for AttributePdu {
-    fn length(&self) -> Result<u16, DISError> {
+    type Header = PduHeader;
+
+    fn calculate_length(&self) -> Result<u16, DISError> {
         let length = PduHeader::LENGTH
             + SimulationAddress::LENGTH
             + std::mem::size_of::<u8>() * 4
@@ -62,11 +64,8 @@ impl Pdu for AttributePdu {
 
     /// Serialize contents of `AttributePdu` into `BytesMut` buf
     fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
-        let size = std::mem::size_of_val(self);
-        self.pdu_header.length = u16::try_from(size).map_err(|_| DISError::PduSizeExceeded {
-            size,
-            max_size: MAX_PDU_SIZE_OCTETS,
-        })?;
+        let length = self.calculate_length()?;
+        self.pdu_header.set_length(length);
         self.pdu_header.serialize(buf);
         self.originating_simulation_address.serialize(buf);
         buf.put_u32(self.padding);

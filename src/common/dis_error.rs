@@ -6,6 +6,8 @@
 
 use thiserror::Error;
 
+use crate::common::enums::ProtocolVersion;
+
 /// Protocol version and header related states
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PduState {
@@ -13,14 +15,6 @@ pub enum PduState {
     HeaderValid,
     BodyValid,
     Complete,
-}
-
-/// Protocol version and family related states
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ProtocolVersion {
-    IEEE1278_1_1995,
-    IEEE1278_1_1998,
-    IEEE1278_1_2012,
 }
 
 #[derive(Error, Debug)]

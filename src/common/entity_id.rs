@@ -7,6 +7,7 @@
 use crate::common::SerializedLength;
 
 use super::simulation_address::SimulationAddress;
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
@@ -44,6 +45,24 @@ impl EntityId {
             site_id: buf.get_u16(),
             application_id: buf.get_u16(),
         }
+    }
+}
+
+impl FieldSerialize for EntityId {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for EntityId {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for EntityId {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 
