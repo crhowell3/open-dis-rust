@@ -55,32 +55,42 @@
 &nbsp;
 
 ## 💭 About
+
 Rust implementation of the IEEE 1278.1-2012 Distributed Interactive Simulation (DIS) application protocol. This library was implemented according to the IEEE Std 1278.1-2012 publication as well as [SISO-REF-010-2023](https://www.sisostandards.org/resource/resmgr/reference_documents_/siso-ref-010-2023-v32.zip).
 
 ## 📕 Documentation
+
 The documentation for the latest version of this library can be found [here](https://docs.rs/open-dis-rust/).
 All previously published versions of this package can be found on [crates.io](https://crates.io/crates/open-dis-rust/versions),
 and each version's respective documentation is accessible from there as well.
 
 ## 🔰 Getting Started
+
 ### Installation
+
 This library can be installed using cargo:
+
 ```shell
 cargo add open-dis-rust
 ```
+
 or by adding this to your project's Cargo.toml `[dependencies]` section:
+
 ```toml
 open-dis-rust = "<insert version>"
 ```
 
 ### Examples
+
 This package contains some examples for transmitting PDUs via UDP. To run the example, both the
 client and the server applications need to be executed. Start by running the server as follows:
+
 ```shell
 cargo run --example udp_server
 ```
 
 Then, in another terminal on the same machine, run the client as follows:
+
 ```shell
 cargo run --example udp_client
 ```

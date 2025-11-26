@@ -57,7 +57,7 @@ mod udp {
 
     async fn send(writer: &UdpSocket) -> Result<(), io::Error> {
         let mut bytes = BytesMut::new();
-        let mut ack_pdu = AcknowledgePdu::default();
+        let mut ack_pdu = AcknowledgePdu::new();
         let _ = ack_pdu
             .serialize(&mut bytes)
             .map_err(|_| io::ErrorKind::InvalidData);
