@@ -18,13 +18,13 @@ pub struct AcousticBeamData {
 
 impl AcousticBeamData {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         beam_data_length: u16,
         beam_id_number: u8,
         pad2: u16,
         fundamental_data_parameters: AcousticBeamFundamentalParameter,
     ) -> Self {
-        AcousticBeamData {
+        Self {
             beam_data_length,
             beam_id_number,
             pad2,
@@ -39,8 +39,8 @@ impl AcousticBeamData {
         self.fundamental_data_parameters.serialize(buf);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> AcousticBeamData {
-        AcousticBeamData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             beam_data_length: buf.get_u16(),
             beam_id_number: buf.get_u8(),
             pad2: buf.get_u16(),

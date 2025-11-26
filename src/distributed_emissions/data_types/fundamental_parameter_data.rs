@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+
 #[derive(Copy, Clone, Debug, Default)]
 pub struct FundamentalParameterData {
     pub frequency: f32,
@@ -33,8 +35,8 @@ impl FundamentalParameterData {
         buf.put_f32(self.beam_sweep_sync);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> FundamentalParameterData {
-        FundamentalParameterData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             frequency: buf.get_f32(),
             frequency_range: buf.get_f32(),
             effective_radiated_power: buf.get_f32(),
@@ -46,5 +48,23 @@ impl FundamentalParameterData {
             beam_elevation_sweep: buf.get_f32(),
             beam_sweep_sync: buf.get_f32(),
         }
+    }
+}
+
+impl FieldSerialize for FundamentalParameterData {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for FundamentalParameterData {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for FundamentalParameterData {
+    fn field_len(&self) -> usize {
+        40
     }
 }

@@ -12,7 +12,7 @@ use crate::common::{
     enums::{DISLiveEntitySubprotocolNumber, PduType, ProtocolFamily, ProtocolVersion},
 };
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct LiveEntityPduHeader {
     /// The version of the protocol
     pub protocol_version: ProtocolVersion,
@@ -26,9 +26,9 @@ pub struct LiveEntityPduHeader {
     pub timestamp: u32,
     /// Length, in bytes, of the PDU
     pub length: u16,
-    ///
+    /// The subprotocol to be used to decode the PDU
     pub subprotocol_number: DISLiveEntitySubprotocolNumber,
-    ///
+    /// Padded so that this header maintains the same length as the PDU Header
     padding: u8,
 }
 
@@ -39,7 +39,7 @@ impl Default for LiveEntityPduHeader {
             exercise_id: 1,
             pdu_type: PduType::default(),
             protocol_family: ProtocolFamily::default(),
-            timestamp: LiveEntityPduHeader::calculate_dis_timestamp(),
+            timestamp: Self::calculate_dis_timestamp(),
             length: 0,
             subprotocol_number: DISLiveEntitySubprotocolNumber::default(),
             padding: 0,
@@ -83,8 +83,8 @@ impl GenericHeader for LiveEntityPduHeader {
         buf.put_u8(self.padding);
     }
 
-    fn deserialize<B: Buf>(buf: &mut B) -> LiveEntityPduHeader {
-        LiveEntityPduHeader {
+    fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             protocol_version: ProtocolVersion::deserialize(buf),
             exercise_id: buf.get_u8(),
             pdu_type: PduType::deserialize(buf),
@@ -110,7 +110,7 @@ impl LiveEntityPduHeader {
             exercise_id,
             pdu_type,
             protocol_family,
-            timestamp: LiveEntityPduHeader::calculate_dis_timestamp(),
+            timestamp: Self::calculate_dis_timestamp(),
             length,
             ..Default::default()
         }

@@ -3,7 +3,10 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::enums::{EmitterName, EmitterSystemFunction};
+use crate::common::{
+    SerializedLength,
+    enums::{EmitterName, EmitterSystemFunction},
+};
 use bytes::{Buf, BufMut, BytesMut};
 
 #[derive(Copy, Clone, Debug)]
@@ -15,7 +18,7 @@ pub struct EmitterSystem {
 
 impl Default for EmitterSystem {
     fn default() -> Self {
-        EmitterSystem {
+        Self {
             emitter_name: EmitterName::default(),
             function: EmitterSystemFunction::Other,
             emitter_id_number: 0,
@@ -25,8 +28,8 @@ impl Default for EmitterSystem {
 
 impl EmitterSystem {
     #[must_use]
-    pub fn new(name: EmitterName, function: EmitterSystemFunction, id: u8) -> Self {
-        EmitterSystem {
+    pub const fn new(name: EmitterName, function: EmitterSystemFunction, id: u8) -> Self {
+        Self {
             emitter_name: name,
             function,
             emitter_id_number: id,
@@ -40,11 +43,15 @@ impl EmitterSystem {
     }
 
     #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> EmitterSystem {
-        EmitterSystem {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             emitter_name: EmitterName::deserialize(buf),
             function: EmitterSystemFunction::deserialize(buf),
             emitter_id_number: buf.get_u8(),
         }
     }
+}
+
+impl SerializedLength for EmitterSystem {
+    const LENGTH: usize = 4;
 }

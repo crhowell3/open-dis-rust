@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct LinearAcceleration {
@@ -16,8 +19,8 @@ pub struct LinearAcceleration {
 
 impl LinearAcceleration {
     #[must_use]
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
-        LinearAcceleration {
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
+        Self {
             first_vector_component: x,
             second_vector_component: y,
             third_vector_component: z,
@@ -30,12 +33,30 @@ impl LinearAcceleration {
         buf.put_f32(self.third_vector_component);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> LinearAcceleration {
-        LinearAcceleration {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             first_vector_component: buf.get_f32(),
             second_vector_component: buf.get_f32(),
             third_vector_component: buf.get_f32(),
         }
+    }
+}
+
+impl FieldSerialize for LinearAcceleration {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for LinearAcceleration {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for LinearAcceleration {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

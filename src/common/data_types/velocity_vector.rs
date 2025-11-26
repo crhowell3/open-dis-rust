@@ -14,8 +14,8 @@ pub struct VelocityVector {
 
 impl VelocityVector {
     #[must_use]
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
-        VelocityVector {
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
+        Self {
             first_vector_component: x,
             second_vector_component: y,
             third_vector_component: z,
@@ -28,8 +28,8 @@ impl VelocityVector {
         buf.put_f32(self.third_vector_component);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> VelocityVector {
-        VelocityVector {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             first_vector_component: buf.get_f32(),
             second_vector_component: buf.get_f32(),
             third_vector_component: buf.get_f32(),

@@ -28,8 +28,8 @@
 //! ```
 
 pub mod common;
+pub mod distributed_emissions;
 pub mod pdu_macro;
-//pub mod distributed_emissions;
 //pub mod entity_information;
 //pub mod entity_management;
 pub mod information_operations;

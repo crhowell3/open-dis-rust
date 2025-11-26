@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct SecondaryOperationalData {
@@ -16,12 +19,12 @@ pub struct SecondaryOperationalData {
 
 impl SecondaryOperationalData {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         operational_data1: u8,
         operational_data2: u8,
         number_of_iff_fundamental_parameter_records: u16,
     ) -> Self {
-        SecondaryOperationalData {
+        Self {
             operational_data1,
             operational_data2,
             number_of_iff_fundamental_parameter_records,
@@ -34,12 +37,30 @@ impl SecondaryOperationalData {
         buf.put_u16(self.number_of_iff_fundamental_parameter_records);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> SecondaryOperationalData {
-        SecondaryOperationalData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             operational_data1: buf.get_u8(),
             operational_data2: buf.get_u8(),
             number_of_iff_fundamental_parameter_records: buf.get_u16(),
         }
+    }
+}
+
+impl FieldSerialize for SecondaryOperationalData {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for SecondaryOperationalData {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for SecondaryOperationalData {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

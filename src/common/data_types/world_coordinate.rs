@@ -6,7 +6,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.98
@@ -47,6 +50,24 @@ impl WorldCoordinate {
             y: buf.get_f64(),
             z: buf.get_f64(),
         }
+    }
+}
+
+impl FieldSerialize for WorldCoordinate {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for WorldCoordinate {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for WorldCoordinate {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

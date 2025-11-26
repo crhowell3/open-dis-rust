@@ -1,5 +1,7 @@
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+
 use super::{
     fundamental_parameter_data::FundamentalParameterData, track_jam_target::TrackJamTarget,
 };
@@ -34,7 +36,7 @@ impl ElectromagneticEmissionBeamData {
         }
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> ElectromagneticEmissionBeamData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let beam_data_length = buf.get_u8();
         let beam_id_number = buf.get_u8();
         let beam_parameter_index = buf.get_u16();
@@ -49,7 +51,7 @@ impl ElectromagneticEmissionBeamData {
             track_jam_targets.push(TrackJamTarget::deserialize(buf));
         }
 
-        ElectromagneticEmissionBeamData {
+        Self {
             beam_data_length,
             beam_id_number,
             beam_parameter_index,
@@ -61,5 +63,31 @@ impl ElectromagneticEmissionBeamData {
             jamming_mode_sequence,
             track_jam_targets,
         }
+    }
+}
+
+impl FieldSerialize for ElectromagneticEmissionBeamData {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for ElectromagneticEmissionBeamData {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ElectromagneticEmissionBeamData {
+    fn field_len(&self) -> usize {
+        1 + 1
+            + 2
+            + self.fundamental_parameter_data.field_len()
+            + 1
+            + 1
+            + 1
+            + 1
+            + 4
+            + self.track_jam_targets.field_len()
     }
 }

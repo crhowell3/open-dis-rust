@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::vector3_float::Vector3Float;
+use crate::common::data_types::vector3_float::Vector3Float;
 
 use super::{acoustic_beam_data::AcousticBeamData, acoustic_emitter_system::AcousticEmitterSystem};
 
@@ -21,7 +21,7 @@ pub struct AcousticEmitterSystemData {
 
 impl AcousticEmitterSystemData {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         emitter_system_data_length: u8,
         number_of_beams: u8,
         pad2: u16,
@@ -29,7 +29,7 @@ impl AcousticEmitterSystemData {
         emitter_location: Vector3Float,
         beam_records: Vec<AcousticBeamData>,
     ) -> Self {
-        AcousticEmitterSystemData {
+        Self {
             emitter_system_data_length,
             number_of_beams,
             pad2,
@@ -50,7 +50,7 @@ impl AcousticEmitterSystemData {
         }
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> AcousticEmitterSystemData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let emitter_system_data_length = buf.get_u8();
         let number_of_beams = buf.get_u8();
         let pad2 = buf.get_u16();
@@ -60,7 +60,7 @@ impl AcousticEmitterSystemData {
         for _i in 0..number_of_beams {
             beam_records.push(AcousticBeamData::deserialize(buf));
         }
-        AcousticEmitterSystemData {
+        Self {
             emitter_system_data_length,
             number_of_beams,
             pad2,

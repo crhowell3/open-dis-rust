@@ -5,6 +5,11 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
+
 #[derive(Copy, Clone, Debug)]
 pub struct IFFFundamentalParameterData {
     pub erp: f32,
@@ -18,7 +23,7 @@ pub struct IFFFundamentalParameterData {
 
 impl Default for IFFFundamentalParameterData {
     fn default() -> Self {
-        IFFFundamentalParameterData {
+        Self {
             erp: 0.0,
             frequency: 0.0,
             pgrf: 0.0,
@@ -32,7 +37,7 @@ impl Default for IFFFundamentalParameterData {
 
 impl IFFFundamentalParameterData {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         erp: f32,
         frequency: f32,
         pgrf: f32,
@@ -41,7 +46,7 @@ impl IFFFundamentalParameterData {
         applicable_modes: u8,
         system_specific_data: [u8; 3],
     ) -> Self {
-        IFFFundamentalParameterData {
+        Self {
             erp,
             frequency,
             pgrf,
@@ -64,7 +69,7 @@ impl IFFFundamentalParameterData {
         }
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> IFFFundamentalParameterData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let erp = buf.get_f32();
         let frequency = buf.get_f32();
         let pgrf = buf.get_f32();
@@ -75,7 +80,7 @@ impl IFFFundamentalParameterData {
         for data in &mut system_specific_data {
             *data = buf.get_u8();
         }
-        IFFFundamentalParameterData {
+        Self {
             erp,
             frequency,
             pgrf,
@@ -85,4 +90,26 @@ impl IFFFundamentalParameterData {
             system_specific_data,
         }
     }
+}
+
+impl FieldSerialize for IFFFundamentalParameterData {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for IFFFundamentalParameterData {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IFFFundamentalParameterData {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
+    }
+}
+
+impl SerializedLength for IFFFundamentalParameterData {
+    const LENGTH: usize = 24;
 }

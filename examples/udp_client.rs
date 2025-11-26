@@ -72,7 +72,10 @@ mod udp {
             let n = reader.recv(&mut buf[..]).await?;
 
             if n > 0 {
-                dbg!(AcknowledgePdu::deserialize(&mut BytesMut::from(buf.as_slice())).unwrap());
+                dbg!(
+                    AcknowledgePdu::deserialize(&mut BytesMut::from(buf.as_slice()))
+                        .unwrap_or_default()
+                );
                 break;
             }
         }

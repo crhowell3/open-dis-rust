@@ -15,11 +15,11 @@ pub struct StandardVariableSpecification {
 
 impl StandardVariableSpecification {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         number_of_standard_variable_records: u16,
         standard_variable_records: Vec<StandardVariableRecords>,
     ) -> Self {
-        StandardVariableSpecification {
+        Self {
             number_of_standard_variable_records,
             standard_variable_records,
         }
@@ -32,13 +32,13 @@ impl StandardVariableSpecification {
         }
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> StandardVariableSpecification {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let number_of_standard_variable_records = buf.get_u16();
         let mut standard_variable_records: Vec<StandardVariableRecords> = vec![];
         for _i in 0..number_of_standard_variable_records {
             standard_variable_records.push(StandardVariableRecords::deserialize(buf));
         }
-        StandardVariableSpecification {
+        Self {
             number_of_standard_variable_records,
             standard_variable_records,
         }

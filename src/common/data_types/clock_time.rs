@@ -19,8 +19,8 @@ pub struct ClockTime {
 
 impl ClockTime {
     #[must_use]
-    pub fn new(h: u32, p: u32) -> Self {
-        ClockTime {
+    pub const fn new(h: u32, p: u32) -> Self {
+        Self {
             hour: h,
             time_past_hour: p,
         }
@@ -31,8 +31,8 @@ impl ClockTime {
         buf.put_u32(self.time_past_hour);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> ClockTime {
-        ClockTime {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             hour: buf.get_u32(),
             time_past_hour: buf.get_u32(),
         }

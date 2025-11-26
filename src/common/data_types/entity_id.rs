@@ -10,7 +10,7 @@ use super::simulation_address::SimulationAddress;
 use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug, Default, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.28
 pub struct EntityId {
     /// The simulation's designation associated with all object identifiers
@@ -21,8 +21,8 @@ pub struct EntityId {
 
 impl EntityId {
     #[must_use]
-    pub fn new(site_id: u16, application_id: u16, entity_id: u16) -> Self {
-        EntityId {
+    pub const fn new(site_id: u16, application_id: u16, entity_id: u16) -> Self {
+        Self {
             simulation_address: SimulationAddress::new(site_id, application_id),
             entity_id,
         }
@@ -33,9 +33,9 @@ impl EntityId {
         buf.put_u16(self.entity_id);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityId {
-        EntityId {
-            simulation_address: EntityId::deserialize_simulation_address(buf),
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
+            simulation_address: Self::deserialize_simulation_address(buf),
             entity_id: buf.get_u16(),
         }
     }

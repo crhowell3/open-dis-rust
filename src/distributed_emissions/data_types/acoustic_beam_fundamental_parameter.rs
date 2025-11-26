@@ -17,7 +17,7 @@ pub struct AcousticBeamFundamentalParameter {
 
 impl AcousticBeamFundamentalParameter {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         active_emission_parameter_index: u16,
         scan_pattern: u16,
         beam_center_azimuth: f32,
@@ -25,7 +25,7 @@ impl AcousticBeamFundamentalParameter {
         beam_center_de: f32,
         de_beamwidth: f32,
     ) -> Self {
-        AcousticBeamFundamentalParameter {
+        Self {
             active_emission_parameter_index,
             scan_pattern,
             beam_center_azimuth,
@@ -44,8 +44,8 @@ impl AcousticBeamFundamentalParameter {
         buf.put_f32(self.de_beamwidth);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> AcousticBeamFundamentalParameter {
-        AcousticBeamFundamentalParameter {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             active_emission_parameter_index: buf.get_u16(),
             scan_pattern: buf.get_u16(),
             beam_center_azimuth: buf.get_f32(),

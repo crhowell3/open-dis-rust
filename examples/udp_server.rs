@@ -13,7 +13,7 @@ struct Server {
 
 impl Server {
     async fn run(self) -> Result<(), io::Error> {
-        let Server {
+        let Self {
             socket,
             mut buf,
             mut to_send,
@@ -23,7 +23,7 @@ impl Server {
             if let Some((size, peer)) = to_send {
                 let amt = socket.send_to(&buf[..size], &peer).await?;
 
-                println!("Echoed {}/{} bytes to {}", amt, size, peer);
+                println!("Echoed {amt}/{size} bytes to {peer}");
             }
 
             to_send = Some(socket.recv_from(&mut buf).await?);

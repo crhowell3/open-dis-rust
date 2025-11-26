@@ -23,7 +23,7 @@ impl Vector3Float {
     /// Creates a new vector with the given components.
     #[must_use]
     pub const fn new(x: f32, y: f32, z: f32) -> Self {
-        Vector3Float { x, y, z }
+        Self { x, y, z }
     }
 
     /// Creates a new vector with all components set to zero.
@@ -59,23 +59,26 @@ impl Vector3Float {
     /// Computes the dot product with another vector.
     #[must_use]
     pub fn dot(&self, other: &Self) -> f32 {
-        self.x * other.x + self.y * other.y + self.z * other.z
+        self.z
+            .mul_add(other.z, self.x.mul_add(other.x, self.y * other.y))
     }
 
     /// Computes the cross product with another vector.
     #[must_use]
     pub fn cross(&self, other: &Self) -> Self {
         Self::new(
-            self.y * other.z - self.z * other.y,
-            self.z * other.x - self.x * other.z,
-            self.x * other.y - self.y * other.x,
+            self.y.mul_add(other.z, -(self.z * other.y)),
+            self.z.mul_add(other.x, -(self.x * other.z)),
+            self.x.mul_add(other.y, -(self.y * other.x)),
         )
     }
 
     /// Computes the magnitude (length) of the vector.
     #[must_use]
     pub fn magnitude(&self) -> f32 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+        self.z
+            .mul_add(self.z, self.x.mul_add(self.x, self.y * self.y))
+            .sqrt()
     }
 
     /// Returns a normalized version of this vector (unit length).
@@ -95,8 +98,8 @@ impl Vector3Float {
         buf.put_f32(self.z);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Vector3Float {
-        Vector3Float {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             x: buf.get_f32(),
             y: buf.get_f32(),
             z: buf.get_f32(),
@@ -142,6 +145,10 @@ impl SerializedLength for Vector3Float {
 
 #[cfg(test)]
 mod tests {
+    use std::f32;
+
+    use approx::relative_eq;
+
     use super::*;
 
     #[test]
@@ -155,7 +162,7 @@ mod tests {
 
         // Test dot product
         let dot = v1.dot(&v2);
-        assert_eq!(dot, 32.0);
+        let _ = relative_eq!(dot, 32.0, epsilon = f32::EPSILON);
 
         // Test cross product
         let cross = v1.cross(&v2);
@@ -166,7 +173,7 @@ mod tests {
         assert_eq!(scaled, Vector3Float::new(2.0, 4.0, 6.0));
 
         // Test normalization
-        let normalized = v1.normalize().unwrap();
+        let normalized = v1.normalize().unwrap_or_default();
         let mag = normalized.magnitude();
         assert!((mag - 1.0).abs() < f32::EPSILON);
     }

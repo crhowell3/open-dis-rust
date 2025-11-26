@@ -190,10 +190,10 @@ macro_rules! define_pdu {
         }
 
         // Implement the Pdu trait (your crate's Pdu trait path may differ; adapt the path)
-        impl crate::common::pdu::Pdu for $name {
+        impl $crate::common::pdu::Pdu for $name {
             type Header = $header;
 
-            fn calculate_length(&self) -> Result<u16, crate::common::dis_error::DISError> {
+            fn calculate_length(&self) -> Result<u16, $crate::common::dis_error::DISError> {
                 // Start with header length const; requires header::LENGTH const
                 let mut len: usize = <$header>::LENGTH;
 
@@ -201,9 +201,9 @@ macro_rules! define_pdu {
                     len += <$ftype as $crate::pdu_macro::FieldLen>::field_len(&self.$field);
                 )*
 
-                u16::try_from(len).map_err(|_| crate::common::dis_error::DISError::PduSizeExceeded {
+                u16::try_from(len).map_err(|_| $crate::common::dis_error::DISError::PduSizeExceeded {
                     size: len,
-                    max_size: crate::common::constants::MAX_PDU_SIZE_OCTETS,
+                    max_size: $crate::common::constants::MAX_PDU_SIZE_OCTETS,
                 })
             }
 
@@ -215,7 +215,7 @@ macro_rules! define_pdu {
                 &mut self.header
             }
 
-            fn serialize(&mut self, buf: &mut bytes::BytesMut) -> Result<(), crate::common::dis_error::DISError> {
+            fn serialize(&mut self, buf: &mut bytes::BytesMut) -> Result<(), $crate::common::dis_error::DISError> {
                 // set header fields
                 self.header.set_pdu_type($pdu_type);
                 self.header.set_protocol_family($protocol_family);
@@ -235,14 +235,14 @@ macro_rules! define_pdu {
                 Ok(())
             }
 
-            fn deserialize<B: bytes::Buf>(buf: &mut B) -> Result<Self, crate::common::dis_error::DISError>
+            fn deserialize<B: bytes::Buf>(buf: &mut B) -> Result<Self, $crate::common::dis_error::DISError>
             where Self: Sized {
                 // deserialize header using its associated function
                 let header: Self::Header = <Self::Header as $crate::pdu_macro::FieldDeserialize>::deserialize_field(buf);
 
                 // check PDU type (assumes header exposes pdu_type() method; adapt if different)
                 if header.pdu_type() != $pdu_type {
-                    return Err(crate::common::dis_error::DISError::invalid_header(
+                    return Err($crate::common::dis_error::DISError::invalid_header(
                         format!("Expected PDU type {:?}, got {:?}", $pdu_type, header.pdu_type()),
                         None,
                     ));
@@ -254,7 +254,7 @@ macro_rules! define_pdu {
                 Ok(body)
             }
 
-            fn deserialize_without_header<B: bytes::Buf>(buf: &mut B, header: Self::Header) -> Result<Self, crate::common::dis_error::DISError>
+            fn deserialize_without_header<B: bytes::Buf>(buf: &mut B, header: Self::Header) -> Result<Self, $crate::common::dis_error::DISError>
             where Self: Sized {
                 let mut body = Self::deserialize_body(buf);
                 body.header = header;

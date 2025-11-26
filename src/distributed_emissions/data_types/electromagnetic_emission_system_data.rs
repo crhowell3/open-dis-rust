@@ -4,7 +4,10 @@ use super::{
 };
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::vector3_float::Vector3Float;
+use crate::{
+    common::{SerializedLength, data_types::vector3_float::Vector3Float},
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Clone, Debug, Default)]
 pub struct ElectromagneticEmissionSystemData {
@@ -28,7 +31,7 @@ impl ElectromagneticEmissionSystemData {
         }
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> ElectromagneticEmissionSystemData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let system_data_length = buf.get_u8();
         let number_of_beams = buf.get_u8();
         let emissionspadding2 = buf.get_u16();
@@ -39,7 +42,7 @@ impl ElectromagneticEmissionSystemData {
             beam_data_records.push(ElectromagneticEmissionBeamData::deserialize(buf));
         }
 
-        ElectromagneticEmissionSystemData {
+        Self {
             system_data_length,
             number_of_beams,
             emissionspadding2,
@@ -47,5 +50,27 @@ impl ElectromagneticEmissionSystemData {
             location,
             beam_data_records,
         }
+    }
+}
+
+impl FieldSerialize for ElectromagneticEmissionSystemData {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for ElectromagneticEmissionSystemData {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ElectromagneticEmissionSystemData {
+    fn field_len(&self) -> usize {
+        1 + 1
+            + 2
+            + EmitterSystem::LENGTH
+            + Vector3Float::LENGTH
+            + self.beam_data_records.field_len()
     }
 }

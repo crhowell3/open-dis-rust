@@ -36,7 +36,7 @@ pub struct PduStatusRecord {
 
 impl PduStatusRecord {
     #[must_use]
-    pub fn new_zero() -> Self {
+    pub const fn new_zero() -> Self {
         Self::new()
     }
 
@@ -116,12 +116,12 @@ impl PduStatusRecord {
     }
 
     #[must_use]
-    pub fn to_u8(&self) -> u8 {
+    pub const fn to_u8(&self) -> u8 {
         self.into_bytes()[0]
     }
 
     #[must_use]
-    pub fn from_u8(b: u8) -> Self {
+    pub const fn from_u8(b: u8) -> Self {
         Self::from_bytes([b])
     }
 }
@@ -132,7 +132,7 @@ impl Default for PduStatusRecord {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct PduHeader {
     /// The version of the protocol
     pub protocol_version: ProtocolVersion,
@@ -152,12 +152,12 @@ pub struct PduHeader {
 
 impl Default for PduHeader {
     fn default() -> Self {
-        PduHeader {
+        Self {
             protocol_version: ProtocolVersion::IEEE1278_1_2012,
             exercise_id: 1,
             pdu_type: PduType::default(),
             protocol_family: ProtocolFamily::default(),
-            timestamp: PduHeader::calculate_dis_timestamp(),
+            timestamp: Self::calculate_dis_timestamp(),
             length: 0,
             status_record: PduStatusRecord::default(),
         }
@@ -199,8 +199,8 @@ impl GenericHeader for PduHeader {
         buf.put_u8(self.status_record.to_u8());
     }
 
-    fn deserialize<B: Buf>(buf: &mut B) -> PduHeader {
-        PduHeader {
+    fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             protocol_version: ProtocolVersion::deserialize(buf),
             exercise_id: buf.get_u8(),
             pdu_type: PduType::deserialize(buf),
@@ -220,12 +220,12 @@ impl PduHeader {
         exercise_id: u8,
         length: u16,
     ) -> Self {
-        PduHeader {
+        Self {
             protocol_version: ProtocolVersion::IEEE1278_1_2012,
             exercise_id,
             pdu_type,
             protocol_family,
-            timestamp: PduHeader::calculate_dis_timestamp(),
+            timestamp: Self::calculate_dis_timestamp(),
             length,
             status_record: PduStatusRecord::default(),
         }

@@ -3,7 +3,10 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 use super::simulation_address::SimulationAddress;
 
@@ -17,17 +20,13 @@ pub struct EventId {
 
 impl EventId {
     #[must_use]
-    pub fn new(site_identifier: u16, application_identifier: u16, event_identifier: u16) -> Self {
-        EventId {
+    pub const fn new(
+        site_identifier: u16,
+        application_identifier: u16,
+        event_identifier: u16,
+    ) -> Self {
+        Self {
             simulation_address: SimulationAddress::new(site_identifier, application_identifier),
-            event_identifier,
-        }
-    }
-
-    #[must_use]
-    pub fn default(event_identifier: u16) -> Self {
-        EventId {
-            simulation_address: SimulationAddress::default(),
             event_identifier,
         }
     }
@@ -37,11 +36,29 @@ impl EventId {
         buf.put_u16(self.event_identifier);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> EventId {
-        EventId {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             simulation_address: SimulationAddress::deserialize(buf),
             event_identifier: buf.get_u16(),
         }
+    }
+}
+
+impl FieldSerialize for EventId {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for EventId {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for EventId {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

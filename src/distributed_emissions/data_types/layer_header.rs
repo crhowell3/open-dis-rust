@@ -6,7 +6,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.51
@@ -18,8 +21,8 @@ pub struct LayerHeader {
 
 impl LayerHeader {
     #[must_use]
-    pub fn new(layer_number: u8, layer_specific_information: u8, length: u16) -> Self {
-        LayerHeader {
+    pub const fn new(layer_number: u8, layer_specific_information: u8, length: u16) -> Self {
+        Self {
             layer_number,
             layer_specific_information,
             length,
@@ -32,12 +35,30 @@ impl LayerHeader {
         buf.put_u16(self.length);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> LayerHeader {
-        LayerHeader {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             layer_number: buf.get_u8(),
             layer_specific_information: buf.get_u8(),
             length: buf.get_u16(),
         }
+    }
+}
+
+impl FieldSerialize for LayerHeader {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for LayerHeader {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for LayerHeader {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

@@ -6,7 +6,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.96
@@ -21,8 +24,8 @@ pub struct EntityCoordinateVector {
 
 impl EntityCoordinateVector {
     #[must_use]
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
-        EntityCoordinateVector {
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
+        Self {
             x_coordinate: x,
             y_coordinate: y,
             z_coordinate: z,
@@ -35,12 +38,30 @@ impl EntityCoordinateVector {
         buf.put_f32(self.z_coordinate);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityCoordinateVector {
-        EntityCoordinateVector {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             x_coordinate: buf.get_f32(),
             y_coordinate: buf.get_f32(),
             z_coordinate: buf.get_f32(),
         }
+    }
+}
+
+impl FieldSerialize for EntityCoordinateVector {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for EntityCoordinateVector {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for EntityCoordinateVector {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

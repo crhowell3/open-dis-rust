@@ -8,7 +8,7 @@ use bytes::{Buf, BufMut, BytesMut};
 
 use crate::common::SerializedLength;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.80
 pub struct SimulationAddress {
     /// Identification number representing the site, which may be a facility,
@@ -23,7 +23,7 @@ pub struct SimulationAddress {
 
 impl Default for SimulationAddress {
     fn default() -> Self {
-        SimulationAddress {
+        Self {
             site_id: 1,
             application_id: 1,
         }
@@ -32,8 +32,8 @@ impl Default for SimulationAddress {
 
 impl SimulationAddress {
     #[must_use]
-    pub fn new(site_id: u16, application_id: u16) -> Self {
-        SimulationAddress {
+    pub const fn new(site_id: u16, application_id: u16) -> Self {
+        Self {
             site_id,
             application_id,
         }
@@ -44,8 +44,8 @@ impl SimulationAddress {
         buf.put_u16(self.application_id);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> SimulationAddress {
-        SimulationAddress {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             site_id: buf.get_u16(),
             application_id: buf.get_u16(),
         }

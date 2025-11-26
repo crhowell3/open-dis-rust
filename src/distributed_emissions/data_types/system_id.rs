@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct SystemId {
@@ -17,8 +20,13 @@ pub struct SystemId {
 
 impl SystemId {
     #[must_use]
-    pub fn new(system_type: u16, system_name: u16, system_mode: u8, change_options: u8) -> Self {
-        SystemId {
+    pub const fn new(
+        system_type: u16,
+        system_name: u16,
+        system_mode: u8,
+        change_options: u8,
+    ) -> Self {
+        Self {
             system_type,
             system_name,
             system_mode,
@@ -33,13 +41,31 @@ impl SystemId {
         buf.put_u8(self.change_options);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> SystemId {
-        SystemId {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             system_type: buf.get_u16(),
             system_name: buf.get_u16(),
             system_mode: buf.get_u8(),
             change_options: buf.get_u8(),
         }
+    }
+}
+
+impl FieldSerialize for SystemId {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for SystemId {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for SystemId {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

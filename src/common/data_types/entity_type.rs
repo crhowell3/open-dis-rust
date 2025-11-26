@@ -9,7 +9,7 @@ use crate::common::{
 };
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Default, Debug, PartialEq)]
+#[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
 pub struct EntityType {
     pub kind: EntityKind,
     pub domain: u8,

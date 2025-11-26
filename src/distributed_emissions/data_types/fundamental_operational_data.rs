@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct FundamentalOperationalData {
@@ -24,7 +27,7 @@ pub struct FundamentalOperationalData {
 impl FundamentalOperationalData {
     #[must_use]
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    pub const fn new(
         system_status: u8,
         data_field1: u8,
         information_layers: u8,
@@ -36,7 +39,7 @@ impl FundamentalOperationalData {
         parameter5: u16,
         parameter6: u16,
     ) -> Self {
-        FundamentalOperationalData {
+        Self {
             system_status,
             data_field1,
             information_layers,
@@ -63,8 +66,8 @@ impl FundamentalOperationalData {
         buf.put_u16(self.parameter6);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> FundamentalOperationalData {
-        FundamentalOperationalData {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             system_status: buf.get_u8(),
             data_field1: buf.get_u8(),
             information_layers: buf.get_u8(),
@@ -76,6 +79,24 @@ impl FundamentalOperationalData {
             parameter5: buf.get_u16(),
             parameter6: buf.get_u16(),
         }
+    }
+}
+
+impl FieldSerialize for FundamentalOperationalData {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for FundamentalOperationalData {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for FundamentalOperationalData {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

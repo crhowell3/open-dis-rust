@@ -22,8 +22,8 @@ pub struct EulerAngles {
 impl EulerAngles {
     #[must_use]
     #[allow(clippy::similar_names)]
-    pub fn new(psi: f32, theta: f32, phi: f32) -> Self {
-        EulerAngles { psi, theta, phi }
+    pub const fn new(psi: f32, theta: f32, phi: f32) -> Self {
+        Self { psi, theta, phi }
     }
 
     pub fn serialize(&self, buf: &mut BytesMut) {
@@ -32,8 +32,8 @@ impl EulerAngles {
         buf.put_f32(self.phi);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> EulerAngles {
-        EulerAngles {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             psi: buf.get_f32(),
             theta: buf.get_f32(),
             phi: buf.get_f32(),

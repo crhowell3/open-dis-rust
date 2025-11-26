@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::entity_id::EntityId;
+use crate::{
+    common::{SerializedLength, data_types::entity_id::EntityId},
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Default, Debug)]
 pub struct TrackJamTarget {
@@ -21,11 +24,29 @@ impl TrackJamTarget {
         buf.put_u8(self.beam_id);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> TrackJamTarget {
-        TrackJamTarget {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             track_jam: EntityId::deserialize(buf),
             emitter_id: buf.get_u8(),
             beam_id: buf.get_u8(),
         }
+    }
+}
+
+impl FieldSerialize for TrackJamTarget {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for TrackJamTarget {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for TrackJamTarget {
+    fn field_len(&self) -> usize {
+        EntityId::LENGTH + 1 + 1
     }
 }
