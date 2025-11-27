@@ -1,7 +1,10 @@
-use crate::common::{SerializedLength, enums::EntityMarkingCharacterSet};
+use crate::{
+    common::{SerializedLength, enums::EntityMarkingCharacterSet},
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct EntityMarking {
     pub entity_marking_character_set: EntityMarkingCharacterSet,
     pub entity_marking_string: String,
@@ -9,21 +12,13 @@ pub struct EntityMarking {
 
 impl EntityMarking {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         entity_marking_character_set: EntityMarkingCharacterSet,
         entity_marking_string: String,
     ) -> Self {
-        EntityMarking {
+        Self {
             entity_marking_character_set,
             entity_marking_string,
-        }
-    }
-
-    #[must_use]
-    pub fn default(marking: String) -> Self {
-        EntityMarking {
-            entity_marking_character_set: EntityMarkingCharacterSet::default(),
-            entity_marking_string: marking,
         }
     }
 
@@ -33,11 +28,29 @@ impl EntityMarking {
         buf.put_slice(&marking.into_bytes()[..]);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> EntityMarking {
-        EntityMarking {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             entity_marking_character_set: EntityMarkingCharacterSet::deserialize(buf),
             entity_marking_string: buf.remaining().to_string(),
         }
+    }
+}
+
+impl FieldSerialize for EntityMarking {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for EntityMarking {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for EntityMarking {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

@@ -5,7 +5,12 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Copy, Clone, Debug)]
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
+
+#[derive(Copy, Clone, Debug, Default)]
 pub struct VariableParameter {
     pub record_type: u8,
     pub variable_parameter_field1: f64,
@@ -14,28 +19,16 @@ pub struct VariableParameter {
     pub variable_parameter_field4: u8,
 }
 
-impl Default for VariableParameter {
-    fn default() -> Self {
-        VariableParameter {
-            record_type: 0,
-            variable_parameter_field1: 0.0,
-            variable_parameter_field2: 0,
-            variable_parameter_field3: 0,
-            variable_parameter_field4: 0,
-        }
-    }
-}
-
 impl VariableParameter {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         record_type: u8,
         variable_parameter_field1: f64,
         variable_parameter_field2: u32,
         variable_parameter_field3: u16,
         variable_parameter_field4: u8,
     ) -> Self {
-        VariableParameter {
+        Self {
             record_type,
             variable_parameter_field1,
             variable_parameter_field2,
@@ -52,8 +45,8 @@ impl VariableParameter {
         buf.put_u8(self.variable_parameter_field4);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> VariableParameter {
-        VariableParameter {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             record_type: buf.get_u8(),
             variable_parameter_field1: buf.get_f64(),
             variable_parameter_field2: buf.get_u32(),
@@ -61,4 +54,26 @@ impl VariableParameter {
             variable_parameter_field4: buf.get_u8(),
         }
     }
+}
+
+impl FieldSerialize for VariableParameter {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for VariableParameter {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for VariableParameter {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
+    }
+}
+
+impl SerializedLength for VariableParameter {
+    const LENGTH: usize = 16;
 }

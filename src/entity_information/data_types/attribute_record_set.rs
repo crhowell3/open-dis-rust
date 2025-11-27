@@ -6,7 +6,11 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::{common::EntityId, entity_information::data_types::attribute_record::AttributeRecord};
+use crate::{
+    common::{SerializedLength, data_types::EntityId},
+    entity_information::data_types::attribute_record::AttributeRecord,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Clone, Debug, Default)]
 pub struct AttributeRecordSet {
@@ -45,5 +49,23 @@ impl AttributeRecordSet {
             number_of_attribute_records,
             attribute_records,
         }
+    }
+}
+
+impl FieldSerialize for AttributeRecordSet {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for AttributeRecordSet {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for AttributeRecordSet {
+    fn field_len(&self) -> usize {
+        EntityId::LENGTH + 2 + self.attribute_records.field_len()
     }
 }

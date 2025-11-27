@@ -4,156 +4,33 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-use std::any::Any;
-
 use crate::{
     common::{
-        SerializedLength,
-        constants::MAX_PDU_SIZE_OCTETS,
-        dis_error::DISError,
-        entity_id::EntityId,
+        GenericHeader, SerializedLength,
+        data_types::{EntityId, EulerAngles, LinearVelocity, VariableParameter, WorldCoordinate},
         enums::{PduType, ProtocolFamily},
-        euler_angles::EulerAngles,
-        linear_velocity::LinearVelocity,
         pdu::Pdu,
         pdu_header::PduHeader,
-        world_coordinate::WorldCoordinate,
     },
-    warfare::data_types::variable_parameter::VariableParameter,
+    define_pdu,
 };
 
-#[derive(Clone, Debug, Default)]
-/// Implemented according to IEEE 1278.1-2012 §7.2.5
-pub struct EntityStateUpdatePdu {
-    pdu_header: PduHeader,
-    pub entity_id: EntityId,
-    padding: u8,
-    pub number_of_variable_parameters: u8,
-    pub entity_linear_velocity: LinearVelocity,
-    pub entity_location: WorldCoordinate,
-    pub entity_orientation: EulerAngles,
-    pub entity_appearance: u32,
-    pub variable_parameter_records: Vec<VariableParameter>,
-}
-
-impl Pdu for EntityStateUpdatePdu {
-    fn calculate_length(&self) -> Result<u16, DISError> {
-        let length = PduHeader::LENGTH
-            + EntityId::LENGTH
-            + 1
-            + 1
-            + LinearVelocity::LENGTH
-            + WorldCoordinate::LENGTH
-            + EulerAngles::LENGTH
-            + 4;
-
-        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
-            size: length,
-            max_size: MAX_PDU_SIZE_OCTETS,
-        })
-    }
-
-    fn header(&self) -> &PduHeader {
-        &self.pdu_header
-    }
-
-    fn header_mut(&mut self) -> &mut PduHeader {
-        &mut self.pdu_header
-    }
-
-    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
-        let length = self.calculate_length()?;
-        self.pdu_header.set_length(length);
-        self.pdu_header.serialize(buf);
-        self.entity_id.serialize(buf);
-        buf.put_u8(self.padding);
-        buf.put_u8(self.number_of_variable_parameters);
-        self.entity_linear_velocity.serialize(buf);
-        self.entity_location.serialize(buf);
-        self.entity_orientation.serialize(buf);
-        buf.put_u32(self.entity_appearance);
-        for i in 0..self.variable_parameter_records.len() {
-            self.variable_parameter_records[i].serialize(buf);
-        }
-        Ok(())
-    }
-
-    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
-    where
-        Self: Sized,
-    {
-        let header: PduHeader = PduHeader::deserialize(buf);
-        if header.pdu_type != PduType::EntityStateUpdate {
-            return Err(DISError::invalid_header(
-                format!(
-                    "Expected PDU type EntityStateUpdate, got {:?}",
-                    header.pdu_type
-                ),
-                None,
-            ));
-        }
-        let mut body = Self::deserialize_body(buf);
-        body.pdu_header = header;
-        Ok(body)
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
-    where
-        Self: Sized,
-    {
-        let mut body = Self::deserialize_body(buf);
-        body.pdu_header = header;
-        Ok(body)
-    }
-}
-
-impl EntityStateUpdatePdu {
-    #[must_use]
-    /// Creates a new `EntityStateUpdatePdu`
-    ///
-    /// # Examples
-    ///
-    /// Initializing an `EntityStateUpdatePdu`:
-    /// ```
-    /// use open_dis_rust::entity_information::EntityStateUpdatePdu;
-    /// let pdu = EntityStateUpdatePdu::new();
-    /// ```
-    ///
-    pub fn new() -> Self {
-        let mut pdu = Self::default();
-        pdu.pdu_header.pdu_type = PduType::EntityStateUpdate;
-        pdu.pdu_header.protocol_family = ProtocolFamily::EntityInformation;
-        pdu.finalize();
-        pdu
-    }
-
-    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
-        let entity_id = EntityId::deserialize(buf);
-        let padding = buf.get_u8();
-        let number_of_variable_parameters = buf.get_u8();
-        let entity_linear_velocity = LinearVelocity::deserialize(buf);
-        let entity_location = WorldCoordinate::deserialize(buf);
-        let entity_orientation = EulerAngles::deserialize(buf);
-        let entity_appearance = buf.get_u32();
-        let mut variable_parameter_records: Vec<VariableParameter> = vec![];
-        for _i in 0..number_of_variable_parameters {
-            variable_parameter_records.push(VariableParameter::deserialize(buf));
-        }
-        EntityStateUpdatePdu {
-            pdu_header: PduHeader::default(),
-            entity_id,
-            padding,
-            number_of_variable_parameters,
-            entity_linear_velocity,
-            entity_location,
-            entity_orientation,
-            entity_appearance,
-            variable_parameter_records,
+define_pdu! {
+    #[derive(Debug)]
+    /// Implemented according to IEEE 1278.1-2012 §7.2.5
+    pub struct EntityStateUpdatePdu {
+        header: PduHeader,
+        pdu_type: PduType::EntityStateUpdate,
+        protocol_family: ProtocolFamily::EntityInformation,
+        fields: {
+            pub entity_id: EntityId,
+            padding: u8,
+            pub number_of_variable_parameters: u8,
+            pub entity_linear_velocity: LinearVelocity,
+            pub entity_location: WorldCoordinate,
+            pub entity_orientation: EulerAngles,
+            pub entity_appearance: u32,
+            pub variable_parameter_records: Vec<VariableParameter>,
         }
     }
 }
@@ -179,8 +56,8 @@ mod tests {
         let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
-        let new_pdu = EntityStateUpdatePdu::deserialize(&mut deserialize_buf).unwrap();
-        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+        let new_pdu = EntityStateUpdatePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
+        assert_eq!(new_pdu.header, pdu.header);
     }
 
     #[test]

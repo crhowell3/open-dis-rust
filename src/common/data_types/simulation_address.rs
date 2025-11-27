@@ -6,7 +6,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.80
@@ -49,6 +52,24 @@ impl SimulationAddress {
             site_id: buf.get_u16(),
             application_id: buf.get_u16(),
         }
+    }
+}
+
+impl FieldSerialize for SimulationAddress {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for SimulationAddress {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for SimulationAddress {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

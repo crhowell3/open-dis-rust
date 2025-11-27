@@ -193,6 +193,24 @@ impl ForceId {
     }
 }
 
+impl FieldSerialize for ForceId {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for ForceId {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ForceId {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 Entity Kind [UID 7]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum EntityKind {
@@ -1458,6 +1476,24 @@ impl EntityCapabilities {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for EntityCapabilities {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for EntityCapabilities {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for EntityCapabilities {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -9605,6 +9641,24 @@ impl DISAttributeActionCode {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for DISAttributeActionCode {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for DISAttributeActionCode {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for DISAttributeActionCode {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 

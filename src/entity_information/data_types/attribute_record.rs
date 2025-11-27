@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+
 #[derive(Clone, Debug, Default)]
 pub struct AttributeRecord {
     pub record_type: u32,
@@ -15,7 +17,7 @@ pub struct AttributeRecord {
 
 impl AttributeRecord {
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             record_type: 0u32,
             record_length: 0u16,
@@ -43,5 +45,23 @@ impl AttributeRecord {
             record_length,
             record_specific_fields,
         }
+    }
+}
+
+impl FieldSerialize for AttributeRecord {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for AttributeRecord {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for AttributeRecord {
+    fn field_len(&self) -> usize {
+        4 + 2 + self.record_specific_fields.field_len()
     }
 }

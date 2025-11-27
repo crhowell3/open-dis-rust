@@ -3,9 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::{
-    SerializedLength,
-    enums::{Country, EntityKind},
+use crate::{
+    common::{
+        SerializedLength,
+        enums::{Country, EntityKind},
+    },
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
 use bytes::{Buf, BufMut, BytesMut};
 
@@ -62,6 +65,24 @@ impl EntityType {
             specific: buf.get_u8(),
             extra: buf.get_u8(),
         }
+    }
+}
+
+impl FieldSerialize for EntityType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for EntityType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for EntityType {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

@@ -4,160 +4,33 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-use std::any::Any;
-
-use crate::common::{
-    EntityCoordinateVector, GenericHeader, LinearVelocity, SerializedLength,
-    constants::MAX_PDU_SIZE_OCTETS,
-    dis_error::DISError,
-    entity_id::EntityId,
-    enums::{PduType, ProtocolFamily},
-    event_id::EventId,
-    pdu::Pdu,
-    pdu_header::PduHeader,
+use crate::{
+    common::{
+        GenericHeader, SerializedLength,
+        data_types::{EntityCoordinateVector, EntityId, EventId, LinearVelocity},
+        enums::{PduType, ProtocolFamily},
+        pdu::Pdu,
+        pdu_header::PduHeader,
+    },
+    define_pdu,
 };
 
-#[derive(Clone, Debug)]
-/// Implemented according to IEEE 1278.1-2012 §7.2.3
-pub struct CollisionPdu {
-    pdu_header: PduHeader,
-    pub issuing_entity_id: EntityId,
-    pub colliding_entity_id: EntityId,
-    pub event_id: EventId,
-    pub collision_type: u8,
-    padding: u8,
-    pub velocity: LinearVelocity,
-    pub mass: f32,
-    pub location_wrt_entity: EntityCoordinateVector,
-}
-
-impl Default for CollisionPdu {
-    fn default() -> Self {
-        CollisionPdu {
-            pdu_header: PduHeader::default(),
-            issuing_entity_id: EntityId::default(),
-            colliding_entity_id: EntityId::default(),
-            event_id: EventId::default(1),
-            collision_type: 0,
-            padding: 0,
-            velocity: LinearVelocity::default(),
-            mass: 0.0,
-            location_wrt_entity: EntityCoordinateVector::default(),
-        }
-    }
-}
-
-impl Pdu for CollisionPdu {
-    type Header = PduHeader;
-
-    fn calculate_length(&self) -> Result<u16, DISError> {
-        let length = PduHeader::LENGTH
-            + EntityId::LENGTH * 2
-            + EventId::LENGTH
-            + LinearVelocity::LENGTH
-            + EntityCoordinateVector::LENGTH
-            + std::mem::size_of::<u8>() * 2
-            + std::mem::size_of::<f32>();
-
-        u16::try_from(length).map_err(|_| DISError::PduSizeExceeded {
-            size: length,
-            max_size: MAX_PDU_SIZE_OCTETS,
-        })
-    }
-
-    fn header(&self) -> &PduHeader {
-        &self.pdu_header
-    }
-
-    fn header_mut(&mut self) -> &mut PduHeader {
-        &mut self.pdu_header
-    }
-
-    fn serialize(&mut self, buf: &mut BytesMut) -> Result<(), DISError> {
-        let length = self.calculate_length()?;
-        self.pdu_header.set_length(length);
-        self.pdu_header.serialize(buf);
-        self.issuing_entity_id.serialize(buf);
-        self.colliding_entity_id.serialize(buf);
-        self.event_id.serialize(buf);
-        buf.put_u8(self.collision_type);
-        buf.put_u8(self.padding);
-        self.velocity.serialize(buf);
-        buf.put_f32(self.mass);
-        self.location_wrt_entity.serialize(buf);
-        Ok(())
-    }
-
-    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>
-    where
-        Self: Sized,
-    {
-        let header: PduHeader = PduHeader::deserialize(buf);
-        if header.pdu_type != PduType::Collision {
-            return Err(DISError::invalid_header(
-                format!("Expected PDU type Collision, got {:?}", header.pdu_type),
-                None,
-            ));
-        }
-        let mut body = Self::deserialize_body(buf);
-        body.pdu_header = header;
-        Ok(body)
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn deserialize_without_header<B: Buf>(buf: &mut B, header: PduHeader) -> Result<Self, DISError>
-    where
-        Self: Sized,
-    {
-        let mut body = Self::deserialize_body(buf);
-        body.pdu_header = header;
-        Ok(body)
-    }
-}
-
-impl CollisionPdu {
-    #[must_use]
-    /// Creates a new `CollisionPdu`
-    ///
-    /// # Examples
-    ///
-    /// Initializing an `CollisionPdu`:
-    /// ```
-    /// use open_dis_rust::entity_information::CollisionPdu;
-    /// let pdu = CollisionPdu::new();
-    /// ```
-    ///
-    pub fn new() -> Self {
-        let mut pdu = Self::default();
-        pdu.pdu_header.pdu_type = PduType::Collision;
-        pdu.pdu_header.protocol_family = ProtocolFamily::EntityInformation;
-        pdu.finalize();
-        pdu
-    }
-
-    fn deserialize_body<B: Buf>(buf: &mut B) -> Self {
-        let issuing_entity_id = EntityId::deserialize(buf);
-        let colliding_entity_id = EntityId::deserialize(buf);
-        let event_id = EventId::deserialize(buf);
-        let collision_type = buf.get_u8();
-        let padding = buf.get_u8();
-        let velocity = LinearVelocity::deserialize(buf);
-        let mass = buf.get_f32();
-        let location_wrt_entity = EntityCoordinateVector::deserialize(buf);
-        CollisionPdu {
-            pdu_header: PduHeader::default(),
-            issuing_entity_id,
-            colliding_entity_id,
-            event_id,
-            collision_type,
-            padding,
-            velocity,
-            mass,
-            location_wrt_entity,
+define_pdu! {
+    #[derive(Debug)]
+    /// Implemented according to IEEE 1278.1-2012 §7.2.3
+    pub struct CollisionPdu {
+        header: PduHeader,
+        pdu_type: PduType::Collision,
+        protocol_family: ProtocolFamily::EntityInformation,
+        fields: {
+            pub issuing_entity_id: EntityId,
+            pub colliding_entity_id: EntityId,
+            pub event_id: EventId,
+            pub collision_type: u8,
+            padding: u8,
+            pub velocity: LinearVelocity,
+            pub mass: f32,
+            pub location_wrt_entity: EntityCoordinateVector,
         }
     }
 }
@@ -183,8 +56,8 @@ mod tests {
         let _ = pdu.serialize(&mut serialize_buf);
 
         let mut deserialize_buf = serialize_buf.freeze();
-        let new_pdu = CollisionPdu::deserialize(&mut deserialize_buf).unwrap();
-        assert_eq!(new_pdu.pdu_header, pdu.pdu_header);
+        let new_pdu = CollisionPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
+        assert_eq!(new_pdu.header, pdu.header);
     }
 
     #[test]

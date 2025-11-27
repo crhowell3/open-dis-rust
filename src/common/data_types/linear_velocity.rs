@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct LinearVelocity {
@@ -36,6 +39,24 @@ impl LinearVelocity {
             second_vector_component: buf.get_f32(),
             third_vector_component: buf.get_f32(),
         }
+    }
+}
+
+impl FieldSerialize for LinearVelocity {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for LinearVelocity {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for LinearVelocity {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

@@ -6,7 +6,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::{
+    common::SerializedLength,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.32
@@ -38,6 +41,24 @@ impl EulerAngles {
             theta: buf.get_f32(),
             phi: buf.get_f32(),
         }
+    }
+}
+
+impl FieldSerialize for EulerAngles {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for EulerAngles {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for EulerAngles {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 
