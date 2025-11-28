@@ -1475,13 +1475,13 @@ pub enum EntityCapabilities {
 impl EntityCapabilities {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
     }
 }
 
 impl FieldSerialize for EntityCapabilities {
     fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
+        buf.put_u32(*self as u32);
     }
 }
 
@@ -1493,7 +1493,7 @@ impl FieldDeserialize for EntityCapabilities {
 
 impl FieldLen for EntityCapabilities {
     fn field_len(&self) -> usize {
-        1
+        4
     }
 }
 

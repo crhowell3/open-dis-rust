@@ -22,9 +22,9 @@
 //! // Create new mutable byte array
 //! let mut bytes = BytesMut::new();
 //! // Create a pre-populated AcknowledgePdu
-//! let mut ack_pdu = AcknowledgePdu::default();
+//! let mut pdu = AcknowledgePdu::default();
 //! // Serialize the PDU into the byte array, which can then be sent over UDP
-//! ack_pdu.serialize(&mut bytes);
+//! pdu.serialize(&mut bytes);
 //! ```
 
 pub mod common;

@@ -3,23 +3,42 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+pub mod acoustic_beam_data;
+pub mod acoustic_beam_fundamental_parameter;
+pub mod acoustic_emitter_system;
+pub mod acoustic_emitter_system_data;
 pub mod angular_velocity_vector;
+pub mod apa_data;
+pub mod beam_data;
 pub mod clock_time;
 pub mod datum_records;
+pub mod electromagnetic_emission_beam_data;
+pub mod electromagnetic_emission_system_data;
+pub mod emitter_system;
 pub mod entity_coordinate_vector;
 pub mod entity_id;
 pub mod entity_type;
 pub mod euler_angles;
 pub mod event_id;
+pub mod fundamental_operational_data;
+pub mod fundamental_parameter_data;
+pub mod iff_fundamental_parameter_data;
+pub mod layer_header;
 pub mod linear_acceleration;
 pub mod linear_velocity;
+pub mod propulsion_system_data;
+pub mod secondary_operational_data;
+pub mod shaft_rpms;
 pub mod simulation_address;
 pub mod simulation_id;
 pub mod standard_variable_records;
 pub mod standard_variable_specification;
+pub mod system_id;
+pub mod track_jam_target;
 pub mod variable_parameter;
 pub mod vector3_double;
 pub mod vector3_float;
+pub mod vectoring_nozzle_system_data;
 pub mod velocity_vector;
 pub mod world_coordinate;
 
