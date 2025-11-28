@@ -6,6 +6,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+
 #[derive(Clone, Debug)]
 pub struct FixedDatumRecord {
     pub datum_id: u32,
@@ -13,7 +15,7 @@ pub struct FixedDatumRecord {
 }
 
 impl FixedDatumRecord {
-    pub fn serialize(&mut self, buf: &mut BytesMut) {
+    pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_u32(self.datum_id);
         buf.put_u32(self.datum_value);
     }
@@ -25,6 +27,24 @@ impl FixedDatumRecord {
             datum_id,
             datum_value,
         }
+    }
+}
+
+impl FieldSerialize for FixedDatumRecord {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for FixedDatumRecord {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for FixedDatumRecord {
+    fn field_len(&self) -> usize {
+        8
     }
 }
 
@@ -40,7 +60,7 @@ impl VariableDatumRecord {
         (length_bits as usize).div_ceil(8)
     }
 
-    pub fn serialize(&mut self, buf: &mut BytesMut) {
+    pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_u32(self.datum_id);
         buf.put_u32(self.length_bits);
 
@@ -77,5 +97,23 @@ impl VariableDatumRecord {
             length_bits,
             value,
         }
+    }
+}
+
+impl FieldSerialize for VariableDatumRecord {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for VariableDatumRecord {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for VariableDatumRecord {
+    fn field_len(&self) -> usize {
+        self.datum_id.field_len() + self.length_bits.field_len() + self.value.field_len()
     }
 }

@@ -3537,6 +3537,24 @@ impl Reason {
     }
 }
 
+impl FieldSerialize for Reason {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for Reason {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for Reason {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 FrozenBehavior [UID 68]
 bitflags! {
     #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -3562,6 +3580,25 @@ impl FrozenBehavior {
     #[must_use]
     pub const fn from_u8(bits: u8) -> Option<Self> {
         Self::from_bits(bits)
+    }
+}
+
+impl FieldSerialize for FrozenBehavior {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(self.as_u8());
+    }
+}
+
+impl FieldDeserialize for FrozenBehavior {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        let bits = buf.get_u8();
+        Self::from_u8(bits).unwrap_or_default()
+    }
+}
+
+impl FieldLen for FrozenBehavior {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -3728,6 +3765,24 @@ impl ActionResponseRequestStatus {
     }
 }
 
+impl FieldSerialize for ActionResponseRequestStatus {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u32(*self as u32);
+    }
+}
+
+impl FieldDeserialize for ActionResponseRequestStatus {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ActionResponseRequestStatus {
+    fn field_len(&self) -> usize {
+        4
+    }
+}
+
 // SISO-REF-010-2023 EventType [UID 73]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum EventType {
@@ -3757,6 +3812,24 @@ impl EventType {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for EventType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u32(*self as u32);
+    }
+}
+
+impl FieldDeserialize for EventType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for EventType {
+    fn field_len(&self) -> usize {
+        4
     }
 }
 
