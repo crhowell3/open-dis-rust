@@ -7,8 +7,10 @@
 use bytes::{Buf, BufMut, BytesMut};
 
 use crate::{
-    common::{SerializedLength, data_types::EntityId},
-    entity_information::data_types::attribute_record::AttributeRecord,
+    common::{
+        SerializedLength,
+        data_types::{EntityId, attribute_record::AttributeRecord},
+    },
     pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
 
