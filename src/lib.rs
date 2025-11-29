@@ -40,4 +40,4 @@ pub mod logistics;
 pub mod simulation_management;
 //pub mod simulation_management_with_reliability;
 //pub mod synthetic_environment;
-//pub mod warfare;
+pub mod warfare;

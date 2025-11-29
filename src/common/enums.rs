@@ -2121,6 +2121,24 @@ impl DetonationResult {
     }
 }
 
+impl FieldSerialize for DetonationResult {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for DetonationResult {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for DetonationResult {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 ServiceRequestServiceTypeRequested [UID 63]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum ServiceRequestServiceTypeRequested {
@@ -10288,6 +10306,24 @@ impl DEFirePulseShape {
     }
 }
 
+impl FieldSerialize for DEFirePulseShape {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for DEFirePulseShape {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for DEFirePulseShape {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 ComponentIdentification [UID 314]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum ComponentIdentification {
@@ -10311,6 +10347,24 @@ impl ComponentIdentification {
     }
 }
 
+impl FieldSerialize for ComponentIdentification {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for ComponentIdentification {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ComponentIdentification {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 ComponentDamageStatus [UID 315]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum ComponentDamageStatus {
@@ -10329,6 +10383,24 @@ impl ComponentDamageStatus {
     }
 }
 
+impl FieldSerialize for ComponentDamageStatus {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for ComponentDamageStatus {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ComponentDamageStatus {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 ComponentVisualSmokeColor [UID 316]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum ComponentVisualSmokeColor {
@@ -10343,6 +10415,24 @@ impl ComponentVisualSmokeColor {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for ComponentVisualSmokeColor {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for ComponentVisualSmokeColor {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ComponentVisualSmokeColor {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 

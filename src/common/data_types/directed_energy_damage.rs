@@ -5,13 +5,15 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::{
-    EntityCoordinateVector,
-    enums::{ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor},
-    event_id::EventId,
+use crate::{
+    common::{
+        data_types::{EntityCoordinateVector, EventId},
+        enums::{ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor},
+    },
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct DirectedEnergyDamage {
     pub record_type: u32,
     pub record_length: u16,
@@ -27,29 +29,10 @@ pub struct DirectedEnergyDamage {
     padding2: u16,
 }
 
-impl Default for DirectedEnergyDamage {
-    fn default() -> Self {
-        DirectedEnergyDamage {
-            record_type: 0,
-            record_length: 0,
-            padding: 0_u16,
-            damage_location: EntityCoordinateVector::default(),
-            damage_diameter: 0.0,
-            temperature: 0.0,
-            component_identification: ComponentIdentification::default(),
-            component_damage_status: ComponentDamageStatus::default(),
-            component_visual_damage_status: 0,
-            component_visual_smoke_color: ComponentVisualSmokeColor::default(),
-            fire_event_id: EventId::default(1),
-            padding2: 0_u16,
-        }
-    }
-}
-
 impl DirectedEnergyDamage {
     #[must_use]
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    pub const fn new(
         record_type: u32,
         record_length: u16,
         damage_location: EntityCoordinateVector,
@@ -61,7 +44,7 @@ impl DirectedEnergyDamage {
         component_visual_smoke_color: ComponentVisualSmokeColor,
         fire_event_id: EventId,
     ) -> Self {
-        DirectedEnergyDamage {
+        Self {
             record_type,
             record_length,
             padding: 0_u16,
@@ -92,8 +75,8 @@ impl DirectedEnergyDamage {
         buf.put_u16(self.padding2);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> DirectedEnergyDamage {
-        DirectedEnergyDamage {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             record_type: buf.get_u32(),
             record_length: buf.get_u16(),
             padding: buf.get_u16(),
@@ -107,5 +90,34 @@ impl DirectedEnergyDamage {
             fire_event_id: EventId::deserialize(buf),
             padding2: buf.get_u16(),
         }
+    }
+}
+
+impl FieldSerialize for DirectedEnergyDamage {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for DirectedEnergyDamage {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for DirectedEnergyDamage {
+    fn field_len(&self) -> usize {
+        self.record_type.field_len()
+            + self.record_length.field_len()
+            + self.padding.field_len()
+            + self.damage_location.field_len()
+            + self.damage_diameter.field_len()
+            + self.temperature.field_len()
+            + self.component_identification.field_len()
+            + self.component_damage_status.field_len()
+            + self.component_visual_damage_status.field_len()
+            + self.component_visual_smoke_color.field_len()
+            + self.fire_event_id.field_len()
+            + self.padding2.field_len()
     }
 }
