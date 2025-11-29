@@ -34,7 +34,7 @@ pub mod entity_management;
 pub mod information_operations;
 pub mod pdu_macro;
 //pub mod live_entity_information;
-//pub mod logistics;
+pub mod logistics;
 //pub mod minefield;
 //pub mod radio_communications;
 pub mod simulation_management;

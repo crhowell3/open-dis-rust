@@ -2139,6 +2139,24 @@ impl ServiceRequestServiceTypeRequested {
     }
 }
 
+impl FieldSerialize for ServiceRequestServiceTypeRequested {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for ServiceRequestServiceTypeRequested {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ServiceRequestServiceTypeRequested {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 RepairCompleteRepair [UID 64]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum RepairCompleteRepair {
@@ -2251,6 +2269,24 @@ impl RepairResponseRepairResult {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for RepairResponseRepairResult {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for RepairResponseRepairResult {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for RepairResponseRepairResult {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -9336,6 +9372,24 @@ impl RepairGroups {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for RepairGroups {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for RepairGroups {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for RepairGroups {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 

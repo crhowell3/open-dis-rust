@@ -43,6 +43,7 @@ pub mod simulation_address;
 pub mod simulation_id;
 pub mod standard_variable_records;
 pub mod standard_variable_specification;
+pub mod supply_quantity;
 pub mod system_id;
 pub mod track_jam_target;
 pub mod variable_parameter;
