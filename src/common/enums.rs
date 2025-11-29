@@ -2254,6 +2254,24 @@ impl RepairCompleteRepair {
     }
 }
 
+impl FieldSerialize for RepairCompleteRepair {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for RepairCompleteRepair {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for RepairCompleteRepair {
+    fn field_len(&self) -> usize {
+        2
+    }
+}
+
 // SISO-REF-010-2023 RepairResponseRepairResult [UID 65]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum RepairResponseRepairResult {

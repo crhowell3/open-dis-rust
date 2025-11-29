@@ -10,7 +10,7 @@ use crate::{
         GenericHeader, SerializedLength,
         data_types::{entity_id::EntityId, supply_quantity::SupplyQuantity},
         enums::{
-            PduType, ProtocolFamily, RepairGroups, RepairResponseRepairResult,
+            PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
             ServiceRequestServiceTypeRequested,
         },
         pdu::Pdu,
@@ -97,7 +97,7 @@ define_pdu! {
         fields: {
             pub receiving_entity_id: EntityId,
             pub repairing_entity_id: EntityId,
-            pub repair: RepairGroups,
+            pub repair: RepairCompleteRepair,
             padding: u16,
         }
     }
