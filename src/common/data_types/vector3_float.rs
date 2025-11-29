@@ -6,7 +6,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
 /// Custom vector type containing 3 single precision fields
@@ -139,8 +139,22 @@ impl std::ops::Div<f32> for Vector3Float {
     }
 }
 
-impl SerializedLength for Vector3Float {
-    const LENGTH: usize = 12;
+impl FieldSerialize for Vector3Float {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for Vector3Float {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for Vector3Float {
+    fn field_len(&self) -> usize {
+        12
+    }
 }
 
 #[cfg(test)]

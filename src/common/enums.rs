@@ -3848,6 +3848,24 @@ impl RequiredReliabilityService {
     }
 }
 
+impl FieldSerialize for RequiredReliabilityService {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for RequiredReliabilityService {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for RequiredReliabilityService {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 EmitterName [UID 75]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 #[allow(deprecated, non_camel_case_types)]
@@ -8778,6 +8796,24 @@ impl AggregateStateAggregateState {
     }
 }
 
+impl FieldSerialize for AggregateStateAggregateState {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for AggregateStateAggregateState {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for AggregateStateAggregateState {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 AggregateStateFormation [UID 205]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum AggregateStateFormation {
@@ -8794,6 +8830,24 @@ impl AggregateStateFormation {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for AggregateStateFormation {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u32(*self as u32);
+    }
+}
+
+impl FieldDeserialize for AggregateStateFormation {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for AggregateStateFormation {
+    fn field_len(&self) -> usize {
+        4
     }
 }
 
@@ -8966,6 +9020,24 @@ impl IsGroupOfGroupedEntityCategory {
     }
 }
 
+impl FieldSerialize for IsGroupOfGroupedEntityCategory {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for IsGroupOfGroupedEntityCategory {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IsGroupOfGroupedEntityCategory {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 IsGroupOfRestStatus [UID 214]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum IsGroupOfRestStatus {
@@ -9007,6 +9079,24 @@ impl TransferControlTransferType {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for TransferControlTransferType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for TransferControlTransferType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for TransferControlTransferType {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -9457,6 +9547,7 @@ impl IOActionIOWarfareType {
         Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
     }
 }
+
 impl FieldSerialize for IOActionIOWarfareType {
     fn serialize_field(&self, buf: &mut BytesMut) {
         buf.put_u16(*self as u16);

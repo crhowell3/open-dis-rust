@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
 
 #[derive(Clone, Debug, Default)]
 pub struct AggregateMarking {
@@ -15,8 +15,8 @@ pub struct AggregateMarking {
 
 impl AggregateMarking {
     #[must_use]
-    pub fn new(character_set: u8, characters: [i8; 31]) -> Self {
-        AggregateMarking {
+    pub const fn new(character_set: u8, characters: [i8; 31]) -> Self {
+        Self {
             character_set,
             characters,
         }
@@ -29,19 +29,34 @@ impl AggregateMarking {
         }
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> AggregateMarking {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let character_set = buf.get_u8();
         let mut characters: [i8; 31] = [0; 31];
         for char in &mut characters {
             *char = buf.get_i8();
         }
-        AggregateMarking {
+
+        Self {
             character_set,
             characters,
         }
     }
 }
 
-impl SerializedLength for AggregateMarking {
-    const LENGTH: usize = 32;
+impl FieldSerialize for AggregateMarking {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for AggregateMarking {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for AggregateMarking {
+    fn field_len(&self) -> usize {
+        32
+    }
 }

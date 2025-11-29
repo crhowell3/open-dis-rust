@@ -30,9 +30,9 @@
 pub mod common;
 pub mod distributed_emissions;
 pub mod entity_information;
-pub mod pdu_macro;
-//pub mod entity_management;
+pub mod entity_management;
 pub mod information_operations;
+pub mod pdu_macro;
 //pub mod live_entity_information;
 //pub mod logistics;
 //pub mod minefield;

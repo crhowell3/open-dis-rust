@@ -5,7 +5,7 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
 
 #[derive(Clone, Debug, Default)]
 pub struct Relationship {
@@ -15,8 +15,8 @@ pub struct Relationship {
 
 impl Relationship {
     #[must_use]
-    pub fn new(nature: u16, position: u16) -> Self {
-        Relationship { nature, position }
+    pub const fn new(nature: u16, position: u16) -> Self {
+        Self { nature, position }
     }
 
     pub fn serialize(&self, buf: &mut BytesMut) {
@@ -24,14 +24,28 @@ impl Relationship {
         buf.put_u16(self.position);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Relationship {
-        Relationship {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             nature: buf.get_u16(),
             position: buf.get_u16(),
         }
     }
 }
 
-impl SerializedLength for Relationship {
-    const LENGTH: usize = 4;
+impl FieldSerialize for Relationship {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for Relationship {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for Relationship {
+    fn field_len(&self) -> usize {
+        4
+    }
 }

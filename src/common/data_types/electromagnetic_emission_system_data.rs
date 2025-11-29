@@ -70,7 +70,7 @@ impl FieldLen for ElectromagneticEmissionSystemData {
         1 + 1
             + 2
             + EmitterSystem::LENGTH
-            + Vector3Float::LENGTH
+            + self.location.field_len()
             + self.beam_data_records.field_len()
     }
 }
