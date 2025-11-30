@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::{SerializedLength, simulation_address::SimulationAddress};
+use crate::{
+    common::data_types::simulation_address::SimulationAddress,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Clone, Debug, Default)]
 pub struct MinefieldIdentifier {
@@ -35,6 +38,20 @@ impl MinefieldIdentifier {
     }
 }
 
-impl SerializedLength for MinefieldIdentifier {
-    const LENGTH: usize = SimulationAddress::LENGTH + 2;
+impl FieldSerialize for MinefieldIdentifier {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for MinefieldIdentifier {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for MinefieldIdentifier {
+    fn field_len(&self) -> usize {
+        self.simulation_address.field_len() + self.minefield_number.field_len()
+    }
 }

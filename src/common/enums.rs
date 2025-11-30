@@ -8706,6 +8706,24 @@ impl MinefieldSensorTypes {
     }
 }
 
+impl FieldSerialize for MinefieldSensorTypes {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for MinefieldSensorTypes {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for MinefieldSensorTypes {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 MinefieldSensorTypesOptical [UID 194]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum MinefieldSensorTypesOptical {
@@ -10857,7 +10875,25 @@ pub enum MinefieldStateProtocolMode {
 impl MinefieldStateProtocolMode {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for MinefieldStateProtocolMode {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for MinefieldStateProtocolMode {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for MinefieldStateProtocolMode {
+    fn field_len(&self) -> usize {
+        2
     }
 }
 
