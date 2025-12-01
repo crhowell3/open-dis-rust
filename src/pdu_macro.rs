@@ -60,7 +60,10 @@ macro_rules! __pdu_prep_serialize_field {
 
     ( len = $len_field:ident ; $self:ident, $field:ident, $t:ty ) => {
         // For non-option fields with length attribute, set the length from the inner value.
-        $self.$len_field = <$t as $crate::pdu_macro::FieldLen>::field_len(&$self.$field) as u8;
+        $self.$len_field = u8::try_from(<$t as $crate::pdu_macro::FieldLen>::field_len(
+            &$self.$field,
+        ))
+        .unwrap_or_default();
     };
 
     // Default: no-op
