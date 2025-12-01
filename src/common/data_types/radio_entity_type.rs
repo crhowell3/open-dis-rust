@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+
 #[derive(Clone, Debug, Default)]
 pub struct RadioEntityType {
     pub entity_kind: u8,
@@ -17,7 +19,7 @@ pub struct RadioEntityType {
 
 impl RadioEntityType {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         entity_kind: u8,
         domain: u8,
         country: u16,
@@ -25,7 +27,7 @@ impl RadioEntityType {
         nomenclature_version: u8,
         nomenclature: u16,
     ) -> Self {
-        RadioEntityType {
+        Self {
             entity_kind,
             domain,
             country,
@@ -44,8 +46,8 @@ impl RadioEntityType {
         buf.put_u16(self.nomenclature);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> RadioEntityType {
-        RadioEntityType {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             entity_kind: buf.get_u8(),
             domain: buf.get_u8(),
             country: buf.get_u16(),
@@ -53,5 +55,28 @@ impl RadioEntityType {
             nomenclature_version: buf.get_u8(),
             nomenclature: buf.get_u16(),
         }
+    }
+}
+
+impl FieldSerialize for RadioEntityType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for RadioEntityType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for RadioEntityType {
+    fn field_len(&self) -> usize {
+        self.entity_kind.field_len()
+            + self.domain.field_len()
+            + self.country.field_len()
+            + self.category.field_len()
+            + self.nomenclature_version.field_len()
+            + self.nomenclature.field_len()
     }
 }

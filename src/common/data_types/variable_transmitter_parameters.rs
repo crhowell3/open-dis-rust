@@ -5,12 +5,31 @@
 use bytes::{Buf, BufMut, BytesMut};
 
 use crate::common::enums::VariableParameterRecordType;
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
 
 #[derive(Clone, Debug, Default)]
 pub struct VariableTransmitterParameters {
     pub record_type: VariableParameterRecordType,
     pub record_length: u16,
     pub record_specific_fields: Vec<u8>,
+}
+
+impl FieldSerialize for VariableTransmitterParameters {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for VariableTransmitterParameters {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for VariableTransmitterParameters {
+    fn field_len(&self) -> usize {
+        4 /* record_type u32 */ + 2 /* record_length u16 */ + self.record_specific_fields.len()
+    }
 }
 
 impl VariableTransmitterParameters {

@@ -1,11 +1,12 @@
-// src/pdu_macro.rs
-// A macro system for generating PDUs with trait-based serialization/length/deserialize.
-// Place this file at crate root and `pub mod pdu_macro;` in lib.rs.
-// Use `use crate::define_pdu;` in PDU modules.
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2025 Cameron Howell
 //
-// NOTE: This file purposely avoids depending on your specific crate layout.
-// You will need to implement/adapt trait impls for your custom types
-// (EntityId, enums, headers, etc.) to interoperate with this system.
+//     Licensed under the BSD 2-Clause License
+
+//! A macro system for generating PDUs with trait-based serialization/length/deserialize.
+//! Place this file at crate root and `pub mod pdu_macro;` in lib.rs.
+//! Use `use crate::define_pdu;` in PDU modules.
 
 use bytes::{Buf, BufMut, BytesMut};
 
@@ -22,6 +23,82 @@ pub trait FieldDeserialize: Sized {
 /// Return the serialized length of this field in bytes.
 pub trait FieldLen {
     fn field_len(&self) -> usize;
+}
+
+/// Trait for types that can be deserialized given an externally-provided length.
+/// Used by the macro when a field is annotated with `#[len = length_field_name]`.
+pub trait FieldDeserializeWithLen: Sized {
+    fn deserialize_with_len<B: Buf>(buf: &mut B, len: usize) -> Self;
+}
+
+// Blanket impl so `Option<T>` can be deserialized with an externally-provided length
+impl<T> FieldDeserializeWithLen for Option<T>
+where
+    T: FieldDeserializeWithLen,
+{
+    fn deserialize_with_len<B: Buf>(buf: &mut B, len: usize) -> Self {
+        if len == 0 {
+            None
+        } else {
+            Some(<T as FieldDeserializeWithLen>::deserialize_with_len(
+                buf, len,
+            ))
+        }
+    }
+}
+
+// Helper macros for generated code. These are kept private to the macro expansion
+// but exported so they can be used from the `define_pdu!` expansion.
+#[macro_export]
+macro_rules! __pdu_prep_serialize_field {
+    // When the field has a length attribute, set the length field before length calculation.
+    ( len = $len_field:ident ; $self:ident, $field:ident, Option<$inner:ty> ) => {
+        $self.$len_field = $self.$field.as_ref().map_or(0u8, |v| {
+            <$inner as $crate::pdu_macro::FieldLen>::field_len(v) as u8
+        });
+    };
+
+    ( len = $len_field:ident ; $self:ident, $field:ident, $t:ty ) => {
+        // For non-option fields with length attribute, set the length from the inner value.
+        $self.$len_field = <$t as $crate::pdu_macro::FieldLen>::field_len(&$self.$field) as u8;
+    };
+
+    // Default: no-op
+    ( ; $self:ident, $field:ident, $t:ty ) => {
+        // nothing to do
+    };
+}
+
+#[macro_export]
+macro_rules! __pdu_deserialize_field {
+    // Option<T> with a length attribute -> read using FieldDeserializeWithLen
+    ( len = $len_field:ident ; $field:ident, Option<$inner:ty>, $buf:ident ) => {
+        let $field: Option<$inner> = {
+            let len_val = $len_field as usize;
+            if len_val == 0 {
+                None
+            } else {
+                Some(
+                    <$inner as $crate::pdu_macro::FieldDeserializeWithLen>::deserialize_with_len(
+                        $buf, len_val,
+                    ),
+                )
+            }
+        };
+    };
+
+    // T with length attribute (non-Option)
+    ( len = $len_field:ident ; $field:ident, $t:ty, $buf:ident ) => {
+        let $field: $t = <$t as $crate::pdu_macro::FieldDeserializeWithLen>::deserialize_with_len(
+            $buf,
+            $len_field as usize,
+        );
+    };
+
+    // Default: plain FieldDeserialize
+    ( ; $field:ident, $t:ty, $buf:ident ) => {
+        let $field: $t = <$t as $crate::pdu_macro::FieldDeserialize>::deserialize_field($buf);
+    };
 }
 
 // ------ Implementations for primitive types ------
@@ -142,7 +219,7 @@ macro_rules! define_pdu {
             protocol_family: $protocol_family:expr,
             fields: {
                 $(
-                    $fvis:vis $field:ident : $ftype:ty,
+                    $(#[len = $len_field:ident])? $fvis:vis $field:ident : $ftype:ty,
                 )*
             }
 
@@ -176,8 +253,11 @@ macro_rules! define_pdu {
             /// you should write custom code in the manual body impl below or adapt the macro.
             fn deserialize_body<B: bytes::Buf>(buf: &mut B) -> Self {
                 $(
-                    // Each field is constructed via the FieldDeserialize trait.
-                    let $field: $ftype = <$ftype as $crate::pdu_macro::FieldDeserialize>::deserialize_field(buf);
+                    // Each field can optionally be annotated with `#[len = name]`.
+                    // The helper macro below will either call the plain `FieldDeserialize`
+                    // or the length-aware `FieldDeserializeWithLen` depending on the
+                    // annotation.
+                    $crate::__pdu_deserialize_field!( $( len = $len_field )? ; $field, $ftype, buf );
                 )*
 
                 Self {
@@ -219,6 +299,11 @@ macro_rules! define_pdu {
                 // set header fields
                 self.header.set_pdu_type($pdu_type);
                 self.header.set_protocol_family($protocol_family);
+
+                // Allow annotated fields to update their associated "length" fields
+                // before we compute the overall PDU length. If a field is annotated
+                // `#[len = foo]` the prep macro will set `self.foo` appropriately.
+                $( $crate::__pdu_prep_serialize_field!( $( len = $len_field )? ; self, $field, $ftype ); )*
 
                 // compute length the correct way and set it
                 let len = self.calculate_length()?;

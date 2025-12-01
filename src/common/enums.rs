@@ -8178,6 +8178,24 @@ impl TransmitterTransmitState {
     }
 }
 
+impl FieldSerialize for TransmitterTransmitState {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for TransmitterTransmitState {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for TransmitterTransmitState {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 TransmitterInputSource [UID 165]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum TransmitterInputSource {
@@ -8203,6 +8221,24 @@ impl TransmitterInputSource {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for TransmitterInputSource {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for TransmitterInputSource {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for TransmitterInputSource {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -8234,6 +8270,24 @@ impl TransmitterCryptoSystem {
     }
 }
 
+impl FieldSerialize for TransmitterCryptoSystem {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for TransmitterCryptoSystem {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for TransmitterCryptoSystem {
+    fn field_len(&self) -> usize {
+        2
+    }
+}
+
 // SISO-REF-010-2023 TransmitterAntennaPatternType [UID 167]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum TransmitterAntennaPatternType {
@@ -8253,6 +8307,24 @@ impl TransmitterAntennaPatternType {
     }
 }
 
+impl FieldSerialize for TransmitterAntennaPatternType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for TransmitterAntennaPatternType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for TransmitterAntennaPatternType {
+    fn field_len(&self) -> usize {
+        2
+    }
+}
+
 // SISO-REF-010-2023 TransmitterAntennaPatternReferenceSystem [UID 168]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum TransmitterAntennaPatternReferenceSystem {
@@ -8265,6 +8337,24 @@ impl TransmitterAntennaPatternReferenceSystem {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for TransmitterAntennaPatternReferenceSystem {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for TransmitterAntennaPatternReferenceSystem {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for TransmitterAntennaPatternReferenceSystem {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -8546,6 +8636,24 @@ impl SignalTDLType {
     }
 }
 
+impl FieldSerialize for SignalTDLType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for SignalTDLType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for SignalTDLType {
+    fn field_len(&self) -> usize {
+        2
+    }
+}
+
 // SISO-REF-010-2023 ReceiverReceiverState [UID 179]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum ReceiverReceiverState {
@@ -8559,6 +8667,24 @@ impl ReceiverReceiverState {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for ReceiverReceiverState {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for ReceiverReceiverState {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ReceiverReceiverState {
+    fn field_len(&self) -> usize {
+        2
     }
 }
 
@@ -8578,6 +8704,24 @@ impl IntercomControlControlType {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for IntercomControlControlType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for IntercomControlControlType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IntercomControlControlType {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -8619,6 +8763,24 @@ impl IntercomControlCommand {
     }
 }
 
+impl FieldSerialize for IntercomControlCommand {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for IntercomControlCommand {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IntercomControlCommand {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 IntercomControlTransmitLineState [UID 183]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum IntercomControlTransmitLineState {
@@ -8632,6 +8794,24 @@ impl IntercomControlTransmitLineState {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for IntercomControlTransmitLineState {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for IntercomControlTransmitLineState {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for IntercomControlTransmitLineState {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
