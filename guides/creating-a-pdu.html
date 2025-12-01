@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "ferra";
             const default_dark_theme = "ferra";
-            window.path_to_searchindex_js = "../searchindex-1f0626bf.js";
+            window.path_to_searchindex_js = "../searchindex-43c8a21a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-1c807ce0.js"></script>
@@ -193,17 +193,17 @@ import the entire protocol family module.</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>// Imports just the Acknowledge PDU module
-use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+use open_dis_rust::simulation_management::AcknowledgePdu;
 
 // Imports the entire SIMAN protocol family, including the associated data types
 use open_dis_rust::simulation_management::*;
 <span class="boring">}</span></code></pre>
 <h3 id="creating-a-pdu-1"><a class="header" href="#creating-a-pdu-1">Creating a PDU</a></h3>
-<p>To instantiate a PDU, use the PDU’s <code>default</code> method to pre-populate all its
+<p>To instantiate a PDU, use the PDU’s <code>new</code> method to pre-populate all its
 fields with data.</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let mut acknowledge_pdu = AcknowledgePdu::default();
+</span>let mut acknowledge_pdu = AcknowledgePdu::new();
 <span class="boring">}</span></code></pre>
 <p>It is advised to use the <code>mut</code> keyword so that the default values within the
 PDU’s fields can be manipulated before sending it over UDP.</p>
@@ -213,7 +213,7 @@ PDU is guaranteed to have a <code>pdu_header</code> field that is of type <code>
 See the crate documentation for more information on this type. It is generally
 advised that this field and its subfields should not be directly edited because
 it contains the header information that a receiver would need to correctly
-parse and interpret the data. Upon calling <code>default</code>, this field is pre-populated
+parse and interpret the data. Upon calling <code>new</code>, this field is pre-populated
 with the correct metadata for the PDU, and it should not be edited afterwards.</p>
 <p>All other fields within a PDU can be safely edited so long as the data being
 assigned to them is of the correct type and length. For most fields, editing
@@ -223,8 +223,8 @@ before assigning. Type information can be found within the crate documentation.<
 <p>The following is an example for editing a PDU field that is a primitive type.</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>// Instantiate a default Acknowledge PDU
-let mut acknowledge_pdu = AcknowledgePdu::default();
+</span>// Instantiate a new Acknowledge PDU
+let mut acknowledge_pdu = AcknowledgePdu::new();
 
 // Valid assignment of the request_id field
 acknowledge_pdu.request_id = 14;
@@ -232,8 +232,8 @@ acknowledge_pdu.request_id = 14;
 <p>The following is an example for editing a PDU field that is of a special type.</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>// Instantiate a default Acknowledge PDU
-let mut acknowledge_pdu = AcknowledgePdu::default();
+</span>// Instantiate a new Acknowledge PDU
+let mut acknowledge_pdu = AcknowledgePdu::new();
 
 // Assignment occurring field-wise for the originating_entity_id field
 acknowledge_pdu.originating_entity_id.simulation_address.application_id = 1;
@@ -241,7 +241,7 @@ acknowledge_pdu.originating_entity_id.simulation_address.site_id = 3;
 acknowledge_pdu.originating_entity_id.entity_id = 12;
 
 // Assignment can also occur by creating an EntityId and assigning
-let mut origin_id = EntityId::default(1);
+let mut origin_id = EntityId::new();
 origin_id.simulation_address.application_id = 1;
 origin_id.simulation_address.site_id = 4;
 origin_id.entity_id = 15;

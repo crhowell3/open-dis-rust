@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "ferra";
             const default_dark_theme = "ferra";
-            window.path_to_searchindex_js = "../searchindex-1f0626bf.js";
+            window.path_to_searchindex_js = "../searchindex-43c8a21a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-1c807ce0.js"></script>
@@ -191,9 +191,9 @@ against UDP topology, and the example code provided uses UDP as the protocol.</p
 <p>As shown in the previous section, we can create a PDU as such:</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+</span>use open_dis_rust::simulation_management::AcknowledgePdu;
 
-let mut ack_pdu = AcknowledgePdu::default();
+let mut ack_pdu = AcknowledgePdu::new();
 <span class="boring">}</span></code></pre>
 <p>Then, we need to create an empty, mutable byte array into which we will serialize
 the PDU:</p>
@@ -219,7 +219,7 @@ use std::net::SocketAddr;
 use std::io;
 use tokio::net::UdpSocket;
 
-use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+use open_dis_rust::simulation_management::AcknowledgePdu;
 
 #[tokio::main]
 async fn main() -&gt; io::Result&lt;()&gt; {
@@ -227,8 +227,8 @@ async fn main() -&gt; io::Result&lt;()&gt; {
     let remote_addr = "127.0.0.1:3000";
 
     socket.connect(remote_addr).await?;
-  
-    let mut ack_pdu = AcknowledgePdu::default();
+
+    let mut ack_pdu = AcknowledgePdu::new();
     let mut bytes = BytesMut::new();
 
     ack_pdu.serialize(&amp;mut bytes);
