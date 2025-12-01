@@ -13,9 +13,9 @@ This demonstration utilizes the `open_dis_rust` crate as well as the `bytes` and
 As shown in the previous section, we can create a PDU as such:
 
 ```rust
-use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+use open_dis_rust::simulation_management::AcknowledgePdu;
 
-let mut ack_pdu = AcknowledgePdu::default();
+let mut ack_pdu = AcknowledgePdu::new();
 ```
 
 Then, we need to create an empty, mutable byte array into which we will serialize
@@ -48,7 +48,7 @@ use std::net::SocketAddr;
 use std::io;
 use tokio::net::UdpSocket;
 
-use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+use open_dis_rust::simulation_management::AcknowledgePdu;
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -56,8 +56,8 @@ async fn main() -> io::Result<()> {
     let remote_addr = "127.0.0.1:3000";
 
     socket.connect(remote_addr).await?;
-  
-    let mut ack_pdu = AcknowledgePdu::default();
+
+    let mut ack_pdu = AcknowledgePdu::new();
     let mut bytes = BytesMut::new();
 
     ack_pdu.serialize(&mut bytes);
