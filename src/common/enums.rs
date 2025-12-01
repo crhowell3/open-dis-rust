@@ -3587,6 +3587,24 @@ impl VariableRecordTypes {
     }
 }
 
+impl FieldSerialize for VariableRecordTypes {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u32(*self as u32);
+    }
+}
+
+impl FieldDeserialize for VariableRecordTypes {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for VariableRecordTypes {
+    fn field_len(&self) -> usize {
+        4
+    }
+}
+
 // SISO-REF-010-2023 Reason [UID 67]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum Reason {
@@ -11111,7 +11129,25 @@ pub enum RecordQueryREventType {
 impl RecordQueryREventType {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for RecordQueryREventType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for RecordQueryREventType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for RecordQueryREventType {
+    fn field_len(&self) -> usize {
+        2
     }
 }
 
