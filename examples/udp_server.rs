@@ -1,3 +1,9 @@
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2025 Cameron Howell
+//
+//     Licensed under the BSD 2-Clause License
+
 #![warn(rust_2018_idioms)]
 
 use std::error::Error;
@@ -13,7 +19,7 @@ struct Server {
 
 impl Server {
     async fn run(self) -> Result<(), io::Error> {
-        let Server {
+        let Self {
             socket,
             mut buf,
             mut to_send,
@@ -23,7 +29,7 @@ impl Server {
             if let Some((size, peer)) = to_send {
                 let amt = socket.send_to(&buf[..size], &peer).await?;
 
-                println!("Echoed {}/{} bytes to {}", amt, size, peer);
+                println!("Echoed {amt}/{size} bytes to {peer}");
             }
 
             to_send = Some(socket.recv_from(&mut buf).await?);

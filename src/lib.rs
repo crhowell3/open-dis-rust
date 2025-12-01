@@ -22,9 +22,9 @@
 //! // Create new mutable byte array
 //! let mut bytes = BytesMut::new();
 //! // Create a pre-populated AcknowledgePdu
-//! let mut ack_pdu = AcknowledgePdu::default();
+//! let mut pdu = AcknowledgePdu::default();
 //! // Serialize the PDU into the byte array, which can then be sent over UDP
-//! ack_pdu.serialize(&mut bytes);
+//! pdu.serialize(&mut bytes);
 //! ```
 
 pub mod common;
@@ -32,6 +32,8 @@ pub mod distributed_emissions;
 pub mod entity_information;
 pub mod entity_management;
 pub mod information_operations;
+pub mod pdu_macro;
+//pub mod live_entity_information;
 pub mod logistics;
 pub mod minefield;
 pub mod radio_communications;

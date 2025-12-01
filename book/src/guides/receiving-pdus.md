@@ -4,7 +4,7 @@ The same dependencies are required as listed in the previous section.
 
 ## Receiving and Parsing a PDU
 
-Using the same UDP socket that we created in the previous section, we 
+Using the same UDP socket that we created in the previous section, we
 can receive a PDU and deserialize it from the byte array.
 
 ```rust
@@ -13,7 +13,7 @@ use std::net::SocketAddr;
 use std::io;
 use tokio::net::UdpSocket;
 
-use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+use open_dis_rust::simulation_management::AcknowledgePdu;
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
