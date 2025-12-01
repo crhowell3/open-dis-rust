@@ -39,5 +39,5 @@ pub mod minefield;
 pub mod radio_communications;
 pub mod simulation_management;
 //pub mod simulation_management_with_reliability;
-//pub mod synthetic_environment;
+pub mod synthetic_environment;
 pub mod warfare;

@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::enums::{GriddedDataDataRepresentation, GriddedDataSampleType};
+use crate::{
+    common::enums::{GriddedDataDataRepresentation, GriddedDataSampleType},
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum DataRepresentationType {
@@ -28,6 +31,36 @@ pub enum DataRepresentationType {
     },
 }
 
+impl FieldLen for DataRepresentationType {
+    fn field_len(&self) -> usize {
+        match self {
+            Self::Type0 {
+                number_of_octets,
+                data_values,
+                padding,
+            } => number_of_octets.field_len() + data_values.field_len() + padding.field_len(),
+            Self::Type1 {
+                field_scale,
+                field_offset,
+                number_of_values,
+                data_values,
+                padding,
+            } => {
+                field_scale.field_len()
+                    + field_offset.field_len()
+                    + number_of_values.field_len()
+                    + data_values.field_len()
+                    + padding.field_len()
+            }
+            Self::Type2 {
+                number_of_values,
+                padding,
+                data_values,
+            } => number_of_values.field_len() + padding.field_len() + data_values.field_len(),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct GridDataRecord {
     pub sample_type: GriddedDataSampleType,
@@ -37,12 +70,12 @@ pub struct GridDataRecord {
 
 impl GridDataRecord {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         sample_type: GriddedDataSampleType,
         data_representation: GriddedDataDataRepresentation,
         data: DataRepresentationType,
     ) -> Self {
-        GridDataRecord {
+        Self {
             sample_type,
             data_representation,
             data,
@@ -97,7 +130,7 @@ impl GridDataRecord {
         }
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> GridDataRecord {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let sample_type = GriddedDataSampleType::deserialize(buf);
         let data_representation = GriddedDataDataRepresentation::deserialize(buf);
         let data = match data_representation {
@@ -155,10 +188,28 @@ impl GridDataRecord {
             }
         };
 
-        GridDataRecord {
+        Self {
             sample_type,
             data_representation,
             data,
         }
+    }
+}
+
+impl FieldSerialize for GridDataRecord {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for GridDataRecord {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for GridDataRecord {
+    fn field_len(&self) -> usize {
+        self.sample_type.field_len() + self.data_representation.field_len() + self.data.field_len()
     }
 }

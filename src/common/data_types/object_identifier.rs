@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::{SerializedLength, SimulationAddress};
+use crate::{
+    common::data_types::SimulationAddress,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Clone, Debug, Default)]
 pub struct ObjectIdentifier {
@@ -24,7 +27,7 @@ impl ObjectIdentifier {
         buf.put_u16(self.object_number);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> ObjectIdentifier {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self {
             simulation_address: SimulationAddress::deserialize(buf),
             object_number: buf.get_u16(),
@@ -32,6 +35,20 @@ impl ObjectIdentifier {
     }
 }
 
-impl SerializedLength for ObjectIdentifier {
-    const LENGTH: usize = SimulationAddress::LENGTH + 2;
+impl FieldSerialize for ObjectIdentifier {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for ObjectIdentifier {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for ObjectIdentifier {
+    fn field_len(&self) -> usize {
+        self.simulation_address.field_len() + self.object_number.field_len()
+    }
 }

@@ -5,7 +5,10 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::enums::GridAxisDescriptorAxisType;
+use crate::{
+    common::enums::GridAxisDescriptorAxisType,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum GridAxisType {
@@ -23,6 +26,32 @@ pub enum GridAxisType {
     },
 }
 
+impl FieldLen for GridAxisType {
+    fn field_len(&self) -> usize {
+        match self {
+            Self::FixedSpacing {
+                number_of_points_on_x_axis,
+                initial_index,
+            } => number_of_points_on_x_axis.field_len() + initial_index.field_len(),
+            Self::VariableSpacing {
+                number_of_points_on_x_axis,
+                initial_index,
+                coordinate_scale_x,
+                coordinate_offset_x,
+                x_values,
+                padding,
+            } => {
+                number_of_points_on_x_axis.field_len()
+                    + initial_index.field_len()
+                    + coordinate_scale_x.field_len()
+                    + coordinate_offset_x.field_len()
+                    + x_values.field_len()
+                    + padding.field_len()
+            }
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct GridAxisDescriptor {
     pub domain_initial: f64,
@@ -35,7 +64,7 @@ pub struct GridAxisDescriptor {
 
 impl GridAxisDescriptor {
     #[must_use]
-    pub fn new(
+    pub const fn new(
         domain_initial: f64,
         domain_final: f64,
         domain_points: u16,
@@ -43,7 +72,7 @@ impl GridAxisDescriptor {
         axis_type: GridAxisDescriptorAxisType,
         data: GridAxisType,
     ) -> Self {
-        GridAxisDescriptor {
+        Self {
             domain_initial,
             domain_final,
             domain_points,
@@ -125,7 +154,7 @@ impl GridAxisDescriptor {
             }
         };
 
-        GridAxisDescriptor {
+        Self {
             domain_initial,
             domain_final,
             domain_points,
@@ -133,5 +162,28 @@ impl GridAxisDescriptor {
             axis_type,
             data,
         }
+    }
+}
+
+impl FieldSerialize for GridAxisDescriptor {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for GridAxisDescriptor {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for GridAxisDescriptor {
+    fn field_len(&self) -> usize {
+        self.domain_initial.field_len()
+            + self.domain_final.field_len()
+            + self.domain_points.field_len()
+            + self.interleaf_factor.field_len()
+            + self.axis_type.field_len()
+            + self.data.field_len()
     }
 }

@@ -5,6 +5,8 @@
 
 use bytes::{Buf, BufMut, BytesMut};
 
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+
 #[derive(Clone, Debug, Default)]
 pub struct Environment {
     pub environment_type: u32,
@@ -15,8 +17,8 @@ pub struct Environment {
 
 impl Environment {
     #[must_use]
-    pub fn new(environment_type: u32, length: u16, index: u8, padding: u8) -> Self {
-        Environment {
+    pub const fn new(environment_type: u32, length: u16, index: u8, padding: u8) -> Self {
+        Self {
             environment_type,
             length,
             index,
@@ -31,12 +33,33 @@ impl Environment {
         buf.put_u8(self.padding);
     }
 
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Environment {
-        Environment {
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self {
             environment_type: buf.get_u32(),
             length: buf.get_u16(),
             index: buf.get_u8(),
             padding: buf.get_u8(),
         }
+    }
+}
+
+impl FieldSerialize for Environment {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for Environment {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for Environment {
+    fn field_len(&self) -> usize {
+        self.environment_type.field_len()
+            + self.length.field_len()
+            + self.index.field_len()
+            + self.padding.field_len()
     }
 }

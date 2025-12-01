@@ -9424,6 +9424,25 @@ impl ObjectStateAppearanceGeneral {
     }
 }
 
+impl FieldSerialize for ObjectStateAppearanceGeneral {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(self.as_u16());
+    }
+}
+
+impl FieldDeserialize for ObjectStateAppearanceGeneral {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        let bits = buf.get_u16();
+        Self::from_bits(bits).unwrap_or_default()
+    }
+}
+
+impl FieldLen for ObjectStateAppearanceGeneral {
+    fn field_len(&self) -> usize {
+        2
+    }
+}
+
 // SISO-REF-010-2023 GriddedDataFieldNumber [UID 243]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq)]
 pub enum GriddedDataFieldNumber {}
@@ -9452,6 +9471,24 @@ impl GriddedDataCoordinateSystem {
     }
 }
 
+impl FieldSerialize for GriddedDataCoordinateSystem {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u16(*self as u16);
+    }
+}
+
+impl FieldDeserialize for GriddedDataCoordinateSystem {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for GriddedDataCoordinateSystem {
+    fn field_len(&self) -> usize {
+        2
+    }
+}
+
 // SISO-REF-010-2023 GriddedDataConstantGrid [UID 245]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum GriddedDataConstantGrid {
@@ -9464,6 +9501,24 @@ impl GriddedDataConstantGrid {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for GriddedDataConstantGrid {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for GriddedDataConstantGrid {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for GriddedDataConstantGrid {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -9481,6 +9536,24 @@ impl GriddedDataSampleType {
     }
 }
 
+impl FieldSerialize for GriddedDataSampleType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for GriddedDataSampleType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for GriddedDataSampleType {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 // SISO-REF-010-2023 GriddedDataDataRepresentation [UID 247]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum GriddedDataDataRepresentation {
@@ -9494,6 +9567,24 @@ impl GriddedDataDataRepresentation {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for GriddedDataDataRepresentation {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for GriddedDataDataRepresentation {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for GriddedDataDataRepresentation {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -11751,6 +11842,24 @@ impl GridAxisDescriptorAxisType {
     #[must_use]
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
+    }
+}
+
+impl FieldSerialize for GridAxisDescriptorAxisType {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self as u8);
+    }
+}
+
+impl FieldDeserialize for GridAxisDescriptorAxisType {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for GridAxisDescriptorAxisType {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
