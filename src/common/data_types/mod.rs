@@ -29,6 +29,7 @@ pub mod entity_type;
 pub mod environment;
 pub mod euler_angles;
 pub mod event_id;
+pub mod fixed_binary_16;
 pub mod fundamental_operational_data;
 pub mod fundamental_parameter_data;
 pub mod grid_axis_descriptor;

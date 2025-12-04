@@ -9,14 +9,43 @@ use crate::{
     common::{
         GenericHeader, LiveEntityPduHeader, SerializedLength,
         data_types::{
-            EulerAngles, LinearVelocity, dead_reckoning_parameters::DeadReckoningParameters,
-            entity_id::EntityId,
+            EntityType, EulerAngles, LinearVelocity, entity_id::EntityId,
+            entity_marking::EntityMarking, fixed_binary_16::FixedBinary16,
         },
-        enums::{PduType, ProtocolFamily, RepairGroups},
+        enums::{ForceId, PduType, ProtocolFamily},
+        live_entity_records::{
+            le_dead_reckoning_parameters::LEDeadReckoningParameters,
+            orientation_error::OrientationError, position_error::PositionError,
+            relative_world_coordinates::RelativeWorldCoordinates,
+        },
         pdu::Pdu,
     },
     define_pdu,
 };
+
+use bitflags::bitflags;
+
+bitflags! {
+    #[derive(Debug, Clone, Copy)]
+    pub struct AppearanceFlags1: u8 {
+        const FORCE_ID_INCLUDED          = 0b0000_0001;
+        const ENTITY_TYPE_INCLUDED       = 0b0000_0010;
+        const ALT_ENTITY_TYPE_INCLUDED   = 0b0000_0100;
+        const ENTITY_MARKING_INCLUDED    = 0b0000_1000;
+        const CAPABILITIES_INCLUDED      = 0b0001_0000;
+        const VISUAL_INCLUDED            = 0b0010_0000;
+        const IR_INCLUDED                = 0b0100_0000;
+        const FLAG2_INCLUDED             = 0b1000_0000;
+    }
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy)]
+    pub struct AppearanceFlags2: u8 {
+        const EM_INCLUDED     = 0b0000_0010;
+        const AUDIO_INCLUDED  = 0b0000_0100;
+    }
+}
 
 define_pdu! {
     #[derive(Debug)]
@@ -28,13 +57,13 @@ define_pdu! {
         fields: {
             pub live_entity_id: EntityId,
             pub tpsi_flag: u8,
-            pub entity_location: WorldCoordinate, // TODO(@crhowell3): Replace with RelativeWorldCoordinates
+            pub entity_location: RelativeWorldCoordinates,
             pub entity_linear_velocity: LinearVelocity,
-            pub entity_orientation: EulerAngles,
+            pub entity_orientation: EulerAngles,  // TODO(@anyone): Convert to LEEulerAngles record
             pub position_error: PositionError,
             pub orientation_error: OrientationError,
-            pub dead_reckoning_parameters: DeadReckoningParameters,  // TODO(@crhowell3): Change to LE DeadReckoningParameters type
-            pub measured_speed: u16, // TODO(@crhowell3): Replace with 16-bit fixed binary(?)
+            pub dead_reckoning_parameters: LEDeadReckoningParameters,
+            pub measured_speed: FixedBinary16,
             pub system_specific_data_length: u8,
             pub system_specific_data: Vec<u8>,
         }
@@ -49,10 +78,18 @@ define_pdu! {
         pdu_type: PduType::Appearance,
         protocol_family: ProtocolFamily::LiveEntityInformationInteraction,
         fields: {
-            pub receiving_entity_id: EntityId,
-            pub repairing_entity_id: EntityId,
-            pub repair: RepairGroups,
-            padding: u16,
+            pub live_entity_id: EntityId,
+            pub appearance_flags1: AppearanceFlags1,
+            pub appearance_flags2: Option<AppearanceFlags2>,
+            pub force_id: Option<ForceId>,
+            pub entity_type: Option<EntityType>,
+            pub alternate_entity_type: Option<EntityType>,
+            pub entity_marking: Option<EntityMarking>,
+            pub capabilities: Option<EntityCapabilities>,  // UID 55
+            pub appearance_visual: Option<EntityAppearance>,  // UID 31-43
+            pub appearance_ir: Option<EntityAppearance>,  // UID 31-43
+            pub appearance_em: Option<EntityAppearance>,  // UID 31-43
+            pub appearance_audio: Option<EntityAppearance>,  // UID 31-43
         }
     }
 }
