@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" class="ferra sidebar-visible" dir="ltr">
+<html lang="en" class="mocha sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -12,35 +12,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon.svg">
-        <link rel="shortcut icon" href="../favicon.png">
-        <link rel="stylesheet" href="../css/variables.css">
-        <link rel="stylesheet" href="../css/general.css">
-        <link rel="stylesheet" href="../css/chrome.css">
-        <link rel="stylesheet" href="../css/print.css" media="print">
+        <link rel="icon" href="../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../css/general-2459343d.css">
+        <link rel="stylesheet" href="../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
         <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
-        <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
-        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
-        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../highlight-493f70e1.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../custom.css">
+        <link rel="stylesheet" href=".././theme/catppuccin.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
             const path_to_root = "../";
-            const default_light_theme = "ferra";
-            const default_dark_theme = "ferra";
-            window.path_to_searchindex_js = "../searchindex.js";
+            const default_light_theme = "mocha";
+            const default_dark_theme = "mocha";
+            window.path_to_searchindex_js = "../searchindex-a964d9a2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc.js"></script>
+        <script src="../toc-8c26709b.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -78,7 +77,7 @@
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
-            html.classList.remove('ferra')
+            html.classList.remove('mocha')
             html.classList.add(theme);
             html.classList.add("js");
         </script>
@@ -128,11 +127,10 @@
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
                             <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="latte">Latte</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="frappe">Frappé</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="macchiato">Macchiato</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mocha">Mocha</button></li>
                         </ul>
                         <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
@@ -146,7 +144,7 @@
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
                         <a href="https://github.com/crhowell3/open-dis-rust" title="Git repository" aria-label="Git repository">
-                            <i id="git-repository-button" class="fa fa-github"></i>
+                            <i id="git-repository-button" class="fa fab-github"></i>
                         </a>
                         <a href="https://github.com/crhowell3/open-dis-rust/edit/main/book/src/guides/sending-pdus.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
@@ -190,37 +188,37 @@ against UDP topology, and the example code provided uses UDP as the protocol.</p
 <code>tokio</code> crates.</p>
 <h2 id="create-and-serialize-the-pdu"><a class="header" href="#create-and-serialize-the-pdu">Create and Serialize the PDU</a></h2>
 <p>As shown in the previous section, we can create a PDU as such:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+</span>use open_dis_rust::simulation_management::AcknowledgePdu;
 
-let mut ack_pdu = AcknowledgePdu::default();
-<span class="boring">}</span></code></pre></pre>
+let mut ack_pdu = AcknowledgePdu::new();
+<span class="boring">}</span></code></pre>
 <p>Then, we need to create an empty, mutable byte array into which we will serialize
 the PDU:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use bytes::BytesMut;
 
 let mut bytes = BytesMut::new();
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>Now, we simply call the <code>serialize</code> function from the PDU and pass in a mutable
 reference to the byte array:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>ack_pdu.serialize(&amp;mut bytes);
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>The PDU has now been serialized into the byte array and is ready to be sent.</p>
 <h2 id="initializing-a-udp-socket"><a class="header" href="#initializing-a-udp-socket">Initializing a UDP Socket</a></h2>
 <p>We need to select an address and a port to send the message. For this exercise,
 we will assume the address is <code>localhost (127.0.0.1)</code>, and we will use port <code>3000</code>.
 To create the socket, we use the <code>tokio</code> crate:</p>
-<pre><pre class="playground"><code class="language-rust">use bytes::BytesMut;
+<pre class="playground"><code class="language-rust">use bytes::BytesMut;
 use std::net::SocketAddr;
 use std::io;
 use tokio::net::UdpSocket;
 
-use open_dis_rust::simulation_management::acknowledge_pdu::AcknowledgePdu;
+use open_dis_rust::simulation_management::AcknowledgePdu;
 
 #[tokio::main]
 async fn main() -&gt; io::Result&lt;()&gt; {
@@ -228,16 +226,16 @@ async fn main() -&gt; io::Result&lt;()&gt; {
     let remote_addr = "127.0.0.1:3000";
 
     socket.connect(remote_addr).await?;
-  
-    let mut ack_pdu = AcknowledgePdu::default();
+
+    let mut ack_pdu = AcknowledgePdu::new();
     let mut bytes = BytesMut::new();
 
     ack_pdu.serialize(&amp;mut bytes);
     socket.send(&amp;bytes[..]).await?;
-}</code></pre></pre>
+}</code></pre>
 <p>We create a UDP socket and bind it to all network interfaces, specifically on port
 <code>3000</code>. We then establish a one-to-one connection to <code>127.0.0.0:3000</code>. Afterwards,
-we take our serialized PDU and send it via the socket's <code>send()</code> function. Anything
+we take our serialized PDU and send it via the socket’s <code>send()</code> function. Anything
 listening on 127.0.0.1:3000 will be able to receive the message.</p>
 <p>A tutorial on receiving and parsing a PDU is available in the next section.</p>
 
@@ -245,11 +243,11 @@ listening on 127.0.0.1:3000 will be able to receive the message.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../guides/creating-a-pdu.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../guides/receiving-pdus.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -259,11 +257,11 @@ listening on 127.0.0.1:3000 will be able to receive the message.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../guides/creating-a-pdu.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../guides/receiving-pdus.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
@@ -278,13 +276,13 @@ listening on 127.0.0.1:3000 will be able to receive the message.</p>
         </script>
 
 
-        <script src="../elasticlunr.min.js"></script>
-        <script src="../mark.min.js"></script>
-        <script src="../searcher.js"></script>
+        <script src="../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../mark-09e88c2c.min.js"></script>
+        <script src="../searcher-c2a407aa.js"></script>
 
-        <script src="../clipboard.min.js"></script>
-        <script src="../highlight.js"></script>
-        <script src="../book.js"></script>
+        <script src="../clipboard-1626706a.min.js"></script>
+        <script src="../highlight-abc7f01d.js"></script>
+        <script src="../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
 
