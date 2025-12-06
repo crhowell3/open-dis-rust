@@ -4,8 +4,8 @@ language = "en"
 src = "src"
 
 [output.html]
-default-theme = "ferra"
-preferred-dark-theme = "ferra"
+default-theme = "mocha"
+preferred-dark-theme = "mocha"
 git-repository-url = "https://github.com/crhowell3/open-dis-rust"
 edit-url-template = "https://github.com/crhowell3/open-dis-rust/edit/main/book/{path}"
-additional-css = ["custom.css"]
+additional-css = ["./theme/catppuccin.css"]

@@ -4,7 +4,7 @@
     height="30"
     width="0px"
   />
-  🦀 Open DIS Rust
+  🦀 open-dis-rust
   <img
     src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/misc/transparent.png"
     height="30"
