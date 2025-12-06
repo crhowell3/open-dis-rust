@@ -24,7 +24,6 @@
   - Mutable and immutable accessor methods are now available for this field
 - Deserialization has been genericized by allowing any `B: Buf` type to be used
 - `serialize` now returns a `Result<(), DISError>` to handle the cases when serialization may fail
-
 - Updated SECURITY.md
 - Updated copyright year to 2025
 - Updated book theme (now uses catppuccin mocha)
