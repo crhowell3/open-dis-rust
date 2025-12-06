@@ -11,16 +11,20 @@
 - `AntennaPattern`, `ModulationParameters`, and `VariableTransmitterParameters` according to sections 6.2.8, 6.2.58, and 6.2.95
 - `ObjectIdentifier` according to section 6.2.63
 - All PDUs now have a `new` method to discourage use of the `default` method
-- All PDUs now have a private `deserialize_body` method that is invoked when calling either `deserialize` or `deserialize_without_header`
 - A `length` method has been added to the `Pdu` trait enabling the calculation of a PDU's serialized length
-- All PDUs and most data types now have a `SerializedLength` trait that is used for determining the length of the data when serialized
 
 ### Changed
 
+- A `define_pdu` macro is now used for defining all the associated serialization and deserialization methods for PDUs,
+  massively cleaning up the code
+- The file structure of this package has been flattened; PDUs in the same protocol family are now defined in the same module file
+- All data types and records have been migrated to the `common` module under `common::data_types`
+- A `GenericHeader` trait has been defined in preparation for a future release that will be adding the Live Entity protocol family
 - `pdu_header` field is private in all PDUs now
   - Mutable and immutable accessor methods are now available for this field
 - Deserialization has been genericized by allowing any `B: Buf` type to be used
 - `serialize` now returns a `Result<(), DISError>` to handle the cases when serialization may fail
+
 - Updated SECURITY.md
 - Updated copyright year to 2025
 - Updated book theme (now uses catppuccin mocha)
