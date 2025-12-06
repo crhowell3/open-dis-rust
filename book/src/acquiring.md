@@ -1,4 +1,4 @@
-# Acquiring Open DIS Rust
+# Acquiring open-dis-rust
 
 - [From Crates.io](#crates.io)
 - [Build from Source](#build-from-source)
@@ -13,8 +13,8 @@ Clone the open-dis-rust GitHub repository and build with cargo.
 
 Requirements:
 
-* [Rust toolchain](https://www.rust-lang.org/tools/install)
-* [Git version control](https://git-scm.com/)
+- [Rust toolchain](https://www.rust-lang.org/tools/install)
+- [Git version control](https://git-scm.com/)
 
 ```shell
 # Clone the repo
