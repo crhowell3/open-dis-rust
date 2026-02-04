@@ -148,6 +148,8 @@ pub struct PduHeader {
     pub length: u16,
     /// PDU status record
     pub status_record: PduStatusRecord,
+    /// Padding
+    padding: u8,
 }
 
 impl Default for PduHeader {
@@ -160,6 +162,7 @@ impl Default for PduHeader {
             timestamp: Self::calculate_dis_timestamp(),
             length: 0,
             status_record: PduStatusRecord::default(),
+            padding: 0,
         }
     }
 }
@@ -197,6 +200,7 @@ impl GenericHeader for PduHeader {
         buf.put_u32(self.timestamp);
         buf.put_u16(self.length);
         buf.put_u8(self.status_record.to_u8());
+        buf.put_u8(self.padding);
     }
 
     fn deserialize<B: Buf>(buf: &mut B) -> Self {
@@ -208,6 +212,7 @@ impl GenericHeader for PduHeader {
             timestamp: buf.get_u32(),
             length: buf.get_u16(),
             status_record: PduStatusRecord::from_u8(buf.get_u8()),
+            padding: buf.get_u8(),
         }
     }
 }
@@ -228,6 +233,7 @@ impl PduHeader {
             timestamp: Self::calculate_dis_timestamp(),
             length,
             status_record: PduStatusRecord::default(),
+            padding: 0,
         }
     }
 
