@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1] - 2026-02-04
+
+### Fixed
+
+- The PduHeader record was missing a byte of padding at the end, leading to serialization and deserialization issues
+
 ## [0.4.0] - 2025-12-04
 
 ### Added
