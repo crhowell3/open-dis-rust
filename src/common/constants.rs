@@ -6,6 +6,15 @@
 
 //! Constants and compile-time computations for DIS protocol
 
+/// Entity ID constants
+pub const ALL_ENTITIES: u16 = 0xFFFF;
+pub const ALL_APPLIC: u16 = 0xFFFF;
+pub const ALL_SITES: u16 = 0xFFFF;
+
+pub const NO_ENTITY: u16 = 0x0000;
+pub const NO_APPLIC: u16 = 0x0000;
+pub const NO_SITE: u16 = 0x0000;
+
 /// Maximum PDU size in bytes as defined by the DIS standard
 pub const MAX_PDU_SIZE_OCTETS: usize = 8192;
 pub const MAX_PDU_SIZE_BITS: usize = 65_536;
@@ -19,6 +28,35 @@ pub const MAX_ARTICULATION_PARAMS: usize = 64;
 
 /// Maximum size of entity marking string
 pub const MAX_ENTITY_MARKING_LENGTH: usize = 32;
+
+/// Miscellaneous
+pub const ALL_AGGS: u16 = 0xFFFF;
+pub const ALL_EMITTERS: u16 = 0xFF;
+pub const ALL_BEAMS: u16 = 0xFF;
+pub const ALL_OBJECTS: u16 = 0xFFFF;
+
+pub const EP_NO_SEQUENCE: u16 = 0xFFFF;
+
+pub const NO_AGG: u16 = 0x0000;
+pub const NO_BEAM: u16 = 0x0000;
+pub const NO_CATEGORY: u16 = 0x0000;
+pub const NO_EMITTER: u16 = 0x0000;
+pub const NO_FIRE_MISSION: u16 = 0x0000;
+pub const NO_KIND: u16 = 0x0000;
+pub const NO_OBJECT: u16 = 0x0000;
+pub const NO_PATTERN: f32 = 0.0;
+pub const NO_REF_NUMBER: u16 = 0x0000;
+pub const NO_SPECIFIC: u16 = 0x0000;
+pub const NO_SUBCAT: u16 = 0x0000;
+pub const NO_VALUE: u16 = 0x0000;
+
+pub const POWER_ENGINE_OFF: f32 = -100.0;
+pub const POWER_IDLE: f32 = 0.0;
+pub const POWER_MAX_AFTERBURNER: f32 = 100.0;
+pub const POWER_MILITARY: f32 = 50.0;
+pub const POWER_MIN_AFTERBURNER: f32 = 51.0;
+
+pub const RQST_ASSIGN_ID: u16 = 0xFFFE;
 
 #[must_use]
 /// Compile-time PDU size validation
