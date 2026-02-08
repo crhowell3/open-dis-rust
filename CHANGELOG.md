@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.2] - 2026-02-07
+
+### Added
+
+- Introduced some missing constants that were previously missing according to IEEE 1278.1-2012 Section 6.1.8
+
+### Fixed
+
+- Corrected improper formatting and rendering of the book
+- Updated the casing of enumeration variants for better readability and clarity
+
 ## [0.4.1] - 2026-02-04
 
 ### Fixed
