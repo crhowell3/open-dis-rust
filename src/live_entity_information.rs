@@ -9,8 +9,9 @@ use crate::{
     common::{
         GenericHeader, LiveEntityPduHeader, SerializedLength,
         data_types::{
-            EntityType, EulerAngles, LinearVelocity, entity_id::EntityId,
-            entity_marking::EntityMarking, fixed_binary_16::FixedBinary16,
+            EntityType, EulerAngles, EventId, LinearVelocity, VariableParameter,
+            entity_id::EntityId, entity_marking::EntityMarking, fixed_binary_16::FixedBinary16,
+            munition_descriptor::MunitionDescriptor,
         },
         enums::{ForceId, PduType, ProtocolFamily},
         live_entity_records::{
@@ -21,9 +22,12 @@ use crate::{
         pdu::Pdu,
     },
     define_pdu,
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
 
 use bitflags::bitflags;
+use bytes::{Buf, BufMut, BytesMut};
+use num_derive::FromPrimitive;
 
 bitflags! {
     #[derive(Debug, Clone, Copy)]
@@ -39,11 +43,66 @@ bitflags! {
     }
 }
 
+impl Default for AppearanceFlags1 {
+    fn default() -> AppearanceFlags1 {
+        AppearanceFlags1::empty()
+    }
+}
+
+impl FieldDeserialize for AppearanceFlags1 {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
 bitflags! {
     #[derive(Debug, Clone, Copy)]
     pub struct AppearanceFlags2: u8 {
         const EM_INCLUDED     = 0b0000_0010;
         const AUDIO_INCLUDED  = 0b0000_0100;
+    }
+}
+
+impl Default for AppearanceFlags2 {
+    fn default() -> AppearanceFlags2 {
+        AppearanceFlags2::empty()
+    }
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy)]
+    pub struct PlatformAppearance: u32 {
+        const PaintScheme = 0b0000_0000_0000_0001;
+    }
+}
+
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq)]
+pub enum EntityAppearance {
+    PlatformAppearance,
+}
+
+impl EntityAppearance {
+    #[must_use]
+    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        Self::from_u32(buf.get_u32()).unwrap()
+    }
+}
+
+impl FieldSerialize for EntityAppearance {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u32(*self as u32);
+    }
+}
+
+impl FieldDeserialize for EntityAppearance {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for EntityAppearance {
+    fn field_len(&self) -> usize {
+        4
     }
 }
 
@@ -90,6 +149,66 @@ define_pdu! {
             pub appearance_ir: Option<EntityAppearance>,  // UID 31-43
             pub appearance_em: Option<EntityAppearance>,  // UID 31-43
             pub appearance_audio: Option<EntityAppearance>,  // UID 31-43
+        }
+    }
+}
+
+define_pdu! {
+    #[derive(Debug)]
+    /// Implemented according to IEEE 1278.1-2012 §9.4.4.5
+    pub struct ArticulatedPartsPdu {
+        header: LiveEntityPduHeader,
+        pdu_type: PduType::ArticulatedParts,
+        protocol_family: ProtocolFamily::LiveEntityInformationInteraction,
+        fields: {
+            pub live_entity_id: EntityId,
+            pub number_of_variable_parameter_records: u8,
+            pub variable_parameter_records: Vec<VariableParameter>,
+        }
+    }
+}
+
+define_pdu! {
+    #[derive(Debug)]
+    /// Implemented according to IEEE 1278.1-2012 §9.4.5.6
+    pub struct LiveEntityFirePdu {
+        header: LiveEntityPduHeader,
+        pdu_type: PduType::LiveEntityFire,
+        protocol_family: ProtocolFamily::LiveEntityInformationInteraction,
+        fields: {
+            pub firing_live_entity_id: EntityId,
+            pub flags: u8,
+            pub target_live_entity_id: EntityId,
+            pub munition_live_entity_id: EntityId,
+            pub event_id: EventId,
+            pub location: RelativeWorldCoordinates,
+            pub munition_descriptor: MunitionDescriptor,
+            pub velocity: LinearVelocity,
+            pub range: u16,
+        }
+    }
+}
+
+define_pdu! {
+    #[derive(Debug)]
+    /// Implemented according to IEEE 1278.1-2012 §9.4.6.8
+    pub struct LiveEntityDetonationPdu {
+        header: LiveEntityPduHeader,
+        pdu_type: PduType::LiveEntityDetonation,
+        protocol_family: ProtocolFamily::LiveEntityInformationInteraction,
+        fields: {
+            pub firing_live_entity_id: EntityId,
+            pub detonation_flag_1: u8,
+            pub detonation_flag_2: u8,
+            pub target_live_entity_id: EntityId,
+            pub munition_live_entity_id: EntityId,
+            pub event_id: EventId,
+            pub location_in_world_coordinates: RelativeWorldCoordinates,
+            pub velocity: LinearVelocity,
+            pub munition_orientation: EulerAngles,
+            pub munition_descriptor: MunitionDescriptor,
+            pub location_in_entity_coordinates: EntityCoordinateVector,
+            pub detonation_result: u8,
         }
     }
 }
