@@ -44,8 +44,8 @@ bitflags! {
 }
 
 impl Default for AppearanceFlags1 {
-    fn default() -> AppearanceFlags1 {
-        AppearanceFlags1::empty()
+    fn default() -> Self {
+        Self::empty()
     }
 }
 
@@ -76,8 +76,8 @@ bitflags! {
 }
 
 impl Default for AppearanceFlags2 {
-    fn default() -> AppearanceFlags2 {
-        AppearanceFlags2::empty()
+    fn default() -> Self {
+        Self::empty()
     }
 }
 
@@ -117,6 +117,7 @@ impl EntityAppearance {
         Self { data }
     }
 
+    #[must_use]
     pub fn data(&self) -> u32 {
         self.data
     }
@@ -125,11 +126,11 @@ impl EntityAppearance {
         self.data = value;
     }
 
-    fn get_bits(&self, shift: u8, mask: u32) -> u32 {
+    const fn get_bits(&self, shift: u8, mask: u32) -> u32 {
         (self.data >> shift) & mask
     }
 
-    fn set_bits(&mut self, shift: u8, mask: u32, value: u32) {
+    const fn set_bits(&mut self, shift: u8, mask: u32, value: u32) {
         self.data &= !(mask << shift);
         self.data |= (value & mask) << shift;
     }
