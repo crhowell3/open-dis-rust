@@ -298,4 +298,65 @@ mod tests {
             assert_eq!(pdu.header().length, DEFAULT_LENGTH);
         }
     }
+
+    mod appearance_pdu_tests {
+        use super::*;
+
+        #[test]
+        fn cast_to_any() {
+            let pdu = AppearancePdu::new();
+            let any_pdu = pdu.as_any();
+
+            assert!(any_pdu.is::<AppearancePdu>());
+        }
+
+        #[test]
+        fn serialize_then_deserialize() {
+            let mut pdu = AppearancePdu::new();
+            let mut serialize_buf = BytesMut::new();
+            let _ = pdu.serialize(&mut serialize_buf);
+
+            let mut deserialize_buf = serialize_buf.freeze();
+            let new_pdu = AppearancePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
+            assert_eq!(new_pdu.header, pdu.header);
+        }
+
+        #[test]
+        fn check_default_pdu_length() {
+            const DEFAULT_LENGTH: u16 = 136 / BITS_PER_BYTE;
+            let pdu = AppearancePdu::new();
+            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
+        }
+    }
+
+    mod articulated_parts_pdu_tests {
+        use super::*;
+
+        #[test]
+        fn cast_to_any() {
+            let pdu = ArticulatedPartsPdu::new();
+            let any_pdu = pdu.as_any();
+
+            assert!(any_pdu.is::<ArticulatedPartsPdu>());
+        }
+
+        #[test]
+        fn serialize_then_deserialize() {
+            let mut pdu = ArticulatedPartsPdu::new();
+            let mut serialize_buf = BytesMut::new();
+            let _ = pdu.serialize(&mut serialize_buf);
+
+            let mut deserialize_buf = serialize_buf.freeze();
+            let new_pdu =
+                ArticulatedPartsPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
+            assert_eq!(new_pdu.header, pdu.header);
+        }
+
+        #[test]
+        fn check_default_pdu_length() {
+            const DEFAULT_LENGTH: u16 = 136 / BITS_PER_BYTE;
+            let pdu = ArticulatedPartsPdu::new();
+            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
+        }
+    }
 }
