@@ -8,10 +8,11 @@ use bytes::{Buf, BufMut, BytesMut};
 
 use crate::{
     common::{
-        data_types::{
-            angular_velocity_vector::AngularVelocity, linear_acceleration::LinearAcceleration,
-        },
         enums::DeadReckoningAlgorithm,
+        live_entity_records::{
+            le_entity_angular_velocity::LEEntityAngularVelocity,
+            le_entity_linear_acceleration::LEEntityLinearAcceleration,
+        },
     },
     pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
@@ -19,16 +20,16 @@ use crate::{
 #[derive(Copy, Clone, Debug, Default)]
 pub struct LEDeadReckoningParameters {
     pub dead_reckoning_algorithm: DeadReckoningAlgorithm,
-    pub entity_linear_acceleration: LinearAcceleration,
-    pub entity_angular_velocity: AngularVelocity,
+    pub entity_linear_acceleration: LEEntityLinearAcceleration,
+    pub entity_angular_velocity: LEEntityAngularVelocity,
 }
 
 impl LEDeadReckoningParameters {
     #[must_use]
     pub const fn new(
         dead_reckoning_algorithm: DeadReckoningAlgorithm,
-        entity_linear_acceleration: LinearAcceleration,
-        entity_angular_velocity: AngularVelocity,
+        entity_linear_acceleration: LEEntityLinearAcceleration,
+        entity_angular_velocity: LEEntityAngularVelocity,
     ) -> Self {
         Self {
             dead_reckoning_algorithm,
@@ -45,8 +46,8 @@ impl LEDeadReckoningParameters {
 
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
         let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(buf);
-        let entity_linear_acceleration = LinearAcceleration::deserialize(buf);
-        let entity_angular_velocity = AngularVelocity::deserialize(buf);
+        let entity_linear_acceleration = LEEntityLinearAcceleration::deserialize(buf);
+        let entity_angular_velocity = LEEntityAngularVelocity::deserialize(buf);
         Self {
             dead_reckoning_algorithm,
             entity_linear_acceleration,

@@ -9,13 +9,14 @@ use crate::{
     common::{
         GenericHeader, LiveEntityPduHeader, SerializedLength,
         data_types::{
-            EntityType, EulerAngles, EventId, LinearVelocity, VariableParameter,
-            entity_id::EntityId, entity_marking::EntityMarking, fixed_binary_16::FixedBinary16,
-            munition_descriptor::MunitionDescriptor,
+            EntityCoordinateVector, EntityType, EulerAngles, EventId, LinearVelocity,
+            VariableParameter, entity_id::EntityId, entity_marking::EntityMarking,
+            fixed_binary_16::FixedBinary16, munition_descriptor::MunitionDescriptor,
         },
-        enums::{ForceId, PduType, ProtocolFamily},
+        enums::{EntityCapabilities, ForceId, PduType, ProtocolFamily},
         live_entity_records::{
-            le_dead_reckoning_parameters::LEDeadReckoningParameters,
+            le_dead_reckoning_parameters::LEDeadReckoningParameters, le_entity_id::LEEntityId,
+            le_euler_angles::LEEulerAngles, le_linear_velocity::LELinearVelocity,
             orientation_error::OrientationError, position_error::PositionError,
             relative_world_coordinates::RelativeWorldCoordinates,
         },
@@ -27,7 +28,6 @@ use crate::{
 
 use bitflags::bitflags;
 use bytes::{Buf, BufMut, BytesMut};
-use num_derive::FromPrimitive;
 
 bitflags! {
     #[derive(Debug, Clone, Copy)]
@@ -49,9 +49,21 @@ impl Default for AppearanceFlags1 {
     }
 }
 
+impl FieldSerialize for AppearanceFlags1 {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(self.bits());
+    }
+}
+
 impl FieldDeserialize for AppearanceFlags1 {
     fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
+        Self::from_bits(buf.get_u8()).unwrap_or_default()
+    }
+}
+
+impl FieldLen for AppearanceFlags1 {
+    fn field_len(&self) -> usize {
+        1
     }
 }
 
@@ -69,6 +81,24 @@ impl Default for AppearanceFlags2 {
     }
 }
 
+impl FieldSerialize for AppearanceFlags2 {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        buf.put_u8(self.bits());
+    }
+}
+
+impl FieldDeserialize for AppearanceFlags2 {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::from_bits(buf.get_u8()).unwrap_or_default()
+    }
+}
+
+impl FieldLen for AppearanceFlags2 {
+    fn field_len(&self) -> usize {
+        1
+    }
+}
+
 bitflags! {
     #[derive(Debug, Clone, Copy)]
     pub struct PlatformAppearance: u32 {
@@ -76,27 +106,45 @@ bitflags! {
     }
 }
 
-#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq)]
-pub enum EntityAppearance {
-    PlatformAppearance,
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct EntityAppearance {
+    data: u32,
 }
 
 impl EntityAppearance {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap()
+    pub fn new(data: u32) -> Self {
+        Self { data }
+    }
+
+    pub fn data(&self) -> u32 {
+        self.data
+    }
+
+    pub fn set_data(&mut self, value: u32) {
+        self.data = value;
+    }
+
+    fn get_bits(&self, shift: u8, mask: u32) -> u32 {
+        (self.data >> shift) & mask
+    }
+
+    fn set_bits(&mut self, shift: u8, mask: u32, value: u32) {
+        self.data &= !(mask << shift);
+        self.data |= (value & mask) << shift;
     }
 }
 
 impl FieldSerialize for EntityAppearance {
     fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u32(*self as u32);
+        buf.put_u32(self.data);
     }
 }
 
 impl FieldDeserialize for EntityAppearance {
     fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
+        Self {
+            data: buf.get_u32(),
+        }
     }
 }
 
@@ -114,11 +162,11 @@ define_pdu! {
         pdu_type: PduType::TimeSpacePositionInformation,
         protocol_family: ProtocolFamily::LiveEntityInformationInteraction,
         fields: {
-            pub live_entity_id: EntityId,
+            pub live_entity_id: LEEntityId,
             pub tpsi_flag: u8,
             pub entity_location: RelativeWorldCoordinates,
-            pub entity_linear_velocity: LinearVelocity,
-            pub entity_orientation: EulerAngles,  // TODO(@anyone): Convert to LEEulerAngles record
+            pub entity_linear_velocity: LELinearVelocity,
+            pub entity_orientation: LEEulerAngles,
             pub position_error: PositionError,
             pub orientation_error: OrientationError,
             pub dead_reckoning_parameters: LEDeadReckoningParameters,
@@ -137,7 +185,7 @@ define_pdu! {
         pdu_type: PduType::Appearance,
         protocol_family: ProtocolFamily::LiveEntityInformationInteraction,
         fields: {
-            pub live_entity_id: EntityId,
+            pub live_entity_id: LEEntityId,
             pub appearance_flags1: AppearanceFlags1,
             pub appearance_flags2: Option<AppearanceFlags2>,
             pub force_id: Option<ForceId>,
@@ -161,7 +209,7 @@ define_pdu! {
         pdu_type: PduType::ArticulatedParts,
         protocol_family: ProtocolFamily::LiveEntityInformationInteraction,
         fields: {
-            pub live_entity_id: EntityId,
+            pub live_entity_id: LEEntityId,
             pub number_of_variable_parameter_records: u8,
             pub variable_parameter_records: Vec<VariableParameter>,
         }
@@ -176,10 +224,10 @@ define_pdu! {
         pdu_type: PduType::LiveEntityFire,
         protocol_family: ProtocolFamily::LiveEntityInformationInteraction,
         fields: {
-            pub firing_live_entity_id: EntityId,
+            pub firing_live_entity_id: LEEntityId,
             pub flags: u8,
-            pub target_live_entity_id: EntityId,
-            pub munition_live_entity_id: EntityId,
+            pub target_live_entity_id: LEEntityId,
+            pub munition_live_entity_id: LEEntityId,
             pub event_id: EventId,
             pub location: RelativeWorldCoordinates,
             pub munition_descriptor: MunitionDescriptor,
@@ -244,7 +292,7 @@ mod tests {
 
         #[test]
         fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
+            const DEFAULT_LENGTH: u16 = 432 / BITS_PER_BYTE;
             let pdu = TimeSpacePositionInformationPdu::new();
             assert_eq!(pdu.header().length, DEFAULT_LENGTH);
         }
