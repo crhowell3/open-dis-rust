@@ -113,12 +113,13 @@ pub struct EntityAppearance {
 
 #[allow(dead_code)]
 impl EntityAppearance {
-    pub fn new(data: u32) -> Self {
+    #[must_use]
+    pub const fn new(data: u32) -> Self {
         Self { data }
     }
 
     #[must_use]
-    pub fn data(&self) -> u32 {
+    pub const fn data(&self) -> u32 {
         self.data
     }
 
@@ -126,7 +127,7 @@ impl EntityAppearance {
         self.data = value;
     }
 
-    const fn get_bits(&self, shift: u8, mask: u32) -> u32 {
+    const fn get_bits(self, shift: u8, mask: u32) -> u32 {
         (self.data >> shift) & mask
     }
 
