@@ -111,6 +111,7 @@ pub struct EntityAppearance {
     data: u32,
 }
 
+#[allow(dead_code)]
 impl EntityAppearance {
     pub fn new(data: u32) -> Self {
         Self { data }
