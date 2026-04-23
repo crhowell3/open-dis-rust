@@ -19,5 +19,5 @@ pub trait GenericHeader: Sized {
     fn set_length(&mut self, value: u16);
 
     fn serialize(&self, buf: &mut BytesMut);
-    fn deserialize<B: Buf>(bug: &mut B) -> Self;
+    fn deserialize<B: Buf>(buf: &mut B) -> Self;
 }
