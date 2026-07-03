@@ -1,6 +1,7 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
 //     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Jack Laverty
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -251,6 +252,17 @@ impl PduHeader {
         let dis_time = (second_curr + minute_curr + nanosecond_curr) as f32 / 1.68;
         dis_time as u32
     }
+
+    /// Looks at the PDU type from a raw byte buffer.
+    /// Only deserializes the 12-byte header.
+    #[must_use]
+    pub fn get_pdu_type(bytes: &[u8]) -> Option<PduType> {
+        if bytes.len() < Self::LENGTH {
+            return None;
+        }
+        let mut buf = &bytes[..Self::LENGTH];
+        Some(Self::deserialize(&mut buf).pdu_type)
+    }
 }
 
 impl FieldSerialize for PduHeader {
@@ -273,4 +285,37 @@ impl FieldLen for PduHeader {
 
 impl SerializedLength for PduHeader {
     const LENGTH: usize = 12;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_pdu_type_returns_correct_type() {
+        let mut buf = BytesMut::new();
+        let header = PduHeader::new(PduType::EntityState, ProtocolFamily::default(), 1, 12);
+        header.serialize(&mut buf);
+        assert_eq!(PduHeader::get_pdu_type(&buf), Some(PduType::EntityState));
+    }
+
+    #[test]
+    fn get_pdu_type_too_short_returns_none() {
+        assert_eq!(PduHeader::get_pdu_type(&[0u8; 11]), None);
+    }
+
+    #[test]
+    fn get_pdu_type_ignores_trailing_bytes() {
+        let mut buf = BytesMut::new();
+        let header = PduHeader::new(PduType::Detonation, ProtocolFamily::default(), 1, 12);
+        header.serialize(&mut buf);
+        buf.extend_from_slice(&[0xFF; 100]); // simulate a full PDU body
+        assert_eq!(PduHeader::get_pdu_type(&buf), Some(PduType::Detonation));
+    }
+
+    #[test]
+    fn get_pdu_type_all_zeros_returns_other() {
+        // a zeroed-out header will resolve to PduType::Other
+        assert_eq!(PduHeader::get_pdu_type(&[0u8; 12]), Some(PduType::Other));
+    }
 }
