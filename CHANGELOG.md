@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.3] - 2026-07-03
+
+### Added
+
+- New `get_pdu_type` function in `PduHeader` to retrieve the `PduType` from a raw byte buffer, if possible
+- Unit tests for `get_pdu_type` function validation
+- Examples demonstrating new functionality
+
+### Fixed
+
+- Parameter for `deserialize` function in `GenericHeader` had a typo; now correctly named `buf`
+
 ## [0.4.2] - 2026-02-07
 
 ### Added
