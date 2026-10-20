@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -271,6 +271,71 @@ macro_rules! impl_u8_flag_fields {
         impl $crate::pdu_macro::FieldLen for $name {
             fn field_len(&self) -> usize {
                 1
+            }
+        }
+    };
+}
+
+/// Generates the common test set for a PDU.
+///
+/// - `pdu_type`: the `PduType` the PDU must report.
+/// - `default_bits`: length of a default PDU in bits, per the standard.
+/// - `wrong_type`: any other PDU, used to check type mismatches are rejected.
+#[macro_export]
+macro_rules! pdu_tests {
+    (
+           $mod_name:ident, $pdu:ty,
+           pdu_type: $pdu_type:expr,
+           default_bits: $default_bits:expr,
+           wrong_type: $other:ty $(,)?
+       ) => {
+        mod $mod_name {
+            use super::*;
+
+            #[test]
+            fn cast_to_any() {
+                let pdu = <$pdu>::new();
+                assert!(pdu.as_any().is::<$pdu>());
+            }
+
+            #[test]
+            fn new_sets_pdu_type() {
+                let pdu = <$pdu>::new();
+                assert_eq!(pdu.header().pdu_type(), $pdu_type);
+            }
+
+            #[test]
+            fn new_sets_default_length() {
+                const DEFAULT_LENGTH: u16 = $default_bits / BITS_PER_BYTE;
+                let pdu = <$pdu>::new();
+                assert_eq!(pdu.header().length, DEFAULT_LENGTH);
+            }
+
+            #[test]
+            fn serialized_length_matches_header() {
+                let mut pdu = <$pdu>::new();
+                let bytes = to_bytes(&mut pdu);
+                assert_eq!(bytes.len(), usize::from(pdu.header().length));
+            }
+
+            #[test]
+            fn round_trip_is_byte_identical() {
+                let mut pdu = <$pdu>::new();
+                let original = to_bytes(&mut pdu);
+
+                let mut buf = original.clone();
+                let mut decoded = <$pdu>::deserialize(&mut buf).expect("deserialize failed");
+
+                assert_eq!(buf.remaining(), 0, "deserialize left bytes unread");
+                assert_eq!(decoded.header, pdu.header);
+                assert_eq!(to_bytes(&mut decoded), original);
+            }
+
+            #[test]
+            fn rejects_wrong_pdu_type() {
+                let mut other = <$other>::new();
+                let mut buf = to_bytes(&mut other);
+                assert!(<$pdu>::deserialize(&mut buf).is_err());
             }
         }
     };

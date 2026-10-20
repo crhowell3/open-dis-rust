@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -13,15 +13,10 @@ use crate::{
             fixed_binary_16::FixedBinary16, munition_descriptor::MunitionDescriptor,
         },
         enums::{EntityCapabilities, ForceId, PduType, ProtocolFamily},
-        live_entity_records::{
-            le_dead_reckoning_parameters::LEDeadReckoningParameters, le_entity_id::LEEntityId,
-            le_euler_angles::LEEulerAngles, le_linear_velocity::LELinearVelocity,
-            orientation_error::OrientationError, position_error::PositionError,
-            relative_world_coordinates::RelativeWorldCoordinates,
-        },
+        live_entity_records::*,
         pdu::Pdu,
     },
-    define_pdu, impl_u8_flag_fields,
+    define_pdu, impl_record_fields, impl_u8_flag_fields,
     pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
 
@@ -174,44 +169,6 @@ define_pdu! {
     }
 }
 
-macro_rules! impl_record_fields {
-    ($name:ident { $($f:ident : $t:ty),* $(,)? }) => {
-        impl FieldSerialize for $name {
-            fn serialize_field(&self, buf: &mut BytesMut) {
-                $( <$t as FieldSerialize>::serialize_field(&self.$f, buf); )*
-            }
-        }
-
-        impl FieldDeserialize for $name {
-            fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-                // Struct-expression fields are evaluated in source order,
-                // so this reads the buffer in wire order.
-                Self {
-                    $( $f: <$t as FieldDeserialize>::deserialize_field(buf), )*
-                }
-            }
-        }
-
-        impl FieldLen for $name {
-            fn field_len(&self) -> usize {
-                0 $( + <$t as FieldLen>::field_len(&self.$f) )*
-            }
-        }
-    };
-}
-
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct LiveEventIdentifier {
-    pub site_number: u8,
-    pub application_number: u8,
-    pub event_number: u16,
-}
-impl_record_fields!(LiveEventIdentifier {
-    site_number: u8,
-    application_number: u8,
-    event_number: u16,
-});
-
 define_pdu! {
     #[derive(Debug)]
     /// Implemented according to IEEE 1278.1-2012 §9.4.5.6
@@ -262,18 +219,6 @@ impl_record_fields!(LiveMunitionDescriptor {
     rate: u16,
 });
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct LiveEntityOrientation16 {
-    pub psi: i16,
-    pub theta: i16,
-    pub phi: i16,
-}
-impl_record_fields!(LiveEntityOrientation16 {
-    psi: i16,
-    theta: i16,
-    phi: i16,
-});
-
 define_pdu! {
     #[derive(Debug)]
     /// Implemented according to IEEE 1278.1-2012 §9.4.6.8
@@ -302,159 +247,187 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::BytesMut;
+    use crate::{
+        common::{constants::BITS_PER_BYTE, pdu::Pdu},
+        pdu_tests,
+    };
+    use bytes::{Buf, Bytes, BytesMut};
 
-    mod time_space_position_information_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = TimeSpacePositionInformationPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<TimeSpacePositionInformationPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = TimeSpacePositionInformationPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = TimeSpacePositionInformationPdu::deserialize(&mut deserialize_buf)
-                .unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 432 / BITS_PER_BYTE;
-            let pdu = TimeSpacePositionInformationPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
+    /// Serialize a PDU, failing the test if serialization returns an error.
+    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
     }
 
-    mod appearance_pdu_tests {
+    pdu_tests!(
+        time_space_position_information_pdu_tests, TimeSpacePositionInformationPdu,
+        pdu_type: PduType::TimeSpacePositionInformation,
+        default_bits: 432,
+        wrong_type: AppearancePdu,
+    );
+    pdu_tests!(
+        appearance_pdu_tests, AppearancePdu,
+        pdu_type: PduType::Appearance,
+        default_bits: 136,
+        wrong_type: TimeSpacePositionInformationPdu,
+    );
+    pdu_tests!(
+        articulated_parts_pdu_tests, ArticulatedPartsPdu,
+        pdu_type: PduType::ArticulatedParts,
+        default_bits: 136,
+        wrong_type: AppearancePdu,
+    );
+    pdu_tests!(
+        live_entity_fire_pdu_tests, LiveEntityFirePdu,
+        pdu_type: PduType::LiveEntityFire,
+        default_bits: 496,
+        wrong_type: LiveEntityDetonationPdu,
+    );
+    pdu_tests!(
+        live_entity_detonation_pdu_tests, LiveEntityDetonationPdu,
+        pdu_type: PduType::LiveEntityDetonation,
+        default_bits: 592,
+        wrong_type: LiveEntityFirePdu,
+    );
+
+    mod live_entity_fire_pdu_layout {
         use super::*;
 
-        #[test]
-        fn cast_to_any() {
-            let pdu = AppearancePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<AppearancePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = AppearancePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = AppearancePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 136 / BITS_PER_BYTE;
-            let pdu = AppearancePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod articulated_parts_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = ArticulatedPartsPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<ArticulatedPartsPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ArticulatedPartsPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                ArticulatedPartsPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 136 / BITS_PER_BYTE;
-            let pdu = ArticulatedPartsPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod live_entity_fire_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = LiveEntityFirePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<LiveEntityFirePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
+        fn populated() -> LiveEntityFirePdu {
             let mut pdu = LiveEntityFirePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = LiveEntityFirePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
+            pdu.flags = 0b0000_0111;
+            pdu.event_id = LiveEventIdentifier {
+                site_number: 0x01,
+                application_number: 0x02,
+                event_number: 0x0304,
+            };
+            pdu.range = 0xBEEF;
+            pdu
         }
 
         #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 496 / BITS_PER_BYTE;
-            let pdu = LiveEntityFirePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
+        fn fields_land_at_spec_offsets() {
+            let bytes = to_bytes(&mut populated());
+
+            assert_eq!(bytes.len(), 62);
+            assert_eq!(bytes[16], 0b0000_0111, "flags");
+            assert_eq!(bytes[17], 0, "padding");
+            assert_eq!(&bytes[26..30], &[0x01, 0x02, 0x03, 0x04], "event id");
+            assert_eq!(&bytes[60..62], &[0xBE, 0xEF], "range");
+        }
+
+        #[test]
+        fn populated_round_trip() {
+            let mut pdu = populated();
+            let original = to_bytes(&mut pdu);
+
+            let mut buf = original.clone();
+            let mut decoded = LiveEntityFirePdu::deserialize(&mut buf).expect("deserialize failed");
+
+            assert_eq!(buf.remaining(), 0);
+            assert_eq!(decoded.flags, pdu.flags);
+            assert_eq!(decoded.event_id, pdu.event_id);
+            assert_eq!(decoded.range, pdu.range);
+            assert_eq!(to_bytes(&mut decoded), original);
         }
     }
 
-    mod live_entity_detonation_pdu_tests {
+    mod live_entity_detonation_pdu_layout {
         use super::*;
 
-        #[test]
-        fn cast_to_any() {
-            let pdu = LiveEntityDetonationPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<LiveEntityDetonationPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
+        fn populated() -> LiveEntityDetonationPdu {
             let mut pdu = LiveEntityDetonationPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                LiveEntityDetonationPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
+            pdu.detonation_flag_1 = 0b0001_0001;
+            pdu.detonation_flag_2 = 0b1000_0000;
+            pdu.event_id = LiveEventIdentifier {
+                site_number: 0x0A,
+                application_number: 0x0B,
+                event_number: 0x0C0D,
+            };
+            pdu.munition_orientation.theta = 0x1234;
+            pdu.location_in_entity_coordinates.z = -2;
+            pdu.detonation_result = 5;
+            pdu
         }
 
         #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 592 / BITS_PER_BYTE;
-            let pdu = LiveEntityDetonationPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
+        fn fields_land_at_spec_offsets() {
+            let bytes = to_bytes(&mut populated());
+
+            assert_eq!(bytes.len(), 74);
+            assert_eq!(bytes[16], 0b0001_0001, "detonation flag 1");
+            assert_eq!(bytes[17], 0b1000_0000, "detonation flag 2");
+            assert_eq!(&bytes[26..30], &[0x0A, 0x0B, 0x0C, 0x0D], "event id");
+            assert_eq!(&bytes[46..48], &[0x12, 0x34], "munition orientation theta");
+            assert_eq!(&bytes[70..72], &(-2i16).to_be_bytes(), "entity location z");
+            assert_eq!(bytes[72], 5, "detonation result");
+            assert_eq!(bytes[73], 0, "padding");
+        }
+
+        #[test]
+        fn populated_round_trip() {
+            let mut pdu = populated();
+            let original = to_bytes(&mut pdu);
+
+            let mut buf = original.clone();
+            let mut decoded =
+                LiveEntityDetonationPdu::deserialize(&mut buf).expect("deserialize failed");
+
+            assert_eq!(buf.remaining(), 0);
+            assert_eq!(decoded.detonation_flag_1, pdu.detonation_flag_1);
+            assert_eq!(decoded.detonation_flag_2, pdu.detonation_flag_2);
+            assert_eq!(decoded.event_id, pdu.event_id);
+            assert_eq!(decoded.munition_orientation, pdu.munition_orientation);
+            assert_eq!(
+                decoded.location_in_entity_coordinates,
+                pdu.location_in_entity_coordinates
+            );
+            assert_eq!(decoded.detonation_result, pdu.detonation_result);
+            assert_eq!(to_bytes(&mut decoded), original);
+        }
+    }
+
+    mod variable_length_round_trips {
+        use super::*;
+
+        fn assert_round_trip<P: Pdu>(pdu: &mut P) {
+            let original = to_bytes(pdu);
+            let mut buf = original.clone();
+            let mut decoded = P::deserialize(&mut buf).expect("deserialize failed");
+
+            assert_eq!(buf.remaining(), 0, "deserialize left bytes unread");
+            assert_eq!(to_bytes(&mut decoded), original);
+        }
+
+        #[test]
+        #[ignore = "Option fields always deserialize as None; needs flag-driven deserialization"]
+        fn appearance_with_optional_fields() {
+            let mut pdu = AppearancePdu::new();
+            pdu.appearance_flags1 =
+                AppearanceFlags1::VISUAL_INCLUDED | AppearanceFlags1::FLAG2_INCLUDED;
+            pdu.appearance_flags2 = Some(AppearanceFlags2::EM_INCLUDED);
+            pdu.appearance_visual = Some(EntityAppearance::new(0xDEAD_BEEF));
+            pdu.appearance_em = Some(EntityAppearance::new(0x0102_0304));
+            assert_round_trip(&mut pdu);
+        }
+
+        #[test]
+        #[ignore = "Vec fields always deserialize as empty; needs count-driven deserialization"]
+        fn articulated_parts_with_records() {
+            let mut pdu = ArticulatedPartsPdu::new();
+            pdu.number_of_variable_parameter_records = 2;
+            pdu.variable_parameter_records = vec![VariableParameter::default(); 2];
+            assert_round_trip(&mut pdu);
+        }
+
+        #[test]
+        #[ignore = "Vec fields always deserialize as empty; needs length-driven deserialization"]
+        fn tspi_with_system_specific_data() {
+            let mut pdu = TimeSpacePositionInformationPdu::new();
+            pdu.system_specific_data_length = 3;
+            pdu.system_specific_data = vec![0xAA, 0xBB, 0xCC];
+            assert_round_trip(&mut pdu);
         }
     }
 }
