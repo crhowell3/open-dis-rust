@@ -13,7 +13,11 @@ use crate::{
             fixed_binary_16::FixedBinary16, munition_descriptor::MunitionDescriptor,
         },
         enums::{EntityCapabilities, ForceId, PduType, ProtocolFamily},
-        live_entity_records::*,
+        live_entity_records::{
+            LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
+            LiveEntityOrientation16, LiveEventIdentifier, OrientationError, PositionError,
+            RelativeWorldCoordinates,
+        },
         pdu::Pdu,
     },
     define_pdu, impl_record_fields, impl_u8_flag_fields,
@@ -73,7 +77,7 @@ impl EntityAppearance {
         self.data
     }
 
-    pub fn set_data(&mut self, value: u32) {
+    pub const fn set_data(&mut self, value: u32) {
         self.data = value;
     }
 
