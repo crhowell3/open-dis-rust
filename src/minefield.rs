@@ -125,127 +125,41 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::BytesMut;
+    use crate::{
+        common::{constants::BITS_PER_BYTE, pdu::Pdu},
+        pdu_tests,
+    };
+    use bytes::{Buf, Bytes, BytesMut};
 
-    mod minefield_state_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = MinefieldStatePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<MinefieldStatePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = MinefieldStatePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = MinefieldStatePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 576 / BITS_PER_BYTE;
-            let pdu = MinefieldStatePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
+    /// Serialize a PDU, failing the test if serialization returns an error.
+    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
     }
 
-    mod minefield_query_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = MinefieldQueryPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<MinefieldQueryPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = MinefieldQueryPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = MinefieldQueryPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = MinefieldQueryPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod minefield_data_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = MinefieldDataPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<MinefieldDataPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = MinefieldDataPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = MinefieldDataPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 352 / BITS_PER_BYTE;
-            let pdu = MinefieldDataPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod minefield_response_nack_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = MinefieldResponseNackPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<MinefieldResponseNackPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = MinefieldResponseNackPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                MinefieldResponseNackPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 208 / BITS_PER_BYTE;
-            let pdu = MinefieldResponseNackPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
+    pdu_tests!(
+        minefield_state_pdu_tests, MinefieldStatePdu,
+        pdu_type: PduType::MinefieldState,
+        default_bits: 576,
+        wrong_type: MinefieldQueryPdu,
+    );
+    pdu_tests!(
+        minefield_query_pdu_tests, MinefieldQueryPdu,
+        pdu_type: PduType::MinefieldQuery,
+        default_bits: 320,
+        wrong_type: MinefieldDataPdu,
+    );
+    pdu_tests!(
+        minefield_data_pdu_tests, MinefieldDataPdu,
+        pdu_type: PduType::MinefieldData,
+        default_bits: 352,
+        wrong_type: MinefieldResponseNackPdu,
+    );
+    pdu_tests!(
+        minefield_response_nack_pdu_tests, MinefieldResponseNackPdu,
+        pdu_type: PduType::MinefieldResponseNack,
+        default_bits: 208,
+        wrong_type: MinefieldDataPdu,
+    );
 }

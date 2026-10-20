@@ -63,7 +63,7 @@ pub enum PduType {
     Data = 20,
     EventReport = 21,
     Comment = 22,
-    ElectromagneticEmission = 23,
+    ElectromagneticEmissions = 23,
     Designator = 24,
     Transmitter = 25,
     Signal = 26,
