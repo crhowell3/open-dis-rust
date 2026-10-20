@@ -9,8 +9,7 @@ use crate::{
     common::{
         GenericHeader, LiveEntityPduHeader, SerializedLength,
         data_types::{
-            EntityCoordinateVector, EntityType, EulerAngles, EventId, LinearVelocity,
-            VariableParameter, entity_id::EntityId, entity_marking::EntityMarking,
+            EntityType, VariableParameter, entity_marking::EntityMarking,
             fixed_binary_16::FixedBinary16, munition_descriptor::MunitionDescriptor,
         },
         enums::{EntityCapabilities, ForceId, PduType, ProtocolFamily},
@@ -22,7 +21,7 @@ use crate::{
         },
         pdu::Pdu,
     },
-    define_pdu,
+    define_pdu, impl_u8_flag_fields,
     pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
 
@@ -30,7 +29,8 @@ use bitflags::bitflags;
 use bytes::{Buf, BufMut, BytesMut};
 
 bitflags! {
-    #[derive(Debug, Clone, Copy)]
+    /// Appearance Flags 1 (IEEE 1278.1-2012 §9.4.3.5)
+    #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
     pub struct AppearanceFlags1: u8 {
         const FORCE_ID_INCLUDED          = 0b0000_0001;
         const ENTITY_TYPE_INCLUDED       = 0b0000_0010;
@@ -42,62 +42,17 @@ bitflags! {
         const FLAG2_INCLUDED             = 0b1000_0000;
     }
 }
-
-impl Default for AppearanceFlags1 {
-    fn default() -> Self {
-        Self::empty()
-    }
-}
-
-impl FieldSerialize for AppearanceFlags1 {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.bits());
-    }
-}
-
-impl FieldDeserialize for AppearanceFlags1 {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::from_bits(buf.get_u8()).unwrap_or_default()
-    }
-}
-
-impl FieldLen for AppearanceFlags1 {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_u8_flag_fields!(AppearanceFlags1);
 
 bitflags! {
-    #[derive(Debug, Clone, Copy)]
+    /// Appearance Flags 2 (IEEE 1278.1-2012 §9.4.3.5)
+    #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
     pub struct AppearanceFlags2: u8 {
         const EM_INCLUDED     = 0b0000_0010;
         const AUDIO_INCLUDED  = 0b0000_0100;
     }
 }
-
-impl Default for AppearanceFlags2 {
-    fn default() -> Self {
-        Self::empty()
-    }
-}
-
-impl FieldSerialize for AppearanceFlags2 {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.bits());
-    }
-}
-
-impl FieldDeserialize for AppearanceFlags2 {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::from_bits(buf.get_u8()).unwrap_or_default()
-    }
-}
-
-impl FieldLen for AppearanceFlags2 {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_u8_flag_fields!(AppearanceFlags2);
 
 bitflags! {
     #[derive(Debug, Clone, Copy)]
@@ -219,6 +174,44 @@ define_pdu! {
     }
 }
 
+macro_rules! impl_record_fields {
+    ($name:ident { $($f:ident : $t:ty),* $(,)? }) => {
+        impl FieldSerialize for $name {
+            fn serialize_field(&self, buf: &mut BytesMut) {
+                $( <$t as FieldSerialize>::serialize_field(&self.$f, buf); )*
+            }
+        }
+
+        impl FieldDeserialize for $name {
+            fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+                // Struct-expression fields are evaluated in source order,
+                // so this reads the buffer in wire order.
+                Self {
+                    $( $f: <$t as FieldDeserialize>::deserialize_field(buf), )*
+                }
+            }
+        }
+
+        impl FieldLen for $name {
+            fn field_len(&self) -> usize {
+                0 $( + <$t as FieldLen>::field_len(&self.$f) )*
+            }
+        }
+    };
+}
+
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct LiveEventIdentifier {
+    pub site_number: u8,
+    pub application_number: u8,
+    pub event_number: u16,
+}
+impl_record_fields!(LiveEventIdentifier {
+    site_number: u8,
+    application_number: u8,
+    event_number: u16,
+});
+
 define_pdu! {
     #[derive(Debug)]
     /// Implemented according to IEEE 1278.1-2012 §9.4.5.6
@@ -229,16 +222,57 @@ define_pdu! {
         fields: {
             pub firing_live_entity_id: LEEntityId,
             pub flags: u8,
+            pub padding: u8,
             pub target_live_entity_id: LEEntityId,
             pub munition_live_entity_id: LEEntityId,
-            pub event_id: EventId,
+            pub event_id: LiveEventIdentifier,
             pub location: RelativeWorldCoordinates,
             pub munition_descriptor: MunitionDescriptor,
-            pub velocity: LinearVelocity,
+            pub velocity: LELinearVelocity,
             pub range: u16,
         }
     }
 }
+
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct LiveEntityRelativeLocation {
+    pub x: i16,
+    pub y: i16,
+    pub z: i16,
+}
+impl_record_fields!(LiveEntityRelativeLocation {
+    x: i16,
+    y: i16,
+    z: i16,
+});
+
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct LiveMunitionDescriptor {
+    pub munition_type: EntityType,
+    pub warhead: u16,
+    pub fuse: u16,
+    pub quantity: u16,
+    pub rate: u16,
+}
+impl_record_fields!(LiveMunitionDescriptor {
+    munition_type: EntityType,
+    warhead: u16,
+    fuse: u16,
+    quantity: u16,
+    rate: u16,
+});
+
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct LiveEntityOrientation16 {
+    pub psi: i16,
+    pub theta: i16,
+    pub phi: i16,
+}
+impl_record_fields!(LiveEntityOrientation16 {
+    psi: i16,
+    theta: i16,
+    phi: i16,
+});
 
 define_pdu! {
     #[derive(Debug)]
@@ -248,18 +282,19 @@ define_pdu! {
         pdu_type: PduType::LiveEntityDetonation,
         protocol_family: ProtocolFamily::LiveEntityInformationInteraction,
         fields: {
-            pub firing_live_entity_id: EntityId,
+            pub firing_live_entity_id: LEEntityId,
             pub detonation_flag_1: u8,
             pub detonation_flag_2: u8,
-            pub target_live_entity_id: EntityId,
-            pub munition_live_entity_id: EntityId,
-            pub event_id: EventId,
+            pub target_live_entity_id: LEEntityId,
+            pub munition_live_entity_id: LEEntityId,
+            pub event_id: LiveEventIdentifier,
             pub location_in_world_coordinates: RelativeWorldCoordinates,
-            pub velocity: LinearVelocity,
-            pub munition_orientation: EulerAngles,
-            pub munition_descriptor: MunitionDescriptor,
-            pub location_in_entity_coordinates: EntityCoordinateVector,
+            pub velocity: LELinearVelocity,
+            pub munition_orientation: LiveEntityOrientation16,
+            pub munition_descriptor: LiveMunitionDescriptor,
+            pub location_in_entity_coordinates: LiveEntityRelativeLocation,
             pub detonation_result: u8,
+            pub padding: u8,
         }
     }
 }
@@ -358,6 +393,67 @@ mod tests {
         fn check_default_pdu_length() {
             const DEFAULT_LENGTH: u16 = 136 / BITS_PER_BYTE;
             let pdu = ArticulatedPartsPdu::new();
+            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
+        }
+    }
+
+    mod live_entity_fire_pdu_tests {
+        use super::*;
+
+        #[test]
+        fn cast_to_any() {
+            let pdu = LiveEntityFirePdu::new();
+            let any_pdu = pdu.as_any();
+
+            assert!(any_pdu.is::<LiveEntityFirePdu>());
+        }
+
+        #[test]
+        fn serialize_then_deserialize() {
+            let mut pdu = LiveEntityFirePdu::new();
+            let mut serialize_buf = BytesMut::new();
+            let _ = pdu.serialize(&mut serialize_buf);
+
+            let mut deserialize_buf = serialize_buf.freeze();
+            let new_pdu = LiveEntityFirePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
+            assert_eq!(new_pdu.header, pdu.header);
+        }
+
+        #[test]
+        fn check_default_pdu_length() {
+            const DEFAULT_LENGTH: u16 = 496 / BITS_PER_BYTE;
+            let pdu = LiveEntityFirePdu::new();
+            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
+        }
+    }
+
+    mod live_entity_detonation_pdu_tests {
+        use super::*;
+
+        #[test]
+        fn cast_to_any() {
+            let pdu = LiveEntityDetonationPdu::new();
+            let any_pdu = pdu.as_any();
+
+            assert!(any_pdu.is::<LiveEntityDetonationPdu>());
+        }
+
+        #[test]
+        fn serialize_then_deserialize() {
+            let mut pdu = LiveEntityDetonationPdu::new();
+            let mut serialize_buf = BytesMut::new();
+            let _ = pdu.serialize(&mut serialize_buf);
+
+            let mut deserialize_buf = serialize_buf.freeze();
+            let new_pdu =
+                LiveEntityDetonationPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
+            assert_eq!(new_pdu.header, pdu.header);
+        }
+
+        #[test]
+        fn check_default_pdu_length() {
+            const DEFAULT_LENGTH: u16 = 592 / BITS_PER_BYTE;
+            let pdu = LiveEntityDetonationPdu::new();
             assert_eq!(pdu.header().length, DEFAULT_LENGTH);
         }
     }

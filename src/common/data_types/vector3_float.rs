@@ -159,7 +159,6 @@ impl FieldLen for Vector3Float {
 
 #[cfg(test)]
 mod tests {
-    use std::f32;
 
     use approx::relative_eq;
 

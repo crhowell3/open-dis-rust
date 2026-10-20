@@ -212,6 +212,70 @@ where
     }
 }
 
+/// Implements `FieldSerialize`, `FieldDeserialize` and `FieldLen` for a
+/// fixed-layout record by serializing its fields in declaration order.
+///
+/// ```ignore
+/// use crate::impl_record_fields;
+///
+/// pub struct LiveEventIdentifier { pub site_number: u8, pub application_number: u8, pub event_number: u16 }
+/// impl_record_fields!(LiveEventIdentifier { site_number: u8, application_number: u8, event_number: u16 });
+/// ```
+#[macro_export]
+macro_rules! impl_record_fields {
+    ($name:ident { $($f:ident : $t:ty),* $(,)? }) => {
+        impl $crate::pdu_macro::FieldSerialize for $name {
+            fn serialize_field(&self, buf: &mut bytes::BytesMut) {
+                $( <$t as $crate::pdu_macro::FieldSerialize>::serialize_field(&self.$f, buf); )*
+            }
+        }
+
+        impl $crate::pdu_macro::FieldDeserialize for $name {
+            fn deserialize_field<B: bytes::Buf>(buf: &mut B) -> Self {
+                // Struct-expression fields are evaluated in source order,
+                // so this reads the buffer in wire order.
+                Self {
+                    $( $f: <$t as $crate::pdu_macro::FieldDeserialize>::deserialize_field(buf), )*
+                }
+            }
+        }
+
+        impl $crate::pdu_macro::FieldLen for $name {
+            fn field_len(&self) -> usize {
+                0 $( + <$t as $crate::pdu_macro::FieldLen>::field_len(&self.$f) )*
+            }
+        }
+    };
+}
+
+/// Implements `FieldSerialize`, `FieldDeserialize` and `FieldLen` for an
+/// 8-bit `bitflags` type.
+///
+/// Unknown bits are retained on deserialize so that flags defined by newer
+/// revisions of the standard round-trip unchanged.
+#[macro_export]
+macro_rules! impl_u8_flag_fields {
+    ($name:ident) => {
+        impl $crate::pdu_macro::FieldSerialize for $name {
+            fn serialize_field(&self, buf: &mut bytes::BytesMut) {
+                bytes::BufMut::put_u8(buf, self.bits());
+            }
+        }
+
+        impl $crate::pdu_macro::FieldDeserialize for $name {
+            fn deserialize_field<B: bytes::Buf>(buf: &mut B) -> Self {
+                Self::from_bits_retain(bytes::Buf::get_u8(buf))
+            }
+        }
+
+        impl $crate::pdu_macro::FieldLen for $name {
+            fn field_len(&self) -> usize {
+                1
+            }
+        }
+    };
+}
+
 #[macro_export]
 macro_rules! define_pdu {
     (
