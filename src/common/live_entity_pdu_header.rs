@@ -1,15 +1,18 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 use chrono::{Timelike, Utc};
 
-use crate::common::{
-    GenericHeader, SerializedLength,
-    enums::{DISLiveEntitySubprotocolNumber, PduType, ProtocolFamily, ProtocolVersion},
+use crate::{
+    common::{
+        GenericHeader, SerializedLength,
+        enums::{DISLiveEntitySubprotocolNumber, PduType, ProtocolFamily, ProtocolVersion},
+    },
+    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -129,6 +132,24 @@ impl LiveEntityPduHeader {
         let nanosecond_curr = u64::from(Utc::now().nanosecond() / 1000);
         let dis_time = (second_curr + minute_curr + nanosecond_curr) as f32 / 1.68;
         dis_time as u32
+    }
+}
+
+impl FieldSerialize for LiveEntityPduHeader {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for LiveEntityPduHeader {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for LiveEntityPduHeader {
+    fn field_len(&self) -> usize {
+        Self::LENGTH
     }
 }
 

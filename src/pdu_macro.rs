@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -210,6 +210,135 @@ where
     fn field_len(&self) -> usize {
         self.as_ref().map_or(0, FieldLen::field_len)
     }
+}
+
+/// Implements `FieldSerialize`, `FieldDeserialize` and `FieldLen` for a
+/// fixed-layout record by serializing its fields in declaration order.
+///
+/// ```ignore
+/// use crate::impl_record_fields;
+///
+/// pub struct LiveEventIdentifier { pub site_number: u8, pub application_number: u8, pub event_number: u16 }
+/// impl_record_fields!(LiveEventIdentifier { site_number: u8, application_number: u8, event_number: u16 });
+/// ```
+#[macro_export]
+macro_rules! impl_record_fields {
+    ($name:ident { $($f:ident : $t:ty),* $(,)? }) => {
+        impl $crate::pdu_macro::FieldSerialize for $name {
+            fn serialize_field(&self, buf: &mut bytes::BytesMut) {
+                $( <$t as $crate::pdu_macro::FieldSerialize>::serialize_field(&self.$f, buf); )*
+            }
+        }
+
+        impl $crate::pdu_macro::FieldDeserialize for $name {
+            fn deserialize_field<B: bytes::Buf>(buf: &mut B) -> Self {
+                // Struct-expression fields are evaluated in source order,
+                // so this reads the buffer in wire order.
+                Self {
+                    $( $f: <$t as $crate::pdu_macro::FieldDeserialize>::deserialize_field(buf), )*
+                }
+            }
+        }
+
+        impl $crate::pdu_macro::FieldLen for $name {
+            fn field_len(&self) -> usize {
+                0 $( + <$t as $crate::pdu_macro::FieldLen>::field_len(&self.$f) )*
+            }
+        }
+    };
+}
+
+/// Implements `FieldSerialize`, `FieldDeserialize` and `FieldLen` for an
+/// 8-bit `bitflags` type.
+///
+/// Unknown bits are retained on deserialize so that flags defined by newer
+/// revisions of the standard round-trip unchanged.
+#[macro_export]
+macro_rules! impl_u8_flag_fields {
+    ($name:ident) => {
+        impl $crate::pdu_macro::FieldSerialize for $name {
+            fn serialize_field(&self, buf: &mut bytes::BytesMut) {
+                bytes::BufMut::put_u8(buf, self.bits());
+            }
+        }
+
+        impl $crate::pdu_macro::FieldDeserialize for $name {
+            fn deserialize_field<B: bytes::Buf>(buf: &mut B) -> Self {
+                Self::from_bits_retain(bytes::Buf::get_u8(buf))
+            }
+        }
+
+        impl $crate::pdu_macro::FieldLen for $name {
+            fn field_len(&self) -> usize {
+                1
+            }
+        }
+    };
+}
+
+/// Generates the common test set for a PDU.
+///
+/// - `pdu_type`: the `PduType` the PDU must report.
+/// - `default_bits`: length of a default PDU in bits, per the standard.
+/// - `wrong_type`: any other PDU, used to check type mismatches are rejected.
+#[macro_export]
+macro_rules! pdu_tests {
+    (
+           $mod_name:ident, $pdu:ty,
+           pdu_type: $pdu_type:expr,
+           default_bits: $default_bits:expr,
+           wrong_type: $other:ty $(,)?
+       ) => {
+        mod $mod_name {
+            use super::*;
+
+            #[test]
+            fn cast_to_any() {
+                let pdu = <$pdu>::new();
+                assert!(pdu.as_any().is::<$pdu>());
+            }
+
+            #[test]
+            fn new_sets_pdu_type() {
+                let pdu = <$pdu>::new();
+                assert_eq!(pdu.header().pdu_type(), $pdu_type);
+            }
+
+            #[test]
+            fn new_sets_default_length() {
+                const DEFAULT_LENGTH: u16 = $default_bits / BITS_PER_BYTE;
+                let pdu = <$pdu>::new();
+                assert_eq!(pdu.header().length, DEFAULT_LENGTH);
+            }
+
+            #[test]
+            fn serialized_length_matches_header() {
+                let mut pdu = <$pdu>::new();
+                let bytes = to_bytes(&mut pdu);
+                assert_eq!(bytes.len(), usize::from(pdu.header().length));
+            }
+
+            #[test]
+            fn round_trip_is_byte_identical() {
+                let mut pdu = <$pdu>::new();
+                let original = to_bytes(&mut pdu);
+
+                let mut buf = original.clone();
+                let mut decoded = <$pdu>::deserialize(&mut buf).expect("deserialize failed");
+
+                assert_eq!(buf.remaining(), 0, "deserialize left bytes unread");
+                assert_eq!(decoded.header, pdu.header);
+                assert_eq!(to_bytes(&mut decoded), original);
+            }
+
+            #[test]
+            fn rejects_wrong_pdu_type() {
+                let mut other = <$other>::new();
+                let mut buf = to_bytes(&mut other);
+                assert!(<$pdu>::deserialize(&mut buf).is_err());
+            }
+        }
+    };
 }
 
 #[macro_export]

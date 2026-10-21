@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -37,7 +37,7 @@ define_pdu! {
     /// Implemented according to IEEE 1278.1-2012 §7.6.2
     pub struct ElectromagneticEmissionsPdu {
         header: PduHeader,
-        pdu_type: PduType::ElectromagneticEmission,
+        pdu_type: PduType::ElectromagneticEmissions,
         protocol_family: ProtocolFamily::DistributedEmissionRegeneration,
         fields: {
             pub emitting_entity_id: EntityId,
@@ -144,154 +144,47 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::BytesMut;
+    use crate::{
+        common::{constants::BITS_PER_BYTE, pdu::Pdu},
+        pdu_tests,
+    };
+    use bytes::{Buf, Bytes, BytesMut};
 
-    mod designator_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = DesignatorPdu::new();
-            let any_pdu = pdu.as_any();
-            assert!(any_pdu.is::<DesignatorPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = DesignatorPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = DesignatorPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header(), pdu.header());
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 704 / BITS_PER_BYTE;
-            let pdu = DesignatorPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
+    /// Serialize a PDU, failing the test if serialization returns an error.
+    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
     }
 
-    mod electromagnetic_emissions_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = ElectromagneticEmissionsPdu::new();
-            let any_pdu = pdu.as_any();
-            assert!(any_pdu.is::<ElectromagneticEmissionsPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ElectromagneticEmissionsPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                ElectromagneticEmissionsPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header(), pdu.header());
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
-            let pdu = ElectromagneticEmissionsPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod underwater_acoustic_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = UnderwaterAcousticPdu::new();
-            let any_pdu = pdu.as_any();
-            assert!(any_pdu.is::<UnderwaterAcousticPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = UnderwaterAcousticPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                UnderwaterAcousticPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header(), pdu.header());
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
-            let pdu = UnderwaterAcousticPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod iff_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = IFFPdu::new();
-            let any_pdu = pdu.as_any();
-            assert!(any_pdu.is::<IFFPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = IFFPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = IFFPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header(), pdu.header());
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 704 / BITS_PER_BYTE;
-            let pdu = IFFPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod supplemental_emission_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = SupplementalEmissionPdu::new();
-            let any_pdu = pdu.as_any();
-            assert!(any_pdu.is::<SupplementalEmissionPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = SupplementalEmissionPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                SupplementalEmissionPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header(), pdu.header());
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
-            let pdu = SupplementalEmissionPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
+    pdu_tests!(
+        designator_pdu_tests, DesignatorPdu,
+        pdu_type: PduType::Designator,
+        default_bits: 704,
+        wrong_type: ElectromagneticEmissionsPdu,
+    );
+    pdu_tests!(
+        electromagnetic_emissions_pdu_tests, ElectromagneticEmissionsPdu,
+        pdu_type: PduType::ElectromagneticEmissions,
+        default_bits: 224,
+        wrong_type: UnderwaterAcousticPdu,
+    );
+    pdu_tests!(
+        underwater_acoustic_pdu_tests, UnderwaterAcousticPdu,
+        pdu_type: PduType::UnderwaterAcoustic,
+        default_bits: 256,
+        wrong_type: IFFPdu,
+    );
+    pdu_tests!(
+        iff_pdu_tests, IFFPdu,
+        pdu_type: PduType::IFF,
+        default_bits: 704,
+        wrong_type: SupplementalEmissionPdu,
+    );
+    pdu_tests!(
+        supplemental_emission_pdu_tests, SupplementalEmissionPdu,
+        pdu_type: PduType::SupplementalEmission,
+        default_bits: 224,
+        wrong_type: ElectromagneticEmissionsPdu,
+    );
 }

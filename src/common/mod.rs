@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -12,6 +12,7 @@ pub mod dis_error;
 pub mod enums;
 pub mod generic_header;
 pub mod live_entity_pdu_header;
+pub mod live_entity_records;
 pub mod pdu;
 pub mod pdu_body;
 pub mod pdu_header;

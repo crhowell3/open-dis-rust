@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -123,187 +123,53 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::BytesMut;
+    use crate::{
+        common::{constants::BITS_PER_BYTE, pdu::Pdu},
+        pdu_tests,
+    };
+    use bytes::{Buf, Bytes, BytesMut};
 
-    mod service_request_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = ServiceRequestPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<ServiceRequestPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ServiceRequestPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = ServiceRequestPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
-            let pdu = ServiceRequestPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
+    /// Serialize a PDU, failing the test if serialization returns an error.
+    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
     }
 
-    mod resupply_offer_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = ResupplyOfferPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<ResupplyOfferPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ResupplyOfferPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = ResupplyOfferPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
-            let pdu = ResupplyOfferPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod resupply_received_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = ResupplyReceivedPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<ResupplyReceivedPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ResupplyReceivedPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                ResupplyReceivedPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
-            let pdu = ResupplyReceivedPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod resupply_cancel_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = ResupplyCancelPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<ResupplyCancelPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ResupplyCancelPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = ResupplyCancelPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 192 / BITS_PER_BYTE;
-            let pdu = ResupplyCancelPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod repair_complete_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = RepairCompletePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<RepairCompletePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = RepairCompletePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = RepairCompletePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
-            let pdu = RepairCompletePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod repair_response_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = RepairResponsePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<RepairResponsePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = RepairResponsePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = RepairResponsePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
-            let pdu = RepairResponsePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
+    pdu_tests!(
+        service_request_pdu_tests, ServiceRequestPdu,
+        pdu_type: PduType::ServiceRequest,
+        default_bits: 224,
+        wrong_type: ResupplyOfferPdu,
+    );
+    pdu_tests!(
+        resupply_offer_pdu_tests, ResupplyOfferPdu,
+        pdu_type: PduType::ResupplyOffer,
+        default_bits: 224,
+        wrong_type: ResupplyReceivedPdu,
+    );
+    pdu_tests!(
+        resupply_received_pdu_tests, ResupplyReceivedPdu,
+        pdu_type: PduType::ResupplyReceived,
+        default_bits: 224,
+        wrong_type: ResupplyCancelPdu,
+    );
+    pdu_tests!(
+        resupply_cancel_pdu_tests, ResupplyCancelPdu,
+        pdu_type: PduType::ResupplyCancel,
+        default_bits: 192,
+        wrong_type: RepairCompletePdu,
+    );
+    pdu_tests!(
+        repair_complete_pdu_tests, RepairCompletePdu,
+        pdu_type: PduType::RepairComplete,
+        default_bits: 224,
+        wrong_type: RepairResponsePdu,
+    );
+    pdu_tests!(
+        repair_response_pdu_tests, RepairResponsePdu,
+        pdu_type: PduType::RepairResponse,
+        default_bits: 224,
+        wrong_type: ResupplyOfferPdu,
+    );
 }

@@ -1,12 +1,12 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::SerializedLength;
+use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
 
 #[derive(Copy, Clone, Debug, Default)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.7
@@ -44,6 +44,20 @@ impl AngularVelocity {
     }
 }
 
-impl SerializedLength for AngularVelocity {
-    const LENGTH: usize = 12;
+impl FieldSerialize for AngularVelocity {
+    fn serialize_field(&self, buf: &mut BytesMut) {
+        self.serialize(buf);
+    }
+}
+
+impl FieldDeserialize for AngularVelocity {
+    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
+        Self::deserialize(buf)
+    }
+}
+
+impl FieldLen for AngularVelocity {
+    fn field_len(&self) -> usize {
+        12
+    }
 }

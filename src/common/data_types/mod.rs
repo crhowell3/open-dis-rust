@@ -1,5 +1,5 @@
 //     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
 
@@ -29,6 +29,8 @@ pub mod entity_type;
 pub mod environment;
 pub mod euler_angles;
 pub mod event_id;
+pub mod fixed_binary_16;
+pub mod fixed_binary_8;
 pub mod fundamental_operational_data;
 pub mod fundamental_parameter_data;
 pub mod grid_axis_descriptor;
