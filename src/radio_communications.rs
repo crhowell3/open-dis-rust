@@ -10,12 +10,9 @@ use crate::{
     common::{
         GenericHeader, SerializedLength,
         data_types::{
-            EntityCoordinateVector, WorldCoordinate, antenna_pattern::AntennaPattern,
-            entity_id::EntityId,
-            intercom_communications_parameters::IntercomCommunicationsParameters,
-            modulation_parameters::ModulationParameters, modulation_type::ModulationType,
-            radio_entity_type::RadioEntityType,
-            variable_transmitter_parameters::VariableTransmitterParameters,
+            AntennaPattern, EntityCoordinateVector, EntityId, IntercomCommunicationsParameters,
+            ModulationParameters, ModulationType, RadioEntityType, VariableTransmitterParameters,
+            WorldCoordinate,
         },
         enums::{
             IntercomControlCommand, IntercomControlControlType, IntercomControlTransmitLineState,
@@ -151,156 +148,36 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::BytesMut;
+    use crate::{common::pdu::Pdu, pdu_tests};
 
-    mod transmitter_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = TransmitterPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<TransmitterPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = TransmitterPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = TransmitterPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 832 / BITS_PER_BYTE;
-            let pdu = TransmitterPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod signal_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = SignalPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<SignalPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = SignalPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = SignalPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
-            let pdu = SignalPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod receiver_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = ReceiverPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<ReceiverPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ReceiverPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = ReceiverPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 288 / BITS_PER_BYTE;
-            let pdu = ReceiverPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod intercom_signal_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = IntercomSignalPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<IntercomSignalPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = IntercomSignalPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = IntercomSignalPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
-            let pdu = IntercomSignalPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod intercom_control_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = IntercomControlPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<IntercomControlPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = IntercomControlPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = IntercomControlPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = IntercomControlPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
+    pdu_tests!(
+        transmitter_pdu_tests, TransmitterPdu,
+        pdu_type: PduType::Transmitter,
+        default_bits: 832,
+        wrong_type: SignalPdu,
+    );
+    pdu_tests!(
+        signal_pdu_tests, SignalPdu,
+        pdu_type: PduType::Signal,
+        default_bits: 256,
+        wrong_type: ReceiverPdu,
+    );
+    pdu_tests!(
+        receiver_pdu_tests, ReceiverPdu,
+        pdu_type: PduType::Receiver,
+        default_bits: 288,
+        wrong_type: IntercomSignalPdu,
+    );
+    pdu_tests!(
+        intercom_signal_pdu_tests, IntercomSignalPdu,
+        pdu_type: PduType::IntercomSignal,
+        default_bits: 256,
+        wrong_type: IntercomControlPdu,
+    );
+    pdu_tests!(
+        intercom_control_pdu_tests, IntercomControlPdu,
+        pdu_type: PduType::IntercomControl,
+        default_bits: 320,
+        wrong_type: SignalPdu,
+    );
 }

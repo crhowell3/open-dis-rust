@@ -10,11 +10,9 @@ use crate::{
     common::{
         GenericHeader, SerializedLength,
         data_types::{
-            ClockTime, EntityId, EntityType, EulerAngles, WorldCoordinate,
-            environment::Environment, grid_axis_descriptor::GridAxisDescriptor,
-            grid_data_record::GridDataRecord, linear_segment_parameter::LinearSegmentParameter,
-            object_identifier::ObjectIdentifier, object_type::ObjectType,
-            simulation_address::SimulationAddress,
+            ClockTime, EntityId, EntityType, Environment, EulerAngles, GridAxisDescriptor,
+            GridDataRecord, LinearSegmentParameter, ObjectIdentifier, ObjectType,
+            SimulationAddress, WorldCoordinate,
         },
         enums::{
             ForceId, GriddedDataConstantGrid, GriddedDataCoordinateSystem,
@@ -147,159 +145,36 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::BytesMut;
+    use crate::{common::pdu::Pdu, pdu_tests};
 
-    mod environmental_process_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = EnvironmentalProcessPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<EnvironmentalProcessPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = EnvironmentalProcessPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                EnvironmentalProcessPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
-            let pdu = EnvironmentalProcessPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod gridded_data_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = GriddedDataPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<GriddedDataPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = GriddedDataPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = GriddedDataPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 512 / BITS_PER_BYTE;
-            let pdu = GriddedDataPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod point_object_state_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = PointObjectStatePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<PointObjectStatePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = PointObjectStatePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                PointObjectStatePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 704 / BITS_PER_BYTE;
-            let pdu = PointObjectStatePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod linear_object_state_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = LinearObjectStatePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<LinearObjectStatePdu>());
-        }
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = LinearObjectStatePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                LinearObjectStatePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / 8;
-            let pdu = LinearObjectStatePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod areal_object_state_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = ArealObjectStatePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<ArealObjectStatePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ArealObjectStatePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                ArealObjectStatePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 384 / BITS_PER_BYTE;
-            let pdu = ArealObjectStatePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
+    pdu_tests!(
+        environmental_process_pdu_tests, EnvironmentalProcessPdu,
+        pdu_type: PduType::EnvironmentalProcess,
+        default_bits: 256,
+        wrong_type: GriddedDataPdu,
+    );
+    pdu_tests!(
+        gridded_data_pdu_tests, GriddedDataPdu,
+        pdu_type: PduType::GriddedData,
+        default_bits: 512,
+        wrong_type: PointObjectStatePdu,
+    );
+    pdu_tests!(
+        point_object_state_pdu_tests, PointObjectStatePdu,
+        pdu_type: PduType::PointObjectState,
+        default_bits: 704,
+        wrong_type: LinearObjectStatePdu,
+    );
+    pdu_tests!(
+        linear_object_state_pdu_tests, LinearObjectStatePdu,
+        pdu_type: PduType::LinearObjectState,
+        default_bits: 320,
+        wrong_type: ArealObjectStatePdu,
+    );
+    pdu_tests!(
+        areal_object_state_pdu_tests, ArealObjectStatePdu,
+        pdu_type: PduType::ArealObjectState,
+        default_bits: 384,
+        wrong_type: GriddedDataPdu,
+    );
 }

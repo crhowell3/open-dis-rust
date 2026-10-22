@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] - YYYY-MM-DD
+
+The first official release of open-dis-rust!
+
 ## [0.4.3] - 2026-07-03
 
 ### Added

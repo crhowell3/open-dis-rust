@@ -10,8 +10,8 @@ use crate::{
     common::{
         GenericHeader, Pdu, PduHeader, SerializedLength,
         data_types::{
-            ClockTime, EntityCoordinateVector, EntityId, EntityType, EulerAngles, WorldCoordinate,
-            minefield_identifier::MinefieldIdentifier, point::Point,
+            ClockTime, EntityCoordinateVector, EntityId, EntityType, EulerAngles,
+            MinefieldIdentifier, Point, WorldCoordinate,
         },
         enums::{
             ForceId, MinefieldSensorTypes, MinefieldStateProtocolMode, PduType, ProtocolFamily,
@@ -125,18 +125,7 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
-    };
-    use bytes::{Buf, Bytes, BytesMut};
-
-    /// Serialize a PDU, failing the test if serialization returns an error.
-    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
-    }
+    use crate::{common::pdu::Pdu, pdu_tests};
 
     pdu_tests!(
         minefield_state_pdu_tests, MinefieldStatePdu,

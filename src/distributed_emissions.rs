@@ -12,14 +12,11 @@ use crate::{
     common::{
         GenericHeader, SerializedLength,
         data_types::{
-            EntityCoordinateVector, EntityId, EventId, LinearAcceleration, WorldCoordinate,
-            acoustic_emitter_system::AcousticEmitterSystem, apa_data::ApaData, beam_data::BeamData,
-            electromagnetic_emission_system_data::ElectromagneticEmissionSystemData,
-            fundamental_operational_data::FundamentalOperationalData,
-            iff_fundamental_parameter_data::IFFFundamentalParameterData, layer_header::LayerHeader,
-            propulsion_system_data::PropulsionSystemData,
-            secondary_operational_data::SecondaryOperationalData, shaft_rpms::ShaftRPMs,
-            system_id::SystemId, vectoring_nozzle_system_data::VectoringNozzleSystemData,
+            AcousticEmitterSystem, ApaData, BeamData, ElectromagneticEmissionSystemData,
+            EntityCoordinateVector, EntityId, EventId, FundamentalOperationalData,
+            IFFFundamentalParameterData, LayerHeader, LinearAcceleration, PropulsionSystemData,
+            SecondaryOperationalData, ShaftRPMs, SystemId, VectoringNozzleSystemData,
+            WorldCoordinate,
         },
         enums::{
             DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName,
@@ -144,18 +141,7 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
-    };
-    use bytes::{Buf, Bytes, BytesMut};
-
-    /// Serialize a PDU, failing the test if serialization returns an error.
-    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
-    }
+    use crate::{common::pdu::Pdu, pdu_tests};
 
     pdu_tests!(
         designator_pdu_tests, DesignatorPdu,

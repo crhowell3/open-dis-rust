@@ -7,6 +7,12 @@
 
 ## Guides
 
+### Usage
+
 - [Creating a PDU](guides/creating-a-pdu.md)
 - [Sending PDUs](guides/sending-pdus.md)
 - [Receiving PDUs](guides/receiving-pdus.md)
+
+### Development
+
+- [Tips for Contributing](guides/contributing.md)
