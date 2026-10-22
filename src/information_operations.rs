@@ -10,13 +10,10 @@ use crate::common::enums::{
     IOActionIOActionPhase, IOActionIOActionType, IOActionIOSimulationSource, IOActionIOWarfareType,
     IOReportIOReportType, PduType, ProtocolFamily,
 };
-use crate::common::generic_header::GenericHeader;
 use crate::common::{
     SerializedLength,
-    data_types::{
-        SimulationIdentifier, entity_id::EntityId,
-        standard_variable_specification::StandardVariableSpecification,
-    },
+    data_types::{EntityId, SimulationIdentifier, StandardVariableSpecification},
+    generic_header::GenericHeader,
     pdu::Pdu,
     pdu_header::PduHeader,
 };
@@ -69,72 +66,30 @@ define_pdu! {
 
 #[cfg(test)]
 mod tests {
-    mod information_operations_actions_pdu {
-        use crate::{
-            common::{constants::BITS_PER_BYTE, pdu::Pdu},
-            information_operations::InformationOperationsActionPdu,
-        };
-        use bytes::BytesMut;
-        #[test]
-        fn cast_to_any() {
-            let pdu = InformationOperationsActionPdu::new();
-            let any_pdu = pdu.as_any();
+    use super::*;
+    use crate::{
+        common::{constants::BITS_PER_BYTE, pdu::Pdu},
+        pdu_tests,
+    };
+    use bytes::{Buf, Bytes, BytesMut};
 
-            assert!(any_pdu.is::<InformationOperationsActionPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = InformationOperationsActionPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                InformationOperationsActionPdu::deserialize(&mut deserialize_buf).expect("Some");
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 448 / BITS_PER_BYTE;
-            let pdu = InformationOperationsActionPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
+    /// Serialize a PDU, failing the test if serialization returns an error.
+    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
     }
 
-    mod information_operations_report_pdu {
-        use crate::{
-            common::{constants::BITS_PER_BYTE, pdu::Pdu},
-            information_operations::InformationOperationsReportPdu,
-        };
-        use bytes::BytesMut;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = InformationOperationsReportPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<InformationOperationsReportPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = InformationOperationsReportPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                InformationOperationsReportPdu::deserialize(&mut deserialize_buf).expect("Some");
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = InformationOperationsReportPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
+    pdu_tests!(
+        information_operations_actions_pdu, InformationOperationsActionPdu,
+        pdu_type: PduType::InformationOperationsAction,
+        default_bits: 448,
+        wrong_type: InformationOperationsReportPdu,
+    );
+    pdu_tests!(
+        information_operations_report_pdu, InformationOperationsReportPdu,
+        pdu_type: PduType::InformationOperationsReport,
+        default_bits: 320,
+        wrong_type: InformationOperationsActionPdu,
+    );
 }

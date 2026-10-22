@@ -6,14 +6,12 @@
 
 //! The Simulation Management (SIMAN) protocol family
 
-use crate::common::data_types::ClockTime;
-use crate::common::data_types::datum_records::{FixedDatumRecord, VariableDatumRecord};
 use crate::common::enums::{ActionResponseRequestStatus, EventType, FrozenBehavior, Reason};
 use crate::common::generic_header::GenericHeader;
 use crate::{
     common::{
         SerializedLength,
-        data_types::entity_id::EntityId,
+        data_types::{ClockTime, EntityId, FixedDatumRecord, VariableDatumRecord},
         enums::{AcknowledgeFlag, AcknowledgeResponseFlag, PduType, ProtocolFamily},
         pdu::Pdu,
         pdu_header::PduHeader,
@@ -245,363 +243,89 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::BytesMut;
+    use crate::{
+        common::{constants::BITS_PER_BYTE, pdu::Pdu},
+        pdu_tests,
+    };
+    use bytes::{Buf, Bytes, BytesMut};
 
-    mod create_entity_pdu_tests {
-        use super::*;
-        #[test]
-        fn cast_to_any() {
-            let pdu = CreateEntityPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<CreateEntityPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = CreateEntityPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = CreateEntityPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
-            let pdu = CreateEntityPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
+    /// Serialize a PDU, failing the test if serialization returns an error.
+    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
     }
 
-    mod remove_entity_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = RemoveEntityPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<RemoveEntityPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = RemoveEntityPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = RemoveEntityPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 224 / BITS_PER_BYTE;
-            let pdu = RemoveEntityPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod stop_freeze_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = StopFreezePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<StopFreezePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = StopFreezePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = StopFreezePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = StopFreezePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod start_resume_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = StartResumePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<StartResumePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = StartResumePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = StartResumePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 352 / BITS_PER_BYTE;
-            let pdu = StartResumePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod acknowledge_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = AcknowledgePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<AcknowledgePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = AcknowledgePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = AcknowledgePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
-            let pdu = AcknowledgePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod action_request_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = ActionRequestPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<ActionRequestPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ActionRequestPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = ActionRequestPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = ActionRequestPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod action_response_pdu_tests {
-        use super::*;
-        #[test]
-        fn cast_to_any() {
-            let pdu = ActionResponsePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<ActionResponsePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = ActionResponsePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = ActionResponsePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = ActionResponsePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod data_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = DataPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<DataPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = DataPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = DataPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = DataPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod set_data_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = SetDataPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<SetDataPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = SetDataPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = SetDataPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = SetDataPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod data_query_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = DataQueryPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<DataQueryPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = DataQueryPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = DataQueryPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = DataQueryPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod event_report_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = EventReportPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<EventReportPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = EventReportPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = EventReportPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 320 / BITS_PER_BYTE;
-            let pdu = EventReportPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod comment_pdu_tests {
-        use super::*;
-        #[test]
-        fn cast_to_any() {
-            let pdu = CommentPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<CommentPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = CommentPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = CommentPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
-            let pdu = CommentPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
+    pdu_tests!(
+        create_entity_pdu_tests, CreateEntityPdu,
+        pdu_type: PduType::CreateEntity,
+        default_bits: 224,
+        wrong_type: RemoveEntityPdu,
+    );
+    pdu_tests!(
+        remove_entity_pdu_tests, RemoveEntityPdu,
+        pdu_type: PduType::RemoveEntity,
+        default_bits: 224,
+        wrong_type: StopFreezePdu,
+    );
+    pdu_tests!(
+        stop_freeze_pdu_tests, StopFreezePdu,
+        pdu_type: PduType::StopFreeze,
+        default_bits: 320,
+        wrong_type: StartResumePdu,
+    );
+    pdu_tests!(
+        start_resume_pdu_tests, StartResumePdu,
+        pdu_type: PduType::StartResume,
+        default_bits: 352,
+        wrong_type: AcknowledgePdu,
+    );
+    pdu_tests!(
+        acknowledge_pdu_tests, AcknowledgePdu,
+        pdu_type: PduType::Acknowledge,
+        default_bits: 256,
+        wrong_type: ActionRequestPdu,
+    );
+    pdu_tests!(
+        action_request_pdu_tests, ActionRequestPdu,
+        pdu_type: PduType::ActionRequest,
+        default_bits: 320,
+        wrong_type: ActionResponsePdu,
+    );
+    pdu_tests!(
+        action_response_pdu_tests, ActionResponsePdu,
+        pdu_type: PduType::ActionResponse,
+        default_bits: 320,
+        wrong_type: DataPdu,
+    );
+    pdu_tests!(
+        data_pdu_tests, DataPdu,
+        pdu_type: PduType::Data,
+        default_bits: 320,
+        wrong_type: SetDataPdu,
+    );
+    pdu_tests!(
+        set_data_pdu_tests, SetDataPdu,
+        pdu_type: PduType::SetData,
+        default_bits: 320,
+        wrong_type: DataQueryPdu,
+    );
+    pdu_tests!(
+        data_query_pdu_tests, DataQueryPdu,
+        pdu_type: PduType::DataQuery,
+        default_bits: 320,
+        wrong_type: EventReportPdu,
+    );
+    pdu_tests!(
+        event_report_pdu_tests, EventReportPdu,
+        pdu_type: PduType::EventReport,
+        default_bits: 320,
+        wrong_type: CommentPdu,
+    );
+    pdu_tests!(
+        comment_pdu_tests, CommentPdu,
+        pdu_type: PduType::Comment,
+        default_bits: 256,
+        wrong_type: DataQueryPdu,
+    );
 }
