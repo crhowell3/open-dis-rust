@@ -9,8 +9,7 @@ use crate::{
     common::{
         GenericHeader, LiveEntityPduHeader, SerializedLength,
         data_types::{
-            EntityType, VariableParameter, entity_marking::EntityMarking,
-            fixed_binary_16::FixedBinary16, munition_descriptor::MunitionDescriptor,
+            EntityMarking, EntityType, FixedBinary16, MunitionDescriptor, VariableParameter,
         },
         enums::{EntityCapabilities, ForceId, PduType, ProtocolFamily},
         live_entity_records::{

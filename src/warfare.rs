@@ -9,9 +9,8 @@ use crate::{
     common::{
         GenericHeader, SerializedLength,
         data_types::{
-            ClockTime, EntityCoordinateVector, EntityId, EntityType, EventId, LinearVelocity,
-            VariableParameter, WorldCoordinate, directed_energy_damage::DirectedEnergyDamage,
-            munition_descriptor::MunitionDescriptor,
+            ClockTime, DirectedEnergyDamage, EntityCoordinateVector, EntityId, EntityType, EventId,
+            LinearVelocity, MunitionDescriptor, VariableParameter, WorldCoordinate,
         },
         enums::{DEFirePulseShape, DetonationResult, PduType, ProtocolFamily},
         pdu::Pdu,

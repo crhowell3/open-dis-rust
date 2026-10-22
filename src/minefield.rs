@@ -10,8 +10,8 @@ use crate::{
     common::{
         GenericHeader, Pdu, PduHeader, SerializedLength,
         data_types::{
-            ClockTime, EntityCoordinateVector, EntityId, EntityType, EulerAngles, WorldCoordinate,
-            minefield_identifier::MinefieldIdentifier, point::Point,
+            ClockTime, EntityCoordinateVector, EntityId, EntityType, EulerAngles,
+            MinefieldIdentifier, Point, WorldCoordinate,
         },
         enums::{
             ForceId, MinefieldSensorTypes, MinefieldStateProtocolMode, PduType, ProtocolFamily,

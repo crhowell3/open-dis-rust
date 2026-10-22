@@ -8,7 +8,7 @@
 use crate::{
     common::{
         GenericHeader, SerializedLength,
-        data_types::{entity_id::EntityId, supply_quantity::SupplyQuantity},
+        data_types::{EntityId, SupplyQuantity},
         enums::{
             PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
             ServiceRequestServiceTypeRequested,
