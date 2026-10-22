@@ -251,18 +251,8 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
-    };
-    use bytes::{Buf, Bytes, BytesMut};
-
-    /// Serialize a PDU, failing the test if serialization returns an error.
-    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
-    }
+    use crate::{common::pdu::Pdu, pdu_tests};
+    use bytes::{Buf, Bytes};
 
     pdu_tests!(
         time_space_position_information_pdu_tests, TimeSpacePositionInformationPdu,
@@ -294,6 +284,12 @@ mod tests {
         default_bits: 592,
         wrong_type: LiveEntityFirePdu,
     );
+
+    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
+    }
 
     mod live_entity_fire_pdu_layout {
         use super::*;

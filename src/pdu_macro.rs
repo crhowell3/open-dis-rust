@@ -31,7 +31,8 @@ pub trait FieldDeserializeWithLen: Sized {
     fn deserialize_with_len<B: Buf>(buf: &mut B, len: usize) -> Self;
 }
 
-// Blanket impl so `Option<T>` can be deserialized with an externally-provided length
+// Blanket impl so `Option<T>` can be deserialized with an externally-provided length.
+// This is the only path `#[len = ...]` Option fields take: a length of 0 means `None`.
 impl<T> FieldDeserializeWithLen for Option<T>
 where
     T: FieldDeserializeWithLen,
@@ -49,17 +50,15 @@ where
 
 // Helper macros for generated code. These are kept private to the macro expansion
 // but exported so they can be used from the `define_pdu!` expansion.
+//
+// Note: `$t` arrives here as an already-parsed `ty` fragment, which can't be
+// destructured (e.g. matched against `Option<$inner:ty>`). Option fields are
+// handled through the trait impls instead (`FieldLen` returns 0 for `None`,
+// and the blanket `FieldDeserializeWithLen` impl above maps a 0 length to `None`).
 #[macro_export]
 macro_rules! __pdu_prep_serialize_field {
-    // When the field has a length attribute, set the length field before length calculation.
-    ( len = $len_field:ident ; $self:ident, $field:ident, Option<$inner:ty> ) => {
-        $self.$len_field = $self.$field.as_ref().map_or(0u8, |v| {
-            <$inner as $crate::pdu_macro::FieldLen>::field_len(v) as u8
-        });
-    };
-
+    // Field has a length attribute: set the length field before length calculation.
     ( len = $len_field:ident ; $self:ident, $field:ident, $t:ty ) => {
-        // For non-option fields with length attribute, set the length from the inner value.
         $self.$len_field = u8::try_from(<$t as $crate::pdu_macro::FieldLen>::field_len(
             &$self.$field,
         ))
@@ -67,30 +66,12 @@ macro_rules! __pdu_prep_serialize_field {
     };
 
     // Default: no-op
-    ( ; $self:ident, $field:ident, $t:ty ) => {
-        // nothing to do
-    };
+    ( ; $self:ident, $field:ident, $t:ty ) => {};
 }
 
 #[macro_export]
 macro_rules! __pdu_deserialize_field {
-    // Option<T> with a length attribute -> read using FieldDeserializeWithLen
-    ( len = $len_field:ident ; $field:ident, Option<$inner:ty>, $buf:ident ) => {
-        let $field: Option<$inner> = {
-            let len_val = $len_field as usize;
-            if len_val == 0 {
-                None
-            } else {
-                Some(
-                    <$inner as $crate::pdu_macro::FieldDeserializeWithLen>::deserialize_with_len(
-                        $buf, len_val,
-                    ),
-                )
-            }
-        };
-    };
-
-    // T with length attribute (non-Option)
+    // Field has a length attribute: read using FieldDeserializeWithLen.
     ( len = $len_field:ident ; $field:ident, $t:ty, $buf:ident ) => {
         let $field: $t = <$t as $crate::pdu_macro::FieldDeserializeWithLen>::deserialize_with_len(
             $buf,
@@ -107,7 +88,7 @@ macro_rules! __pdu_deserialize_field {
 // ------ Implementations for primitive types ------
 
 macro_rules! impl_primitive {
-    ($ty:ty, $put:ident, $get:ident, $len:expr) => {
+    ($ty:ty, $put:ident, $get:ident) => {
         impl FieldSerialize for $ty {
             fn serialize_field(&self, buf: &mut BytesMut) {
                 buf.$put(*self);
@@ -122,22 +103,22 @@ macro_rules! impl_primitive {
 
         impl FieldLen for $ty {
             fn field_len(&self) -> usize {
-                $len
+                std::mem::size_of::<$ty>()
             }
         }
     };
 }
 
-impl_primitive!(u8, put_u8, get_u8, 1usize);
-impl_primitive!(i8, put_i8, get_i8, 1usize);
-impl_primitive!(u16, put_u16, get_u16, 2usize);
-impl_primitive!(i16, put_i16, get_i16, 2usize);
-impl_primitive!(u32, put_u32, get_u32, 4usize);
-impl_primitive!(i32, put_i32, get_i32, 4usize);
-impl_primitive!(u64, put_u64, get_u64, 8usize);
-impl_primitive!(i64, put_i64, get_i64, 8usize);
-impl_primitive!(f32, put_f32, get_f32, 4usize);
-impl_primitive!(f64, put_f64, get_f64, 8usize);
+impl_primitive!(u8, put_u8, get_u8);
+impl_primitive!(i8, put_i8, get_i8);
+impl_primitive!(u16, put_u16, get_u16);
+impl_primitive!(i16, put_i16, get_i16);
+impl_primitive!(u32, put_u32, get_u32);
+impl_primitive!(i32, put_i32, get_i32);
+impl_primitive!(u64, put_u64, get_u64);
+impl_primitive!(i64, put_i64, get_i64);
+impl_primitive!(f32, put_f32, get_f32);
+impl_primitive!(f64, put_f64, get_f64);
 
 // String: serialized_len = bytes in UTF-8 (no extra length prefix; adapt if your PDU requires a length prefix)
 impl FieldSerialize for String {
@@ -281,16 +262,25 @@ macro_rules! impl_u8_flag_fields {
 /// - `pdu_type`: the `PduType` the PDU must report.
 /// - `default_bits`: length of a default PDU in bits, per the standard.
 /// - `wrong_type`: any other PDU, used to check type mismatches are rejected.
+///
+/// The generated module is self-contained: it brings its own serialize helper
+/// and constants, so the calling test module only needs the PDU types in scope.
 #[macro_export]
 macro_rules! pdu_tests {
     (
-           $mod_name:ident, $pdu:ty,
-           pdu_type: $pdu_type:expr,
-           default_bits: $default_bits:expr,
-           wrong_type: $other:ty $(,)?
-       ) => {
+        $mod_name:ident, $pdu:ty,
+        pdu_type: $pdu_type:expr,
+        default_bits: $default_bits:expr,
+        wrong_type: $other:ty $(,)?
+    ) => {
         mod $mod_name {
             use super::*;
+
+            fn to_bytes<P: $crate::common::pdu::Pdu>(pdu: &mut P) -> bytes::Bytes {
+                let mut buf = bytes::BytesMut::new();
+                pdu.serialize(&mut buf).expect("serialize failed");
+                buf.freeze()
+            }
 
             #[test]
             fn cast_to_any() {
@@ -306,7 +296,8 @@ macro_rules! pdu_tests {
 
             #[test]
             fn new_sets_default_length() {
-                const DEFAULT_LENGTH: u16 = $default_bits / BITS_PER_BYTE;
+                const DEFAULT_LENGTH: u16 =
+                    $default_bits / $crate::common::constants::BITS_PER_BYTE;
                 let pdu = <$pdu>::new();
                 assert_eq!(pdu.header().length, DEFAULT_LENGTH);
             }
@@ -326,7 +317,11 @@ macro_rules! pdu_tests {
                 let mut buf = original.clone();
                 let mut decoded = <$pdu>::deserialize(&mut buf).expect("deserialize failed");
 
-                assert_eq!(buf.remaining(), 0, "deserialize left bytes unread");
+                assert_eq!(
+                    bytes::Buf::remaining(&buf),
+                    0,
+                    "deserialize left bytes unread"
+                );
                 assert_eq!(decoded.header, pdu.header);
                 assert_eq!(to_bytes(&mut decoded), original);
             }
@@ -358,6 +353,7 @@ macro_rules! define_pdu {
         }
     ) => {
         $(#[$meta])*
+        #[derive(Default)]
         $vis struct $name {
             header: $header,
             $(
@@ -365,35 +361,18 @@ macro_rules! define_pdu {
             )*
         }
 
-        // Default impl using Default::default for header/fields (requires those impls)
-        impl Default for $name {
-            fn default() -> Self {
-                Self {
-                    header: <$header>::default(),
-                    $(
-                        $field: <$ftype>::default(),
-                    )*
-                }
-            }
-        }
-
-        // Body deserializer generated in terms of FieldDeserialize
         impl $name {
-            /// Deserialize only the body (fields), leaving header defaulted.
-            /// Note: for variable-length arrays/strings the generated code will call
-            /// `FieldDeserialize::deserialize_field()`, but for real variable-length fields
-            /// you should write custom code in the manual body impl below or adapt the macro.
-            fn deserialize_body<B: bytes::Buf>(buf: &mut B) -> Self {
+            /// Deserialize the body (fields) that follows an already-read header.
+            ///
+            /// Fields are read into locals first so that a `#[len = foo]` field
+            /// can refer to the already-read `foo`.
+            fn deserialize_body<B: bytes::Buf>(buf: &mut B, header: $header) -> Self {
                 $(
-                    // Each field can optionally be annotated with `#[len = name]`.
-                    // The helper macro below will either call the plain `FieldDeserialize`
-                    // or the length-aware `FieldDeserializeWithLen` depending on the
-                    // annotation.
                     $crate::__pdu_deserialize_field!( $( len = $len_field )? ; $field, $ftype, buf );
                 )*
 
                 Self {
-                    header: <$header>::default(),
+                    header,
                     $(
                         $field,
                     )*
@@ -401,12 +380,11 @@ macro_rules! define_pdu {
             }
         }
 
-        // Implement the Pdu trait (your crate's Pdu trait path may differ; adapt the path)
         impl $crate::common::pdu::Pdu for $name {
             type Header = $header;
 
             fn calculate_length(&self) -> Result<u16, $crate::common::dis_error::DISError> {
-                // Start with header length const; requires header::LENGTH const
+                // Requires a `LENGTH` const on the header type.
                 let mut len: usize = <$header>::LENGTH;
 
                 $(
@@ -428,23 +406,18 @@ macro_rules! define_pdu {
             }
 
             fn serialize(&mut self, buf: &mut bytes::BytesMut) -> Result<(), $crate::common::dis_error::DISError> {
-                // set header fields
                 self.header.set_pdu_type($pdu_type);
                 self.header.set_protocol_family($protocol_family);
 
-                // Allow annotated fields to update their associated "length" fields
-                // before we compute the overall PDU length. If a field is annotated
-                // `#[len = foo]` the prep macro will set `self.foo` appropriately.
+                // Fields annotated `#[len = foo]` update `self.foo` before the
+                // overall PDU length is computed.
                 $( $crate::__pdu_prep_serialize_field!( $( len = $len_field )? ; self, $field, $ftype ); )*
 
-                // compute length the correct way and set it
                 let len = self.calculate_length()?;
                 self.header.set_length(len);
 
-                // write header
                 self.header.serialize(buf);
 
-                // serialize each field
                 $(
                     <$ftype as $crate::pdu_macro::FieldSerialize>::serialize_field(&self.$field, buf);
                 )*
@@ -454,10 +427,8 @@ macro_rules! define_pdu {
 
             fn deserialize<B: bytes::Buf>(buf: &mut B) -> Result<Self, $crate::common::dis_error::DISError>
             where Self: Sized {
-                // deserialize header using its associated function
                 let header: Self::Header = <Self::Header as $crate::pdu_macro::FieldDeserialize>::deserialize_field(buf);
 
-                // check PDU type (assumes header exposes pdu_type() method; adapt if different)
                 if header.pdu_type() != $pdu_type {
                     return Err($crate::common::dis_error::DISError::invalid_header(
                         format!("Expected PDU type {:?}, got {:?}", $pdu_type, header.pdu_type()),
@@ -465,17 +436,12 @@ macro_rules! define_pdu {
                     ));
                 }
 
-                // read body fields with the generated deserializer
-                let mut body = Self::deserialize_body(buf);
-                body.header = header;
-                Ok(body)
+                Ok(Self::deserialize_body(buf, header))
             }
 
             fn deserialize_without_header<B: bytes::Buf>(buf: &mut B, header: Self::Header) -> Result<Self, $crate::common::dis_error::DISError>
             where Self: Sized {
-                let mut body = Self::deserialize_body(buf);
-                body.header = header;
-                Ok(body)
+                Ok(Self::deserialize_body(buf, header))
             }
 
             fn as_any(&self) -> &dyn std::any::Any {
@@ -483,7 +449,6 @@ macro_rules! define_pdu {
             }
         }
 
-        // Provide a convenience constructor (matching your existing API)
         impl $name {
             #[must_use]
             pub fn new() -> Self {
