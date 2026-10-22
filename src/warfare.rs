@@ -115,128 +115,41 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::BytesMut;
+    use crate::{
+        common::{constants::BITS_PER_BYTE, pdu::Pdu},
+        pdu_tests,
+    };
+    use bytes::{Buf, Bytes, BytesMut};
 
-    mod fire_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let fire_pdu = FirePdu::new();
-            let any_pdu = fire_pdu.as_any();
-
-            assert!(any_pdu.is::<FirePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = FirePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = FirePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 768 / 8;
-            let pdu = FirePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
+    /// Serialize a PDU, failing the test if serialization returns an error.
+    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
     }
 
-    mod detonation_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let detonation_pdu = DetonationPdu::new();
-            let any_pdu = detonation_pdu.as_any();
-
-            assert!(any_pdu.is::<DetonationPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = DetonationPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = DetonationPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 832 / BITS_PER_BYTE;
-            let pdu = DetonationPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod directed_energy_fire_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = DirectedEnergyFirePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<DirectedEnergyFirePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = DirectedEnergyFirePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                DirectedEnergyFirePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 704 / BITS_PER_BYTE;
-            let pdu = DirectedEnergyFirePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod entity_damage_status_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let entity_damage_status_pdu = EntityDamageStatusPdu::new();
-            let any_pdu = entity_damage_status_pdu.as_any();
-
-            assert!(any_pdu.is::<EntityDamageStatusPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = EntityDamageStatusPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                EntityDamageStatusPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 192 / 8;
-            let pdu = EntityDamageStatusPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
+    pdu_tests!(
+        fire_pdu_tests, FirePdu,
+        pdu_type: PduType::Fire,
+        default_bits: 768,
+        wrong_type: DetonationPdu,
+    );
+    pdu_tests!(
+        detonation_pdu_tests, DetonationPdu,
+        pdu_type: PduType::Detonation,
+        default_bits: 832,
+        wrong_type: DirectedEnergyFirePdu,
+    );
+    pdu_tests!(
+        directed_energy_fire_pdu_tests, DirectedEnergyFirePdu,
+        pdu_type: PduType::DirectedEnergyFire,
+        default_bits: 704,
+        wrong_type: EntityDamageStatusPdu,
+    );
+    pdu_tests!(
+        entity_damage_status_pdu_tests, EntityDamageStatusPdu,
+        pdu_type: PduType::EntityDamageStatus,
+        default_bits: 192,
+        wrong_type: DetonationPdu,
+    );
 }

@@ -12,14 +12,11 @@ use crate::{
     common::{
         GenericHeader, SerializedLength,
         data_types::{
-            EntityCoordinateVector, EntityId, EventId, LinearAcceleration, WorldCoordinate,
-            acoustic_emitter_system::AcousticEmitterSystem, apa_data::ApaData, beam_data::BeamData,
-            electromagnetic_emission_system_data::ElectromagneticEmissionSystemData,
-            fundamental_operational_data::FundamentalOperationalData,
-            iff_fundamental_parameter_data::IFFFundamentalParameterData, layer_header::LayerHeader,
-            propulsion_system_data::PropulsionSystemData,
-            secondary_operational_data::SecondaryOperationalData, shaft_rpms::ShaftRPMs,
-            system_id::SystemId, vectoring_nozzle_system_data::VectoringNozzleSystemData,
+            AcousticEmitterSystem, ApaData, BeamData, ElectromagneticEmissionSystemData,
+            EntityCoordinateVector, EntityId, EventId, FundamentalOperationalData,
+            IFFFundamentalParameterData, LayerHeader, LinearAcceleration, PropulsionSystemData,
+            SecondaryOperationalData, ShaftRPMs, SystemId, VectoringNozzleSystemData,
+            WorldCoordinate,
         },
         enums::{
             DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName,

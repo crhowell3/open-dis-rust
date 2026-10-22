@@ -24,14 +24,23 @@ impl EntityMarking {
 
     pub fn serialize(&self, buf: &mut BytesMut) {
         buf.put_u8(self.entity_marking_character_set as u8);
-        let marking = self.entity_marking_string.clone();
-        buf.put_slice(&marking.into_bytes()[..]);
+        let mut chars = [0u8; 11];
+        let src = self.entity_marking_string.as_bytes();
+        let n = src.len().min(chars.len());
+        chars[..n].copy_from_slice(&src[..n]);
+        buf.put_slice(&chars);
     }
 
     pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
+        let entity_marking_character_set = EntityMarkingCharacterSet::deserialize(buf);
+
+        let mut chars = [0u8; 11];
+        buf.copy_to_slice(&mut chars);
+        let len = chars.iter().position(|&b| b == 0).unwrap_or(chars.len());
+
         Self {
-            entity_marking_character_set: EntityMarkingCharacterSet::deserialize(buf),
-            entity_marking_string: buf.remaining().to_string(),
+            entity_marking_character_set,
+            entity_marking_string: String::from_utf8_lossy(&chars[..len]).into_owned(),
         }
     }
 }

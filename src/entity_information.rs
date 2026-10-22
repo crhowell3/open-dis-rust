@@ -8,18 +8,15 @@
 
 #![allow(deprecated)]
 
-use crate::common::data_types::attribute_record_set::AttributeRecordSet;
-use crate::common::data_types::dead_reckoning_parameters::DeadReckoningParameters;
-use crate::common::data_types::entity_marking::EntityMarking;
-use crate::common::data_types::{
-    EntityCoordinateVector, EntityId, EntityType, EulerAngles, EventId, LinearVelocity,
-    SimulationAddress, VariableParameter, WorldCoordinate,
-};
-use crate::common::enums::{EntityCapabilities, ForceId};
 use crate::{
     common::{
         GenericHeader, SerializedLength,
-        enums::{DISAttributeActionCode, PduType, ProtocolFamily},
+        data_types::{
+            AttributeRecordSet, DeadReckoningParameters, EntityCoordinateVector, EntityId,
+            EntityMarking, EntityType, EulerAngles, EventId, LinearVelocity, SimulationAddress,
+            VariableParameter, WorldCoordinate,
+        },
+        enums::{DISAttributeActionCode, EntityCapabilities, ForceId, PduType, ProtocolFamily},
         pdu::Pdu,
         pdu_header::PduHeader,
     },
@@ -143,158 +140,47 @@ define_pdu! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{constants::BITS_PER_BYTE, pdu::Pdu};
-    use bytes::BytesMut;
+    use crate::{
+        common::{constants::BITS_PER_BYTE, pdu::Pdu},
+        pdu_tests,
+    };
+    use bytes::{Buf, Bytes, BytesMut};
 
-    mod entity_state_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = EntityStatePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<EntityStatePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = EntityStatePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = EntityStatePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 1152 / BITS_PER_BYTE;
-            let pdu = EntityStatePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
+    /// Serialize a PDU, failing the test if serialization returns an error.
+    fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
     }
 
-    mod collision_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = CollisionPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<CollisionPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = CollisionPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = CollisionPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 480 / BITS_PER_BYTE;
-            let pdu = CollisionPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod collision_elastic_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = CollisionElasticPdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<CollisionElasticPdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = CollisionElasticPdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                CollisionElasticPdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 800 / BITS_PER_BYTE;
-            let pdu = CollisionElasticPdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod entity_state_update_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = EntityStateUpdatePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<EntityStateUpdatePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = EntityStateUpdatePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu =
-                EntityStateUpdatePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 576 / BITS_PER_BYTE;
-            let pdu = EntityStateUpdatePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
-
-    mod attribute_pdu_tests {
-        use super::*;
-
-        #[test]
-        fn cast_to_any() {
-            let pdu = AttributePdu::new();
-            let any_pdu = pdu.as_any();
-
-            assert!(any_pdu.is::<AttributePdu>());
-        }
-
-        #[test]
-        fn serialize_then_deserialize() {
-            let mut pdu = AttributePdu::new();
-            let mut serialize_buf = BytesMut::new();
-            let _ = pdu.serialize(&mut serialize_buf);
-
-            let mut deserialize_buf = serialize_buf.freeze();
-            let new_pdu = AttributePdu::deserialize(&mut deserialize_buf).unwrap_or_default();
-            assert_eq!(new_pdu.header, pdu.header);
-        }
-
-        #[test]
-        fn check_default_pdu_length() {
-            const DEFAULT_LENGTH: u16 = 256 / BITS_PER_BYTE;
-            let pdu = AttributePdu::new();
-            assert_eq!(pdu.header().length, DEFAULT_LENGTH);
-        }
-    }
+    pdu_tests!(
+        entity_state_pdu_tests, EntityStatePdu,
+        pdu_type: PduType::EntityState,
+        default_bits: 1152,
+        wrong_type: CollisionPdu,
+    );
+    pdu_tests!(
+        collision_pdu_tests, CollisionPdu,
+        pdu_type: PduType::Collision,
+        default_bits: 480,
+        wrong_type: CollisionElasticPdu,
+    );
+    pdu_tests!(
+        collision_elastic_pdu_tests, CollisionElasticPdu,
+        pdu_type: PduType::CollisionElastic,
+        default_bits: 800,
+        wrong_type: EntityStateUpdatePdu,
+    );
+    pdu_tests!(
+        entity_state_update_pdu_tests, EntityStateUpdatePdu,
+        pdu_type: PduType::EntityStateUpdate,
+        default_bits: 576,
+        wrong_type: AttributePdu,
+    );
+    pdu_tests!(
+        attribute_pdu_tests, AttributePdu,
+        pdu_type: PduType::Attribute,
+        default_bits: 256,
+        wrong_type: CollisionPdu,
+    );
 }
