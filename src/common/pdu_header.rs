@@ -7,21 +7,18 @@
 
 #![allow(clippy::must_use_candidate)]
 
-use bytes::{Buf, BufMut, BytesMut};
+use bytes::{Buf, BytesMut};
 use chrono::{Timelike, Utc};
 use modular_bitfield::prelude::*;
 
-use crate::{
-    common::{
-        GenericHeader, SerializedLength,
-        enums::{
-            ActiveInterrogationIndicator, CoupledExtensionIndicator, DetonationTypeIndicator,
-            FireTypeIndicator, IntercomAttachedIndicator, LVCIndicator, PduStatusIFFSimulationMode,
-            PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator,
-            TransferredEntityIndicator,
-        },
+use crate::common::{
+    GenericHeader, SerializedLength,
+    enums::{
+        ActiveInterrogationIndicator, CoupledExtensionIndicator, DetonationTypeIndicator,
+        FireTypeIndicator, IntercomAttachedIndicator, LVCIndicator, PduStatusIFFSimulationMode,
+        PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator,
+        TransferredEntityIndicator,
     },
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
 };
 
 #[bitfield(bits = 8)]
@@ -133,7 +130,54 @@ impl Default for PduStatusRecord {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+impl<'a> deku::DekuReader<'a, deku::ctx::Endian> for PduStatusRecord {
+    fn from_reader_with_ctx<R: deku::no_std_io::Read + deku::no_std_io::Seek>(
+        reader: &mut deku::reader::Reader<R>,
+        endian: deku::ctx::Endian,
+    ) -> Result<Self, deku::DekuError> {
+        <u8 as deku::DekuReader<'a, deku::ctx::Endian>>::from_reader_with_ctx(reader, endian)
+            .map(Self::from_u8)
+    }
+}
+
+impl<'a> deku::DekuReader<'a, ()> for PduStatusRecord {
+    fn from_reader_with_ctx<R: deku::no_std_io::Read + deku::no_std_io::Seek>(
+        reader: &mut deku::reader::Reader<R>,
+        (): (),
+    ) -> Result<Self, deku::DekuError> {
+        <Self as deku::DekuReader<'a, deku::ctx::Endian>>::from_reader_with_ctx(
+            reader,
+            deku::ctx::Endian::Big,
+        )
+    }
+}
+
+impl deku::DekuWriter<deku::ctx::Endian> for PduStatusRecord {
+    fn to_writer<W: deku::no_std_io::Write + deku::no_std_io::Seek>(
+        &self,
+        writer: &mut deku::writer::Writer<W>,
+        endian: deku::ctx::Endian,
+    ) -> Result<(), deku::DekuError> {
+        deku::DekuWriter::to_writer(&self.to_u8(), writer, endian)
+    }
+}
+
+impl deku::DekuWriter<()> for PduStatusRecord {
+    fn to_writer<W: deku::no_std_io::Write + deku::no_std_io::Seek>(
+        &self,
+        writer: &mut deku::writer::Writer<W>,
+        (): (),
+    ) -> Result<(), deku::DekuError> {
+        deku::DekuWriter::to_writer(self, writer, deku::ctx::Endian::Big)
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct PduHeader {
     /// The version of the protocol
     pub protocol_version: ProtocolVersion,
@@ -194,27 +238,11 @@ impl GenericHeader for PduHeader {
     }
 
     fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.protocol_version as u8);
-        buf.put_u8(self.exercise_id);
-        buf.put_u8(self.pdu_type as u8);
-        buf.put_u8(self.protocol_family as u8);
-        buf.put_u32(self.timestamp);
-        buf.put_u16(self.length);
-        buf.put_u8(self.status_record.to_u8());
-        buf.put_u8(self.padding);
+        let _ = crate::common::wire::write(self, buf);
     }
 
-    fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            protocol_version: ProtocolVersion::deserialize(buf),
-            exercise_id: buf.get_u8(),
-            pdu_type: PduType::deserialize(buf),
-            protocol_family: ProtocolFamily::deserialize(buf),
-            timestamp: buf.get_u32(),
-            length: buf.get_u16(),
-            status_record: PduStatusRecord::from_u8(buf.get_u8()),
-            padding: buf.get_u8(),
-        }
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, crate::common::DISError> {
+        Ok(crate::common::wire::read(buf)?)
     }
 }
 
@@ -262,24 +290,6 @@ impl PduHeader {
         }
         let mut buf = &bytes[..Self::LENGTH];
         Some(Self::deserialize(&mut buf).pdu_type)
-    }
-}
-
-impl FieldSerialize for PduHeader {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for PduHeader {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for PduHeader {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
     }
 }
 

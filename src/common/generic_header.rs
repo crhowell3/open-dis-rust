@@ -6,7 +6,10 @@
 
 use bytes::{Buf, BytesMut};
 
-use crate::common::enums::{PduType, ProtocolFamily};
+use crate::common::{
+    DISError,
+    enums::{PduType, ProtocolFamily},
+};
 
 pub trait GenericHeader: Sized {
     fn pdu_type(&self) -> PduType;
@@ -19,5 +22,5 @@ pub trait GenericHeader: Sized {
     fn set_length(&mut self, value: u16);
 
     fn serialize(&self, buf: &mut BytesMut);
-    fn deserialize<B: Buf>(buf: &mut B) -> Self;
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>;
 }

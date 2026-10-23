@@ -14,14 +14,13 @@ pub mod generic_header;
 pub mod live_entity_pdu_header;
 pub mod live_entity_records;
 pub mod pdu;
-pub mod pdu_body;
 pub mod pdu_header;
 pub mod serialized_length;
+pub mod wire;
 
 pub use dis_error::DISError;
 pub use generic_header::GenericHeader;
 pub use live_entity_pdu_header::LiveEntityPduHeader;
 pub use pdu::Pdu;
-pub use pdu_body::PduBody;
 pub use pdu_header::PduHeader;
 pub use serialized_length::SerializedLength;

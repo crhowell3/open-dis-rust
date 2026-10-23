@@ -4,18 +4,20 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use bytes::{Buf, BytesMut};
 use chrono::{Timelike, Utc};
 
-use crate::{
-    common::{
-        GenericHeader, SerializedLength,
-        enums::{DISLiveEntitySubprotocolNumber, PduType, ProtocolFamily, ProtocolVersion},
-    },
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+use crate::common::{
+    GenericHeader, SerializedLength,
+    enums::{DISLiveEntitySubprotocolNumber, PduType, ProtocolFamily, ProtocolVersion},
 };
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct LiveEntityPduHeader {
     /// The version of the protocol
     pub protocol_version: ProtocolVersion,
@@ -76,27 +78,11 @@ impl GenericHeader for LiveEntityPduHeader {
     }
 
     fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.protocol_version as u8);
-        buf.put_u8(self.exercise_id);
-        buf.put_u8(self.pdu_type as u8);
-        buf.put_u8(self.protocol_family as u8);
-        buf.put_u32(self.timestamp);
-        buf.put_u16(self.length);
-        buf.put_u8(self.subprotocol_number as u8);
-        buf.put_u8(self.padding);
+        let _ = crate::common::wire::write(self, buf);
     }
 
-    fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            protocol_version: ProtocolVersion::deserialize(buf),
-            exercise_id: buf.get_u8(),
-            pdu_type: PduType::deserialize(buf),
-            protocol_family: ProtocolFamily::deserialize(buf),
-            timestamp: buf.get_u32(),
-            length: buf.get_u16(),
-            subprotocol_number: DISLiveEntitySubprotocolNumber::deserialize(buf),
-            padding: buf.get_u8(),
-        }
+    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, crate::common::DISError> {
+        Ok(crate::common::wire::read(buf)?)
     }
 }
 
@@ -132,24 +118,6 @@ impl LiveEntityPduHeader {
         let nanosecond_curr = u64::from(Utc::now().nanosecond() / 1000);
         let dis_time = (second_curr + minute_curr + nanosecond_curr) as f32 / 1.68;
         dis_time as u32
-    }
-}
-
-impl FieldSerialize for LiveEntityPduHeader {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for LiveEntityPduHeader {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for LiveEntityPduHeader {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
     }
 }
 

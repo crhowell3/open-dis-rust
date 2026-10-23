@@ -4,14 +4,14 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::data_types::fixed_binary_8::FixedBinary8;
 
-use crate::{
-    common::data_types::fixed_binary_8::FixedBinary8,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.7
 /// For all fields, assume right-hand rule for directionality
 pub struct LEEntityAngularVelocity {
@@ -28,39 +28,5 @@ impl LEEntityAngularVelocity {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
-    }
-
-    /// Serialize an instance of an `AngularVelocity` into a mutable byte stream
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_i8(self.rate_about_x_axis.to_i8());
-        buf.put_i8(self.rate_about_y_axis.to_i8());
-        buf.put_i8(self.rate_about_z_axis.to_i8());
-    }
-
-    /// Decode an `AngularVelocity` from a mutable byte stream
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            rate_about_x_axis: FixedBinary8::from_i8(buf.get_i8()),
-            rate_about_y_axis: FixedBinary8::from_i8(buf.get_i8()),
-            rate_about_z_axis: FixedBinary8::from_i8(buf.get_i8()),
-        }
-    }
-}
-
-impl FieldSerialize for LEEntityAngularVelocity {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for LEEntityAngularVelocity {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for LEEntityAngularVelocity {
-    fn field_len(&self) -> usize {
-        3
     }
 }

@@ -4,10 +4,12 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-use bytes::{Buf, BufMut, BytesMut};
-
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.28
 pub struct LEEntityId {
     /// The unique identification number of the site
@@ -27,36 +29,5 @@ impl LEEntityId {
             entity_number,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.site_number);
-        buf.put_u8(self.application_number);
-        buf.put_u16(self.entity_number);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            site_number: buf.get_u8(),
-            application_number: buf.get_u8(),
-            entity_number: buf.get_u16(),
-        }
-    }
 }
 
-impl FieldSerialize for LEEntityId {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for LEEntityId {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for LEEntityId {
-    fn field_len(&self) -> usize {
-        4
-    }
-}

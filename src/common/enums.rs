@@ -12,7 +12,118 @@ use modular_bitfield::Specifier;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+macro_rules! impl_deku_enum {
+    ($name:ident, $repr:ty, $from:ident) => {
+        impl<'a> deku::DekuReader<'a, deku::ctx::Endian> for $name {
+            fn from_reader_with_ctx<R: deku::no_std_io::Read + deku::no_std_io::Seek>(
+                reader: &mut deku::reader::Reader<R>,
+                endian: deku::ctx::Endian,
+            ) -> Result<Self, deku::DekuError> {
+                let value =
+                    <$repr as deku::DekuReader<'a, deku::ctx::Endian>>::from_reader_with_ctx(
+                        reader, endian,
+                    )?;
+                <Self as FromPrimitive>::$from(value).ok_or_else(|| {
+                    deku::DekuError::Parse(
+                        format!("{value} is not a defined {} value", stringify!($name)).into(),
+                    )
+                })
+            }
+        }
+
+        impl<'a> deku::DekuReader<'a, ()> for $name {
+            fn from_reader_with_ctx<R: deku::no_std_io::Read + deku::no_std_io::Seek>(
+                reader: &mut deku::reader::Reader<R>,
+                (): (),
+            ) -> Result<Self, deku::DekuError> {
+                <Self as deku::DekuReader<'a, deku::ctx::Endian>>::from_reader_with_ctx(
+                    reader,
+                    deku::ctx::Endian::Big,
+                )
+            }
+        }
+
+        impl deku::DekuWriter<deku::ctx::Endian> for $name {
+            fn to_writer<W: deku::no_std_io::Write + deku::no_std_io::Seek>(
+                &self,
+                writer: &mut deku::writer::Writer<W>,
+                endian: deku::ctx::Endian,
+            ) -> Result<(), deku::DekuError> {
+                // Lossless: a fieldless enum cast to the type its values fit in.
+                #[allow(clippy::as_conversions)]
+                let value = *self as $repr;
+                value.to_writer(writer, endian)
+            }
+        }
+
+        impl deku::DekuWriter<()> for $name {
+            fn to_writer<W: deku::no_std_io::Write + deku::no_std_io::Seek>(
+                &self,
+                writer: &mut deku::writer::Writer<W>,
+                (): (),
+            ) -> Result<(), deku::DekuError> {
+                <Self as deku::DekuWriter<deku::ctx::Endian>>::to_writer(
+                    self,
+                    writer,
+                    deku::ctx::Endian::Big,
+                )
+            }
+        }
+    };
+}
+
+macro_rules! impl_deku_bitflags {
+    ($name:ident, $repr:ty) => {
+        impl<'a> deku::DekuReader<'a, deku::ctx::Endian> for $name {
+            fn from_reader_with_ctx<R: deku::no_std_io::Read + deku::no_std_io::Seek>(
+                reader: &mut deku::reader::Reader<R>,
+                endian: deku::ctx::Endian,
+            ) -> Result<Self, deku::DekuError> {
+                <$repr as deku::DekuReader<'a, deku::ctx::Endian>>::from_reader_with_ctx(
+                    reader, endian,
+                )
+                .map(Self::from_bits_retain)
+            }
+        }
+
+        impl<'a> deku::DekuReader<'a, ()> for $name {
+            fn from_reader_with_ctx<R: deku::no_std_io::Read + deku::no_std_io::Seek>(
+                reader: &mut deku::reader::Reader<R>,
+                (): (),
+            ) -> Result<Self, deku::DekuError> {
+                <Self as deku::DekuReader<'a, deku::ctx::Endian>>::from_reader_with_ctx(
+                    reader,
+                    deku::ctx::Endian::Big,
+                )
+            }
+        }
+
+        impl deku::DekuWriter<deku::ctx::Endian> for $name {
+            fn to_writer<W: deku::no_std_io::Write + deku::no_std_io::Seek>(
+                &self,
+                writer: &mut deku::writer::Writer<W>,
+                endian: deku::ctx::Endian,
+            ) -> Result<(), deku::DekuError> {
+                self.bits().to_writer(writer, endian)
+            }
+        }
+
+        impl deku::DekuWriter<()> for $name {
+            fn to_writer<W: deku::no_std_io::Write + deku::no_std_io::Seek>(
+                &self,
+                writer: &mut deku::writer::Writer<W>,
+                (): (),
+            ) -> Result<(), deku::DekuError> {
+                <Self as deku::DekuWriter<deku::ctx::Endian>>::to_writer(
+                    self,
+                    writer,
+                    deku::ctx::Endian::Big,
+                )
+            }
+        }
+    };
+}
+pub(crate) use impl_deku_bitflags;
 
 // SISO-REF-010-2023 Protocol Version [UID 3]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -29,12 +140,7 @@ pub enum ProtocolVersion {
     IEEE1278_1_2012 = 7,
 }
 
-impl ProtocolVersion {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ProtocolVersion, u8, from_u8);
 
 // SISO-REF-010-2023 PDU Type [UID 4]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -115,12 +221,7 @@ pub enum PduType {
     Attribute = 72,
 }
 
-impl PduType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PduType, u8, from_u8);
 
 // SISO-REF-010-2023 Protocol Family [UID 5]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]

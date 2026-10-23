@@ -4,14 +4,14 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::enums::{UAAcousticEmitterSystemFunction, UAAcousticSystemName};
 
-use crate::{
-    common::enums::{UAAcousticEmitterSystemFunction, UAAcousticSystemName},
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.2
 pub struct AcousticEmitterSystem {
     pub acoustic_name: UAAcousticSystemName,
@@ -32,36 +32,5 @@ impl AcousticEmitterSystem {
             acoustic_id,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.acoustic_name as u16);
-        buf.put_u8(self.acoustic_function as u8);
-        buf.put_u8(self.acoustic_id);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            acoustic_name: UAAcousticSystemName::deserialize(buf),
-            acoustic_function: UAAcousticEmitterSystemFunction::deserialize(buf),
-            acoustic_id: buf.get_u8(),
-        }
-    }
 }
 
-impl FieldSerialize for AcousticEmitterSystem {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for AcousticEmitterSystem {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for AcousticEmitterSystem {
-    fn field_len(&self) -> usize {
-        self.acoustic_name.field_len() + self.acoustic_function.field_len() + 1
-    }
-}
