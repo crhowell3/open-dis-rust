@@ -3,12 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-
-#[derive(Debug, Clone, Copy, Default)]
-
+#[derive(Debug, Clone, Copy, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct FixedBinary8(i8);
 
 impl FixedBinary8 {
@@ -44,24 +44,5 @@ impl FixedBinary8 {
     #[must_use]
     pub const fn to_i8(self) -> i8 {
         self.0
-    }
-}
-
-impl FieldSerialize for FixedBinary8 {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_i8(self.to_i8());
-    }
-}
-
-impl FieldDeserialize for FixedBinary8 {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        let bytes = buf.get_i8();
-        Self::from_i8(bytes)
-    }
-}
-
-impl FieldLen for FixedBinary8 {
-    fn field_len(&self) -> usize {
-        1
     }
 }

@@ -14,7 +14,6 @@ use deku::{
 };
 
 use crate::common::{
-    GenericHeader,
     data_types::{
         AntennaPattern, EntityCoordinateVector, EntityId, IntercomCommunicationsParameters,
         ModulationParameters, ModulationType, RadioEntityType, VariableTransmitterParameters,
@@ -26,7 +25,6 @@ use crate::common::{
         TransmitterAntennaPatternType, TransmitterCryptoSystem, TransmitterInputSource,
         TransmitterTransmitState,
     },
-    pdu::Pdu,
     pdu_header::PduHeader,
 };
 

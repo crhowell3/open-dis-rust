@@ -3,14 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct SystemId {
     pub system_type: u16,
     pub system_name: u16,
@@ -33,42 +31,5 @@ impl SystemId {
             change_options,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.system_type);
-        buf.put_u16(self.system_name);
-        buf.put_u8(self.system_mode);
-        buf.put_u8(self.change_options);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            system_type: buf.get_u16(),
-            system_name: buf.get_u16(),
-            system_mode: buf.get_u8(),
-            change_options: buf.get_u8(),
-        }
-    }
 }
 
-impl FieldSerialize for SystemId {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for SystemId {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for SystemId {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for SystemId {
-    const LENGTH: usize = 6;
-}

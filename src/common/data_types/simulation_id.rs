@@ -4,14 +4,14 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::data_types::SimulationAddress;
 
-use crate::{
-    common::{SerializedLength, data_types::SimulationAddress},
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct SimulationIdentifier {
     pub simulation_address: SimulationAddress,
     pub reference_number: u16,
@@ -25,38 +25,4 @@ impl SimulationIdentifier {
             reference_number: 0u16,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        self.simulation_address.serialize(buf);
-        buf.put_u16(0u16);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            simulation_address: SimulationAddress::deserialize(buf),
-            reference_number: buf.get_u16(),
-        }
-    }
-}
-
-impl FieldSerialize for SimulationIdentifier {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for SimulationIdentifier {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for SimulationIdentifier {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for SimulationIdentifier {
-    const LENGTH: usize = SimulationAddress::LENGTH + 2;
 }

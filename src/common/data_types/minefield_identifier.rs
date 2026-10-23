@@ -3,14 +3,14 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::data_types::simulation_address::SimulationAddress;
 
-use crate::{
-    common::data_types::simulation_address::SimulationAddress,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct MinefieldIdentifier {
     pub simulation_address: SimulationAddress,
     pub minefield_number: u16,
@@ -23,35 +23,5 @@ impl MinefieldIdentifier {
             simulation_address,
             minefield_number,
         }
-    }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        self.simulation_address.serialize(buf);
-        buf.put_u16(self.minefield_number);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            simulation_address: SimulationAddress::deserialize(buf),
-            minefield_number: buf.get_u16(),
-        }
-    }
-}
-
-impl FieldSerialize for MinefieldIdentifier {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for MinefieldIdentifier {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for MinefieldIdentifier {
-    fn field_len(&self) -> usize {
-        self.simulation_address.field_len() + self.minefield_number.field_len()
     }
 }

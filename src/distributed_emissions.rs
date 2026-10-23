@@ -16,7 +16,6 @@ use deku::{
 };
 
 use crate::common::{
-    GenericHeader,
     data_types::{
         AcousticEmitterSystemData, ApaData, BeamData, ElectromagneticEmissionSystemData,
         EntityCoordinateVector, EntityId, EventId, FundamentalOperationalData,
@@ -27,7 +26,6 @@ use crate::common::{
         DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName, EEAttributeStateIndicator,
         PduType, ProtocolFamily, UAPassiveParameterIndex, UAStateChangeUpdateIndicator,
     },
-    pdu::Pdu,
     pdu_header::PduHeader,
 };
 
@@ -301,7 +299,7 @@ mod tests {
     pdu_tests!(
         iff_pdu_tests, IFFPdu,
         pdu_type: PduType::IFF,
-        default_bits: 704,
+        default_bits: 480,
         wrong_type: SupplementalEmissionPdu,
     );
     pdu_tests!(

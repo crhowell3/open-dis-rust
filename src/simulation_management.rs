@@ -10,8 +10,6 @@ use crate::common::enums::{ActionResponseRequestStatus, EventType, FrozenBehavio
 use crate::common::{
     data_types::{ClockTime, EntityId, FixedDatumRecord, VariableDatumRecord},
     enums::{AcknowledgeFlag, AcknowledgeResponseFlag, PduType, ProtocolFamily},
-    generic_header::GenericHeader,
-    pdu::Pdu,
     pdu_header::PduHeader,
 };
 

@@ -285,11 +285,10 @@ impl PduHeader {
     /// Only deserializes the 12-byte header.
     #[must_use]
     pub fn get_pdu_type(bytes: &[u8]) -> Option<PduType> {
-        if bytes.len() < Self::LENGTH {
-            return None;
-        }
-        let mut buf = &bytes[..Self::LENGTH];
-        Some(Self::deserialize(&mut buf).pdu_type)
+        let mut buf = bytes.get(..Self::LENGTH)?;
+        Self::deserialize(&mut buf)
+            .ok()
+            .map(|header| header.pdu_type)
     }
 }
 

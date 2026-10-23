@@ -3,11 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct AggregateId {
     pub site: u16,
     pub application: u16,
@@ -23,36 +24,5 @@ impl AggregateId {
             aggregate_id,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.site);
-        buf.put_u16(self.application);
-        buf.put_u16(self.aggregate_id);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            site: buf.get_u16(),
-            application: buf.get_u16(),
-            aggregate_id: buf.get_u16(),
-        }
-    }
 }
 
-impl FieldSerialize for AggregateId {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for AggregateId {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for AggregateId {
-    fn field_len(&self) -> usize {
-        6
-    }
-}

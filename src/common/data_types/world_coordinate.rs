@@ -4,14 +4,12 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.98
 pub struct WorldCoordinate {
     /// The coordinate value along the X-axis which passes through the prime meridian at the equator
@@ -37,40 +35,4 @@ impl WorldCoordinate {
     pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f64(self.x);
-        buf.put_f64(self.y);
-        buf.put_f64(self.z);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            x: buf.get_f64(),
-            y: buf.get_f64(),
-            z: buf.get_f64(),
-        }
-    }
-}
-
-impl FieldSerialize for WorldCoordinate {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for WorldCoordinate {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for WorldCoordinate {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for WorldCoordinate {
-    const LENGTH: usize = 24;
 }

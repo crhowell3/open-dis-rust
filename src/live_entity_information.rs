@@ -421,7 +421,7 @@ mod tests {
     pdu_tests!(
         time_space_position_information_pdu_tests, TimeSpacePositionInformationPdu,
         pdu_type: PduType::TimeSpacePositionInformation,
-        default_bits: 432,
+        default_bits: 200,
         wrong_type: AppearancePdu,
     );
     pdu_tests!(

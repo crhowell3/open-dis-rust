@@ -7,7 +7,6 @@
 //! The Synthetic Environment protocol family
 
 use crate::common::{
-    GenericHeader,
     data_types::{
         ClockTime, EntityId, EntityType, Environment, EulerAngles, GridAxisDescriptor,
         GridDataRecord, LinearSegmentParameter, ObjectIdentifier, ObjectType, SimulationAddress,
@@ -17,7 +16,6 @@ use crate::common::{
         ForceId, GriddedDataConstantGrid, GriddedDataCoordinateSystem,
         ObjectStateAppearanceGeneral, PduType, ProtocolFamily,
     },
-    pdu::Pdu,
     pdu_header::PduHeader,
 };
 

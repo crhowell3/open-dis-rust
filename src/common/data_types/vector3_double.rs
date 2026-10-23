@@ -4,11 +4,12 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::common::SerializedLength;
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 /// Custom vector type containing 3 double precision fields
 pub struct Vector3Double {
     /// The first value within the vector
@@ -24,22 +25,4 @@ impl Vector3Double {
     pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f64(self.x);
-        buf.put_f64(self.y);
-        buf.put_f64(self.z);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            x: buf.get_f64(),
-            y: buf.get_f64(),
-            z: buf.get_f64(),
-        }
-    }
-}
-
-impl SerializedLength for Vector3Double {
-    const LENGTH: usize = 24;
 }

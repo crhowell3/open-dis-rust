@@ -2,62 +2,38 @@
 //     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD-2-Clause License
-use bytes::{Buf, BufMut, BytesMut};
 
-use crate::common::enums::VariableParameterRecordType;
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
+use crate::common::enums::VariableRecordTypes;
 
-#[derive(Clone, Debug, Default)]
+/// Variable Transmitter Parameters record (IEEE 1278.1-2012 §6.2.95).
+/// `record_length` is the whole record in octets, a multiple of 8.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct VariableTransmitterParameters {
-    pub record_type: VariableParameterRecordType,
+    /// SISO-REF-010 UID 66.
+    pub record_type: VariableRecordTypes,
+    #[deku(
+        update = "crate::common::wire::padded_record_length(self.record_specific_fields.len())?",
+        assert = "crate::common::wire::valid_record_length(*record_length)"
+    )]
     pub record_length: u16,
+    /// Everything after the record length. When decoded, this includes the
+    /// padding to the 64-bit boundary; when encoded, padding is added to
+    /// reach it.
+    #[deku(
+        count = "crate::common::wire::record_fields_len(*record_length)",
+        writer = "crate::common::wire::write_padded_fields(deku::writer, record_specific_fields)"
+    )]
     pub record_specific_fields: Vec<u8>,
-}
-
-impl FieldSerialize for VariableTransmitterParameters {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for VariableTransmitterParameters {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for VariableTransmitterParameters {
-    fn field_len(&self) -> usize {
-        4 /* record_type u32 */ + 2 /* record_length u16 */ + self.record_specific_fields.len()
-    }
 }
 
 impl VariableTransmitterParameters {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
-    }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u32(self.record_type as u32);
-        buf.put_u16(self.record_length);
-        for i in 0..self.record_specific_fields.len() {
-            buf.put_u8(self.record_specific_fields[i]);
-        }
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        let record_type = VariableParameterRecordType::deserialize(buf);
-        let record_length = buf.get_u16();
-        let mut record_specific_fields: Vec<u8> = vec![];
-        for _ in 0..record_length {
-            record_specific_fields.push(buf.get_u8());
-        }
-
-        Self {
-            record_type,
-            record_length,
-            record_specific_fields,
-        }
     }
 }

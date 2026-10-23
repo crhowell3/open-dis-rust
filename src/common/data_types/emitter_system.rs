@@ -3,13 +3,14 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::{
-    SerializedLength,
-    enums::{EmitterName, EmitterSystemFunction},
-};
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::enums::{EmitterName, EmitterSystemFunction};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct EmitterSystem {
     pub emitter_name: EmitterName,
     pub function: EmitterSystemFunction,
@@ -35,23 +36,4 @@ impl EmitterSystem {
             emitter_id_number: id,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.emitter_name as u16);
-        buf.put_u8(self.function as u8);
-        buf.put_u8(self.emitter_id_number);
-    }
-
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            emitter_name: EmitterName::deserialize(buf),
-            function: EmitterSystemFunction::deserialize(buf),
-            emitter_id_number: buf.get_u8(),
-        }
-    }
-}
-
-impl SerializedLength for EmitterSystem {
-    const LENGTH: usize = 4;
 }

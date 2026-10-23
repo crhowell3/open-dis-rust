@@ -3,11 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct Point {
     pub x: f32,
     pub y: f32,
@@ -17,35 +18,5 @@ impl Point {
     #[must_use]
     pub const fn new(x: f32, y: f32) -> Self {
         Self { x, y }
-    }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f32(self.x);
-        buf.put_f32(self.y);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            x: buf.get_f32(),
-            y: buf.get_f32(),
-        }
-    }
-}
-
-impl FieldSerialize for Point {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for Point {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for Point {
-    fn field_len(&self) -> usize {
-        self.x.field_len() + self.y.field_len()
     }
 }

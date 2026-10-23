@@ -12,8 +12,6 @@ use crate::common::{
         IOActionIOActionPhase, IOActionIOActionType, IOActionIOSimulationSource,
         IOActionIOWarfareType, IOReportIOReportType, PduType, ProtocolFamily,
     },
-    generic_header::GenericHeader,
-    pdu::Pdu,
     pdu_header::PduHeader,
 };
 

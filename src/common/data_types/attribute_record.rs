@@ -4,14 +4,28 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+/// Attribute record (IEEE 1278.1-2012 §6.2.10). `record_length` is the whole
+/// record in octets, a multiple of 8.
 pub struct AttributeRecord {
     pub record_type: u32,
+    #[deku(
+        update = "crate::common::wire::padded_record_length(self.record_specific_fields.len())?",
+        assert = "crate::common::wire::valid_record_length(*record_length)"
+    )]
     pub record_length: u16,
+    /// Everything after the record length. When decoded, this includes the
+    /// padding to the 64-bit boundary; when encoded, padding is added to
+    /// reach it.
+    #[deku(
+        count = "crate::common::wire::record_fields_len(*record_length)",
+        writer = "crate::common::wire::write_padded_fields(deku::writer, record_specific_fields)"
+    )]
     pub record_specific_fields: Vec<u8>,
 }
 
@@ -24,44 +38,5 @@ impl AttributeRecord {
             record_specific_fields: vec![],
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u32(self.record_type);
-        buf.put_u16(self.record_length);
-        for i in 0..self.record_specific_fields.len() {
-            buf.put_u8(self.record_specific_fields[i]);
-        }
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        let record_type = buf.get_u32();
-        let record_length = buf.get_u16();
-        let mut record_specific_fields: Vec<u8> = vec![];
-        for _ in 0..record_length {
-            record_specific_fields.push(buf.get_u8());
-        }
-        Self {
-            record_type,
-            record_length,
-            record_specific_fields,
-        }
-    }
 }
 
-impl FieldSerialize for AttributeRecord {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for AttributeRecord {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for AttributeRecord {
-    fn field_len(&self) -> usize {
-        4 + 2 + self.record_specific_fields.field_len()
-    }
-}

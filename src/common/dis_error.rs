@@ -68,6 +68,9 @@ pub enum DISError {
 
     #[error("PDU size exceeds maximum allowed: {size} > {max_size}")]
     PduSizeExceeded { size: usize, max_size: usize },
+
+    #[error("PDU wire format error: {0}")]
+    WireFormat(#[from] deku::DekuError),
 }
 
 impl DISError {

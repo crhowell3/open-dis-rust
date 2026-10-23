@@ -3,14 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct IFFFundamentalParameterData {
     pub erp: f32,
     pub frequency: f32,
@@ -56,60 +54,4 @@ impl IFFFundamentalParameterData {
             system_specific_data,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f32(self.erp);
-        buf.put_f32(self.frequency);
-        buf.put_f32(self.pgrf);
-        buf.put_f32(self.pulse_width);
-        buf.put_u32(self.burst_length);
-        buf.put_u8(self.applicable_modes);
-        for i in self.system_specific_data {
-            buf.put_u8(i);
-        }
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        let erp = buf.get_f32();
-        let frequency = buf.get_f32();
-        let pgrf = buf.get_f32();
-        let pulse_width = buf.get_f32();
-        let burst_length = buf.get_u32();
-        let applicable_modes = buf.get_u8();
-        let mut system_specific_data: [u8; 3] = [0; 3];
-        for data in &mut system_specific_data {
-            *data = buf.get_u8();
-        }
-        Self {
-            erp,
-            frequency,
-            pgrf,
-            pulse_width,
-            burst_length,
-            applicable_modes,
-            system_specific_data,
-        }
-    }
-}
-
-impl FieldSerialize for IFFFundamentalParameterData {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for IFFFundamentalParameterData {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IFFFundamentalParameterData {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for IFFFundamentalParameterData {
-    const LENGTH: usize = 24;
 }

@@ -7,7 +7,6 @@
 //! The Entity Management protocol family
 
 use crate::common::{
-    GenericHeader,
     data_types::{
         AggregateId, AggregateMarking, EntityId, EntityType, EulerAngles, LinearVelocity,
         NamedLocation, RecordSpecification, Relationship, SimulationIdentifier,
@@ -18,7 +17,6 @@ use crate::common::{
         IsGroupOfGroupedEntityCategory, PduType, ProtocolFamily, RequiredReliabilityService,
         TransferControlTransferType,
     },
-    pdu::Pdu,
     pdu_header::PduHeader,
 };
 

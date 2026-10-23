@@ -7,11 +7,16 @@
 #![allow(deprecated)]
 
 use bitflags::bitflags;
-use bytes::{Buf, BufMut, BytesMut};
 use modular_bitfield::Specifier;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+/// Implements deku's reader and writer for a fieldless enum that derives
+/// `FromPrimitive`, encoding it as its discriminant in `$repr`.
+///
+/// Decoding a value the enum doesn't define is an error. This is written by
+/// hand rather than derived because a derived reader for the largest enums
+/// (thousands of variants) needs megabytes of stack in debug builds.
 macro_rules! impl_deku_enum {
     ($name:ident, $repr:ty, $from:ident) => {
         impl<'a> deku::DekuReader<'a, deku::ctx::Endian> for $name {
@@ -72,6 +77,9 @@ macro_rules! impl_deku_enum {
     };
 }
 
+/// Implements deku's reader and writer for a `bitflags` type stored as
+/// `$repr`. Bits the type doesn't name are kept, so flags defined by a newer
+/// revision of the standard round-trip unchanged.
 macro_rules! impl_deku_bitflags {
     ($name:ident, $repr:ty) => {
         impl<'a> deku::DekuReader<'a, deku::ctx::Endian> for $name {
@@ -243,12 +251,7 @@ pub enum ProtocolFamily {
     InformationOperations = 13,
 }
 
-impl ProtocolFamily {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ProtocolFamily, u8, from_u8);
 
 // SISO-REF-010-2023 Force ID [UID 6]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -287,30 +290,7 @@ pub enum ForceId {
     Neutral10 = 30,
 }
 
-impl ForceId {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for ForceId {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for ForceId {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for ForceId {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(ForceId, u8, from_u8);
 
 // SISO-REF-010-2023 Entity Kind [UID 7]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -328,12 +308,7 @@ pub enum EntityKind {
     SensorEmitter = 9,
 }
 
-impl EntityKind {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EntityKind, u8, from_u8);
 
 // SISO-REF-010-2023 Other Kinds [UID 8]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -347,12 +322,7 @@ pub enum OtherKinds {
     Space = 5,
 }
 
-impl OtherKinds {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(OtherKinds, u8, from_u8);
 
 // SISO-REF-010-2023 Land Domain Categories [UID 9]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -418,12 +388,7 @@ pub enum LandDomainCategories {
     UtilityEmergencyCar,
 }
 
-impl LandDomainCategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LandDomainCategories, u8, from_u8);
 
 // SISO-REF-010-2023 Air Domain Categories [UID 10]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -465,12 +430,7 @@ pub enum AirDomainCategories {
     CivilianLighterthanAirAirship = 101,
 }
 
-impl AirDomainCategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AirDomainCategories, u8, from_u8);
 
 // SISO-REF-010-2023 Surface Domain Categories [UID 11]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -526,12 +486,7 @@ pub enum SurfaceDomainCategories {
     LifeSavingEquipment = 101,
 }
 
-impl SurfaceDomainCategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SurfaceDomainCategories, u8, from_u8);
 
 // SISO-REF-010-2023 Subsurface Domain Categories [UID 12]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -559,12 +514,7 @@ pub enum SubsurfaceDomainCategories {
     CivilianSemiSubmersibleBoats = 82,
 }
 
-impl SubsurfaceDomainCategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubsurfaceDomainCategories, u8, from_u8);
 
 // SISO-REF-010-2023 SpaceDomainCategories [UID 13]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -585,12 +535,7 @@ pub enum SpaceDomainCategories {
     SatelliteAstronomy = 18,
 }
 
-impl SpaceDomainCategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SpaceDomainCategories, u8, from_u8);
 
 // SISO-REF-010-2023 MunitionKind [UID 14]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -611,12 +556,7 @@ pub enum MunitionKind {
     DirectedEnergyWeapon = 12,
 }
 
-impl MunitionKind {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MunitionKind, u8, from_u8);
 
 // SISO-REF-010-2023 MunitionCategory [UID 15]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -628,12 +568,7 @@ pub enum MunitionCategory {
     Fixed = 3,
 }
 
-impl MunitionCategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MunitionCategory, u8, from_u8);
 
 // SISO-REF-010-2023 USWeaponSubcategories [UID 16]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -764,12 +699,7 @@ pub enum USWeaponSubcategories {
     MachinegunM2407_62mm = 134,
 }
 
-impl USWeaponSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(USWeaponSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 RussiaWeaponSubcategories [UID 17]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -829,12 +759,7 @@ pub enum RussiaWeaponSubcategories {
     Type69RPG = 253,
 }
 
-impl RussiaWeaponSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(RussiaWeaponSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 UKWeaponSubcategories [UID 18]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -854,12 +779,7 @@ pub enum UKWeaponSubcategories {
     MilanATmissile = 12,
 }
 
-impl UKWeaponSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(UKWeaponSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 FrenchWeaponSubcategories [UID 19]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -875,12 +795,7 @@ pub enum FrenchWeaponSubcategories {
     FRF1sniperrifle = 8,
 }
 
-impl FrenchWeaponSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(FrenchWeaponSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormsSubcategoryGermanWeapons [UID 20]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -897,12 +812,7 @@ pub enum LifeFormsSubcategoryGermanWeapons {
     DM29HandGrenade = 9,
 }
 
-impl LifeFormsSubcategoryGermanWeapons {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormsSubcategoryGermanWeapons, u8, from_u8);
 
 // SISO-REF-010-2023 EnvironmentalSubcategory [UID 21]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -916,12 +826,7 @@ pub enum EnvironmentalSubcategory {
     VeryLarge = 100,
 }
 
-impl EnvironmentalSubcategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EnvironmentalSubcategory, u8, from_u8);
 
 // SISO-REF-010-2023 RadioCategory [UID 22]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -973,12 +878,7 @@ pub enum RadioCategory {
     TacticalTargetingNetworkTechnology = 51,
 }
 
-impl RadioCategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(RadioCategory, u8, from_u8);
 
 // SISO-REF-010-2023 RadioSubcategory [UID 23]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1046,12 +946,7 @@ pub enum RadioSubcategory {
     JETDSZRCSet4 = 66,
 }
 
-impl RadioSubcategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(RadioSubcategory, u8, from_u8);
 
 // SISO-REF-010-2023 ExpendableAirCategory [UID 25]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1071,12 +966,7 @@ pub enum ExpendableAirCategory {
     SARBuoy = 14,
 }
 
-impl ExpendableAirCategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ExpendableAirCategory, u8, from_u8);
 
 // SISO-REF-010-2023 ExpendableSurfaceCategory [UID 26]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1091,12 +981,7 @@ pub enum ExpendableSurfaceCategory {
     SARBuoy = 14,
 }
 
-impl ExpendableSurfaceCategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ExpendableSurfaceCategory, u8, from_u8);
 
 // SISO-REF-010-2023 ExpendableSubsurfaceCategory [UID 27]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1111,12 +996,7 @@ pub enum ExpendableSubsurfaceCategory {
     MultiModeDecoy = 11,
 }
 
-impl ExpendableSubsurfaceCategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ExpendableSubsurfaceCategory, u8, from_u8);
 
 // SISO-REF-010-2023 SensorEmitterCategory [UID 28]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1141,12 +1021,7 @@ pub enum SensorEmitterCategory {
     Gravitational = 16,
 }
 
-impl SensorEmitterCategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SensorEmitterCategory, u8, from_u8);
 
 // SISO-REF-010-2023 Country [UID 29]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1436,12 +1311,7 @@ pub enum Country {
     PalestineStateof = 282,
 }
 
-impl Country {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Country, u16, from_u16);
 
 // SISO-REF-010-2023 LandPlatformAppearance [UID 31]
 bitflags! {
@@ -1482,6 +1352,8 @@ impl Default for LandPlatformAppearance {
     }
 }
 
+impl_deku_bitflags!(LandPlatformAppearance, u32);
+
 impl LandPlatformAppearance {
     #[must_use]
     pub const fn as_u32(&self) -> u32 {
@@ -1512,30 +1384,7 @@ pub enum DeadReckoningAlgorithm {
     DRMSimilartoFVWexceptinBodyCoordinates = 9,
 }
 
-impl DeadReckoningAlgorithm {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for DeadReckoningAlgorithm {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for DeadReckoningAlgorithm {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for DeadReckoningAlgorithm {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(DeadReckoningAlgorithm, u8, from_u8);
 
 // SISO-REF-010-2023 EntityMarkingCharacterSet [UID 45]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1547,12 +1396,7 @@ pub enum EntityMarkingCharacterSet {
     DigitChevron = 3,
 }
 
-impl EntityMarkingCharacterSet {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EntityMarkingCharacterSet, u8, from_u8);
 
 // SISO-REF-010-2023 EntityCapabilities [UID 55]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1573,30 +1417,7 @@ pub enum EntityCapabilities {
     SensorEmitterEntityCapabilities = 12,
 }
 
-impl EntityCapabilities {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for EntityCapabilities {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u32(*self as u32);
-    }
-}
-
-impl FieldDeserialize for EntityCapabilities {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for EntityCapabilities {
-    fn field_len(&self) -> usize {
-        4
-    }
-}
+impl_deku_enum!(EntityCapabilities, u32, from_u32);
 
 // SISO-REF-010-2023 VariableParameterRecordType [UID 56]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1609,12 +1430,7 @@ pub enum VariableParameterRecordType {
     EntityAssociation = 4,
 }
 
-impl VariableParameterRecordType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(VariableParameterRecordType, u8, from_u8);
 
 // SISO-REF-010-2023 AttachedParts [UID 57]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1637,12 +1453,7 @@ pub enum AttachedParts {
     M2MachineGun = 905,
 }
 
-impl AttachedParts {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AttachedParts, u32, from_u32);
 
 // SISO-REF-010-2023 ArticulatedPartsTypeMetric [UID 58]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1667,12 +1478,7 @@ pub enum ArticulatedPartsTypeMetric {
     RotationRate = 16,
 }
 
-impl ArticulatedPartsTypeMetric {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ArticulatedPartsTypeMetric, u8, from_u8);
 
 // SISO-REF-010-2023 ArticulatedPartsTypeClass [UID 59]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -1938,12 +1744,7 @@ pub enum ArticulatedPartsTypeClass {
     SecondaryGunRecoil = 10144,
 }
 
-impl ArticulatedPartsTypeClass {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ArticulatedPartsTypeClass, u32, from_u32);
 
 // SISO-REF-010-2023 MunitionDescriptorWarhead [UID 60]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -2048,12 +1849,7 @@ pub enum MunitionDescriptorWarhead {
     BiologicalToxin = 9500,
 }
 
-impl MunitionDescriptorWarhead {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MunitionDescriptorWarhead, u16, from_u16);
 
 // SISO-REF-010-2023 MunitionDescriptorFuse [UID 61]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -2168,12 +1964,7 @@ pub enum MunitionDescriptorFuse {
     MechanicalTail = 9620,
 }
 
-impl MunitionDescriptorFuse {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MunitionDescriptorFuse, u16, from_u16);
 
 // SISO-REF-010-2023 DetonationResult [UID 62]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -2215,30 +2006,7 @@ pub enum DetonationResult {
     Missduetoflyoutandendgamefailure = 33,
 }
 
-impl DetonationResult {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for DetonationResult {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for DetonationResult {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for DetonationResult {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(DetonationResult, u8, from_u8);
 
 // SISO-REF-010-2023 ServiceRequestServiceTypeRequested [UID 63]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -2251,30 +2019,7 @@ pub enum ServiceRequestServiceTypeRequested {
     AerialRefuelingLowFidelity = 4,
 }
 
-impl ServiceRequestServiceTypeRequested {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for ServiceRequestServiceTypeRequested {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for ServiceRequestServiceTypeRequested {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for ServiceRequestServiceTypeRequested {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(ServiceRequestServiceTypeRequested, u8, from_u8);
 
 // SISO-REF-010-2023 RepairCompleteRepair [UID 64]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -2366,30 +2111,7 @@ pub enum RepairCompleteRepair {
     Ejectionseats = 10020,
 }
 
-impl RepairCompleteRepair {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for RepairCompleteRepair {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for RepairCompleteRepair {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for RepairCompleteRepair {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(RepairCompleteRepair, u16, from_u16);
 
 // SISO-REF-010-2023 RepairResponseRepairResult [UID 65]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -2402,30 +2124,7 @@ pub enum RepairResponseRepairResult {
     ServiceCanceledByTheSupplier = 4,
 }
 
-impl RepairResponseRepairResult {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for RepairResponseRepairResult {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for RepairResponseRepairResult {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for RepairResponseRepairResult {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(RepairResponseRepairResult, u8, from_u8);
 
 // SISO-REF-010-2023 VariableRecordTypes [UID 66]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -3681,30 +3380,7 @@ pub enum VariableRecordTypes {
     IntentBasedEWMessage = 5_507_010,
 }
 
-impl VariableRecordTypes {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for VariableRecordTypes {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u32(*self as u32);
-    }
-}
-
-impl FieldDeserialize for VariableRecordTypes {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for VariableRecordTypes {
-    fn field_len(&self) -> usize {
-        4
-    }
-}
+impl_deku_enum!(VariableRecordTypes, u32, from_u32);
 
 // SISO-REF-010-2023 Reason [UID 67]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -3721,30 +3397,7 @@ pub enum Reason {
     AbortTrainingReturnToTacticalOperations = 8,
 }
 
-impl Reason {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for Reason {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for Reason {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for Reason {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(Reason, u8, from_u8);
 
 // SISO-REF-010-2023 FrozenBehavior [UID 68]
 bitflags! {
@@ -3762,6 +3415,8 @@ impl Default for FrozenBehavior {
     }
 }
 
+impl_deku_bitflags!(FrozenBehavior, u8);
+
 impl FrozenBehavior {
     #[must_use]
     pub const fn as_u8(&self) -> u8 {
@@ -3771,25 +3426,6 @@ impl FrozenBehavior {
     #[must_use]
     pub const fn from_u8(bits: u8) -> Option<Self> {
         Self::from_bits(bits)
-    }
-}
-
-impl FieldSerialize for FrozenBehavior {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.as_u8());
-    }
-}
-
-impl FieldDeserialize for FrozenBehavior {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        let bits = buf.get_u8();
-        Self::from_u8(bits).unwrap_or_default()
-    }
-}
-
-impl FieldLen for FrozenBehavior {
-    fn field_len(&self) -> usize {
-        1
     }
 }
 
@@ -3804,30 +3440,7 @@ pub enum AcknowledgeFlag {
     TransferOwnership = 5,
 }
 
-impl AcknowledgeFlag {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for AcknowledgeFlag {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for AcknowledgeFlag {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for AcknowledgeFlag {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(AcknowledgeFlag, u16, from_u16);
 
 // SISO-REF-010-2023 AcknowledgeResponseFlag [UID 70]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -3839,30 +3452,7 @@ pub enum AcknowledgeResponseFlag {
     PendingOperatorAction = 3,
 }
 
-impl AcknowledgeResponseFlag {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for AcknowledgeResponseFlag {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for AcknowledgeResponseFlag {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for AcknowledgeResponseFlag {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(AcknowledgeResponseFlag, u16, from_u16);
 
 // SISO-REF-010-2023 ActionRequestActionID [UID 71]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -3922,12 +3512,7 @@ pub enum ActionRequestActionID {
     AirmountInformationRequest = 4305,
 }
 
-impl ActionRequestActionID {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ActionRequestActionID, u32, from_u32);
 
 // SISO-REF-010-2023 ActionResponseRequestStatus [UID 72]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -3949,30 +3534,7 @@ pub enum ActionResponseRequestStatus {
     JoinExerciseRequestRejected = 201,
 }
 
-impl ActionResponseRequestStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for ActionResponseRequestStatus {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u32(*self as u32);
-    }
-}
-
-impl FieldDeserialize for ActionResponseRequestStatus {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for ActionResponseRequestStatus {
-    fn field_len(&self) -> usize {
-        4
-    }
-}
+impl_deku_enum!(ActionResponseRequestStatus, u32, from_u32);
 
 // SISO-REF-010-2023 EventType [UID 73]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -3999,30 +3561,7 @@ pub enum EventType {
     Detect = 19,
 }
 
-impl EventType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for EventType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u32(*self as u32);
-    }
-}
-
-impl FieldDeserialize for EventType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for EventType {
-    fn field_len(&self) -> usize {
-        4
-    }
-}
+impl_deku_enum!(EventType, u32, from_u32);
 
 // SISO-REF-010-2023 RequiredReliabilityService [UID 74]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -4032,30 +3571,7 @@ pub enum RequiredReliabilityService {
     Unacknowledged = 1,
 }
 
-impl RequiredReliabilityService {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for RequiredReliabilityService {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for RequiredReliabilityService {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for RequiredReliabilityService {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(RequiredReliabilityService, u8, from_u8);
 
 // SISO-REF-010-2023 EmitterName [UID 75]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -6828,12 +6344,7 @@ pub enum EmitterName {
     ZhukMSE = 45307,
 }
 
-impl EmitterName {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EmitterName, u16, from_u16);
 
 // SISO-REF-010-2023 EmitterSystemFunction [UID 76]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -6937,12 +6448,7 @@ pub enum EmitterSystemFunction {
     Dropsonde = 103,
 }
 
-impl EmitterSystemFunction {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EmitterSystemFunction, u8, from_u8);
 
 // SISO-REF-010-2023 ElectromagneticEmissionStateUpdateIndicator [UID 77]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -6952,12 +6458,7 @@ pub enum ElectromagneticEmissionStateUpdateIndicator {
     ChangedDataUpdate = 1,
 }
 
-impl ElectromagneticEmissionStateUpdateIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ElectromagneticEmissionStateUpdateIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 ElectromagneticEmissionBeamFunction [UID 78]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -6989,12 +6490,7 @@ pub enum ElectromagneticEmissionBeamFunction {
     TimeSharedJamming = 25,
 }
 
-impl ElectromagneticEmissionBeamFunction {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ElectromagneticEmissionBeamFunction, u8, from_u8);
 
 // SISO-REF-010-2023 HighDensityTrackJam [UID 79]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7004,12 +6500,7 @@ pub enum HighDensityTrackJam {
     Selected = 1,
 }
 
-impl HighDensityTrackJam {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(HighDensityTrackJam, u8, from_u8);
 
 // SISO-REF-010-2023 DesignatorSystemName [UID 80]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7120,30 +6611,7 @@ pub enum DesignatorSystemName {
     TPN1M4923EOS = 11400,
 }
 
-impl DesignatorSystemName {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for DesignatorSystemName {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for DesignatorSystemName {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for DesignatorSystemName {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(DesignatorSystemName, u16, from_u16);
 
 // SISO-REF-010-2023 DesignatorCode [UID 81]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7153,30 +6621,7 @@ pub enum DesignatorCode {
     Other = 0,
 }
 
-impl DesignatorCode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for DesignatorCode {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for DesignatorCode {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for DesignatorCode {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(DesignatorCode, u16, from_u16);
 
 // SISO-REF-010-2023 IFFSystemType [UID 82]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7199,12 +6644,7 @@ pub enum IFFSystemType {
     TCASACASTransceiver = 14,
 }
 
-impl IFFSystemType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFSystemType, u16, from_u16);
 
 // SISO-REF-010-2023 IFFSystemName [UID 83]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7231,12 +6671,7 @@ pub enum IFFSystemName {
     GenericMarkXSIF = 18,
 }
 
-impl IFFSystemName {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFSystemName, u16, from_u16);
 
 // SISO-REF-010-2023 IFFSystemMode [UID 84]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7250,12 +6685,7 @@ pub enum IFFSystemMode {
     LoworLowSensitivity = 5,
 }
 
-impl IFFSystemMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFSystemMode, u8, from_u8);
 
 // SISO-REF-010-2023 IFFLayerSpecificInformation [UID 87]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7264,12 +6694,7 @@ pub enum IFFLayerSpecificInformation {
     NoLayerSpecificInformationIsPresent = 0,
 }
 
-impl IFFLayerSpecificInformation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFLayerSpecificInformation, u8, from_u8);
 
 // SISO-REF-010-2023 IFFAlternateMode4ChallengeReply [UID 96]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7282,12 +6707,7 @@ pub enum IFFAlternateMode4ChallengeReply {
     UnabletoVerify = 4,
 }
 
-impl IFFAlternateMode4ChallengeReply {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFAlternateMode4ChallengeReply, u8, from_u8);
 
 // SISO-REF-010-2023 IFFSystemType1OperationalParameter1 [UID 97]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7296,12 +6716,7 @@ pub enum IFFSystemType1OperationalParameter1 {
     NoOperationalParameter1Data = 0,
 }
 
-impl IFFSystemType1OperationalParameter1 {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFSystemType1OperationalParameter1, u8, from_u8);
 
 // SISO-REF-010-2023 IFFSystemType1OperationalParameter2 [UID 98]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7310,12 +6725,7 @@ pub enum IFFSystemType1OperationalParameter2 {
     NoOperationalParameter2Data = 0,
 }
 
-impl IFFSystemType1OperationalParameter2 {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFSystemType1OperationalParameter2, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory200Mammal [UID 100]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7352,12 +6762,7 @@ pub enum SubcategoriesforLandCategory200Mammal {
     Rat = 200,
 }
 
-impl SubcategoriesforLandCategory200Mammal {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforLandCategory200Mammal, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory201Reptile [UID 101]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7388,12 +6793,7 @@ pub enum SubcategoriesforLandCategory201Reptile {
     AustralianFreshwaterCrocodile = 122,
 }
 
-impl SubcategoriesforLandCategory201Reptile {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforLandCategory201Reptile, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory202Amphibian [UID 102]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7405,12 +6805,7 @@ pub enum SubcategoriesforLandCategory202Amphibian {
     Caecilian = 230,
 }
 
-impl SubcategoriesforLandCategory202Amphibian {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforLandCategory202Amphibian, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory203Insect [UID 103]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7425,12 +6820,7 @@ pub enum SubcategoriesforLandCategory203Insect {
     Centipede = 100,
 }
 
-impl SubcategoriesforLandCategory203Insect {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforLandCategory203Insect, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory204Arachnid [UID 104]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7443,12 +6833,7 @@ pub enum SubcategoriesforLandCategory204Arachnid {
     Mite = 50,
 }
 
-impl SubcategoriesforLandCategory204Arachnid {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforLandCategory204Arachnid, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory205Mollusk [UID 105]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7458,12 +6843,7 @@ pub enum SubcategoriesforLandCategory205Mollusk {
     Slug = 50,
 }
 
-impl SubcategoriesforLandCategory205Mollusk {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforLandCategory205Mollusk, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforLandCategory206Marsupial [UID 106]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7483,12 +6863,7 @@ pub enum SubcategoriesforLandCategory206Marsupial {
     SugarGlider = 211,
 }
 
-impl SubcategoriesforLandCategory206Marsupial {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforLandCategory206Marsupial, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforAirCategory200Bird [UID 110]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7523,12 +6898,7 @@ pub enum SubcategoriesforAirCategory200Bird {
     Kite = 80,
 }
 
-impl SubcategoriesforAirCategory200Bird {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforAirCategory200Bird, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforAirCategory201Insect [UID 111]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7545,12 +6915,7 @@ pub enum SubcategoriesforAirCategory201Insect {
     Locust = 80,
 }
 
-impl SubcategoriesforAirCategory201Insect {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforAirCategory201Insect, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforAirCategory202Mammal [UID 112]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7561,12 +6926,7 @@ pub enum SubcategoriesforAirCategory202Mammal {
     GlidingPossum = 20,
 }
 
-impl SubcategoriesforAirCategory202Mammal {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforAirCategory202Mammal, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory200Fish [UID 120]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7601,12 +6961,7 @@ pub enum SubcategoriesforSubsurfaceCategory200Fish {
     Swordfish = 201,
 }
 
-impl SubcategoriesforSubsurfaceCategory200Fish {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforSubsurfaceCategory200Fish, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory201Mammal [UID 121]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7673,12 +7028,7 @@ pub enum SubcategoriesforSubsurfaceCategory201Mammal {
     PolarBear = 200,
 }
 
-impl SubcategoriesforSubsurfaceCategory201Mammal {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforSubsurfaceCategory201Mammal, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory202Mollusk [UID 122]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7695,12 +7045,7 @@ pub enum SubcategoriesforSubsurfaceCategory202Mollusk {
     Scallop = 80,
 }
 
-impl SubcategoriesforSubsurfaceCategory202Mollusk {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforSubsurfaceCategory202Mollusk, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory203Crustacean [UID 123]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7713,12 +7058,7 @@ pub enum SubcategoriesforSubsurfaceCategory203Crustacean {
     Crab = 30,
 }
 
-impl SubcategoriesforSubsurfaceCategory203Crustacean {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforSubsurfaceCategory203Crustacean, u8, from_u8);
 
 // SISO-REF-010-2023 SubcategoriesforSubsurfaceCategory204Insect [UID 124]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7728,12 +7068,7 @@ pub enum SubcategoriesforSubsurfaceCategory204Insect {
     WaterBeetle = 2,
 }
 
-impl SubcategoriesforSubsurfaceCategory204Insect {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SubcategoriesforSubsurfaceCategory204Insect, u8, from_u8);
 
 // SISO-REF-010-2023 AnimalLifeformGroupSizeRangeEnumerationforallDomains [UID 130]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7755,12 +7090,11 @@ pub enum AnimalLifeformGroupSizeRangeEnumerationforallDomains {
     Numberofanimalsrangegreaterthan50000 = 220,
 }
 
-impl AnimalLifeformGroupSizeRangeEnumerationforallDomains {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    AnimalLifeformGroupSizeRangeEnumerationforallDomains,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 SpecificDimensionEnumerationsforLandAreaSize [UID 131]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7774,12 +7108,7 @@ pub enum SpecificDimensionEnumerationsforLandAreaSize {
     LargeAreaDense = 227,
 }
 
-impl SpecificDimensionEnumerationsforLandAreaSize {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SpecificDimensionEnumerationsforLandAreaSize, u8, from_u8);
 
 // SISO-REF-010-2023 SpecificDimensionEnumerationsforAirAreaSize [UID 132]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7793,12 +7122,7 @@ pub enum SpecificDimensionEnumerationsforAirAreaSize {
     LargeFlockSwarmDense = 227,
 }
 
-impl SpecificDimensionEnumerationsforAirAreaSize {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SpecificDimensionEnumerationsforAirAreaSize, u8, from_u8);
 
 // SISO-REF-010-2023 AddSpecificDimensionEnumerationsforSubsurfaceAreaSize [UID 133]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7812,12 +7136,11 @@ pub enum AddSpecificDimensionEnumerationsforSubsurfaceAreaSize {
     LargeSchoolDense = 227,
 }
 
-impl AddSpecificDimensionEnumerationsforSubsurfaceAreaSize {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    AddSpecificDimensionEnumerationsforSubsurfaceAreaSize,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 AddVariantsforLandCategory200Mammal [UID 134]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7831,12 +7154,7 @@ pub enum AddVariantsforLandCategory200Mammal {
     AnimalHarnessedtoaCart = 6,
 }
 
-impl AddVariantsforLandCategory200Mammal {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AddVariantsforLandCategory200Mammal, u8, from_u8);
 
 // SISO-REF-010-2023 VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids [UID 135]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7849,12 +7167,11 @@ pub enum VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids {
     Brown = 5,
 }
 
-impl VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    VariantsforLandCategoriesReptilesAmphibiansInsectsandArachnids,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 VariantsforAirCategory200Bird [UID 136]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7866,12 +7183,7 @@ pub enum VariantsforAirCategory200Bird {
     IrregularFlockShape = 4,
 }
 
-impl VariantsforAirCategory200Bird {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(VariantsforAirCategory200Bird, u8, from_u8);
 
 // SISO-REF-010-2023 AddVariantsforAirCategory201Insect [UID 137]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7882,12 +7194,7 @@ pub enum AddVariantsforAirCategory201Insect {
     IrregularShapedInsectSwarm = 3,
 }
 
-impl AddVariantsforAirCategory201Insect {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AddVariantsforAirCategory201Insect, u8, from_u8);
 
 // SISO-REF-010-2023 AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect [UID 138]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7903,12 +7210,11 @@ pub enum AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect {
     Grey = 8,
 }
 
-impl AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    AddVariantsforSubsurfaceCategoriesFishMolluskCrustaceanandInsect,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 VariantsforSubsurfaceCategory201Mammal [UID 139]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7918,12 +7224,7 @@ pub enum VariantsforSubsurfaceCategory201Mammal {
     Spouting = 2,
 }
 
-impl VariantsforSubsurfaceCategory201Mammal {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(VariantsforSubsurfaceCategory201Mammal, u8, from_u8);
 
 // SISO-REF-010-2023 UAStateChangeUpdateIndicator [UID 143]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7933,30 +7234,7 @@ pub enum UAStateChangeUpdateIndicator {
     ChangedDataUpdate = 1,
 }
 
-impl UAStateChangeUpdateIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for UAStateChangeUpdateIndicator {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for UAStateChangeUpdateIndicator {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for UAStateChangeUpdateIndicator {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(UAStateChangeUpdateIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 UAAcousticSystemName [UID 144]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -7974,30 +7252,7 @@ pub enum UAAcousticSystemName {
     ANAQS902 = 9,
 }
 
-impl UAAcousticSystemName {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for UAAcousticSystemName {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for UAAcousticSystemName {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for UAAcousticSystemName {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(UAAcousticSystemName, u16, from_u16);
 
 // SISO-REF-010-2023 UAAcousticEmitterSystemFunction [UID 145]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8010,30 +7265,7 @@ pub enum UAAcousticEmitterSystemFunction {
     Weaponsearchdetecttrackdetect = 4,
 }
 
-impl UAAcousticEmitterSystemFunction {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for UAAcousticEmitterSystemFunction {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for UAAcousticEmitterSystemFunction {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for UAAcousticEmitterSystemFunction {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(UAAcousticEmitterSystemFunction, u8, from_u8);
 
 // SISO-REF-010-2023 UAActiveEmissionParameterIndex [UID 146]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8042,12 +7274,7 @@ pub enum UAActiveEmissionParameterIndex {
     Other = 0,
 }
 
-impl UAActiveEmissionParameterIndex {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(UAActiveEmissionParameterIndex, u16, from_u16);
 
 // SISO-REF-010-2023 UAScanPattern [UID 147]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8061,12 +7288,7 @@ pub enum UAScanPattern {
     Continuoussearch = 5,
 }
 
-impl UAScanPattern {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(UAScanPattern, u16, from_u16);
 
 // SISO-REF-010-2023 UAPassiveParameterIndex [UID 148]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8075,30 +7297,7 @@ pub enum UAPassiveParameterIndex {
     Other = 0,
 }
 
-impl UAPassiveParameterIndex {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for UAPassiveParameterIndex {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for UAPassiveParameterIndex {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for UAPassiveParameterIndex {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(UAPassiveParameterIndex, u16, from_u16);
 
 // SISO-REF-010-2023 UAAdditionalPassiveActivityParameterIndex [UID 150]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8107,12 +7306,7 @@ pub enum UAAdditionalPassiveActivityParameterIndex {
     Other = 0,
 }
 
-impl UAAdditionalPassiveActivityParameterIndex {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(UAAdditionalPassiveActivityParameterIndex, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterMajorModulation [UID 155]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8129,12 +7323,7 @@ pub enum TransmitterMajorModulation {
     SATCOM = 8,
 }
 
-impl TransmitterMajorModulation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterMajorModulation, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterDetailAmplitudeModulation [UID 156]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8153,12 +7342,7 @@ pub enum TransmitterDetailAmplitudeModulation {
     VSB = 10,
 }
 
-impl TransmitterDetailAmplitudeModulation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterDetailAmplitudeModulation, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterDetailAmplitudeandAngleModulation [UID 157]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8168,12 +7352,7 @@ pub enum TransmitterDetailAmplitudeandAngleModulation {
     AmplitudeandAngle = 1,
 }
 
-impl TransmitterDetailAmplitudeandAngleModulation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterDetailAmplitudeandAngleModulation, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterDetailAngleModulation [UID 158]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8186,12 +7365,7 @@ pub enum TransmitterDetailAngleModulation {
     MSK = 4,
 }
 
-impl TransmitterDetailAngleModulation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterDetailAngleModulation, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterDetailCombinationModulation [UID 159]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8201,12 +7375,7 @@ pub enum TransmitterDetailCombinationModulation {
     AmplitudeAnglePulse = 1,
 }
 
-impl TransmitterDetailCombinationModulation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterDetailCombinationModulation, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterDetailPulseModulation [UID 160]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8218,12 +7387,7 @@ pub enum TransmitterDetailPulseModulation {
     YBandTACANPulse = 3,
 }
 
-impl TransmitterDetailPulseModulation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterDetailPulseModulation, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterDetailUnmodulatedModulation [UID 161]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8233,12 +7397,7 @@ pub enum TransmitterDetailUnmodulatedModulation {
     ContinuousWaveemissionofanunmodulatedcarrier = 1,
 }
 
-impl TransmitterDetailUnmodulatedModulation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterDetailUnmodulatedModulation, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterDetailCarrierPhaseShiftModulation [UID 162]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8247,12 +7406,7 @@ pub enum TransmitterDetailCarrierPhaseShiftModulation {
     Other = 0,
 }
 
-impl TransmitterDetailCarrierPhaseShiftModulation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterDetailCarrierPhaseShiftModulation, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterModulationTypeSystem [UID 163]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8274,12 +7428,7 @@ pub enum TransmitterModulationTypeSystem {
     NavigationAid = 13,
 }
 
-impl TransmitterModulationTypeSystem {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterModulationTypeSystem, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterTransmitState [UID 164]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8290,30 +7439,7 @@ pub enum TransmitterTransmitState {
     Onandtransmitting = 2,
 }
 
-impl TransmitterTransmitState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for TransmitterTransmitState {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for TransmitterTransmitState {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for TransmitterTransmitState {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(TransmitterTransmitState, u8, from_u8);
 
 // SISO-REF-010-2023 TransmitterInputSource [UID 165]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8336,30 +7462,7 @@ pub enum TransmitterInputSource {
     SATCOMUplinkJammer = 14,
 }
 
-impl TransmitterInputSource {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for TransmitterInputSource {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for TransmitterInputSource {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for TransmitterInputSource {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(TransmitterInputSource, u8, from_u8);
 
 // SISO-REF-010-2023 TransmitterCryptoSystem [UID 166]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8382,30 +7485,7 @@ pub enum TransmitterCryptoSystem {
     TacticalSecureVoice = 14,
 }
 
-impl TransmitterCryptoSystem {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for TransmitterCryptoSystem {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for TransmitterCryptoSystem {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for TransmitterCryptoSystem {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(TransmitterCryptoSystem, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterAntennaPatternType [UID 167]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8419,30 +7499,7 @@ pub enum TransmitterAntennaPatternType {
     Omnidirectional = 6,
 }
 
-impl TransmitterAntennaPatternType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for TransmitterAntennaPatternType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for TransmitterAntennaPatternType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for TransmitterAntennaPatternType {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(TransmitterAntennaPatternType, u16, from_u16);
 
 // SISO-REF-010-2023 TransmitterAntennaPatternReferenceSystem [UID 168]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8452,30 +7509,7 @@ pub enum TransmitterAntennaPatternReferenceSystem {
     EntityCoordinates = 2,
 }
 
-impl TransmitterAntennaPatternReferenceSystem {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for TransmitterAntennaPatternReferenceSystem {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for TransmitterAntennaPatternReferenceSystem {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for TransmitterAntennaPatternReferenceSystem {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(TransmitterAntennaPatternReferenceSystem, u8, from_u8);
 
 // SISO-REF-010-2023 CCTTSINCGARSStartofMessage [UID 170]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8485,12 +7519,7 @@ pub enum CCTTSINCGARSStartofMessage {
     StartofMessage = 1,
 }
 
-impl CCTTSINCGARSStartofMessage {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(CCTTSINCGARSStartofMessage, u8, from_u8);
 
 // SISO-REF-010-2023 CCTTSINCGARSClearChannel [UID 171]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8500,12 +7529,7 @@ pub enum CCTTSINCGARSClearChannel {
     Clearchannel = 1,
 }
 
-impl CCTTSINCGARSClearChannel {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(CCTTSINCGARSClearChannel, u8, from_u8);
 
 // SISO-REF-010-2023 TimeSlotAllocationLevel [UID 172]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8518,12 +7542,7 @@ pub enum TimeSlotAllocationLevel {
     HighFidelityLevel4 = 4,
 }
 
-impl TimeSlotAllocationLevel {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TimeSlotAllocationLevel, u8, from_u8);
 
 // SISO-REF-010-2023 JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode [UID 173]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8533,12 +7552,11 @@ pub enum JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode {
     JTIDSUnitParticipant = 2,
 }
 
-impl JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    JTIDSMIDSModulationParametersTransmittingTerminalPrimaryMode,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode [UID 174]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8550,12 +7568,11 @@ pub enum JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode {
     SecondaryNavigationController = 3,
 }
 
-impl JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    JTIDSMIDSModulationParametersTransmittingTerminalSecondaryMode,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 JTIDSMIDSModulationParametersSynchronizationState [UID 175]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8568,12 +7585,11 @@ pub enum JTIDSMIDSModulationParametersSynchronizationState {
     SynchronizationMaintenance = 4,
 }
 
-impl JTIDSMIDSModulationParametersSynchronizationState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    JTIDSMIDSModulationParametersSynchronizationState,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 MessageTypeIdentifier [UID 176]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8589,12 +7605,7 @@ pub enum MessageTypeIdentifier {
     VMF = 7,
 }
 
-impl MessageTypeIdentifier {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MessageTypeIdentifier, u8, from_u8);
 
 // SISO-REF-010-2023 SignalUserProtocolIdentificationNumber [UID 177]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8637,12 +7648,7 @@ pub enum SignalUserProtocolIdentificationNumber {
     TacticalVideoRegenerationData = 7050,
 }
 
-impl SignalUserProtocolIdentificationNumber {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SignalUserProtocolIdentificationNumber, u32, from_u32);
 
 // SISO-REF-010-2023 SignalTDLType [UID 178]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8748,30 +7754,7 @@ pub enum SignalTDLType {
     TacticalTargetingNetworkTechnologyApplication = 127,
 }
 
-impl SignalTDLType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for SignalTDLType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for SignalTDLType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for SignalTDLType {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(SignalTDLType, u16, from_u16);
 
 // SISO-REF-010-2023 ReceiverReceiverState [UID 179]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8782,30 +7765,7 @@ pub enum ReceiverReceiverState {
     Onandreceiving = 2,
 }
 
-impl ReceiverReceiverState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for ReceiverReceiverState {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for ReceiverReceiverState {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for ReceiverReceiverState {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(ReceiverReceiverState, u16, from_u16);
 
 // SISO-REF-010-2023 IntercomControlControlType [UID 180]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8819,30 +7779,7 @@ pub enum IntercomControlControlType {
     NackRequestDenied = 5,
 }
 
-impl IntercomControlControlType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for IntercomControlControlType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for IntercomControlControlType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IntercomControlControlType {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(IntercomControlControlType, u8, from_u8);
 
 // SISO-REF-010-2023 IntercomControlCommunicationsType [UID 181]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8855,12 +7792,7 @@ pub enum IntercomControlCommunicationsType {
     ConnectionHDX = 4,
 }
 
-impl IntercomControlCommunicationsType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IntercomControlCommunicationsType, u8, from_u8);
 
 // SISO-REF-010-2023 IntercomControlCommand [UID 182]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8875,30 +7807,7 @@ pub enum IntercomControlCommand {
     Off = 6,
 }
 
-impl IntercomControlCommand {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for IntercomControlCommand {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for IntercomControlCommand {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IntercomControlCommand {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(IntercomControlCommand, u8, from_u8);
 
 // SISO-REF-010-2023 IntercomControlTransmitLineState [UID 183]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8909,30 +7818,7 @@ pub enum IntercomControlTransmitLineState {
     Transmitting = 2,
 }
 
-impl IntercomControlTransmitLineState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for IntercomControlTransmitLineState {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for IntercomControlTransmitLineState {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IntercomControlTransmitLineState {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(IntercomControlTransmitLineState, u8, from_u8);
 
 // SISO-REF-010-2023 IntercomControlDestinationLineStateCommand [UID 184]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8944,12 +7830,7 @@ pub enum IntercomControlDestinationLineStateCommand {
     ReturntoLocalLineStateControl = 3,
 }
 
-impl IntercomControlDestinationLineStateCommand {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IntercomControlDestinationLineStateCommand, u8, from_u8);
 
 // SISO-REF-010-2023 IntercomControlRecordType [UID 185]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8960,12 +7841,7 @@ pub enum IntercomControlRecordType {
     GroupAssignmentrecord = 3,
 }
 
-impl IntercomControlRecordType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IntercomControlRecordType, u16, from_u16);
 
 // SISO-REF-010-2023 CollisionType [UID 189]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8976,12 +7852,7 @@ pub enum CollisionType {
     BoomNozzleHasClearedTheReceiversRefuelingReceptacle = 55,
 }
 
-impl CollisionType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(CollisionType, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldSensorTypes [UID 193]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -8998,30 +7869,7 @@ pub enum MinefieldSensorTypes {
     Multispectral = 8,
 }
 
-impl MinefieldSensorTypes {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for MinefieldSensorTypes {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for MinefieldSensorTypes {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for MinefieldSensorTypes {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(MinefieldSensorTypes, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldSensorTypesOptical [UID 194]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9041,12 +7889,7 @@ pub enum MinefieldSensorTypesOptical {
     TrackedvehicleoccupantopenhatchNotActivelySearching = 11,
 }
 
-impl MinefieldSensorTypesOptical {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldSensorTypesOptical, u16, from_u16);
 
 // SISO-REF-010-2023 MinefieldSensorTypesFLIR [UID 195]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9064,12 +7907,7 @@ pub enum MinefieldSensorTypesFLIR {
     COBRA812 = 9,
 }
 
-impl MinefieldSensorTypesFLIR {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldSensorTypesFLIR, u16, from_u16);
 
 // SISO-REF-010-2023 MinefieldSensorTypesRADAR [UID 196]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9083,12 +7921,7 @@ pub enum MinefieldSensorTypesRADAR {
     HSTAMIDSII = 5,
 }
 
-impl MinefieldSensorTypesRADAR {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldSensorTypesRADAR, u16, from_u16);
 
 // SISO-REF-010-2023 MinefieldSensorTypesMagnetic [UID 197]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9100,12 +7933,7 @@ pub enum MinefieldSensorTypesMagnetic {
     GSTAMIDS = 3,
 }
 
-impl MinefieldSensorTypesMagnetic {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldSensorTypesMagnetic, u16, from_u16);
 
 // SISO-REF-010-2023 MinefieldSensorTypesLaser [UID 198]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9115,12 +7943,7 @@ pub enum MinefieldSensorTypesLaser {
     ASTAMIDS = 1,
 }
 
-impl MinefieldSensorTypesLaser {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldSensorTypesLaser, u16, from_u16);
 
 // SISO-REF-010-2023 MinefieldSensorTypesSONAR [UID 199]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9129,12 +7952,7 @@ pub enum MinefieldSensorTypesSONAR {
     Generic = 0,
 }
 
-impl MinefieldSensorTypesSONAR {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldSensorTypesSONAR, u16, from_u16);
 
 // SISO-REF-010-2023 MinefieldSensorTypesPhysical [UID 200]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9145,12 +7963,7 @@ pub enum MinefieldSensorTypesPhysical {
     ProbeNoMetalContent = 2,
 }
 
-impl MinefieldSensorTypesPhysical {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldSensorTypesPhysical, u16, from_u16);
 
 // SISO-REF-010-2023 MinefieldSensorTypesMultispectral [UID 201]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9159,12 +7972,7 @@ pub enum MinefieldSensorTypesMultispectral {
     Generic = 0,
 }
 
-impl MinefieldSensorTypesMultispectral {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldSensorTypesMultispectral, u16, from_u16);
 
 // SISO-REF-010-2023 AggregateStateAggregateState [UID 204]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9178,30 +7986,7 @@ pub enum AggregateStateAggregateState {
     Partiallydisaggregated = 5,
 }
 
-impl AggregateStateAggregateState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for AggregateStateAggregateState {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for AggregateStateAggregateState {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for AggregateStateAggregateState {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(AggregateStateAggregateState, u8, from_u8);
 
 // SISO-REF-010-2023 AggregateStateFormation [UID 205]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9215,30 +8000,7 @@ pub enum AggregateStateFormation {
     Column = 5,
 }
 
-impl AggregateStateFormation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for AggregateStateFormation {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u32(*self as u32);
-    }
-}
-
-impl FieldDeserialize for AggregateStateFormation {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for AggregateStateFormation {
-    fn field_len(&self) -> usize {
-        4
-    }
-}
+impl_deku_enum!(AggregateStateFormation, u32, from_u32);
 
 // SISO-REF-010-2023 AggregateStateAggregateKind [UID 206]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9252,12 +8014,7 @@ pub enum AggregateStateAggregateKind {
     CommonLocation = 5,
 }
 
-impl AggregateStateAggregateKind {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AggregateStateAggregateKind, u8, from_u8);
 
 // SISO-REF-010-2023 AggregateStateSubcategory [UID 208]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9288,12 +8045,7 @@ pub enum AggregateStateSubcategory {
     Tankonly = 22,
 }
 
-impl AggregateStateSubcategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AggregateStateSubcategory, u8, from_u8);
 
 // SISO-REF-010-2023 AggregateStateSpecific [UID 209]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9303,12 +8055,7 @@ pub enum AggregateStateSpecific {
     Yesaggregateunitcontainsaheadquarters = 1,
 }
 
-impl AggregateStateSpecific {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AggregateStateSpecific, u8, from_u8);
 
 // SISO-REF-010-2023 IsPartOfNature [UID 210]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9327,12 +8074,7 @@ pub enum IsPartOfNature {
     Teammemberinformationwith = 10,
 }
 
-impl IsPartOfNature {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IsPartOfNature, u16, from_u16);
 
 // SISO-REF-010-2023 IsPartOfPosition [UID 211]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9343,12 +8085,7 @@ pub enum IsPartOfPosition {
     Insideof = 2,
 }
 
-impl IsPartOfPosition {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IsPartOfPosition, u16, from_u16);
 
 // SISO-REF-010-2023 IsPartOfStationName [UID 212]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9379,12 +8116,7 @@ pub enum IsPartOfStationName {
     AirRefuelingProbe = 22,
 }
 
-impl IsPartOfStationName {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IsPartOfStationName, u16, from_u16);
 
 // SISO-REF-010-2023 IsGroupOfGroupedEntityCategory [UID 213]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9402,30 +8134,7 @@ pub enum IsGroupOfGroupedEntityCategory {
     GroundLogisticsVehicle = 9,
 }
 
-impl IsGroupOfGroupedEntityCategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for IsGroupOfGroupedEntityCategory {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for IsGroupOfGroupedEntityCategory {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IsGroupOfGroupedEntityCategory {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(IsGroupOfGroupedEntityCategory, u8, from_u8);
 
 // SISO-REF-010-2023 IsGroupOfRestStatus [UID 214]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9442,12 +8151,7 @@ pub enum IsGroupOfRestStatus {
     Fullyrested = 8,
 }
 
-impl IsGroupOfRestStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IsGroupOfRestStatus, u8, from_u8);
 
 // SISO-REF-010-2023 TransferControlTransferType [UID 224]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9464,30 +8168,7 @@ pub enum TransferControlTransferType {
     RemoveEntity = 10,
 }
 
-impl TransferControlTransferType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for TransferControlTransferType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for TransferControlTransferType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for TransferControlTransferType {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(TransferControlTransferType, u8, from_u8);
 
 // SISO-REF-010-2023 ObjectKind [UID 225]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9504,12 +8185,7 @@ pub enum ObjectKind {
     EnvironmentalObject = 8,
 }
 
-impl ObjectKind {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ObjectKind, u8, from_u8);
 
 // SISO-REF-010-2023 ObjectStateAppearanceGeneral [UID 229]
 bitflags! {
@@ -9531,6 +8207,8 @@ impl Default for ObjectStateAppearanceGeneral {
     }
 }
 
+impl_deku_bitflags!(ObjectStateAppearanceGeneral, u16);
+
 impl ObjectStateAppearanceGeneral {
     #[must_use]
     pub const fn as_u16(&self) -> u16 {
@@ -9543,35 +8221,9 @@ impl ObjectStateAppearanceGeneral {
     }
 }
 
-impl FieldSerialize for ObjectStateAppearanceGeneral {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.as_u16());
-    }
-}
-
-impl FieldDeserialize for ObjectStateAppearanceGeneral {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        let bits = buf.get_u16();
-        Self::from_bits(bits).unwrap_or_default()
-    }
-}
-
-impl FieldLen for ObjectStateAppearanceGeneral {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
-
 // SISO-REF-010-2023 GriddedDataFieldNumber [UID 243]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq)]
 pub enum GriddedDataFieldNumber {}
-
-impl GriddedDataFieldNumber {
-    #[must_use]
-    pub fn deserialize(_buf: &mut BytesMut) -> Self {
-        unimplemented!()
-    }
-}
 
 // SISO-REF-010-2023 GriddedDataCoordinateSystem [UID 244]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9583,30 +8235,7 @@ pub enum GriddedDataCoordinateSystem {
     LatitudeLongitudeDepth = 3,
 }
 
-impl GriddedDataCoordinateSystem {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for GriddedDataCoordinateSystem {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for GriddedDataCoordinateSystem {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for GriddedDataCoordinateSystem {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(GriddedDataCoordinateSystem, u16, from_u16);
 
 // SISO-REF-010-2023 GriddedDataConstantGrid [UID 245]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9616,30 +8245,7 @@ pub enum GriddedDataConstantGrid {
     Updatedgrid = 1,
 }
 
-impl GriddedDataConstantGrid {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for GriddedDataConstantGrid {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for GriddedDataConstantGrid {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for GriddedDataConstantGrid {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(GriddedDataConstantGrid, u8, from_u8);
 
 // SISO-REF-010-2023 GriddedDataSampleType [UID 246]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9648,30 +8254,7 @@ pub enum GriddedDataSampleType {
     NotSpecified = 0,
 }
 
-impl GriddedDataSampleType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for GriddedDataSampleType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for GriddedDataSampleType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for GriddedDataSampleType {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(GriddedDataSampleType, u8, from_u8);
 
 // SISO-REF-010-2023 GriddedDataDataRepresentation [UID 247]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9682,30 +8265,7 @@ pub enum GriddedDataDataRepresentation {
     Type2 = 2,
 }
 
-impl GriddedDataDataRepresentation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for GriddedDataDataRepresentation {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for GriddedDataDataRepresentation {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for GriddedDataDataRepresentation {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(GriddedDataDataRepresentation, u8, from_u8);
 
 // SISO-REF-010-2023 EnvironmentalProcessModelType [UID 248]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9714,12 +8274,7 @@ pub enum EnvironmentalProcessModelType {
     NoStatement = 0,
 }
 
-impl EnvironmentalProcessModelType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EnvironmentalProcessModelType, u8, from_u8);
 
 // SISO-REF-010-2023 EnvironmentalProcessRecordType [UID 250]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9746,12 +8301,7 @@ pub enum EnvironmentalProcessRecordType {
     GaussianPuffRecord = 1_879_048_192,
 }
 
-impl EnvironmentalProcessRecordType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u32(buf.get_u32()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EnvironmentalProcessRecordType, u32, from_u32);
 
 // SISO-REF-010-2023 SignalEncodingClass [UID 270]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9763,12 +8313,7 @@ pub enum SignalEncodingClass {
     Databaseindex = 3,
 }
 
-impl SignalEncodingClass {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SignalEncodingClass, u8, from_u8);
 
 // SISO-REF-010-2023 SignalEncodingType [UID 271]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9789,12 +8334,7 @@ pub enum SignalEncodingType {
     _16bitLinearPCM2sComplementLittleEndian = 100,
 }
 
-impl SignalEncodingType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SignalEncodingType, u8, from_u8);
 
 // SISO-REF-010-2023 RepairGroups [UID 272]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9812,30 +8352,7 @@ pub enum RepairGroups {
     AuxiliaryCraft = 9,
 }
 
-impl RepairGroups {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for RepairGroups {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for RepairGroups {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for RepairGroups {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(RepairGroups, u8, from_u8);
 
 // SISO-REF-010-2023 EnvironmentRecordTypeGroups [UID 273]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9845,12 +8362,7 @@ pub enum EnvironmentRecordTypeGroups {
     Geometry = 1,
 }
 
-impl EnvironmentRecordTypeGroups {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EnvironmentRecordTypeGroups, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories [UID 274]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9863,12 +8375,11 @@ pub enum PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories {
     PoweredParachute = 5,
 }
 
-impl PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    PlatformAirCivilianUltralightNonrigidWingAircraftSubcategories,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 PlatformAirCivilianUltralightRigidWingAircraftSubcategories [UID 275]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9878,12 +8389,11 @@ pub enum PlatformAirCivilianUltralightRigidWingAircraftSubcategories {
     Controlsurfacecontrol = 2,
 }
 
-impl PlatformAirCivilianUltralightRigidWingAircraftSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    PlatformAirCivilianUltralightRigidWingAircraftSubcategories,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 PlatformAirCivilianGliderSubcategories [UID 276]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9893,12 +8403,7 @@ pub enum PlatformAirCivilianGliderSubcategories {
     MotorGlider = 2,
 }
 
-impl PlatformAirCivilianGliderSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformAirCivilianGliderSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformAirCivilianFixedWingAircraftSubcategories [UID 277]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9914,12 +8419,11 @@ pub enum PlatformAirCivilianFixedWingAircraftSubcategories {
     FourEngineJet = 34,
 }
 
-impl PlatformAirCivilianFixedWingAircraftSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    PlatformAirCivilianFixedWingAircraftSubcategories,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 PlatformAirCivilianHelicopterSubcategories [UID 278]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9934,12 +8438,7 @@ pub enum PlatformAirCivilianHelicopterSubcategories {
     IntermeshingRotor = 23,
 }
 
-impl PlatformAirCivilianHelicopterSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformAirCivilianHelicopterSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformAirCivilianLighterthanAirBalloonSubcategories [UID 279]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9952,12 +8451,11 @@ pub enum PlatformAirCivilianLighterthanAirBalloonSubcategories {
     Helikite = 5,
 }
 
-impl PlatformAirCivilianLighterthanAirBalloonSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    PlatformAirCivilianLighterthanAirBalloonSubcategories,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 PlatformAirCivilianLighterthanAirAirshipSubcategories [UID 280]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9969,12 +8467,11 @@ pub enum PlatformAirCivilianLighterthanAirAirshipSubcategories {
     Hybrid = 4,
 }
 
-impl PlatformAirCivilianLighterthanAirAirshipSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    PlatformAirCivilianLighterthanAirAirshipSubcategories,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 APAParameterIndexAPAStatus [UID 281]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9986,12 +8483,7 @@ pub enum APAParameterIndexAPAStatus {
     RecordActivation = 3,
 }
 
-impl APAParameterIndexAPAStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(APAParameterIndexAPAStatus, u8, from_u8);
 
 // SISO-REF-010-2023 SeparationVPReasonforSeparation [UID 282]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10002,12 +8494,7 @@ pub enum SeparationVPReasonforSeparation {
     SubmunitionSeparation = 2,
 }
 
-impl SeparationVPReasonforSeparation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SeparationVPReasonforSeparation, u8, from_u8);
 
 // SISO-REF-010-2023 SeparationVPPreEntityIndicator [UID 283]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10019,12 +8506,7 @@ pub enum SeparationVPPreEntityIndicator {
     EntityInitiallyCreatedAtSeparationEvent = 3,
 }
 
-impl SeparationVPPreEntityIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SeparationVPPreEntityIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 IOActionIOWarfareType [UID 285]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10039,30 +8521,7 @@ pub enum IOActionIOWarfareType {
     PhysicalAttack = 6,
 }
 
-impl IOActionIOWarfareType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for IOActionIOWarfareType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for IOActionIOWarfareType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IOActionIOWarfareType {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(IOActionIOWarfareType, u16, from_u16);
 
 // SISO-REF-010-2023 IOActionIOSimulationSource [UID 286]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10071,30 +8530,7 @@ pub enum IOActionIOSimulationSource {
     NoStatement = 0,
 }
 
-impl IOActionIOSimulationSource {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for IOActionIOSimulationSource {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for IOActionIOSimulationSource {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IOActionIOSimulationSource {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(IOActionIOSimulationSource, u16, from_u16);
 
 // SISO-REF-010-2023 IOActionIOActionType [UID 287]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10107,30 +8543,7 @@ pub enum IOActionIOActionType {
     IntentBasedEWComputedEffects = 4,
 }
 
-impl IOActionIOActionType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for IOActionIOActionType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for IOActionIOActionType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IOActionIOActionType {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(IOActionIOActionType, u16, from_u16);
 
 // SISO-REF-010-2023 IOActionIOActionPhase [UID 288]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10145,30 +8558,7 @@ pub enum IOActionIOActionPhase {
     ContinueAttackEffectswithChanges = 6,
 }
 
-impl IOActionIOActionPhase {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for IOActionIOActionPhase {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for IOActionIOActionPhase {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IOActionIOActionPhase {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(IOActionIOActionPhase, u16, from_u16);
 
 // SISO-REF-010-2023 IOReportIOReportType [UID 289]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10180,30 +8570,7 @@ pub enum IOReportIOReportType {
     FinalReport = 3,
 }
 
-impl IOReportIOReportType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for IOReportIOReportType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for IOReportIOReportType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for IOReportIOReportType {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(IOReportIOReportType, u8, from_u8);
 
 // SISO-REF-010-2023 IOEffectsRecordIOStatus [UID 290]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10219,12 +8586,7 @@ pub enum IOEffectsRecordIOStatus {
     EffectonSenderReceiverandMessage = 7,
 }
 
-impl IOEffectsRecordIOStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IOEffectsRecordIOStatus, u8, from_u8);
 
 // SISO-REF-010-2023 IOEffectsRecordIOLinkType [UID 291]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10236,12 +8598,7 @@ pub enum IOEffectsRecordIOLinkType {
     PhysicalLink = 3,
 }
 
-impl IOEffectsRecordIOLinkType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IOEffectsRecordIOLinkType, u8, from_u8);
 
 // SISO-REF-010-2023 IOEffectsRecordIOEffect [UID 292]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10254,12 +8611,7 @@ pub enum IOEffectsRecordIOEffect {
     TerminateEffect = 255,
 }
 
-impl IOEffectsRecordIOEffect {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IOEffectsRecordIOEffect, u8, from_u8);
 
 // SISO-REF-010-2023 IOEffectsRecordIOProcess [UID 293]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10268,12 +8620,7 @@ pub enum IOEffectsRecordIOProcess {
     NoStatement = 0,
 }
 
-impl IOEffectsRecordIOProcess {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IOEffectsRecordIOProcess, u8, from_u8);
 
 // SISO-REF-010-2023 IOCommsNodeRecordCommsNodeType [UID 294]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10285,12 +8632,7 @@ pub enum IOCommsNodeRecordCommsNodeType {
     SenderReceiverNodeID = 3,
 }
 
-impl IOCommsNodeRecordCommsNodeType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IOCommsNodeRecordCommsNodeType, u8, from_u8);
 
 // SISO-REF-010-2023 DISAttributeActionCode [UID 295]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10299,30 +8641,7 @@ pub enum DISAttributeActionCode {
     NoStatement = 0,
 }
 
-impl DISAttributeActionCode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for DISAttributeActionCode {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for DISAttributeActionCode {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for DISAttributeActionCode {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(DISAttributeActionCode, u8, from_u8);
 
 // SISO-REF-010-2023 DRParametersType [UID 296]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10333,12 +8652,7 @@ pub enum DRParametersType {
     WorldOrientationQuaternion = 2,
 }
 
-impl DRParametersType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(DRParametersType, u8, from_u8);
 
 // SISO-REF-010-2023 HighFidelityHAVEQUICKTODTransmitIndicator [UID 297]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10348,12 +8662,7 @@ pub enum HighFidelityHAVEQUICKTODTransmitIndicator {
     TODTransmissioninProgress = 1,
 }
 
-impl HighFidelityHAVEQUICKTODTransmitIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(HighFidelityHAVEQUICKTODTransmitIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 NETIDRecordMode [UID 298]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10364,12 +8673,7 @@ pub enum NETIDRecordMode {
     TTRAINING = 3,
 }
 
-impl NETIDRecordMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(NETIDRecordMode, u8, from_u8);
 
 // SISO-REF-010-2023 NETIDRecordFrequencyTable [UID 299]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10381,12 +8685,7 @@ pub enum NETIDRecordFrequencyTable {
     SATURNOperations = 3,
 }
 
-impl NETIDRecordFrequencyTable {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(NETIDRecordFrequencyTable, u8, from_u8);
 
 // SISO-REF-010-2023 EEAttributeStateIndicator [UID 300]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10397,30 +8696,7 @@ pub enum EEAttributeStateIndicator {
     HasCeased = 2,
 }
 
-impl EEAttributeStateIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for EEAttributeStateIndicator {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for EEAttributeStateIndicator {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for EEAttributeStateIndicator {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(EEAttributeStateIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 DISPDUStatusTransferredEntityIndicator(TEI) [UID 301]
 #[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10429,13 +8705,6 @@ pub enum TransferredEntityIndicator {
     #[default]
     NoDifference = 0,
     Difference = 1,
-}
-
-impl TransferredEntityIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
 }
 
 // SISO-REF-010-2023 LVCIndicator [UID 302]
@@ -10449,13 +8718,6 @@ pub enum LVCIndicator {
     Constructive = 3,
 }
 
-impl LVCIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
 // SISO-REF-010-2023 DISPDUStatusCoupledExtensionIndicator(CEI) [UID 303]
 #[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 #[bits = 1]
@@ -10465,13 +8727,6 @@ pub enum CoupledExtensionIndicator {
     Coupled = 1,
 }
 
-impl CoupledExtensionIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
 // SISO-REF-010-2023 DISPDUStatusFireTypeIndicator(FTI) [UID 304]
 #[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 #[bits = 1]
@@ -10479,13 +8734,6 @@ pub enum FireTypeIndicator {
     #[default]
     Munition = 0,
     Expendable = 1,
-}
-
-impl FireTypeIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
 }
 
 // SISO-REF-010-2023 DISPDUStatusDetonationTypeIndicator(DTI) [UID 305]
@@ -10511,13 +8759,6 @@ impl From<u8> for DetonationTypeIndicator {
 impl From<DetonationTypeIndicator> for u8 {
     fn from(value: DetonationTypeIndicator) -> Self {
         value as Self
-    }
-}
-
-impl DetonationTypeIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
     }
 }
 
@@ -10547,13 +8788,6 @@ impl From<RadioAttachedIndicator> for u8 {
     }
 }
 
-impl RadioAttachedIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
 // SISO-REF-010-2023 IntercomAttachedIndicator(IAI) [UID 307]
 #[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 #[bits = 2]
@@ -10580,13 +8814,6 @@ impl From<IntercomAttachedIndicator> for u8 {
     }
 }
 
-impl IntercomAttachedIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
 // SISO-REF-010-2023 PduStatusIFFSimulationMode [UID 308]
 #[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 #[bits = 1]
@@ -10594,13 +8821,6 @@ pub enum PduStatusIFFSimulationMode {
     #[default]
     Regeneration = 0,
     Interactive = 1,
-}
-
-impl PduStatusIFFSimulationMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
 }
 
 // SISO-REF-010-2023 ExplosiveMaterialGroups [UID 309]
@@ -10616,12 +8836,7 @@ pub enum ExplosiveMaterialGroups {
     DustMaterial = 6,
 }
 
-impl ExplosiveMaterialGroups {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ExplosiveMaterialGroups, u8, from_u8);
 
 // SISO-REF-010-2023 ExplosiveMaterialCategories [UID 310]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10674,12 +8889,7 @@ pub enum ExplosiveMaterialCategories {
     SugarDust = 804,
 }
 
-impl ExplosiveMaterialCategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ExplosiveMaterialCategories, u16, from_u16);
 
 // SISO-REF-010-2023 DEPrecisionAimpointBeamSpotType [UID 311]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10690,12 +8900,7 @@ pub enum DEPrecisionAimpointBeamSpotType {
     TopHat = 2,
 }
 
-impl DEPrecisionAimpointBeamSpotType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(DEPrecisionAimpointBeamSpotType, u8, from_u8);
 
 // SISO-REF-010-2023 DEFirePulseShape [UID 312]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10707,30 +8912,7 @@ pub enum DEFirePulseShape {
     Gaussian = 3,
 }
 
-impl DEFirePulseShape {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for DEFirePulseShape {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for DEFirePulseShape {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for DEFirePulseShape {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(DEFirePulseShape, u8, from_u8);
 
 // SISO-REF-010-2023 ComponentIdentification [UID 314]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10748,30 +8930,7 @@ pub enum ComponentIdentification {
     FuelTankSolidRocketMotor = 9,
 }
 
-impl ComponentIdentification {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for ComponentIdentification {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for ComponentIdentification {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for ComponentIdentification {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(ComponentIdentification, u8, from_u8);
 
 // SISO-REF-010-2023 ComponentDamageStatus [UID 315]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10784,30 +8943,7 @@ pub enum ComponentDamageStatus {
     Destroyed = 4,
 }
 
-impl ComponentDamageStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for ComponentDamageStatus {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for ComponentDamageStatus {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for ComponentDamageStatus {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(ComponentDamageStatus, u8, from_u8);
 
 // SISO-REF-010-2023 ComponentVisualSmokeColor [UID 316]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10819,30 +8955,7 @@ pub enum ComponentVisualSmokeColor {
     Black = 3,
 }
 
-impl ComponentVisualSmokeColor {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for ComponentVisualSmokeColor {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for ComponentVisualSmokeColor {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for ComponentVisualSmokeColor {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(ComponentVisualSmokeColor, u8, from_u8);
 
 // SISO-REF-010-2023 BeamStatusBeamState [UID 318]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10852,12 +8965,7 @@ pub enum BeamStatusBeamState {
     Deactivated = 1,
 }
 
-impl BeamStatusBeamState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(BeamStatusBeamState, u8, from_u8);
 
 // SISO-REF-010-2023 EntityAssociationAssociationStatus [UID 319]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10872,12 +8980,7 @@ pub enum EntityAssociationAssociationStatus {
     FunctionalAssociationObject2 = 6,
 }
 
-impl EntityAssociationAssociationStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EntityAssociationAssociationStatus, u8, from_u8);
 
 // SISO-REF-010-2023 EntityVPRecordChangeIndicator [UID 320]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10887,12 +8990,7 @@ pub enum EntityVPRecordChangeIndicator {
     ChangeSinceLastIssuance = 1,
 }
 
-impl EntityVPRecordChangeIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EntityVPRecordChangeIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 EntityAssociationGroupMemberType [UID 321]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10907,12 +9005,7 @@ pub enum EntityAssociationGroupMemberType {
     ConvoyMember = 6,
 }
 
-impl EntityAssociationGroupMemberType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EntityAssociationGroupMemberType, u8, from_u8);
 
 // SISO-REF-010-2023 PhysicalAssociationTypeGroups [UID 322]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10925,12 +9018,7 @@ pub enum PhysicalAssociationTypeGroups {
     OtherConnections = 4,
 }
 
-impl PhysicalAssociationTypeGroups {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PhysicalAssociationTypeGroups, u8, from_u8);
 
 // SISO-REF-010-2023 EntityAssociationPhysicalAssociationType [UID 323]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10966,12 +9054,7 @@ pub enum EntityAssociationPhysicalAssociationType {
     TopSurface = 93,
 }
 
-impl EntityAssociationPhysicalAssociationType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EntityAssociationPhysicalAssociationType, u8, from_u8);
 
 // SISO-REF-010-2023 EntityAssociationPhysicalConnectionType [UID 324]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -10992,12 +9075,7 @@ pub enum EntityAssociationPhysicalConnectionType {
     FastRope = 12,
 }
 
-impl EntityAssociationPhysicalConnectionType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EntityAssociationPhysicalConnectionType, u8, from_u8);
 
 // SISO-REF-010-2023 SensorRecordSensorTypeOtherActiveSensors [UID 325]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11006,12 +9084,7 @@ pub enum SensorRecordSensorTypeOtherActiveSensors {
     Undefined = 0,
 }
 
-impl SensorRecordSensorTypeOtherActiveSensors {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SensorRecordSensorTypeOtherActiveSensors, u8, from_u8);
 
 // SISO-REF-010-2023 SensorRecordSensorTypePassiveSensors [UID 326]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11089,12 +9162,7 @@ pub enum SensorRecordSensorTypePassiveSensors {
     SafranVampir_MB = 60068,
 }
 
-impl SensorRecordSensorTypePassiveSensors {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SensorRecordSensorTypePassiveSensors, u16, from_u16);
 
 // SISO-REF-010-2023 MunitionExpendableStatus [UID 327]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11105,12 +9173,7 @@ pub enum MunitionExpendableStatus {
     Inventory = 2,
 }
 
-impl MunitionExpendableStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MunitionExpendableStatus, u8, from_u8);
 
 // SISO-REF-010-2023 FuelMeasurementUnits [UID 328]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11121,12 +9184,7 @@ pub enum FuelMeasurementUnits {
     Kilogram = 2,
 }
 
-impl FuelMeasurementUnits {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(FuelMeasurementUnits, u8, from_u8);
 
 // SISO-REF-010-2023 FuelLocation [UID 329]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11135,12 +9193,7 @@ pub enum FuelLocation {
     Other = 0,
 }
 
-impl FuelLocation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(FuelLocation, u8, from_u8);
 
 // SISO-REF-010-2023 EntityAssociationAssociationType [UID 330]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11163,12 +9216,7 @@ pub enum EntityAssociationAssociationType {
     EntityHeadedtowardstoJoinUpWith = 14,
 }
 
-impl EntityAssociationAssociationType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(EntityAssociationAssociationType, u8, from_u8);
 
 // SISO-REF-010-2023 SensorOnOffStatus [UID 331]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11178,12 +9226,7 @@ pub enum SensorOnOffStatus {
     On = 1,
 }
 
-impl SensorOnOffStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SensorOnOffStatus, u8, from_u8);
 
 // SISO-REF-010-2023 OwnershipStatus [UID 332]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11198,12 +9241,7 @@ pub enum OwnershipStatus {
     LocalEntityCancelledRemoveEntityTCRReceived = 6,
 }
 
-impl OwnershipStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(OwnershipStatus, u8, from_u8);
 
 // SISO-REF-010-2023 RecordREventType [UID 333]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11212,12 +9250,7 @@ pub enum RecordREventType {
     Other = 0,
 }
 
-impl RecordREventType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(RecordREventType, u8, from_u8);
 
 // SISO-REF-010-2023 RecordQueryREventType [UID 334]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11227,30 +9260,7 @@ pub enum RecordQueryREventType {
     InternalEntityStateData = 1,
 }
 
-impl RecordQueryREventType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for RecordQueryREventType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for RecordQueryREventType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for RecordQueryREventType {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(RecordQueryREventType, u16, from_u16);
 
 // SISO-REF-010-2023 UAPropulsionPlantConfigurationConfiguration [UID 335]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11265,12 +9275,7 @@ pub enum UAPropulsionPlantConfigurationConfiguration {
     GasTurbine = 7,
 }
 
-impl UAPropulsionPlantConfigurationConfiguration {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(UAPropulsionPlantConfigurationConfiguration, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldStateProtocolMode [UID 336]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11280,30 +9285,7 @@ pub enum MinefieldStateProtocolMode {
     QRPMode = 1,
 }
 
-impl MinefieldStateProtocolMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for MinefieldStateProtocolMode {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(*self as u16);
-    }
-}
-
-impl FieldDeserialize for MinefieldStateProtocolMode {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for MinefieldStateProtocolMode {
-    fn field_len(&self) -> usize {
-        2
-    }
-}
+impl_deku_enum!(MinefieldStateProtocolMode, u16, from_u16);
 
 // SISO-REF-010-2023 TransponderInterrogatorIndicator [UID 337]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11313,12 +9295,7 @@ pub enum TransponderInterrogatorIndicator {
     Interrogator = 1,
 }
 
-impl TransponderInterrogatorIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransponderInterrogatorIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 IFFSimulationMode [UID 338]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11328,12 +9305,7 @@ pub enum IFFSimulationMode {
     Interactive = 1,
 }
 
-impl IFFSimulationMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFSimulationMode, u8, from_u8);
 
 // SISO-REF-010-2023 IFFApplicableModes [UID 339]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11343,12 +9315,7 @@ pub enum IFFApplicableModes {
     AllModes = 1,
 }
 
-impl IFFApplicableModes {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFApplicableModes, u8, from_u8);
 
 // SISO-REF-010-2023 ModeCAltitudeIndicator [UID 340]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11358,12 +9325,7 @@ pub enum ModeCAltitudeIndicator {
     NegativeAltitudeBelowMSLUseAlternateModeCAltitude = 1,
 }
 
-impl ModeCAltitudeIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ModeCAltitudeIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 TCASACASBasicAdvancedIndicator [UID 341]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11373,12 +9335,7 @@ pub enum TCASACASBasicAdvancedIndicator {
     Advanced = 1,
 }
 
-impl TCASACASBasicAdvancedIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TCASACASBasicAdvancedIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 TCASACASIndicator [UID 342]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11388,12 +9345,7 @@ pub enum TCASACASIndicator {
     ACAS = 1,
 }
 
-impl TCASACASIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TCASACASIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 TCASACASSoftwareVersion [UID 343]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11404,12 +9356,7 @@ pub enum TCASACASSoftwareVersion {
     _7_0 = 2,
 }
 
-impl TCASACASSoftwareVersion {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TCASACASSoftwareVersion, u8, from_u8);
 
 // SISO-REF-010-2023 TCASACASType [UID 344]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11420,12 +9367,7 @@ pub enum TCASACASType {
     ACASII = 2,
 }
 
-impl TCASACASType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TCASACASType, u8, from_u8);
 
 // SISO-REF-010-2023 TCASIIIType [UID 345]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11435,12 +9377,7 @@ pub enum TCASIIIType {
     TCASII = 1,
 }
 
-impl TCASIIIType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TCASIIIType, u8, from_u8);
 
 // SISO-REF-010-2023 Mode5IFFMission [UID 346]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11455,12 +9392,7 @@ pub enum Mode5IFFMission {
     GroundtoGround = 6,
 }
 
-impl Mode5IFFMission {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Mode5IFFMission, u8, from_u8);
 
 // SISO-REF-010-2023 ModeSInterrogatorStatusTransmitState [UID 347]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11474,12 +9406,7 @@ pub enum ModeSInterrogatorStatusTransmitState {
     IntermittentLockout = 5,
 }
 
-impl ModeSInterrogatorStatusTransmitState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ModeSInterrogatorStatusTransmitState, u8, from_u8);
 
 // SISO-REF-010-2023 ModeSInterrogatorIdentifierICType [UID 348]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11489,12 +9416,7 @@ pub enum ModeSInterrogatorIdentifierICType {
     SI = 1,
 }
 
-impl ModeSInterrogatorIdentifierICType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ModeSInterrogatorIdentifierICType, u8, from_u8);
 
 // SISO-REF-010-2023 ISLSAntennaType [UID 349]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11504,12 +9426,7 @@ pub enum ISLSAntennaType {
     MonopulseAntenna = 1,
 }
 
-impl ISLSAntennaType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ISLSAntennaType, u8, from_u8);
 
 // SISO-REF-010-2023 Mode5Reply [UID 350]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11521,12 +9438,7 @@ pub enum Mode5Reply {
     UnabletoVerify = 3,
 }
 
-impl Mode5Reply {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Mode5Reply, u8, from_u8);
 
 // SISO-REF-010-2023 AntennaSelection [UID 351]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11538,12 +9450,7 @@ pub enum AntennaSelection {
     Diversity = 3,
 }
 
-impl AntennaSelection {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AntennaSelection, u8, from_u8);
 
 // SISO-REF-010-2023 Mode5SquitterType [UID 352]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11554,12 +9461,7 @@ pub enum Mode5SquitterType {
     Extended = 2,
 }
 
-impl Mode5SquitterType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Mode5SquitterType, u8, from_u8);
 
 // SISO-REF-010-2023 Level2SquitterStatus [UID 353]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11569,12 +9471,7 @@ pub enum Level2SquitterStatus {
     Enabled = 1,
 }
 
-impl Level2SquitterStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Level2SquitterStatus, u8, from_u8);
 
 // SISO-REF-010-2023 ModeSSquitterType [UID 354]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11586,12 +9483,7 @@ pub enum ModeSSquitterType {
     Short = 3,
 }
 
-impl ModeSSquitterType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ModeSSquitterType, u8, from_u8);
 
 // SISO-REF-010-2023 ModeSSquitterRecordSource [UID 355]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11601,12 +9493,7 @@ pub enum ModeSSquitterRecordSource {
     Layer5GICBIFFDataRecords = 1,
 }
 
-impl ModeSSquitterRecordSource {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ModeSSquitterRecordSource, u8, from_u8);
 
 // SISO-REF-010-2023 AircraftPresentDomain [UID 356]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11617,12 +9504,7 @@ pub enum AircraftPresentDomain {
     OnGroundSurface = 2,
 }
 
-impl AircraftPresentDomain {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AircraftPresentDomain, u8, from_u8);
 
 // SISO-REF-010-2023 AircraftIdentificationType [UID 357]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11633,12 +9515,7 @@ pub enum AircraftIdentificationType {
     TailNumber = 2,
 }
 
-impl AircraftIdentificationType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AircraftIdentificationType, u8, from_u8);
 
 // SISO-REF-010-2023 CapabilityReport [UID 358]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11652,12 +9529,7 @@ pub enum CapabilityReport {
     NoStatement = 255,
 }
 
-impl CapabilityReport {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(CapabilityReport, u8, from_u8);
 
 // SISO-REF-010-2023 NavigationSource [UID 359]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11669,12 +9541,7 @@ pub enum NavigationSource {
     INSGPS = 3,
 }
 
-impl NavigationSource {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(NavigationSource, u8, from_u8);
 
 // SISO-REF-010-2023 IFFDataRecordAvailable [UID 360]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11684,12 +9551,7 @@ pub enum IFFDataRecordAvailable {
     IFFDataRecordAvailable = 1,
 }
 
-impl IFFDataRecordAvailable {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IFFDataRecordAvailable, u8, from_u8);
 
 // SISO-REF-010-2023 Mode5SAltitudeResolution [UID 361]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11699,12 +9561,7 @@ pub enum Mode5SAltitudeResolution {
     _25foot = 1,
 }
 
-impl Mode5SAltitudeResolution {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Mode5SAltitudeResolution, u8, from_u8);
 
 // SISO-REF-010-2023 DeltaMode5SAltitudePositiveNegativeIndicator [UID 362]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11714,12 +9571,7 @@ pub enum DeltaMode5SAltitudePositiveNegativeIndicator {
     Negative = 1,
 }
 
-impl DeltaMode5SAltitudePositiveNegativeIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(DeltaMode5SAltitudePositiveNegativeIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 FormatType [UID 363]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11741,12 +9593,7 @@ pub enum FormatType {
     AirborneFormat100meterRNPGPSHeight = 16,
 }
 
-impl FormatType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(FormatType, u8, from_u8);
 
 // SISO-REF-010-2023 AircraftAddressSource [UID 364]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11756,12 +9603,7 @@ pub enum AircraftAddressSource {
     GICBIFFDataRecordAvailable = 1,
 }
 
-impl AircraftAddressSource {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AircraftAddressSource, u8, from_u8);
 
 // SISO-REF-010-2023 SurveillanceStatus [UID 365]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11773,12 +9615,7 @@ pub enum SurveillanceStatus {
     ATCRBSCodeChange = 3,
 }
 
-impl SurveillanceStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SurveillanceStatus, u8, from_u8);
 
 // SISO-REF-010-2023 TurnRateSource [UID 366]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11789,12 +9626,7 @@ pub enum TurnRateSource {
     _1DegreeorGreaterTurnRate = 2,
 }
 
-impl TurnRateSource {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TurnRateSource, u8, from_u8);
 
 // SISO-REF-010-2023 TimeTypeSource [UID 367]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11805,12 +9637,7 @@ pub enum TimeTypeSource {
     OddSecond = 2,
 }
 
-impl TimeTypeSource {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TimeTypeSource, u8, from_u8);
 
 // SISO-REF-010-2023 AircraftTypeWake [UID 368]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11819,12 +9646,7 @@ pub enum AircraftTypeWake {
     NoStatement = 0,
 }
 
-impl AircraftTypeWake {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AircraftTypeWake, u8, from_u8);
 
 // SISO-REF-010-2023 DataCategory [UID 369]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11835,12 +9657,7 @@ pub enum DataCategory {
     TransponderInterrogatorDataLinkMessages = 2,
 }
 
-impl DataCategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(DataCategory, u8, from_u8);
 
 // SISO-REF-010-2023 TILinkType [UID 370]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11861,12 +9678,7 @@ pub enum TILinkType {
     AutomaticDependentSurveillanceB = 12,
 }
 
-impl TILinkType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TILinkType, u8, from_u8);
 
 // SISO-REF-010-2023 AntennaStatus [UID 371]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11877,12 +9689,7 @@ pub enum AntennaStatus {
     AbletoEmit = 2,
 }
 
-impl AntennaStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AntennaStatus, u8, from_u8);
 
 // SISO-REF-010-2023 TransmissionIndicator [UID 372]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11894,12 +9701,7 @@ pub enum TransmissionIndicator {
     SquitterTransmission = 3,
 }
 
-impl TransmissionIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmissionIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 ReplyAmplification [UID 373]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11911,12 +9713,7 @@ pub enum ReplyAmplification {
     UnabletoRespond = 3,
 }
 
-impl ReplyAmplification {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ReplyAmplification, u8, from_u8);
 
 // SISO-REF-010-2023 DEFireFlagsStateUpdateFlag [UID 374]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11926,12 +9723,7 @@ pub enum DEFireFlagsStateUpdateFlag {
     StateChange = 1,
 }
 
-impl DEFireFlagsStateUpdateFlag {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(DEFireFlagsStateUpdateFlag, u8, from_u8);
 
 // SISO-REF-010-2023 ComponentVisualDamageStatusSmoke [UID 375]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11943,12 +9735,7 @@ pub enum ComponentVisualDamageStatusSmoke {
     HeavySmoke = 3,
 }
 
-impl ComponentVisualDamageStatusSmoke {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ComponentVisualDamageStatusSmoke, u8, from_u8);
 
 // SISO-REF-010-2023 ComponentVisualDamageStatusSurfaceDamage [UID 376]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11960,12 +9747,7 @@ pub enum ComponentVisualDamageStatusSurfaceDamage {
     OneorMoreHolesBurnedCompletelythroughSurface = 3,
 }
 
-impl ComponentVisualDamageStatusSurfaceDamage {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ComponentVisualDamageStatusSurfaceDamage, u8, from_u8);
 
 // SISO-REF-010-2023 GridAxisDescriptorAxisType [UID 377]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11975,30 +9757,7 @@ pub enum GridAxisDescriptorAxisType {
     IrregularAxis = 1,
 }
 
-impl GridAxisDescriptorAxisType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
-
-impl FieldSerialize for GridAxisDescriptorAxisType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self as u8);
-    }
-}
-
-impl FieldDeserialize for GridAxisDescriptorAxisType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for GridAxisDescriptorAxisType {
-    fn field_len(&self) -> usize {
-        1
-    }
-}
+impl_deku_enum!(GridAxisDescriptorAxisType, u8, from_u8);
 
 // SISO-REF-010-2023 AppearancePaintScheme [UID 378]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12008,12 +9767,7 @@ pub enum AppearancePaintScheme {
     Camouflage = 1,
 }
 
-impl AppearancePaintScheme {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearancePaintScheme, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceDamage [UID 379]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12025,12 +9779,7 @@ pub enum AppearanceDamage {
     Destroyed = 3,
 }
 
-impl AppearanceDamage {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceDamage, u8, from_u8);
 
 // SISO-REF-010-2023 Mode5MessageFormatsStatus [UID 380]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12040,12 +9789,7 @@ pub enum Mode5MessageFormatsStatus {
     ActiveInterrogation = 1,
 }
 
-impl Mode5MessageFormatsStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Mode5MessageFormatsStatus, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceTrailingEffects [UID 381]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12057,12 +9801,7 @@ pub enum AppearanceTrailingEffects {
     Large = 3,
 }
 
-impl AppearanceTrailingEffects {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceTrailingEffects, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceHatch [UID 382]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12076,12 +9815,7 @@ pub enum AppearanceHatch {
     OpenandPersonIsVisible = 5,
 }
 
-impl AppearanceHatch {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceHatch, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceLauncherOperational [UID 383]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12091,12 +9825,7 @@ pub enum AppearanceLauncherOperational {
     RaisedOperational = 1,
 }
 
-impl AppearanceLauncherOperational {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceLauncherOperational, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceCamouflageType [UID 384]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12108,12 +9837,7 @@ pub enum AppearanceCamouflageType {
     Other = 3,
 }
 
-impl AppearanceCamouflageType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceCamouflageType, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceConcealedPosition [UID 385]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12123,12 +9847,7 @@ pub enum AppearanceConcealedPosition {
     PreparedConcealedPosition = 1,
 }
 
-impl AppearanceConcealedPosition {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceConcealedPosition, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceEntityorObjectState [UID 386]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12138,12 +9857,7 @@ pub enum AppearanceEntityorObjectState {
     Deactivated = 1,
 }
 
-impl AppearanceEntityorObjectState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceEntityorObjectState, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceCanopy [UID 387]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12158,12 +9872,7 @@ pub enum AppearanceCanopy {
     FrontandRearCanopyLeftandRightTroopDoorOpen = 6,
 }
 
-impl AppearanceCanopy {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceCanopy, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceSubsurfaceHatch [UID 388]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12174,12 +9883,7 @@ pub enum AppearanceSubsurfaceHatch {
     HatchIsOpen = 4,
 }
 
-impl AppearanceSubsurfaceHatch {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceSubsurfaceHatch, u8, from_u8);
 
 // SISO-REF-010-2023 DISPDUStatusActiveInterrogationIndicator(AII) [UID 389]
 #[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12188,13 +9892,6 @@ pub enum ActiveInterrogationIndicator {
     #[default]
     NotActive = 0,
     Active = 1,
-}
-
-impl ActiveInterrogationIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
 }
 
 // SISO-REF-010-2023 AppearanceLifeformHealth [UID 390]
@@ -12207,12 +9904,7 @@ pub enum AppearanceLifeformHealth {
     FatalInjury = 3,
 }
 
-impl AppearanceLifeformHealth {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceLifeformHealth, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceLifeFormComplianceStatus [UID 391]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12236,12 +9928,7 @@ pub enum AppearanceLifeFormComplianceStatus {
     UsingNonLethalWeapon6 = 15,
 }
 
-impl AppearanceLifeFormComplianceStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceLifeFormComplianceStatus, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceLifeFormPosture [UID 392]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12265,12 +9952,7 @@ pub enum AppearanceLifeFormPosture {
     Detained = 15,
 }
 
-impl AppearanceLifeFormPosture {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceLifeFormPosture, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceLifeFormWeaponImplement [UID 393]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12282,12 +9964,7 @@ pub enum AppearanceLifeFormWeaponImplement {
     FiringPositionInUse = 3,
 }
 
-impl AppearanceLifeFormWeaponImplement {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceLifeFormWeaponImplement, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceConcealedMovement [UID 394]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12297,12 +9974,7 @@ pub enum AppearanceConcealedMovement {
     RushesBetweenCoveredPositions = 1,
 }
 
-impl AppearanceConcealedMovement {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceConcealedMovement, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceEnvironmentalDensity [UID 395]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12315,12 +9987,7 @@ pub enum AppearanceEnvironmentalDensity {
     Opaque = 4,
 }
 
-impl AppearanceEnvironmentalDensity {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceEnvironmentalDensity, u8, from_u8);
 
 // SISO-REF-010-2023 Mode5PlatformType [UID 396]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12330,12 +9997,7 @@ pub enum Mode5PlatformType {
     AirVehicle = 1,
 }
 
-impl Mode5PlatformType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Mode5PlatformType, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceAntiCollisionDayNight [UID 397]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12345,12 +10007,7 @@ pub enum AppearanceAntiCollisionDayNight {
     Night = 1,
 }
 
-impl AppearanceAntiCollisionDayNight {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceAntiCollisionDayNight, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceNavigationPositionBrightness [UID 398]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12360,12 +10017,7 @@ pub enum AppearanceNavigationPositionBrightness {
     Bright = 1,
 }
 
-impl AppearanceNavigationPositionBrightness {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceNavigationPositionBrightness, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceSupplyDeployed [UID 399]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12377,12 +10029,7 @@ pub enum AppearanceSupplyDeployed {
     DeployedandActive = 3,
 }
 
-impl AppearanceSupplyDeployed {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceSupplyDeployed, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceNVGMode [UID 400]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12392,12 +10039,7 @@ pub enum AppearanceNVGMode {
     CovertLighting = 1,
 }
 
-impl AppearanceNVGMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceNVGMode, u8, from_u8);
 
 // SISO-REF-010-2023 Parachute [UID 401]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12409,12 +10051,7 @@ pub enum Parachute {
     MalfunctionStreamer = 3,
 }
 
-impl Parachute {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Parachute, u8, from_u8);
 
 // SISO-REF-010-2023 FlareSmokeColor [UID 402]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12426,12 +10063,7 @@ pub enum FlareSmokeColor {
     IR = 3,
 }
 
-impl FlareSmokeColor {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(FlareSmokeColor, u8, from_u8);
 
 // SISO-REF-010-2023 FlareSmokeStatus [UID 403]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12442,12 +10074,7 @@ pub enum FlareSmokeStatus {
     BurnedOut = 2,
 }
 
-impl FlareSmokeStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(FlareSmokeStatus, u8, from_u8);
 
 // SISO-REF-010-2023 SpotChaffStatus [UID 404]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12458,12 +10085,7 @@ pub enum SpotChaffStatus {
     Malfunction = 2,
 }
 
-impl SpotChaffStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SpotChaffStatus, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceObjectGeneralDamage [UID 405]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12474,12 +10096,7 @@ pub enum AppearanceObjectGeneralDamage {
     Destroyed = 2,
 }
 
-impl AppearanceObjectGeneralDamage {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceObjectGeneralDamage, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceObjectGeneralPredistributed [UID 406]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12489,12 +10106,7 @@ pub enum AppearanceObjectGeneralPredistributed {
     ObjectPredistributedPriortoExerciseStart = 1,
 }
 
-impl AppearanceObjectGeneralPredistributed {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceObjectGeneralPredistributed, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceObjectSpecificBreachState [UID 407]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12505,12 +10117,7 @@ pub enum AppearanceObjectSpecificBreachState {
     Cleared = 2,
 }
 
-impl AppearanceObjectSpecificBreachState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceObjectSpecificBreachState, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceObjectSpecificChemicalType [UID 408]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12522,12 +10129,7 @@ pub enum AppearanceObjectSpecificChemicalType {
     RedPhosphorous = 3,
 }
 
-impl AppearanceObjectSpecificChemicalType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceObjectSpecificChemicalType, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceLinearObjectTankDitchBreach [UID 409]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12539,12 +10141,7 @@ pub enum AppearanceLinearObjectTankDitchBreach {
     Cleared = 3,
 }
 
-impl AppearanceLinearObjectTankDitchBreach {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceLinearObjectTankDitchBreach, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceLinearObjectLaneMarkerVisible [UID 410]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12555,12 +10152,7 @@ pub enum AppearanceLinearObjectLaneMarkerVisible {
     BothSidesAreVisible = 2,
 }
 
-impl AppearanceLinearObjectLaneMarkerVisible {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceLinearObjectLaneMarkerVisible, u8, from_u8);
 
 // SISO-REF-010-2023 AppearanceObjectGeneralIEDPresent [UID 411]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12572,12 +10164,7 @@ pub enum AppearanceObjectGeneralIEDPresent {
     CompletelyHidden = 3,
 }
 
-impl AppearanceObjectGeneralIEDPresent {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AppearanceObjectGeneralIEDPresent, u8, from_u8);
 
 // SISO-REF-010-2023 Mode5LevelSelection [UID 412]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12587,12 +10174,7 @@ pub enum Mode5LevelSelection {
     Mode5Level2 = 1,
 }
 
-impl Mode5LevelSelection {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Mode5LevelSelection, u8, from_u8);
 
 // SISO-REF-010-2023 SupplyFuelType [UID 413]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12611,12 +10193,7 @@ pub enum SupplyFuelType {
     TS1 = 10,
 }
 
-impl SupplyFuelType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SupplyFuelType, u8, from_u8);
 
 // SISO-REF-010-2023 SensorTypeSource [UID 414]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12630,12 +10207,7 @@ pub enum SensorTypeSource {
     Lasers = 5,
 }
 
-impl SensorTypeSource {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SensorTypeSource, u8, from_u8);
 
 // SISO-REF-010-2023 AttachedPartDetachedIndicator [UID 415]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12645,12 +10217,7 @@ pub enum AttachedPartDetachedIndicator {
     Detached = 1,
 }
 
-impl AttachedPartDetachedIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AttachedPartDetachedIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 IntercomControlCommunicationsClass [UID 416]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12660,12 +10227,7 @@ pub enum IntercomControlCommunicationsClass {
     SimulationSupportCommunicationsChannel = 1,
 }
 
-impl IntercomControlCommunicationsClass {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IntercomControlCommunicationsClass, u8, from_u8);
 
 // SISO-REF-010-2023 DISLiveEntitySubprotocolNumber [UID 417]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12674,12 +10236,7 @@ pub enum DISLiveEntitySubprotocolNumber {
     NoSubprotocol = 0,
 }
 
-impl DISLiveEntitySubprotocolNumber {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(DISLiveEntitySubprotocolNumber, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldAppearanceMinefieldType [UID 418]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12690,12 +10247,7 @@ pub enum MinefieldAppearanceMinefieldType {
     PureAntiTankMinefield = 2,
 }
 
-impl MinefieldAppearanceMinefieldType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldAppearanceMinefieldType, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldAppearanceActiveStatus [UID 419]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12705,12 +10257,7 @@ pub enum MinefieldAppearanceActiveStatus {
     Inactive = 1,
 }
 
-impl MinefieldAppearanceActiveStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldAppearanceActiveStatus, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldAppearanceLane [UID 420]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12720,12 +10267,7 @@ pub enum MinefieldAppearanceLane {
     MinefieldHasanInactiveLane = 1,
 }
 
-impl MinefieldAppearanceLane {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldAppearanceLane, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldAppearanceState [UID 421]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12735,12 +10277,7 @@ pub enum MinefieldAppearanceState {
     Deactivated = 1,
 }
 
-impl MinefieldAppearanceState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldAppearanceState, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldFusingFuseType [UID 422]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12755,12 +10292,7 @@ pub enum MinefieldFusingFuseType {
     TripWire = 6,
 }
 
-impl MinefieldFusingFuseType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldFusingFuseType, u8, from_u8);
 
 // SISO-REF-010-2023 Mode5LocationErrors [UID 423]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12770,12 +10302,7 @@ pub enum Mode5LocationErrors {
     IFFDataRecordPresent = 1,
 }
 
-impl Mode5LocationErrors {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Mode5LocationErrors, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldPaintSchemeAlgae [UID 424]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12787,12 +10314,7 @@ pub enum MinefieldPaintSchemeAlgae {
     Heavy = 3,
 }
 
-impl MinefieldPaintSchemeAlgae {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldPaintSchemeAlgae, u8, from_u8);
 
 // SISO-REF-010-2023 MinefieldPaintSchemePaintScheme [UID 425]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12819,12 +10341,7 @@ pub enum MinefieldPaintSchemePaintScheme {
     Brown = 18,
 }
 
-impl MinefieldPaintSchemePaintScheme {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(MinefieldPaintSchemePaintScheme, u8, from_u8);
 
 // SISO-REF-010-2023 CoverShroudStatus [UID 426]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12836,12 +10353,7 @@ pub enum CoverShroudStatus {
     OpenAttached = 3,
 }
 
-impl CoverShroudStatus {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(CoverShroudStatus, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandMotorcycleSubcategories [UID 427]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12857,12 +10369,7 @@ pub enum PlatformLandMotorcycleSubcategories {
     DualPurpose = 7,
 }
 
-impl PlatformLandMotorcycleSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandMotorcycleSubcategories, u8, from_u8);
 
 // HERE
 
@@ -12916,12 +10423,7 @@ pub enum PlatformLandCarSubcategories {
     SportsUtilityVehicleOversize = 115,
 }
 
-impl PlatformLandCarSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandCarSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandBusSubcategories [UID 429]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12948,12 +10450,7 @@ pub enum PlatformLandBusSubcategories {
     Articulated = 18,
 }
 
-impl PlatformLandBusSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandBusSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandSingleUnitCargoTruckSubcategories [UID 430]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -12993,12 +10490,7 @@ pub enum PlatformLandSingleUnitCargoTruckSubcategories {
     RefrigeratedTruckLarge = 110,
 }
 
-impl PlatformLandSingleUnitCargoTruckSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandSingleUnitCargoTruckSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandSingleUnitUtilityEmergencyTruckSubcategories [UID 431]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13051,12 +10543,11 @@ pub enum PlatformLandSingleUnitUtilityEmergencyTruckSubcategories {
     AutoRickshaw = 150,
 }
 
-impl PlatformLandSingleUnitUtilityEmergencyTruckSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    PlatformLandSingleUnitUtilityEmergencyTruckSubcategories,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 PlatformLandMultipleUnitCargoTruckSubcategories [UID 432]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13067,12 +10558,7 @@ pub enum PlatformLandMultipleUnitCargoTruckSubcategories {
     Tanker = 2,
 }
 
-impl PlatformLandMultipleUnitCargoTruckSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandMultipleUnitCargoTruckSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandMultipleUnitUtilityEmergencyTruckSubcategories [UID 433]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13082,12 +10568,11 @@ pub enum PlatformLandMultipleUnitUtilityEmergencyTruckSubcategories {
     FireEngineHookAndLadder = 1,
 }
 
-impl PlatformLandMultipleUnitUtilityEmergencyTruckSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    PlatformLandMultipleUnitUtilityEmergencyTruckSubcategories,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 PlatformLandConstructionSpecialtyVehicleSubcategories [UID 434]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13151,12 +10636,11 @@ pub enum PlatformLandConstructionSpecialtyVehicleSubcategories {
     CraneConstruction = 55,
 }
 
-impl PlatformLandConstructionSpecialtyVehicleSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    PlatformLandConstructionSpecialtyVehicleSubcategories,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 PlatformLandFarmSpecialtyVehicleSubcategories [UID 435]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13173,12 +10657,7 @@ pub enum PlatformLandFarmSpecialtyVehicleSubcategories {
     LawnMowerPush = 8,
 }
 
-impl PlatformLandFarmSpecialtyVehicleSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandFarmSpecialtyVehicleSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandTrailerSubcategories [UID 436]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13214,12 +10693,7 @@ pub enum PlatformLandTrailerSubcategories {
     TrailerHeavyEquipment = 27,
 }
 
-impl PlatformLandTrailerSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandTrailerSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandRecreationalSubcategories [UID 437]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13242,12 +10716,7 @@ pub enum PlatformLandRecreationalSubcategories {
     ConversionVan = 14,
 }
 
-impl PlatformLandRecreationalSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandRecreationalSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandNonmotorizedSubcategories [UID 438]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13280,12 +10749,7 @@ pub enum PlatformLandNonmotorizedSubcategories {
     Wheelchair = 24,
 }
 
-impl PlatformLandNonmotorizedSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandNonmotorizedSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandTrainsSubcategories [UID 439]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13301,12 +10765,7 @@ pub enum PlatformLandTrainsSubcategories {
     Hopper = 7,
 }
 
-impl PlatformLandTrainsSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandTrainsSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformLandUtilityEmergencyCarSubcategories [UID 440]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13320,12 +10779,7 @@ pub enum PlatformLandUtilityEmergencyCarSubcategories {
     Taxi = 5,
 }
 
-impl PlatformLandUtilityEmergencyCarSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformLandUtilityEmergencyCarSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformSurfacePassengerVesselSubcategories [UID 441]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13338,12 +10792,7 @@ pub enum PlatformSurfacePassengerVesselSubcategories {
     OceanLiner = 5,
 }
 
-impl PlatformSurfacePassengerVesselSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformSurfacePassengerVesselSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformSurfaceDryCargoShipSubcategories [UID 442]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13358,12 +10807,7 @@ pub enum PlatformSurfaceDryCargoShipSubcategories {
     HeavyLiftShip = 7,
 }
 
-impl PlatformSurfaceDryCargoShipSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformSurfaceDryCargoShipSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformSurfaceTankerSubcategories [UID 443]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13380,12 +10824,7 @@ pub enum PlatformSurfaceTankerSubcategories {
     CondensateStorageTanker = 9,
 }
 
-impl PlatformSurfaceTankerSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformSurfaceTankerSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformSurfaceSupportVesselSubcategories [UID 444]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13402,12 +10841,7 @@ pub enum PlatformSurfaceSupportVesselSubcategories {
     EmergencyResponseandRescueVessel = 9,
 }
 
-impl PlatformSurfaceSupportVesselSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformSurfaceSupportVesselSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformSurfacePrivateMotorboatSubcategories [UID 445]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13419,12 +10853,7 @@ pub enum PlatformSurfacePrivateMotorboatSubcategories {
     VeryLargeMotorboat = 4,
 }
 
-impl PlatformSurfacePrivateMotorboatSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformSurfacePrivateMotorboatSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformSurfacePrivateSailboatSubcategories [UID 446]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13436,12 +10865,7 @@ pub enum PlatformSurfacePrivateSailboatSubcategories {
     VeryLargeSailboat = 4,
 }
 
-impl PlatformSurfacePrivateSailboatSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformSurfacePrivateSailboatSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformSurfaceFishingVesselSubcategories [UID 447]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13454,12 +10878,7 @@ pub enum PlatformSurfaceFishingVesselSubcategories {
     MastedFishingVessel = 5,
 }
 
-impl PlatformSurfaceFishingVesselSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformSurfaceFishingVesselSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 PlatformSurfaceOtherVesselsSubcategories [UID 448]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13477,12 +10896,7 @@ pub enum PlatformSurfaceOtherVesselsSubcategories {
     RefugeeRaft = 10,
 }
 
-impl PlatformSurfaceOtherVesselsSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(PlatformSurfaceOtherVesselsSubcategories, u8, from_u8);
 
 // SISO-REF-010-2023 CryptoKeyIDCryptoMode [UID 449]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13492,12 +10906,7 @@ pub enum CryptoKeyIDCryptoMode {
     Diphase = 1,
 }
 
-impl CryptoKeyIDCryptoMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(CryptoKeyIDCryptoMode, u8, from_u8);
 
 // TODO(@anyone) Implement bitfields [UID 450 - 462]
 
@@ -13663,12 +11072,7 @@ pub enum Color {
     White = 159,
 }
 
-impl Color {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Color, u8, from_u8);
 
 // SISO-REF-010-2023 BuildingPaintScheme [UID 464]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13677,12 +11081,7 @@ pub enum BuildingPaintScheme {
     Default = 0,
 }
 
-impl BuildingPaintScheme {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(BuildingPaintScheme, u8, from_u8);
 
 // SISO-REF-010-2023 Season [UID 465]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13694,12 +11093,7 @@ pub enum Season {
     Autumn = 3,
 }
 
-impl Season {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Season, u8, from_u8);
 
 // SISO-REF-010-2023 Material [UID 466]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13711,12 +11105,7 @@ pub enum Material {
     Road = 3,
 }
 
-impl Material {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Material, u8, from_u8);
 
 // SISO-REF-010-2023 Link11_11BFidelityLevel [UID 467]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13727,12 +11116,7 @@ pub enum Link11_11BFidelityLevel {
     FidelityLevel2 = 2,
 }
 
-impl Link11_11BFidelityLevel {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11_11BFidelityLevel, u8, from_u8);
 
 // SISO-REF-010-2023 Link11TerminalMode [UID 468]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13743,12 +11127,7 @@ pub enum Link11TerminalMode {
     Picket = 2,
 }
 
-impl Link11TerminalMode {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11TerminalMode, u8, from_u8);
 
 // SISO-REF-010-2023 Link11DataTerminalSetIndicator [UID 469]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13765,12 +11144,7 @@ pub enum Link11DataTerminalSetIndicator {
     SynchronizationComplete = 7,
 }
 
-impl Link11DataTerminalSetIndicator {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11DataTerminalSetIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 Link11ModeofOperation [UID 470]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13784,12 +11158,7 @@ pub enum Link11ModeofOperation {
     Broadcast = 5,
 }
 
-impl Link11ModeofOperation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11ModeofOperation, u16, from_u16);
 
 // SISO-REF-010-2023 LifeFormsSubcategoryIranianWeapons [UID 471]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13799,12 +11168,7 @@ pub enum LifeFormsSubcategoryIranianWeapons {
     RBS70 = 2,
 }
 
-impl LifeFormsSubcategoryIranianWeapons {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormsSubcategoryIranianWeapons, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormLandCategories [UID 472]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13839,12 +11203,7 @@ pub enum LifeFormLandCategories {
     Marsupial = 206,
 }
 
-impl LifeFormLandCategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormLandCategories, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSubcategoryEquipmentClass [UID 473]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13881,12 +11240,7 @@ pub enum LifeFormHumanSubcategoryEquipmentClass {
     LogisticsEquipment = 172,
 }
 
-impl LifeFormHumanSubcategoryEquipmentClass {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSubcategoryEquipmentClass, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificAssaultRifles [UID 474]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13957,12 +11311,7 @@ pub enum LifeFormHumanSpecificAssaultRifles {
     _8mmLebelM16 = 240,
 }
 
-impl LifeFormHumanSpecificAssaultRifles {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificAssaultRifles, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificHighPowerRifles [UID 475]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -13980,12 +11329,7 @@ pub enum LifeFormHumanSpecificHighPowerRifles {
     _7_65mmM1Garand = 51,
 }
 
-impl LifeFormHumanSpecificHighPowerRifles {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificHighPowerRifles, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormCategoriesUS [UID 476]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14014,12 +11358,7 @@ pub enum LifeFormCategoriesUS {
     RedCross = 124,
 }
 
-impl LifeFormCategoriesUS {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormCategoriesUS, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormExtraPersonalData [UID 477]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14065,12 +11404,7 @@ pub enum LifeFormExtraPersonalData {
     ElderlyFemale = 190,
 }
 
-impl LifeFormExtraPersonalData {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormExtraPersonalData, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormAirCategories [UID 478]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14081,12 +11415,7 @@ pub enum LifeFormAirCategories {
     Mammal = 202,
 }
 
-impl LifeFormAirCategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormAirCategories, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormSubsurfaceCategories [UID 479]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14099,12 +11428,7 @@ pub enum LifeFormSubsurfaceCategories {
     Insect = 204,
 }
 
-impl LifeFormSubsurfaceCategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormSubsurfaceCategories, u8, from_u8);
 
 // TODO(@anyone) Implement bitfield UID 480
 
@@ -14146,12 +11470,7 @@ pub enum LifeFormHumanSpecificSniper {
     _20mmDenelNTW20 = 200,
 }
 
-impl LifeFormHumanSpecificSniper {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificSniper, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificSubMachineGun [UID 482]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14172,12 +11491,7 @@ pub enum LifeFormHumanSpecificSubMachineGun {
     _9mmUzi = 69,
 }
 
-impl LifeFormHumanSpecificSubMachineGun {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificSubMachineGun, u8, from_u8);
 
 // TODO(@anyone) Implement bitfields [UID 483 - 489]
 
@@ -14193,12 +11507,7 @@ pub enum AustralianCategoryOverlay {
     AustralianFederalPolice = 52,
 }
 
-impl AustralianCategoryOverlay {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AustralianCategoryOverlay, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormCategoriesAfghanistan [UID 501]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14219,12 +11528,7 @@ pub enum LifeFormCategoriesAfghanistan {
     Press = 133,
 }
 
-impl LifeFormCategoriesAfghanistan {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormCategoriesAfghanistan, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificEquipmentClass [UID 505]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14238,32 +11542,15 @@ pub enum LifeFormHumanSpecificEquipmentClass {
     Spotlight = 6,
 }
 
-impl LifeFormHumanSpecificEquipmentClass {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificEquipmentClass, u8, from_u8);
 
 // SISO-REF-010-2023 CivilianSubmarineSubcategories [UID 506]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq)]
 pub enum CivilianSubmarineSubcategories {}
 
-impl CivilianSubmarineSubcategories {
-    pub fn deserialize(_buf: &mut BytesMut) -> Self {
-        unimplemented!()
-    }
-}
-
 // SISO-REF-010-2023 PlatformSubsurfaceCivilianSubmersibleSubcategories [UID 507]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq)]
 pub enum CivilianSubmersibleSubcategories {}
-
-impl CivilianSubmersibleSubcategories {
-    pub fn deserialize(_buf: &mut BytesMut) -> Self {
-        unimplemented!()
-    }
-}
 
 // SISO-REF-010-2023 PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories [UID 508]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14272,12 +11559,11 @@ pub enum PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories {
     NarcoSubmarine = 1,
 }
 
-impl PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    PlatformSubsurfaceCivilianSemiSubmersiblesSubcategories,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 LeafCoverage [UID 509]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14287,12 +11573,7 @@ pub enum LeafCoverage {
     Bare = 1,
 }
 
-impl LeafCoverage {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LeafCoverage, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificAntiMaterielRifles [UID 510]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14303,12 +11584,7 @@ pub enum LifeFormHumanSpecificAntiMaterielRifles {
     _12_7mmAW50F = 11,
 }
 
-impl LifeFormHumanSpecificAntiMaterielRifles {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificAntiMaterielRifles, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificShotGuns [UID 511]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14456,12 +11732,7 @@ pub enum LifeFormHumanSpecificShotGuns {
     _18_5mmNorincoHP9112Gauge = 220,
 }
 
-impl LifeFormHumanSpecificShotGuns {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificShotGuns, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificMortars [UID 512]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14474,12 +11745,7 @@ pub enum LifeFormHumanSpecificMortars {
     _81mmM252 = 52,
 }
 
-impl LifeFormHumanSpecificMortars {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificMortars, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificHandGuns [UID 513]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14503,12 +11769,7 @@ pub enum LifeFormHumanSpecificHandGuns {
     _10mmGlock20 = 60,
 }
 
-impl LifeFormHumanSpecificHandGuns {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificHandGuns, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificWeaponNonspecific [UID 514]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14521,12 +11782,7 @@ pub enum LifeFormHumanSpecificWeaponNonspecific {
     M18A1Claymore = 150,
 }
 
-impl LifeFormHumanSpecificWeaponNonspecific {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificWeaponNonspecific, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificGrenadeLaunchers [UID 515]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14575,12 +11831,7 @@ pub enum LifeFormHumanSpecificGrenadeLaunchers {
     _20x42mmNeopupPAW20 = 105,
 }
 
-impl LifeFormHumanSpecificGrenadeLaunchers {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificGrenadeLaunchers, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificMachineGuns [UID 516]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14676,12 +11927,7 @@ pub enum LifeFormHumanSpecificMachineGuns {
     _5_56x45mmQBB951LMG = 166,
 }
 
-impl LifeFormHumanSpecificMachineGuns {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificMachineGuns, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificGrenadeLaunchingMachineGun [UID 517]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14709,12 +11955,7 @@ pub enum LifeFormHumanSpecificGrenadeLaunchingMachineGun {
     _35x32mmQLZ87 = 80,
 }
 
-impl LifeFormHumanSpecificGrenadeLaunchingMachineGun {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificGrenadeLaunchingMachineGun, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificAntiTankRockets [UID 518]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14791,12 +12032,7 @@ pub enum LifeFormHumanSpecificAntiTankRockets {
     _120mmType98PF98 = 145,
 }
 
-impl LifeFormHumanSpecificAntiTankRockets {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificAntiTankRockets, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificAntiTankMissiles [UID 519]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14879,12 +12115,7 @@ pub enum LifeFormHumanSpecificAntiTankMissiles {
     _102mmMathogo = 200,
 }
 
-impl LifeFormHumanSpecificAntiTankMissiles {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificAntiTankMissiles, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificManPortableAirDefenseSystem [UID 520]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14916,12 +12147,11 @@ pub enum LifeFormHumanSpecificManPortableAirDefenseSystem {
     _106mmRBS70 = 60,
 }
 
-impl LifeFormHumanSpecificManPortableAirDefenseSystem {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    LifeFormHumanSpecificManPortableAirDefenseSystem,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificRecoillessRifles [UID 521]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14958,12 +12188,7 @@ pub enum LifeFormHumanSpecificRecoillessRifles {
     _105mmLG42 = 97,
 }
 
-impl LifeFormHumanSpecificRecoillessRifles {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificRecoillessRifles, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificFlameRockets [UID 522]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -14978,12 +12203,7 @@ pub enum LifeFormHumanSpecificFlameRockets {
     _93mmRPODShmel = 52,
 }
 
-impl LifeFormHumanSpecificFlameRockets {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificFlameRockets, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificFlameThrowers [UID 523]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15006,12 +12226,7 @@ pub enum LifeFormHumanSpecificFlameThrowers {
     Type100 = 51,
 }
 
-impl LifeFormHumanSpecificFlameThrowers {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificFlameThrowers, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificDroneGuns [UID 524]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15022,12 +12237,7 @@ pub enum LifeFormHumanSpecificDroneGuns {
     DroneGunMKII = 16,
 }
 
-impl LifeFormHumanSpecificDroneGuns {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificDroneGuns, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificLogisticsEQClass [UID 525]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15036,12 +12246,7 @@ pub enum LifeFormHumanSpecificLogisticsEQClass {
     SlingLoadPendant = 1,
 }
 
-impl LifeFormHumanSpecificLogisticsEQClass {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificLogisticsEQClass, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificPersonalElectronicsClass [UID 526]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15050,12 +12255,7 @@ pub enum LifeFormHumanSpecificPersonalElectronicsClass {
     CellPhone = 1,
 }
 
-impl LifeFormHumanSpecificPersonalElectronicsClass {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificPersonalElectronicsClass, u8, from_u8);
 
 // SISO-REF-010-2023 LifeFormHumanSpecificLasersClass [UID 527]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15065,12 +12265,7 @@ pub enum LifeFormHumanSpecificLasersClass {
     GenericLaserPointer = 2,
 }
 
-impl LifeFormHumanSpecificLasersClass {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeFormHumanSpecificLasersClass, u8, from_u8);
 
 // SISO-REF-010-2023 TransmitterDetailSATCOMModulation [UID 589]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15080,12 +12275,7 @@ pub enum TransmitterDetailSATCOMModulation {
     NoDelay = 1,
 }
 
-impl TransmitterDetailSATCOMModulation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(TransmitterDetailSATCOMModulation, u16, from_u16);
 
 // SISO-REF-010-2023 SupplyDomain [UID 600]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15106,12 +12296,7 @@ pub enum SupplyDomain {
     Class12SlingLoads = 12,
 }
 
-impl SupplyDomain {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SupplyDomain, u8, from_u8);
 
 // SISO-REF-010-2023 Class1SupplyCategorySubsistence [UID 601]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15125,12 +12310,7 @@ pub enum Class1SupplyCategorySubsistence {
     WWater = 6,
 }
 
-impl Class1SupplyCategorySubsistence {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Class1SupplyCategorySubsistence, u8, from_u8);
 
 // SISO-REF-010-2023 Class2SupplyCategoryClothingIndividualEquipmentToolsAdminSupplies [UID 602]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15146,12 +12326,11 @@ pub enum Class2SupplyCategoryClothingIndividualEquipmentToolsAdminSupplies {
     TIndustrialSupplies = 8,
 }
 
-impl Class2SupplyCategoryClothingIndividualEquipmentToolsAdminSupplies {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    Class2SupplyCategoryClothingIndividualEquipmentToolsAdminSupplies,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 Class3SupplyCategoryPetroleumOilsLubricants [UID 603]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15163,12 +12342,7 @@ pub enum Class3SupplyCategoryPetroleumOilsLubricants {
     PPackagedPOL = 4,
 }
 
-impl Class3SupplyCategoryPetroleumOilsLubricants {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Class3SupplyCategoryPetroleumOilsLubricants, u8, from_u8);
 
 // SISO-REF-010-2023 Class4SupplyCategoryConstructionMaterials [UID 604]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15179,12 +12353,7 @@ pub enum Class4SupplyCategoryConstructionMaterials {
     BBarrier = 3,
 }
 
-impl Class4SupplyCategoryConstructionMaterials {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Class4SupplyCategoryConstructionMaterials, u8, from_u8);
 
 // SISO-REF-010-2023 Class6SupplyCategoryPersonnelDemandItems [UID 606]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15193,12 +12362,7 @@ pub enum Class6SupplyCategoryPersonnelDemandItems {
     Other = 1,
 }
 
-impl Class6SupplyCategoryPersonnelDemandItems {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Class6SupplyCategoryPersonnelDemandItems, u8, from_u8);
 
 // SISO-REF-010-2023 Class7SupplyCategoryMajorItems [UID 607]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15231,12 +12395,7 @@ pub enum Class7SupplyCategoryMajorItems {
     FLIRpod = 33,
 }
 
-impl Class7SupplyCategoryMajorItems {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Class7SupplyCategoryMajorItems, u8, from_u8);
 
 // SISO-REF-010-2023 Class8SupplyCategoryMedicalMaterial [UID 608]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15247,12 +12406,7 @@ pub enum Class8SupplyCategoryMedicalMaterial {
     BBloodFluids = 3,
 }
 
-impl Class8SupplyCategoryMedicalMaterial {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Class8SupplyCategoryMedicalMaterial, u8, from_u8);
 
 // SISO-REF-010-2023 Class9SupplyCategoryRepairPartsandComponents [UID 609]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15270,12 +12424,7 @@ pub enum Class9SupplyCategoryRepairPartsandComponents {
     XAircraftEngines = 10,
 }
 
-impl Class9SupplyCategoryRepairPartsandComponents {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Class9SupplyCategoryRepairPartsandComponents, u8, from_u8);
 
 // SISO-REF-010-2023 Class10SupplyCategoryMaterialtoSupportNonMilitaryPrograms [UID 610]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15284,12 +12433,11 @@ pub enum Class10SupplyCategoryMaterialToSupportNonMilitaryPrograms {
     Other = 1,
 }
 
-impl Class10SupplyCategoryMaterialToSupportNonMilitaryPrograms {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(
+    Class10SupplyCategoryMaterialToSupportNonMilitaryPrograms,
+    u8,
+    from_u8
+);
 
 // SISO-REF-010-2023 Class11SupplyCategorySupplies [UID 611]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15302,12 +12450,7 @@ pub enum Class11SupplyCategorySupplies {
     Boxes = 5,
 }
 
-impl Class11SupplyCategorySupplies {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Class11SupplyCategorySupplies, u8, from_u8);
 
 // SISO-REF-010-2023 Class12SupplyCategorySlingLoads [UID 612]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15327,12 +12470,7 @@ pub enum Class12SupplyCategorySlingLoads {
     SlingLoadConcreteBlock = 12,
 }
 
-impl Class12SupplyCategorySlingLoads {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Class12SupplyCategorySlingLoads, u8, from_u8);
 
 // SISO-REF-010-2023 LifeSavingEquipment [UID 633]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15344,12 +12482,7 @@ pub enum LifeSavingEquipment {
     Lifebuoy = 4,
 }
 
-impl LifeSavingEquipment {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(LifeSavingEquipment, u8, from_u8);
 
 // SISO-REF-010-2023 IslandSubcategory [UID 715]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15364,12 +12497,7 @@ pub enum IslandSubcategory {
     Islands100000km2andGreater = 6,
 }
 
-impl IslandSubcategory {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(IslandSubcategory, u16, from_u16);
 
 // SISO-REF-010-2023 Link11MessageSubType [UID 730]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15382,12 +12510,7 @@ pub enum Link11MessageSubType {
     DataStop = 4,
 }
 
-impl Link11MessageSubType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11MessageSubType, u8, from_u8);
 
 // SISO-REF-010-2023 Link11MessageTypeIdentifier [UID 731]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15402,12 +12525,7 @@ pub enum Link11MessageTypeIdentifier {
     NetSync = 6,
 }
 
-impl Link11MessageTypeIdentifier {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11MessageTypeIdentifier, u8, from_u8);
 
 // SISO-REF-010-2023 Link11DataSignallingRate [UID 732]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15420,12 +12538,7 @@ pub enum Link11DataSignallingRate {
     _2400bps = 4,
 }
 
-impl Link11DataSignallingRate {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11DataSignallingRate, u8, from_u8);
 
 // SISO-REF-010-2023 Link11SignalIntegrationInterval [UID 733]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15436,12 +12549,7 @@ pub enum Link11SignalIntegrationInterval {
     _18ms = 2,
 }
 
-impl Link11SignalIntegrationInterval {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11SignalIntegrationInterval, u8, from_u8);
 
 // SISO-REF-010-2023 Link11SignalWaveform [UID 734]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15452,12 +12560,7 @@ pub enum Link11SignalWaveform {
     SingleToneLinkElevenWaveform = 2,
 }
 
-impl Link11SignalWaveform {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11SignalWaveform, u8, from_u8);
 
 // SISO-REF-010-2023 Link11_11BEncryptionFlag [UID 735]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15467,12 +12570,7 @@ pub enum Link11_11BEncryptionFlag {
     EncryptionUsed = 1,
 }
 
-impl Link11_11BEncryptionFlag {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11_11BEncryptionFlag, u8, from_u8);
 
 // SISO-REF-010-2023 SISOSTD002Version [UID 736]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15482,12 +12580,7 @@ pub enum SISOSTD002Version {
     SISOSTD0022021 = 1,
 }
 
-impl SISOSTD002Version {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(SISOSTD002Version, u8, from_u8);
 
 // SISO-REF-010-2023 Link11BLinkState [UID 737]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15500,12 +12593,7 @@ pub enum Link11BLinkState {
     Operational = 4,
 }
 
-impl Link11BLinkState {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11BLinkState, u8, from_u8);
 
 // SISO-REF-010-2023 Link11BModeofOperation [UID 738]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15517,12 +12605,7 @@ pub enum Link11BModeofOperation {
     Receiveonly = 3,
 }
 
-impl Link11BModeofOperation {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11BModeofOperation, u16, from_u16);
 
 // SISO-REF-010-2023 Link11BMessageSubType [UID 739]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15533,12 +12616,7 @@ pub enum Link11BMessageSubType {
     StandbySignal = 2,
 }
 
-impl Link11BMessageSubType {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11BMessageSubType, u8, from_u8);
 
 // SISO-REF-010-2023 Link11BDataSignalingRate [UID 740]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15550,12 +12628,7 @@ pub enum Link11BDataSignalingRate {
     _600bps = 5,
 }
 
-impl Link11BDataSignalingRate {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11BDataSignalingRate, u8, from_u8);
 
 // SISO-REF-010-2023 Link11BModulationStandard [UID 741]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15566,12 +12639,7 @@ pub enum Link11BModulationStandard {
     CCITTV_23 = 1,
 }
 
-impl Link11BModulationStandard {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link11BModulationStandard, u8, from_u8);
 
 // SISO-REF-010-2023 CIGIExtensionPacketID [UID 780]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15584,12 +12652,7 @@ pub enum CIGIExtensionPacketID {
     GlobalRefFrameDefPacketID = 5000,
 }
 
-impl CIGIExtensionPacketID {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u16(buf.get_u16()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(CIGIExtensionPacketID, u16, from_u16);
 
 // SISO-REF-010-2023 Link16Version [UID 800]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15608,12 +12671,7 @@ pub enum Link16Version {
     STANAG5516Ed8 = 108,
 }
 
-impl Link16Version {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(Link16Version, u8, from_u8);
 
 // SISO-REF-010-2023 AircraftIDSource [UID 801]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15623,12 +12681,7 @@ pub enum AircraftIDSource {
     GICBIFFDataRecordAvailable = 1,
 }
 
-impl AircraftIDSource {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(AircraftIDSource, u8, from_u8);
 
 // SISO-REF-010-2023 ClothingIRSignature [UID 802]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15640,12 +12693,7 @@ pub enum ClothingIRSignature {
     Other = 3,
 }
 
-impl ClothingIRSignature {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(ClothingIRSignature, u8, from_u8);
 
 // SISO-REF-010-2023 DamageArea [UID 889]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -15661,9 +12709,7 @@ pub enum DamageArea {
     DamageArea8 = 7,
 }
 
-impl DamageArea {
-    #[must_use]
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self::from_u8(buf.get_u8()).unwrap_or_else(Self::default)
-    }
-}
+impl_deku_enum!(DamageArea, u8, from_u8);
+
+#[cfg(test)]
+mod deku_tests;

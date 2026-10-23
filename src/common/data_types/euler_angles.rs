@@ -4,14 +4,12 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.32
 pub struct EulerAngles {
     /// Angle of rotation about the Z-axis
@@ -28,40 +26,4 @@ impl EulerAngles {
     pub const fn new(psi: f32, theta: f32, phi: f32) -> Self {
         Self { psi, theta, phi }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f32(self.psi);
-        buf.put_f32(self.theta);
-        buf.put_f32(self.phi);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            psi: buf.get_f32(),
-            theta: buf.get_f32(),
-            phi: buf.get_f32(),
-        }
-    }
-}
-
-impl FieldSerialize for EulerAngles {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for EulerAngles {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for EulerAngles {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for EulerAngles {
-    const LENGTH: usize = 12;
 }

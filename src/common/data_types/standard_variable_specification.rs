@@ -4,12 +4,20 @@
 //     Licensed under the BSD-2-Clause License
 
 use super::standard_variable_records::StandardVariableRecords;
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-use bytes::{Buf, BufMut, BytesMut};
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct StandardVariableSpecification {
+    #[deku(
+        update = "crate::common::wire::update_each(&mut self.standard_variable_records)?",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_standard_variable_records)"
+    )]
     pub number_of_standard_variable_records: u16,
+    #[deku(count = "number_of_standard_variable_records")]
     pub standard_variable_records: Vec<StandardVariableRecords>,
 }
 
@@ -23,51 +31,5 @@ impl StandardVariableSpecification {
             number_of_standard_variable_records,
             standard_variable_records,
         }
-    }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.number_of_standard_variable_records);
-        for i in 0..self.standard_variable_records.len() {
-            self.standard_variable_records[i].serialize(buf);
-        }
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        let number_of_standard_variable_records = buf.get_u16();
-        let mut standard_variable_records: Vec<StandardVariableRecords> = vec![];
-        for _i in 0..number_of_standard_variable_records {
-            standard_variable_records.push(StandardVariableRecords::deserialize(buf));
-        }
-        Self {
-            number_of_standard_variable_records,
-            standard_variable_records,
-        }
-    }
-}
-
-impl FieldSerialize for StandardVariableSpecification {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.number_of_standard_variable_records);
-        self.standard_variable_records.serialize_field(buf);
-    }
-}
-
-impl FieldDeserialize for StandardVariableSpecification {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        let number_of_standard_variable_records = buf.get_u16();
-        let mut records = Vec::with_capacity(number_of_standard_variable_records as usize);
-        for _ in 0..number_of_standard_variable_records {
-            records.push(StandardVariableRecords::deserialize_field(buf));
-        }
-        Self {
-            number_of_standard_variable_records,
-            standard_variable_records: records,
-        }
-    }
-}
-
-impl FieldLen for StandardVariableSpecification {
-    fn field_len(&self) -> usize {
-        2 + self.standard_variable_records.field_len()
     }
 }

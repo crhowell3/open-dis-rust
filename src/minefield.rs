@@ -16,7 +16,7 @@ use deku::{
 };
 
 use crate::common::{
-    GenericHeader, Pdu, PduHeader,
+    PduHeader,
     data_types::{
         ClockTime, EntityCoordinateVector, EntityId, EntityType, EulerAngles, MinefieldIdentifier,
         Point, WorldCoordinate,

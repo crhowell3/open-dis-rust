@@ -7,7 +7,6 @@
 //! The Simulation Management with Reliability (SIMAN-R) protocol family
 
 use crate::common::{
-    GenericHeader,
     data_types::{
         ClockTime, EntityId, RecordSpecification, {FixedDatumRecord, VariableDatumRecord},
     },
@@ -16,7 +15,6 @@ use crate::common::{
         FrozenBehavior, PduType, ProtocolFamily, Reason, RecordQueryREventType,
         RequiredReliabilityService, VariableRecordTypes,
     },
-    pdu::Pdu,
     pdu_header::PduHeader,
 };
 

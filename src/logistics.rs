@@ -6,13 +6,11 @@
 //! The Logistics protocol family
 
 use crate::common::{
-    GenericHeader,
     data_types::{EntityId, SupplyQuantity},
     enums::{
         PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
         ServiceRequestServiceTypeRequested,
     },
-    pdu::Pdu,
     pdu_header::PduHeader,
 };
 

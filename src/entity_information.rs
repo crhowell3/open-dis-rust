@@ -9,14 +9,12 @@
 #![allow(deprecated)]
 
 use crate::common::{
-    GenericHeader,
     data_types::{
         AttributeRecordSet, DeadReckoningParameters, EntityCoordinateVector, EntityId,
         EntityMarking, EntityType, EulerAngles, EventId, LinearVelocity, SimulationAddress,
         VariableParameter, WorldCoordinate,
     },
     enums::{DISAttributeActionCode, ForceId, PduType, ProtocolFamily},
-    pdu::Pdu,
     pdu_header::PduHeader,
 };
 
