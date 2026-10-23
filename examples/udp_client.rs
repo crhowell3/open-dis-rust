@@ -22,6 +22,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 mod udp {
     use bytes::BytesMut;
+    use open_dis_rust::common::PduHeader;
+    use open_dis_rust::common::constants::MAX_PDU_SIZE_OCTETS;
+    use open_dis_rust::common::data_types::EntityId;
+    use open_dis_rust::common::enums::{AcknowledgeFlag, AcknowledgeResponseFlag};
     use open_dis_rust::{common::Pdu, simulation_management::AcknowledgePdu};
     use std::error::Error;
     use std::io;
@@ -46,12 +50,24 @@ mod udp {
     }
 
     async fn send(writer: &UdpSocket) -> Result<(), io::Error> {
-        let mut bytes = BytesMut::new();
-        let mut ack_pdu = AcknowledgePdu::new();
-        let _ = ack_pdu
+        let mut ack = AcknowledgePdu::new();
+
+        ack.originating_entity_id = EntityId::new(1, 1, 0);
+        ack.receiving_entity_id = EntityId::new(1, 2, 0);
+        ack.acknowledge_flag = AcknowledgeFlag::CreateEntity;
+        ack.response_flag = AcknowledgeResponseFlag::AbleToComply;
+        ack.request_id = 42;
+
+        let header = ack.header_mut();
+        header.exercise_id = 1;
+        header.timestamp = PduHeader::calculate_dis_timestamp();
+
+        let mut bytes = BytesMut::with_capacity(MAX_PDU_SIZE_OCTETS);
+        let _ = ack
             .serialize(&mut bytes)
             .map_err(|_| io::ErrorKind::InvalidData);
-        writer.send(&bytes[..]).await?;
+
+        writer.send(&bytes).await?;
 
         Ok(())
     }
