@@ -3,12 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-
-#[derive(Debug, Clone, Copy, Default)]
-
+#[derive(Debug, Clone, Copy, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct FixedBinary16(i16);
 
 impl FixedBinary16 {
@@ -44,24 +44,5 @@ impl FixedBinary16 {
     #[must_use]
     pub const fn to_i16(self) -> i16 {
         self.0
-    }
-}
-
-impl FieldSerialize for FixedBinary16 {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        buf.put_i16(self.to_i16());
-    }
-}
-
-impl FieldDeserialize for FixedBinary16 {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        let bytes = buf.get_i16();
-        Self::from_i16(bytes)
-    }
-}
-
-impl FieldLen for FixedBinary16 {
-    fn field_len(&self) -> usize {
-        2
     }
 }

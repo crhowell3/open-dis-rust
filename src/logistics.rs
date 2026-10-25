@@ -5,125 +5,145 @@
 
 //! The Logistics protocol family
 
-use crate::{
-    common::{
-        GenericHeader, SerializedLength,
-        data_types::{EntityId, SupplyQuantity},
-        enums::{
-            PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
-            ServiceRequestServiceTypeRequested,
-        },
-        pdu::Pdu,
-        pdu_header::PduHeader,
+use crate::common::{
+    data_types::{EntityId, SupplyQuantity},
+    enums::{
+        PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
+        ServiceRequestServiceTypeRequested,
     },
-    define_pdu,
+    pdu_header::PduHeader,
 };
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.4.2
-    pub struct ServiceRequestPdu {
-        header: PduHeader,
-        pdu_type: PduType::ServiceRequest,
-        protocol_family: ProtocolFamily::Logistics,
-        fields: {
-            pub receiving_entity_id: EntityId,
-            pub servicing_entity_id: EntityId,
-            pub service_type_requested: ServiceRequestServiceTypeRequested,
-            pub number_of_supply_types: u8,
-            padding: u16,
-            pub supplies: Vec<SupplyQuantity>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.4.2
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct ServiceRequestPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub receiving_entity_id: EntityId,
+    pub servicing_entity_id: EntityId,
+    pub service_type_requested: ServiceRequestServiceTypeRequested,
+    #[deku(update = "self.supplies.len()")]
+    pub number_of_supply_types: u8,
+    padding: u16,
+    #[deku(count = "number_of_supply_types")]
+    pub supplies: Vec<SupplyQuantity>,
 }
+crate::impl_pdu!(
+    ServiceRequestPdu,
+    PduHeader,
+    PduType::ServiceRequest,
+    ProtocolFamily::Logistics
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.4.3
-    pub struct ResupplyOfferPdu {
-        header: PduHeader,
-        pdu_type: PduType::ResupplyOffer,
-        protocol_family: ProtocolFamily::Logistics,
-        fields: {
-            pub receiving_entity_id: EntityId,
-            pub supplying_entity_id: EntityId,
-            pub number_of_supply_types: u8,
-            padding: u8,
-            padding2: u16,
-            pub supplies: Vec<SupplyQuantity>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.4.3
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct ResupplyOfferPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub receiving_entity_id: EntityId,
+    pub supplying_entity_id: EntityId,
+    #[deku(update = "self.supplies.len()")]
+    pub number_of_supply_types: u8,
+    padding: u8,
+    padding2: u16,
+    #[deku(count = "number_of_supply_types")]
+    pub supplies: Vec<SupplyQuantity>,
 }
+crate::impl_pdu!(
+    ResupplyOfferPdu,
+    PduHeader,
+    PduType::ResupplyOffer,
+    ProtocolFamily::Logistics
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.4.4
-    pub struct ResupplyReceivedPdu {
-        header: PduHeader,
-        pdu_type: PduType::ResupplyReceived,
-        protocol_family: ProtocolFamily::Logistics,
-        fields: {
-            pub receiving_entity_id: EntityId,
-            pub supplying_entity_id: EntityId,
-            pub number_of_supply_types: u8,
-            padding: u8,
-            padding2: u16,
-            pub supplies: Vec<SupplyQuantity>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.4.4
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct ResupplyReceivedPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub receiving_entity_id: EntityId,
+    pub supplying_entity_id: EntityId,
+    #[deku(update = "self.supplies.len()")]
+    pub number_of_supply_types: u8,
+    padding: u8,
+    padding2: u16,
+    #[deku(count = "number_of_supply_types")]
+    pub supplies: Vec<SupplyQuantity>,
 }
+crate::impl_pdu!(
+    ResupplyReceivedPdu,
+    PduHeader,
+    PduType::ResupplyReceived,
+    ProtocolFamily::Logistics
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.4.5
-    pub struct ResupplyCancelPdu {
-        header: PduHeader,
-        pdu_type: PduType::ResupplyCancel,
-        protocol_family: ProtocolFamily::Logistics,
-        fields: {
-            pub receiving_entity_id: EntityId,
-            pub supplying_entity_id: EntityId,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.4.5
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct ResupplyCancelPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub receiving_entity_id: EntityId,
+    pub supplying_entity_id: EntityId,
 }
+crate::impl_pdu!(
+    ResupplyCancelPdu,
+    PduHeader,
+    PduType::ResupplyCancel,
+    ProtocolFamily::Logistics
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.4.6
-    pub struct RepairCompletePdu {
-        header: PduHeader,
-        pdu_type: PduType::RepairComplete,
-        protocol_family: ProtocolFamily::Logistics,
-        fields: {
-            pub receiving_entity_id: EntityId,
-            pub repairing_entity_id: EntityId,
-            pub repair: RepairCompleteRepair,
-            padding: u16,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.4.6
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct RepairCompletePdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub receiving_entity_id: EntityId,
+    pub repairing_entity_id: EntityId,
+    pub repair: RepairCompleteRepair,
+    padding: u16,
 }
+crate::impl_pdu!(
+    RepairCompletePdu,
+    PduHeader,
+    PduType::RepairComplete,
+    ProtocolFamily::Logistics
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.4.7
-    pub struct RepairResponsePdu {
-        header: PduHeader,
-        pdu_type: PduType::RepairResponse,
-        protocol_family: ProtocolFamily::Logistics,
-        fields: {
-            pub receiving_entity_id: EntityId,
-            pub repairing_entity_id: EntityId,
-            pub repair_result: RepairResponseRepairResult,
-            padding: u8,
-            padding2: u16,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.4.7
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct RepairResponsePdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub receiving_entity_id: EntityId,
+    pub repairing_entity_id: EntityId,
+    pub repair_result: RepairResponseRepairResult,
+    padding: u8,
+    padding2: u16,
 }
+crate::impl_pdu!(
+    RepairResponsePdu,
+    PduHeader,
+    PduType::RepairResponse,
+    ProtocolFamily::Logistics
+);
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{common::pdu::Pdu, pdu_tests};
+    use crate::{
+        common::{
+            constants::BITS_PER_BYTE,
+            pdu::{Pdu, to_bytes},
+        },
+        pdu_tests,
+    };
+    use bytes::Buf;
 
     pdu_tests!(
         service_request_pdu_tests, ServiceRequestPdu,

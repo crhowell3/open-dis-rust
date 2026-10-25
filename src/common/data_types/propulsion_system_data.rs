@@ -3,14 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct PropulsionSystemData {
     pub power_setting: f32,
     pub engine_rpm: f32,
@@ -24,38 +22,5 @@ impl PropulsionSystemData {
             engine_rpm,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f32(self.power_setting);
-        buf.put_f32(self.engine_rpm);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            power_setting: buf.get_f32(),
-            engine_rpm: buf.get_f32(),
-        }
-    }
 }
 
-impl FieldSerialize for PropulsionSystemData {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for PropulsionSystemData {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for PropulsionSystemData {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for PropulsionSystemData {
-    const LENGTH: usize = 8;
-}

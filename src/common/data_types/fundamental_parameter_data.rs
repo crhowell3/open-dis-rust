@@ -3,11 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct FundamentalParameterData {
     pub frequency: f32,
     pub frequency_range: f32,
@@ -19,52 +20,4 @@ pub struct FundamentalParameterData {
     pub beam_elevation_center: f32,
     pub beam_elevation_sweep: f32,
     pub beam_sweep_sync: f32,
-}
-
-impl FundamentalParameterData {
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f32(self.frequency);
-        buf.put_f32(self.frequency_range);
-        buf.put_f32(self.effective_radiated_power);
-        buf.put_f32(self.pulse_repetition_frequency);
-        buf.put_f32(self.pulse_width);
-        buf.put_f32(self.beam_azimuth_center);
-        buf.put_f32(self.beam_azimuth_sweep);
-        buf.put_f32(self.beam_elevation_center);
-        buf.put_f32(self.beam_elevation_sweep);
-        buf.put_f32(self.beam_sweep_sync);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            frequency: buf.get_f32(),
-            frequency_range: buf.get_f32(),
-            effective_radiated_power: buf.get_f32(),
-            pulse_repetition_frequency: buf.get_f32(),
-            pulse_width: buf.get_f32(),
-            beam_azimuth_center: buf.get_f32(),
-            beam_azimuth_sweep: buf.get_f32(),
-            beam_elevation_center: buf.get_f32(),
-            beam_elevation_sweep: buf.get_f32(),
-            beam_sweep_sync: buf.get_f32(),
-        }
-    }
-}
-
-impl FieldSerialize for FundamentalParameterData {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for FundamentalParameterData {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for FundamentalParameterData {
-    fn field_len(&self) -> usize {
-        40
-    }
 }

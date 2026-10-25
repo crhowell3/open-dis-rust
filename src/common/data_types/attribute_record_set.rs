@@ -4,20 +4,22 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::data_types::{EntityId, attribute_record::AttributeRecord};
 
-use crate::{
-    common::{
-        SerializedLength,
-        data_types::{EntityId, attribute_record::AttributeRecord},
-    },
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct AttributeRecordSet {
     pub entity_id: EntityId,
+    #[deku(
+        update = "crate::common::wire::update_each(&mut self.attribute_records)?",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_attribute_records)"
+    )]
     pub number_of_attribute_records: u16,
+    #[deku(count = "number_of_attribute_records")]
     pub attribute_records: Vec<AttributeRecord>,
 }
 
@@ -29,45 +31,5 @@ impl AttributeRecordSet {
             number_of_attribute_records: 0u16,
             attribute_records: vec![],
         }
-    }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        self.entity_id.serialize(buf);
-        buf.put_u16(self.number_of_attribute_records);
-        for i in 0..self.attribute_records.len() {
-            self.attribute_records[i].serialize(buf);
-        }
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        let entity_id = EntityId::deserialize(buf);
-        let number_of_attribute_records = buf.get_u16();
-        let mut attribute_records: Vec<AttributeRecord> = vec![];
-        for _ in 0..number_of_attribute_records {
-            attribute_records.push(AttributeRecord::deserialize(buf));
-        }
-        Self {
-            entity_id,
-            number_of_attribute_records,
-            attribute_records,
-        }
-    }
-}
-
-impl FieldSerialize for AttributeRecordSet {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for AttributeRecordSet {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for AttributeRecordSet {
-    fn field_len(&self) -> usize {
-        EntityId::LENGTH + 2 + self.attribute_records.field_len()
     }
 }

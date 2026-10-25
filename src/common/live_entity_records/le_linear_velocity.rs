@@ -4,14 +4,14 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::data_types::fixed_binary_16::FixedBinary16;
 
-use crate::{
-    common::data_types::fixed_binary_16::FixedBinary16,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct LELinearVelocity {
     pub x_component: FixedBinary16,
     pub y_component: FixedBinary16,
@@ -31,36 +31,5 @@ impl LELinearVelocity {
             z_component,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_i16(self.x_component.to_i16());
-        buf.put_i16(self.y_component.to_i16());
-        buf.put_i16(self.z_component.to_i16());
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            x_component: FixedBinary16::from_i16(buf.get_i16()),
-            y_component: FixedBinary16::from_i16(buf.get_i16()),
-            z_component: FixedBinary16::from_i16(buf.get_i16()),
-        }
-    }
 }
 
-impl FieldSerialize for LELinearVelocity {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for LELinearVelocity {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for LELinearVelocity {
-    fn field_len(&self) -> usize {
-        6
-    }
-}

@@ -3,14 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct FundamentalOperationalData {
     pub system_status: u8,
     pub data_field1: u8,
@@ -52,54 +50,4 @@ impl FundamentalOperationalData {
             parameter6,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.system_status);
-        buf.put_u8(self.data_field1);
-        buf.put_u8(self.information_layers);
-        buf.put_u8(self.data_field2);
-        buf.put_u16(self.parameter1);
-        buf.put_u16(self.parameter2);
-        buf.put_u16(self.parameter3);
-        buf.put_u16(self.parameter4);
-        buf.put_u16(self.parameter5);
-        buf.put_u16(self.parameter6);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            system_status: buf.get_u8(),
-            data_field1: buf.get_u8(),
-            information_layers: buf.get_u8(),
-            data_field2: buf.get_u8(),
-            parameter1: buf.get_u16(),
-            parameter2: buf.get_u16(),
-            parameter3: buf.get_u16(),
-            parameter4: buf.get_u16(),
-            parameter5: buf.get_u16(),
-            parameter6: buf.get_u16(),
-        }
-    }
-}
-
-impl FieldSerialize for FundamentalOperationalData {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for FundamentalOperationalData {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for FundamentalOperationalData {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for FundamentalOperationalData {
-    const LENGTH: usize = 16;
 }

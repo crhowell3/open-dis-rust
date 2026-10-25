@@ -4,14 +4,12 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 /// Implemented according to IEEE 1278.1-2012 §7.6.4(j-l)
 pub struct ShaftRPMs {
     pub current_shaft_rpms: i16,
@@ -32,40 +30,5 @@ impl ShaftRPMs {
             shaft_rpm_rate_of_change,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_i16(self.current_shaft_rpms);
-        buf.put_i16(self.ordered_shaft_rpms);
-        buf.put_i32(self.shaft_rpm_rate_of_change);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            current_shaft_rpms: buf.get_i16(),
-            ordered_shaft_rpms: buf.get_i16(),
-            shaft_rpm_rate_of_change: buf.get_i32(),
-        }
-    }
 }
 
-impl FieldSerialize for ShaftRPMs {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for ShaftRPMs {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for ShaftRPMs {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for ShaftRPMs {
-    const LENGTH: usize = 8;
-}

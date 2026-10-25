@@ -4,20 +4,19 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::{
-        SerializedLength,
-        data_types::{
-            angular_velocity_vector::AngularVelocity, linear_acceleration::LinearAcceleration,
-        },
-        enums::DeadReckoningAlgorithm,
+use crate::common::{
+    data_types::{
+        angular_velocity_vector::AngularVelocity, linear_acceleration::LinearAcceleration,
     },
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
+    enums::DeadReckoningAlgorithm,
 };
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct DeadReckoningParameters {
     pub dead_reckoning_algorithm: DeadReckoningAlgorithm,
     pub dead_reckoning_other_parameters: [u8; 15],
@@ -39,49 +38,4 @@ impl DeadReckoningParameters {
             entity_angular_velocity,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.dead_reckoning_algorithm as u8);
-        buf.put_bytes(0u8, 15);
-        self.entity_linear_acceleration.serialize(buf);
-        self.entity_angular_velocity.serialize(buf);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        let dead_reckoning_algorithm = DeadReckoningAlgorithm::deserialize(buf);
-        let mut dead_reckoning_other_parameters: [u8; 15] = [0; 15];
-        for param in &mut dead_reckoning_other_parameters {
-            *param = buf.get_u8();
-        }
-        let entity_linear_acceleration = LinearAcceleration::deserialize(buf);
-        let entity_angular_velocity = AngularVelocity::deserialize(buf);
-        Self {
-            dead_reckoning_algorithm,
-            dead_reckoning_other_parameters,
-            entity_linear_acceleration,
-            entity_angular_velocity,
-        }
-    }
-}
-
-impl FieldSerialize for DeadReckoningParameters {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for DeadReckoningParameters {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for DeadReckoningParameters {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for DeadReckoningParameters {
-    const LENGTH: usize = 40;
 }

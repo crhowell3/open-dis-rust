@@ -3,14 +3,14 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::data_types::{WorldCoordinate, euler_angles::EulerAngles};
 
-use crate::{
-    common::data_types::{WorldCoordinate, euler_angles::EulerAngles},
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct LinearSegmentParameter {
     pub segment_number: u8,
     pub segment_modification: u8,
@@ -53,63 +53,5 @@ impl LinearSegmentParameter {
             segment_depth,
             padding: 0_u32,
         }
-    }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.segment_number);
-        buf.put_u8(self.segment_modification);
-        buf.put_u32(self.general_segment_appearance);
-        buf.put_u32(self.specific_segment_appearance);
-        self.segment_location.serialize(buf);
-        self.segment_orientation.serialize(buf);
-        buf.put_f32(self.segment_length);
-        buf.put_f32(self.segment_width);
-        buf.put_f32(self.segment_height);
-        buf.put_f32(self.segment_depth);
-        buf.put_u32(self.padding);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            segment_number: buf.get_u8(),
-            segment_modification: buf.get_u8(),
-            general_segment_appearance: buf.get_u32(),
-            specific_segment_appearance: buf.get_u32(),
-            segment_location: WorldCoordinate::deserialize(buf),
-            segment_orientation: EulerAngles::deserialize(buf),
-            segment_length: buf.get_f32(),
-            segment_width: buf.get_f32(),
-            segment_height: buf.get_f32(),
-            segment_depth: buf.get_f32(),
-            padding: buf.get_u32(),
-        }
-    }
-}
-
-impl FieldSerialize for LinearSegmentParameter {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for LinearSegmentParameter {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for LinearSegmentParameter {
-    fn field_len(&self) -> usize {
-        self.segment_number.field_len()
-            + self.segment_modification.field_len()
-            + self.general_segment_appearance.field_len()
-            + self.specific_segment_appearance.field_len()
-            + self.segment_location.field_len()
-            + self.segment_orientation.field_len()
-            + self.segment_length.field_len()
-            + self.segment_width.field_len()
-            + self.segment_height.field_len()
-            + self.segment_depth.field_len()
-            + self.padding.field_len()
     }
 }

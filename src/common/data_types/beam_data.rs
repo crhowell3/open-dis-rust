@@ -4,14 +4,12 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 /// Implemented according to IEEE 1278.1-2012 §6.2.11
 pub struct BeamData {
     pub beam_azimuth_center: f32,
@@ -38,44 +36,4 @@ impl BeamData {
             beam_sweep_sync,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f32(self.beam_azimuth_center);
-        buf.put_f32(self.beam_azimuth_sweep);
-        buf.put_f32(self.beam_elevation_center);
-        buf.put_f32(self.beam_elevation_sweep);
-        buf.put_f32(self.beam_sweep_sync);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            beam_azimuth_center: buf.get_f32(),
-            beam_azimuth_sweep: buf.get_f32(),
-            beam_elevation_center: buf.get_f32(),
-            beam_elevation_sweep: buf.get_f32(),
-            beam_sweep_sync: buf.get_f32(),
-        }
-    }
-}
-
-impl FieldSerialize for BeamData {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for BeamData {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for BeamData {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for BeamData {
-    const LENGTH: usize = 20;
 }

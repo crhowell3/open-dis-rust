@@ -7,243 +7,338 @@
 //! The Simulation Management (SIMAN) protocol family
 
 use crate::common::enums::{ActionResponseRequestStatus, EventType, FrozenBehavior, Reason};
-use crate::common::generic_header::GenericHeader;
-use crate::{
-    common::{
-        SerializedLength,
-        data_types::{ClockTime, EntityId, FixedDatumRecord, VariableDatumRecord},
-        enums::{AcknowledgeFlag, AcknowledgeResponseFlag, PduType, ProtocolFamily},
-        pdu::Pdu,
-        pdu_header::PduHeader,
-    },
-    define_pdu,
+use crate::common::{
+    data_types::{ClockTime, EntityId, FixedDatumRecord, VariableDatumRecord},
+    enums::{AcknowledgeFlag, AcknowledgeResponseFlag, PduType, ProtocolFamily},
+    pdu_header::PduHeader,
 };
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.2
-    pub struct CreateEntityPdu {
-        header: PduHeader,
-        pdu_type: PduType::CreateEntity,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub request_id: u32,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.2
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct CreateEntityPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub request_id: u32,
 }
+crate::impl_pdu!(
+    CreateEntityPdu,
+    PduHeader,
+    PduType::CreateEntity,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.3
-    pub struct RemoveEntityPdu {
-        header: PduHeader,
-        pdu_type: PduType::RemoveEntity,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub request_id: u32,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.3
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct RemoveEntityPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub request_id: u32,
 }
+crate::impl_pdu!(
+    RemoveEntityPdu,
+    PduHeader,
+    PduType::RemoveEntity,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.4
-    pub struct StartResumePdu {
-        header: PduHeader,
-        pdu_type: PduType::StartResume,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub real_world_time: ClockTime,
-            pub simulation_time: ClockTime,
-            pub request_id: u32,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.4
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct StartResumePdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub real_world_time: ClockTime,
+    pub simulation_time: ClockTime,
+    pub request_id: u32,
 }
+crate::impl_pdu!(
+    StartResumePdu,
+    PduHeader,
+    PduType::StartResume,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.5
-    pub struct StopFreezePdu {
-        header: PduHeader,
-        pdu_type: PduType::StopFreeze,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub real_world_time: ClockTime,
-            pub reason: Reason,
-            pub frozen_behavior: FrozenBehavior,
-            padding: u16,
-            pub request_id: u32,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.5
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct StopFreezePdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub real_world_time: ClockTime,
+    pub reason: Reason,
+    pub frozen_behavior: FrozenBehavior,
+    padding: u16,
+    pub request_id: u32,
 }
+crate::impl_pdu!(
+    StopFreezePdu,
+    PduHeader,
+    PduType::StopFreeze,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.6
-    pub struct AcknowledgePdu {
-        header: PduHeader,
-        pdu_type: PduType::Acknowledge,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub acknowledge_flag: AcknowledgeFlag,
-            pub response_flag: AcknowledgeResponseFlag,
-            pub request_id: u32,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.6
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct AcknowledgePdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub acknowledge_flag: AcknowledgeFlag,
+    pub response_flag: AcknowledgeResponseFlag,
+    pub request_id: u32,
 }
+crate::impl_pdu!(
+    AcknowledgePdu,
+    PduHeader,
+    PduType::Acknowledge,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.7
-    pub struct ActionRequestPdu {
-        header: PduHeader,
-        pdu_type: PduType::ActionRequest,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub request_id: u32,
-            pub action_id: u32,
-            pub number_of_fixed_datum_records: u32,
-            pub number_of_variable_datum_records: u32,
-            pub fixed_datum_records: Vec<FixedDatumRecord>,
-            pub variable_datum_records: Vec<VariableDatumRecord>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.7
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct ActionRequestPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub request_id: u32,
+    pub action_id: u32,
+    #[deku(
+        update = "self.fixed_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+    )]
+    pub number_of_fixed_datum_records: u32,
+    #[deku(
+        update = "self.variable_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+    )]
+    pub number_of_variable_datum_records: u32,
+    #[deku(count = "number_of_fixed_datum_records")]
+    pub fixed_datum_records: Vec<FixedDatumRecord>,
+    #[deku(count = "number_of_variable_datum_records")]
+    pub variable_datum_records: Vec<VariableDatumRecord>,
 }
+crate::impl_pdu!(
+    ActionRequestPdu,
+    PduHeader,
+    PduType::ActionRequest,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.8
-    pub struct ActionResponsePdu {
-        header: PduHeader,
-        pdu_type: PduType::ActionResponse,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub request_id: u32,
-            pub request_status: ActionResponseRequestStatus,
-            pub number_of_fixed_datum_records: u32,
-            pub number_of_variable_datum_records: u32,
-            pub fixed_datum_records: Vec<FixedDatumRecord>,
-            pub variable_datum_records: Vec<VariableDatumRecord>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.8
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct ActionResponsePdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub request_id: u32,
+    pub request_status: ActionResponseRequestStatus,
+    #[deku(
+        update = "self.fixed_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+    )]
+    pub number_of_fixed_datum_records: u32,
+    #[deku(
+        update = "self.variable_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+    )]
+    pub number_of_variable_datum_records: u32,
+    #[deku(count = "number_of_fixed_datum_records")]
+    pub fixed_datum_records: Vec<FixedDatumRecord>,
+    #[deku(count = "number_of_variable_datum_records")]
+    pub variable_datum_records: Vec<VariableDatumRecord>,
 }
+crate::impl_pdu!(
+    ActionResponsePdu,
+    PduHeader,
+    PduType::ActionResponse,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.9
-    pub struct DataQueryPdu {
-        header: PduHeader,
-        pdu_type: PduType::DataQuery,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub request_id: u32,
-            pub time_interval: u32,
-            pub number_of_fixed_datum_records: u32,
-            pub number_of_variable_datum_records: u32,
-            pub fixed_datum_records: Vec<FixedDatumRecord>,
-            pub variable_datum_records: Vec<VariableDatumRecord>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.9
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct DataQueryPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub request_id: u32,
+    pub time_interval: u32,
+    #[deku(
+        update = "self.fixed_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+    )]
+    pub number_of_fixed_datum_records: u32,
+    #[deku(
+        update = "self.variable_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+    )]
+    pub number_of_variable_datum_records: u32,
+    #[deku(count = "number_of_fixed_datum_records")]
+    pub fixed_datum_records: Vec<FixedDatumRecord>,
+    #[deku(count = "number_of_variable_datum_records")]
+    pub variable_datum_records: Vec<VariableDatumRecord>,
 }
+crate::impl_pdu!(
+    DataQueryPdu,
+    PduHeader,
+    PduType::DataQuery,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.10
-    pub struct SetDataPdu {
-        header: PduHeader,
-        pdu_type: PduType::SetData,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub request_id: u32,
-            padding: u32,
-            pub number_of_fixed_datum_records: u32,
-            pub number_of_variable_datum_records: u32,
-            pub fixed_datum_records: Vec<FixedDatumRecord>,
-            pub variable_datum_records: Vec<VariableDatumRecord>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.10
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct SetDataPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub request_id: u32,
+    padding: u32,
+    #[deku(
+        update = "self.fixed_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+    )]
+    pub number_of_fixed_datum_records: u32,
+    #[deku(
+        update = "self.variable_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+    )]
+    pub number_of_variable_datum_records: u32,
+    #[deku(count = "number_of_fixed_datum_records")]
+    pub fixed_datum_records: Vec<FixedDatumRecord>,
+    #[deku(count = "number_of_variable_datum_records")]
+    pub variable_datum_records: Vec<VariableDatumRecord>,
 }
+crate::impl_pdu!(
+    SetDataPdu,
+    PduHeader,
+    PduType::SetData,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.11
-    pub struct DataPdu {
-        header: PduHeader,
-        pdu_type: PduType::Data,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub request_id: u32,
-            padding: u32,
-            pub number_of_fixed_datum_records: u32,
-            pub number_of_variable_datum_records: u32,
-            pub fixed_datum_records: Vec<FixedDatumRecord>,
-            pub variable_datum_records: Vec<VariableDatumRecord>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.11
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct DataPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub request_id: u32,
+    padding: u32,
+    #[deku(
+        update = "self.fixed_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+    )]
+    pub number_of_fixed_datum_records: u32,
+    #[deku(
+        update = "self.variable_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+    )]
+    pub number_of_variable_datum_records: u32,
+    #[deku(count = "number_of_fixed_datum_records")]
+    pub fixed_datum_records: Vec<FixedDatumRecord>,
+    #[deku(count = "number_of_variable_datum_records")]
+    pub variable_datum_records: Vec<VariableDatumRecord>,
 }
+crate::impl_pdu!(
+    DataPdu,
+    PduHeader,
+    PduType::Data,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.12
-    pub struct EventReportPdu {
-        header: PduHeader,
-        pdu_type: PduType::EventReport,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub event_type: EventType,
-            padding: u32,
-            pub number_of_fixed_datum_records: u32,
-            pub number_of_variable_datum_records: u32,
-            pub fixed_datum_records: Vec<FixedDatumRecord>,
-            pub variable_datum_records: Vec<VariableDatumRecord>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.12
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct EventReportPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub event_type: EventType,
+    padding: u32,
+    #[deku(
+        update = "self.fixed_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+    )]
+    pub number_of_fixed_datum_records: u32,
+    #[deku(
+        update = "self.variable_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+    )]
+    pub number_of_variable_datum_records: u32,
+    #[deku(count = "number_of_fixed_datum_records")]
+    pub fixed_datum_records: Vec<FixedDatumRecord>,
+    #[deku(count = "number_of_variable_datum_records")]
+    pub variable_datum_records: Vec<VariableDatumRecord>,
 }
+crate::impl_pdu!(
+    EventReportPdu,
+    PduHeader,
+    PduType::EventReport,
+    ProtocolFamily::SimulationManagement
+);
 
-define_pdu! {
-    #[derive(Debug)]
-    /// Implemented according to IEEE 1278.1-2012 §7.5.13
-    pub struct CommentPdu {
-        header: PduHeader,
-        pdu_type: PduType::Comment,
-        protocol_family: ProtocolFamily::SimulationManagement,
-        fields: {
-            pub originating_entity_id: EntityId,
-            pub receiving_entity_id: EntityId,
-            pub number_of_fixed_datum_records: u32,
-            pub number_of_variable_datum_records: u32,
-            pub fixed_datum_records: Vec<FixedDatumRecord>,
-            pub variable_datum_records: Vec<VariableDatumRecord>,
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §7.5.13
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct CommentPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    #[deku(
+        update = "self.fixed_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+    )]
+    pub number_of_fixed_datum_records: u32,
+    #[deku(
+        update = "self.variable_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+    )]
+    pub number_of_variable_datum_records: u32,
+    #[deku(count = "number_of_fixed_datum_records")]
+    pub fixed_datum_records: Vec<FixedDatumRecord>,
+    #[deku(count = "number_of_variable_datum_records")]
+    pub variable_datum_records: Vec<VariableDatumRecord>,
 }
+crate::impl_pdu!(
+    CommentPdu,
+    PduHeader,
+    PduType::Comment,
+    ProtocolFamily::SimulationManagement
+);
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{common::pdu::Pdu, pdu_tests};
+    use crate::{
+        common::{
+            constants::BITS_PER_BYTE,
+            pdu::{Pdu, to_bytes},
+        },
+        pdu_tests,
+    };
+    use bytes::Buf;
 
     pdu_tests!(
         create_entity_pdu_tests, CreateEntityPdu,

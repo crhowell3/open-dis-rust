@@ -3,14 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct SecondaryOperationalData {
     pub operational_data1: u8,
     pub operational_data2: u8,
@@ -30,40 +28,4 @@ impl SecondaryOperationalData {
             number_of_iff_fundamental_parameter_records,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.operational_data1);
-        buf.put_u8(self.operational_data2);
-        buf.put_u16(self.number_of_iff_fundamental_parameter_records);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            operational_data1: buf.get_u8(),
-            operational_data2: buf.get_u8(),
-            number_of_iff_fundamental_parameter_records: buf.get_u16(),
-        }
-    }
-}
-
-impl FieldSerialize for SecondaryOperationalData {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for SecondaryOperationalData {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for SecondaryOperationalData {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for SecondaryOperationalData {
-    const LENGTH: usize = 4;
 }

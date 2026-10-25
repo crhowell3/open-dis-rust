@@ -3,11 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct Environment {
     pub environment_type: u32,
     pub length: u16,
@@ -24,42 +25,5 @@ impl Environment {
             index,
             padding,
         }
-    }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u32(self.environment_type);
-        buf.put_u16(self.length);
-        buf.put_u8(self.index);
-        buf.put_u8(self.padding);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            environment_type: buf.get_u32(),
-            length: buf.get_u16(),
-            index: buf.get_u8(),
-            padding: buf.get_u8(),
-        }
-    }
-}
-
-impl FieldSerialize for Environment {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for Environment {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for Environment {
-    fn field_len(&self) -> usize {
-        self.environment_type.field_len()
-            + self.length.field_len()
-            + self.index.field_len()
-            + self.padding.field_len()
     }
 }

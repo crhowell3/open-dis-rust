@@ -4,11 +4,14 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
 use super::acoustic_beam_fundamental_parameter::AcousticBeamFundamentalParameter;
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct AcousticBeamData {
     pub beam_data_length: u16,
     pub beam_id_number: u8,
@@ -29,22 +32,6 @@ impl AcousticBeamData {
             beam_id_number,
             pad2,
             fundamental_data_parameters,
-        }
-    }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u16(self.beam_data_length);
-        buf.put_u8(self.beam_id_number);
-        buf.put_u16(self.pad2);
-        self.fundamental_data_parameters.serialize(buf);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            beam_data_length: buf.get_u16(),
-            beam_id_number: buf.get_u8(),
-            pad2: buf.get_u16(),
-            fundamental_data_parameters: AcousticBeamFundamentalParameter::deserialize(buf),
         }
     }
 }

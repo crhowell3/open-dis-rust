@@ -3,14 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct VariableParameter {
     pub record_type: u8,
     pub variable_parameter_field1: f64,
@@ -36,44 +34,4 @@ impl VariableParameter {
             variable_parameter_field4,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.record_type);
-        buf.put_f64(self.variable_parameter_field1);
-        buf.put_u32(self.variable_parameter_field2);
-        buf.put_u16(self.variable_parameter_field3);
-        buf.put_u8(self.variable_parameter_field4);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            record_type: buf.get_u8(),
-            variable_parameter_field1: buf.get_f64(),
-            variable_parameter_field2: buf.get_u32(),
-            variable_parameter_field3: buf.get_u16(),
-            variable_parameter_field4: buf.get_u8(),
-        }
-    }
-}
-
-impl FieldSerialize for VariableParameter {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for VariableParameter {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for VariableParameter {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for VariableParameter {
-    const LENGTH: usize = 16;
 }

@@ -3,11 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct RadioEntityType {
     pub entity_kind: u8,
     pub domain: u8,
@@ -35,48 +36,5 @@ impl RadioEntityType {
             nomenclature_version,
             nomenclature,
         }
-    }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.entity_kind);
-        buf.put_u8(self.domain);
-        buf.put_u16(self.country);
-        buf.put_u8(self.category);
-        buf.put_u8(self.nomenclature_version);
-        buf.put_u16(self.nomenclature);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            entity_kind: buf.get_u8(),
-            domain: buf.get_u8(),
-            country: buf.get_u16(),
-            category: buf.get_u8(),
-            nomenclature_version: buf.get_u8(),
-            nomenclature: buf.get_u16(),
-        }
-    }
-}
-
-impl FieldSerialize for RadioEntityType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for RadioEntityType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for RadioEntityType {
-    fn field_len(&self) -> usize {
-        self.entity_kind.field_len()
-            + self.domain.field_len()
-            + self.country.field_len()
-            + self.category.field_len()
-            + self.nomenclature_version.field_len()
-            + self.nomenclature.field_len()
     }
 }

@@ -1,18 +1,17 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2026 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
-use crate::{
-    common::{
-        SerializedLength,
-        enums::{Country, EntityKind},
-    },
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::enums::{Country, EntityKind};
 
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct EntityType {
     pub kind: EntityKind,
     pub domain: u8,
@@ -44,48 +43,4 @@ impl EntityType {
             extra,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_u8(self.kind as u8);
-        buf.put_u8(self.domain);
-        buf.put_u16(self.country as u16);
-        buf.put_u8(self.category);
-        buf.put_u8(self.subcategory);
-        buf.put_u8(self.specific);
-        buf.put_u8(self.extra);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            kind: EntityKind::deserialize(buf),
-            domain: buf.get_u8(),
-            country: Country::deserialize(buf),
-            category: buf.get_u8(),
-            subcategory: buf.get_u8(),
-            specific: buf.get_u8(),
-            extra: buf.get_u8(),
-        }
-    }
-}
-
-impl FieldSerialize for EntityType {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for EntityType {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for EntityType {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for EntityType {
-    const LENGTH: usize = 8;
 }

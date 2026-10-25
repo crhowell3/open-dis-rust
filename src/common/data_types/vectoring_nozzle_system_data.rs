@@ -3,14 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct VectoringNozzleSystemData {
     pub horizontal_deflection_angle: f32,
     pub vertical_deflection_angle: f32,
@@ -24,38 +22,5 @@ impl VectoringNozzleSystemData {
             vertical_deflection_angle,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f32(self.horizontal_deflection_angle);
-        buf.put_f32(self.vertical_deflection_angle);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            horizontal_deflection_angle: buf.get_f32(),
-            vertical_deflection_angle: buf.get_f32(),
-        }
-    }
 }
 
-impl FieldSerialize for VectoringNozzleSystemData {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for VectoringNozzleSystemData {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for VectoringNozzleSystemData {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for VectoringNozzleSystemData {
-    const LENGTH: usize = 8;
-}

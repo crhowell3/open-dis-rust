@@ -4,11 +4,12 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize};
-
-#[derive(Copy, Clone, Debug, Default, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 /// Custom vector type containing 3 single precision fields
 pub struct Vector3Float {
     /// The first value within the vector
@@ -91,20 +92,6 @@ impl Vector3Float {
             Some(Self::new(self.x / mag, self.y / mag, self.z / mag))
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f32(self.x);
-        buf.put_f32(self.y);
-        buf.put_f32(self.z);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            x: buf.get_f32(),
-            y: buf.get_f32(),
-            z: buf.get_f32(),
-        }
-    }
 }
 
 impl std::ops::Add for Vector3Float {
@@ -136,24 +123,6 @@ impl std::ops::Div<f32> for Vector3Float {
 
     fn div(self, scalar: f32) -> Self {
         Self::new(self.x / scalar, self.y / scalar, self.z / scalar)
-    }
-}
-
-impl FieldSerialize for Vector3Float {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for Vector3Float {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for Vector3Float {
-    fn field_len(&self) -> usize {
-        12
     }
 }
 

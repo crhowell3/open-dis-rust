@@ -3,14 +3,14 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::data_types::fixed_binary_8::FixedBinary8;
 
-use crate::{
-    common::data_types::fixed_binary_8::FixedBinary8,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct LEEntityLinearAcceleration {
     pub first_vector_component: FixedBinary8,
     pub second_vector_component: FixedBinary8,
@@ -26,36 +26,5 @@ impl LEEntityLinearAcceleration {
             third_vector_component: z,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_i8(self.first_vector_component.to_i8());
-        buf.put_i8(self.second_vector_component.to_i8());
-        buf.put_i8(self.third_vector_component.to_i8());
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            first_vector_component: FixedBinary8::from_i8(buf.get_i8()),
-            second_vector_component: FixedBinary8::from_i8(buf.get_i8()),
-            third_vector_component: FixedBinary8::from_i8(buf.get_i8()),
-        }
-    }
 }
 
-impl FieldSerialize for LEEntityLinearAcceleration {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for LEEntityLinearAcceleration {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for LEEntityLinearAcceleration {
-    fn field_len(&self) -> usize {
-        3
-    }
-}

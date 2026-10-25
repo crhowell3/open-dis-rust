@@ -3,14 +3,14 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
+use crate::common::data_types::entity_type::EntityType;
 
-use crate::{
-    common::data_types::entity_type::EntityType,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct MunitionDescriptor {
     pub munition_type: EntityType,
     pub warhead: u16,
@@ -36,44 +36,5 @@ impl MunitionDescriptor {
             rate,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        self.munition_type.serialize(buf);
-        buf.put_u16(self.warhead);
-        buf.put_u16(self.fuse);
-        buf.put_u16(self.quantity);
-        buf.put_u16(self.rate);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            munition_type: EntityType::deserialize(buf),
-            warhead: buf.get_u16(),
-            fuse: buf.get_u16(),
-            quantity: buf.get_u16(),
-            rate: buf.get_u16(),
-        }
-    }
 }
 
-impl FieldSerialize for MunitionDescriptor {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for MunitionDescriptor {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for MunitionDescriptor {
-    fn field_len(&self) -> usize {
-        self.munition_type.field_len()
-            + self.warhead.field_len()
-            + self.fuse.field_len()
-            + self.quantity.field_len()
-            + self.rate.field_len()
-    }
-}

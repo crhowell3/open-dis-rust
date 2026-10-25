@@ -3,14 +3,12 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use bytes::{Buf, BufMut, BytesMut};
-
-use crate::{
-    common::SerializedLength,
-    pdu_macro::{FieldDeserialize, FieldLen, FieldSerialize},
-};
-
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
 pub struct LinearVelocity {
     pub first_vector_component: f32,
     pub second_vector_component: f32,
@@ -26,40 +24,4 @@ impl LinearVelocity {
             third_vector_component: z,
         }
     }
-
-    pub fn serialize(&self, buf: &mut BytesMut) {
-        buf.put_f32(self.first_vector_component);
-        buf.put_f32(self.second_vector_component);
-        buf.put_f32(self.third_vector_component);
-    }
-
-    pub fn deserialize<B: Buf>(buf: &mut B) -> Self {
-        Self {
-            first_vector_component: buf.get_f32(),
-            second_vector_component: buf.get_f32(),
-            third_vector_component: buf.get_f32(),
-        }
-    }
-}
-
-impl FieldSerialize for LinearVelocity {
-    fn serialize_field(&self, buf: &mut BytesMut) {
-        self.serialize(buf);
-    }
-}
-
-impl FieldDeserialize for LinearVelocity {
-    fn deserialize_field<B: Buf>(buf: &mut B) -> Self {
-        Self::deserialize(buf)
-    }
-}
-
-impl FieldLen for LinearVelocity {
-    fn field_len(&self) -> usize {
-        Self::LENGTH
-    }
-}
-
-impl SerializedLength for LinearVelocity {
-    const LENGTH: usize = 12;
 }
