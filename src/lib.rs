@@ -27,6 +27,8 @@
 //! pdu.serialize(&mut bytes);
 //! ```
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub mod common;
 pub mod distributed_emissions;
 pub mod entity_information;
@@ -40,3 +42,7 @@ pub mod simulation_management;
 pub mod simulation_management_with_reliability;
 pub mod synthetic_environment;
 pub mod warfare;
+
+pub fn get_version() -> String {
+    VERSION.to_string()
+}
