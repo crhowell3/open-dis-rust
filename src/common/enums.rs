@@ -4,7 +4,7 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-#![allow(deprecated)]
+#![allow(deprecated, clippy::as_conversions)]
 
 use bitflags::bitflags;
 use modular_bitfield::Specifier;
@@ -8736,6 +8736,15 @@ pub enum FireTypeIndicator {
     Expendable = 1,
 }
 
+impl From<FireTypeIndicator> for u8 {
+    fn from(value: FireTypeIndicator) -> Self {
+        match value {
+            FireTypeIndicator::Munition => 0,
+            FireTypeIndicator::Expendable => 1,
+        }
+    }
+}
+
 // SISO-REF-010-2023 DISPDUStatusDetonationTypeIndicator(DTI) [UID 305]
 #[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 #[bits = 2]
@@ -8821,6 +8830,15 @@ pub enum PduStatusIFFSimulationMode {
     #[default]
     Regeneration = 0,
     Interactive = 1,
+}
+
+impl From<PduStatusIFFSimulationMode> for u8 {
+    fn from(value: PduStatusIFFSimulationMode) -> Self {
+        match value {
+            PduStatusIFFSimulationMode::Regeneration => 0,
+            PduStatusIFFSimulationMode::Interactive => 1,
+        }
+    }
 }
 
 // SISO-REF-010-2023 ExplosiveMaterialGroups [UID 309]
@@ -9892,6 +9910,15 @@ pub enum ActiveInterrogationIndicator {
     #[default]
     NotActive = 0,
     Active = 1,
+}
+
+impl From<ActiveInterrogationIndicator> for u8 {
+    fn from(aii: ActiveInterrogationIndicator) -> Self {
+        match aii {
+            ActiveInterrogationIndicator::NotActive => 0,
+            ActiveInterrogationIndicator::Active => 1,
+        }
+    }
 }
 
 // SISO-REF-010-2023 AppearanceLifeformHealth [UID 390]

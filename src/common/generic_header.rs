@@ -22,5 +22,11 @@ pub trait GenericHeader: Sized {
     fn set_length(&mut self, value: u16);
 
     fn serialize(&self, buf: &mut BytesMut);
+
+    /// Attempts to deserialize a PDU from the buffer
+    ///
+    /// # Errors
+    ///
+    /// Will return a `DISError` if deserialization fails
     fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>;
 }

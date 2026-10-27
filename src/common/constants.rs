@@ -66,8 +66,10 @@ pub const fn validate_pdu_size(size: usize) -> bool {
 
 #[must_use]
 /// Compile-time calculation of PDU size including header
-pub const fn total_pdu_size(payload_size: usize) -> usize {
-    PDU_HEADER_SIZE + payload_size
+///
+/// Returns `None` if the total would overflow `usize`.
+pub const fn total_pdu_size(payload_size: usize) -> Option<usize> {
+    PDU_HEADER_SIZE.checked_add(payload_size)
 }
 
 #[must_use]
@@ -89,8 +91,14 @@ mod tests {
 
     #[test]
     fn test_total_pdu_size() {
-        assert_eq!(total_pdu_size(100), PDU_HEADER_SIZE + 100);
-        assert_eq!(total_pdu_size(0), PDU_HEADER_SIZE);
+        assert_eq!(
+            total_pdu_size(100).expect("Checked addition failed"),
+            PDU_HEADER_SIZE + 100
+        );
+        assert_eq!(
+            total_pdu_size(0).expect("Checked addition failed"),
+            PDU_HEADER_SIZE
+        );
     }
 
     #[test]

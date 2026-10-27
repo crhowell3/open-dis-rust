@@ -5,12 +5,15 @@
 //     Licensed under the BSD 2-Clause License
 
 use bytes::{Buf, BytesMut};
-use chrono::{Timelike, Utc};
+use chrono::{DateTime, Timelike, Utc};
 
 use crate::common::{
     GenericHeader, SerializedLength,
     enums::{DISLiveEntitySubprotocolNumber, PduType, ProtocolFamily, ProtocolVersion},
 };
+
+const MICROS_PER_HOUR: u64 = 3_600_000_000;
+const DIS_UNITS_PER_HOUR: u64 = 2_147_483_648;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -86,6 +89,13 @@ impl GenericHeader for LiveEntityPduHeader {
     }
 }
 
+fn micros_past_hour(now: &DateTime<Utc>) -> Option<u64> {
+    u64::from(now.minute())
+        .checked_mul(60_000_000)?
+        .checked_add(u64::from(now.second()).checked_mul(1_000_000)?)?
+        .checked_add(u64::from(now.timestamp_subsec_micros()))
+}
+
 impl LiveEntityPduHeader {
     #[must_use]
     pub fn new(
@@ -113,11 +123,14 @@ impl LiveEntityPduHeader {
         clippy::cast_sign_loss
     )]
     pub fn calculate_dis_timestamp() -> u32 {
-        let minute_curr = u64::from((Utc::now().minute() * 60) * 1_000_000);
-        let second_curr = u64::from(Utc::now().second() * 1_000_000);
-        let nanosecond_curr = u64::from(Utc::now().nanosecond() / 1000);
-        let dis_time = (second_curr + minute_curr + nanosecond_curr) as f32 / 1.68;
-        dis_time as u32
+        let now = Utc::now();
+
+        micros_past_hour(&now)
+            .and_then(|us| us.checked_mul(DIS_UNITS_PER_HOUR))
+            .and_then(|v| v.checked_div(MICROS_PER_HOUR))
+            .and_then(|v| u32::try_from(v).ok())
+            .and_then(|v| v.checked_mul(2))
+            .map_or(u32::MAX, |v| v | 1)
     }
 }
 

@@ -7,7 +7,7 @@
 use crate::common::GenericHeader;
 
 use super::dis_error::DISError;
-use bytes::{Buf, Bytes, BytesMut};
+use bytes::{Buf, BytesMut};
 use std::any::Any;
 
 pub trait Pdu {
@@ -201,13 +201,6 @@ macro_rules! impl_pdu {
             }
         }
     };
-}
-
-/// Serialize a PDU, failing the test if serialization returns an error.
-pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-    let mut buf = BytesMut::new();
-    pdu.serialize(&mut buf).expect("serialize failed");
-    buf.freeze()
 }
 
 #[macro_export]
