@@ -3,6 +3,8 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+use num_traits::ToPrimitive;
+
 #[derive(Debug, Clone, Copy, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -14,8 +16,11 @@ pub struct FixedBinary16(i16);
 impl FixedBinary16 {
     #[must_use]
     /// Creates a fixed-point value from meters with 3 fractional bits
-    pub fn from_meters(value: f32) -> Self {
-        Self((value * 8.0).round() as i16)
+    ///
+    /// Returns `None` if `value` is NaN, infinite, or outside
+    /// the representable range of about 4096 m (+/-)
+    pub fn from_meters(value: f32) -> Option<Self> {
+        (value * 8.0).round().to_i16().map(Self)
     }
 
     #[must_use]

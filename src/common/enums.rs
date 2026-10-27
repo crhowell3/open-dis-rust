@@ -4,7 +4,7 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-#![allow(deprecated)]
+#![allow(deprecated, clippy::as_conversions)]
 
 use bitflags::bitflags;
 use modular_bitfield::Specifier;
