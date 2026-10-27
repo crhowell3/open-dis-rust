@@ -410,13 +410,17 @@ impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
-        common::{
-            constants::BITS_PER_BYTE,
-            pdu::{Pdu, to_bytes},
-        },
+        common::{constants::BITS_PER_BYTE, pdu::Pdu},
         pdu_tests,
     };
-    use bytes::Buf;
+    use bytes::{Buf, Bytes, BytesMut};
+
+    /// Serialize a PDU, failing the test if serialization returns an error.
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
+        let mut buf = BytesMut::new();
+        pdu.serialize(&mut buf).expect("serialize failed");
+        buf.freeze()
+    }
 
     pdu_tests!(
         time_space_position_information_pdu_tests, TimeSpacePositionInformationPdu,

@@ -43,6 +43,7 @@ pub mod simulation_management_with_reliability;
 pub mod synthetic_environment;
 pub mod warfare;
 
+#[must_use]
 pub fn get_version() -> String {
     VERSION.to_string()
 }

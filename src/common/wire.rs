@@ -142,7 +142,7 @@ pub fn write<T: DekuWriter<()>>(value: &T, buf: &mut BytesMut) -> Result<(), Dek
 
 /// The number of bytes `value` encodes to
 ///
-/// # Error
+/// # Errors
 ///
 /// See [`write()`].
 pub fn encoded_len<T: DekuWriter<()>>(value: &T) -> Result<usize, DekuError> {
@@ -159,6 +159,11 @@ pub fn fits_in_pdu<N: TryInto<usize>>(count: N) -> bool {
         .is_ok_and(|count: usize| count <= MAX_PDU_SIZE_OCTETS)
 }
 
+/// Updates all items in a list
+///
+/// # Errors
+///
+/// Will return a `DekuError` if an update operation fails
 pub fn update_each<T: deku::DekuUpdate>(items: &mut [T]) -> Result<usize, DekuError> {
     for item in items.iter_mut() {
         item.update()?;
@@ -178,6 +183,11 @@ pub fn record_fields_len(record_length: u16) -> usize {
     usize::from(record_length).saturating_sub(VARIABLE_RECORD_HEADER)
 }
 
+/// Get the length of a record that has been padded
+///
+/// # Errors
+///
+/// Will return a `DekuError` if the record is too long
 pub fn padded_record_length(fields_len: usize) -> Result<usize, DekuError> {
     fields_len
         .checked_add(VARIABLE_RECORD_HEADER)
@@ -185,6 +195,11 @@ pub fn padded_record_length(fields_len: usize) -> Result<usize, DekuError> {
         .ok_or_else(|| DekuError::Assertion("record is too long".into()))
 }
 
+/// Write field to buffer that are padded for alignment
+///
+/// # Errors
+///
+/// Will return a `DekuError` if the writer fails
 pub fn write_padded_fields<W: no_std_io::Write + no_std_io::Seek>(
     writer: &mut Writer<W>,
     fields: &[u8],
@@ -196,6 +211,11 @@ pub fn write_padded_fields<W: no_std_io::Write + no_std_io::Seek>(
     vec![0u8; padding].to_writer(writer, ())
 }
 
+/// Write n zeroes to the buffer
+///
+/// # Errors
+///
+/// Will return a `DekuError` if the writer fails
 pub fn write_zeros<W: no_std_io::Write + no_std_io::Seek>(
     writer: &mut Writer<W>,
     count: usize,
@@ -208,6 +228,11 @@ pub const fn padding_to(len: usize, align: usize) -> usize {
     len.next_multiple_of(align).saturating_sub(len)
 }
 
+/// Skip n bytes in the buffer
+///
+/// # Errors
+///
+/// Will return a `DekuError` if `from_reader_with_ctx` fails
 pub fn skip<R: no_std_io::Read + no_std_io::Seek>(
     reader: &mut Reader<R>,
     count: usize,
@@ -218,6 +243,12 @@ pub fn skip<R: no_std_io::Read + no_std_io::Seek>(
     Ok(())
 }
 
+/// Read n bytes from buffer
+///
+/// # Errors
+///
+/// Will returnu a `DekuError` if the number of bytes provided exceeds the max size of
+/// a PDU
 pub fn read_n<'a, T, R>(
     reader: &mut Reader<R>,
     count: usize,
