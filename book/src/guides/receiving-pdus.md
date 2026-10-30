@@ -22,11 +22,13 @@ async fn main() -> io::Result<()> {
 
     socket.connect(remote_addr).await?;
 
-    let mut buf = vec![0; 1204];
+    let mut buf = vec![0; 1024];
     let n = socket.recv(&mut buf[..]).await?;
     loop {
         if n > 0 {
-          dbg!(AcknowledgePdu::deserialize(BytesMut::from(buf.as_slice())).unwrap());
+          dbg!(
+              AcknowledgePdu::deserialize(BytesMut::from(buf.as_slice())).unwrap_or_default()
+          );
           break;
         }
     }

@@ -6,3 +6,7 @@ any feature requests and/or bugs to report, please open a ticket on [GitHub](htt
 ## Maintainers
 
 * [https://github.com/crhowell3](https://github.com/crhowell3)
+
+## Other Points of Contact
+
+* me@crhowell.com

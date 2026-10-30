@@ -1,18 +1,29 @@
 # Summary
 
-[Open DIS Rust](README.md)
+[Introduction](README.md)
 
-- [Acquiring](acquiring.md)
-- [Get In Touch](get-in-touch.md)
+- [Installation](acquiring.md)
+- [Quickstart](quickstart.md)
 
-## Guides
+# DIS Concepts
+- [Identifiers & Exercises](concepts/identifiers.md)
+- [Protocol Families & PDU Status](concepts/families.md)
+- [Timestamps](concepts/timestamps.md)
+- [Enumerations (SISO-REF-010)](concepts/enumerations.md)
 
-### Usage
-
+# Guides
 - [Creating a PDU](guides/creating-a-pdu.md)
 - [Sending PDUs](guides/sending-pdus.md)
-- [Receiving PDUs](guides/receiving-pdus.md)
 
-### Development
+# Reference
+- [Wire Format Conventions](reference/wire-format.md)
+- [Errors](reference/errors.rs)
 
-- [Tips for Contributing](guides/contributing.md)
+# Development
+- [Contributing](dev/contributing.md)
+- [Architecture](dev/architecture.md)
+- [Adding a PDU](dev/adding-a-pdu.md)
+- [Testing Strategy](dev/testing.md)
+- [Updating Enumerations](dev/enumerations.md)
+
+[Get In Touch](get-in-touch.md)

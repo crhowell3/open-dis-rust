@@ -12,7 +12,7 @@ use crate::common::{
     },
     enums::{
         AcknowledgeFlag, AcknowledgeResponseFlag, ActionResponseRequestStatus, EventType,
-        FrozenBehavior, PduType, ProtocolFamily, Reason, RecordQueryREventType,
+        FrozenBehavior, PduType, ProtocolFamily, Reason, RecordQueryREventType, RecordREventType,
         RequiredReliabilityService, VariableRecordTypes,
     },
     pdu_header::PduHeader,
@@ -404,6 +404,28 @@ crate::impl_pdu!(
     ProtocolFamily::SimulationManagementWithReliability
 );
 
+/// Implemented according to IEEE 1278.1-2012 §7.11.15
+#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct RecordReliablePdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub originating_entity_id: EntityId,
+    pub receiving_entity_id: EntityId,
+    pub request_id: u32,
+    pub required_reliability_service: RequiredReliabilityService,
+    padding: u8,
+    pub event_type: RecordREventType,
+    pub response_serial_number: u32,
+    pub record_sets: RecordSpecification,
+}
+crate::impl_pdu!(
+    RecordReliablePdu,
+    PduHeader,
+    PduType::RecordReliable,
+    ProtocolFamily::SimulationManagementWithReliability
+);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -501,6 +523,12 @@ mod tests {
     pdu_tests!(
         set_record_reliable_pdu_tests, SetRecordReliablePdu,
         pdu_type: PduType::SetRecordReliable,
+        default_bits: 320,
+        wrong_type: CommentReliablePdu,
+    );
+    pdu_tests!(
+        record_reliable_pdu_tests, RecordReliablePdu,
+        pdu_type: PduType::RecordReliable,
         default_bits: 320,
         wrong_type: CommentReliablePdu,
     );
