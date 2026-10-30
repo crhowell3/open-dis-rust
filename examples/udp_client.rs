@@ -21,16 +21,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 mod udp {
-    use bytes::BytesMut;
-    use open_dis_rust::common::PduHeader;
-    use open_dis_rust::common::constants::MAX_PDU_SIZE_OCTETS;
-    use open_dis_rust::common::data_types::EntityId;
-    use open_dis_rust::common::enums::{AcknowledgeFlag, AcknowledgeResponseFlag};
-    use open_dis_rust::{common::Pdu, simulation_management::AcknowledgePdu};
     use std::error::Error;
     use std::io;
     use std::net::SocketAddr;
+
+    use bytes::BytesMut;
     use tokio::net::UdpSocket;
+
+    use open_dis_rust::common::data_types::EntityId;
+    use open_dis_rust::common::enums::{AcknowledgeFlag, AcknowledgeResponseFlag};
+    use open_dis_rust::prelude::*;
+    use open_dis_rust::simulation_management::AcknowledgePdu;
 
     pub async fn connect(addr: &SocketAddr) -> Result<(), Box<dyn Error>> {
         // We'll bind our UDP socket to a local IP/port, but for now we
