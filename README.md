@@ -60,7 +60,7 @@ Rust implementation of the IEEE 1278.1-2012 Distributed Interactive Simulation (
 
 ## 📕 Documentation
 
-The documentation for the latest version of this library can be found [here](https://docs.rs/open-dis-rust/).
+The API documentation for the latest version of this library can be found [here](https://docs.rs/open-dis-rust/).
 All previously published versions of this package can be found on [crates.io](https://crates.io/crates/open-dis-rust/versions),
 and each version's respective documentation is accessible from there as well.
 
