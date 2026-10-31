@@ -12,6 +12,6 @@
 
 ## Reporting a Vulnerability
 
-Report any discovered vulnerabilities by opening an Issue and providing a full description of the
-problem. Someone will acknowledge within 5 days, and the problem will be handled accordingly in a
-timely manner.
+If you discover a vulnerability, report it privately using [GitHub's private vulnerability reporting](https://github.com/crhowell3/open-dis-rust/security/advisories/new). Security vulnerabilities are serious, so please do **not** post a public issue.
+
+Someone will acknowledge your report within 5 days, and the problem will be handled accordingly in a timely manner.

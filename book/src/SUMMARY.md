@@ -16,6 +16,7 @@
 - [Sending PDUs](guides/sending-pdus.md)
 
 # Reference
+- [PDU Coverage](reference/pdu-coverage.md)
 - [Wire Format Conventions](reference/wire-format.md)
 - [Errors](reference/errors.rs)
 
