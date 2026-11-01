@@ -80,7 +80,7 @@ Each status other than `Complete` links to the details on the [Conformance Notes
 | 60 | Data-R | Simulation Mgmt-R | [`DataReliablePdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.DataReliablePdu.html) | Complete |
 | 61 | Event Report-R | Simulation Mgmt-R | [`EventReportReliablePdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.EventReportReliablePdu.html) | Complete |
 | 62 | Comment-R | Simulation Mgmt-R | [`CommentReliablePdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.CommentReliablePdu.html) | Complete |
-| 63 | Record-R | Simulation Mgmt-R | — | [Not implemented](conformance.md#record-r-pdu) |
+| 63 | Record-R | Simulation Mgmt-R | [`RecordReliablePdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.RecordReliablePdu.html) | Complete |
 | 64 | Set Record-R | Simulation Mgmt-R | [`SetRecordReliablePdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.SetRecordReliablePdu.html) | [To verify](conformance.md#record-specification-record) |
 | 65 | Record Query-R | Simulation Mgmt-R | [`RecordQueryReliablePdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.RecordQueryReliablePdu.html) | Complete |
 | 66 | Collision-Elastic | Entity Information | [`CollisionElasticPdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_information/struct.CollisionElasticPdu.html) | Complete |
@@ -90,3 +90,17 @@ Each status other than `Complete` links to the details on the [Conformance Notes
 | 70 | Information Operations Action | Information Ops | [`InformationOperationsActionPdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/information_operations/struct.InformationOperationsActionPdu.html) | Complete |
 | 71 | Information Operations Report | Information Ops | [`InformationOperationsReportPdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/information_operations/struct.InformationOperationsReportPdu.html) | Complete |
 | 72 | Attribute | Entity Information | [`AttributePdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_information/struct.AttributePdu.html) | Complete |
+
+The family column uses short names. Each Rust type lives in the module for its family; for example,
+`open_dis_rust::warfare::FirePdu`. PDU type 0 (Other) is a placeholder in the enumeration, and there
+is no corresponding PDU.
+
+## Headers
+
+Two header types are used:
+
+- **`PduHeader`** for every family except Live Entity.
+- **`LiveEntityPduHeader`** for the five Live Entity PDUs (types 46-50). It has the same 12-octet size,
+  but it carries a subprotocol number where the PDU Status record would be.
+
+Both are covered on the [Wire Format Conventions](wire-format.md) page.
