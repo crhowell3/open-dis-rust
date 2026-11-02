@@ -64,6 +64,10 @@ The API documentation for the latest version of this library can be found [here]
 All previously published versions of this package can be found on [crates.io](https://crates.io/crates/open-dis-rust/versions),
 and each version's respective documentation is accessible from there as well.
 
+There is also a [book](https://crhowell3.github.io/open-dis-rust) for this crate that is
+regularly updated with each software release. Feel free to contribute to the book or submit
+corrections for any erroneous content you discover.
+
 ## 🔰 Getting Started
 
 ### Installation
