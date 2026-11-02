@@ -49,6 +49,7 @@ use std::io;
 use tokio::net::UdpSocket;
 
 use open_dis_rust::simulation_management::AcknowledgePdu;
+use open_dis_rust::common::constants::MAX_PDU_SIZE_OCTETS;
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -58,10 +59,15 @@ async fn main() -> io::Result<()> {
     socket.connect(remote_addr).await?;
 
     let mut ack_pdu = AcknowledgePdu::new();
-    let mut bytes = BytesMut::new();
 
-    ack_pdu.serialize(&mut bytes);
+    let mut bytes = BytesMut::with_capacity(MAX_PDU_SIZE_OCTETS);
+    let _ = ack_pdu
+        .serialize(&mut bytes)
+        .map_err(|_| io::ErrorKind::InvalidData);
+    
     socket.send(&bytes[..]).await?;
+
+    Ok(())
 }
 ```
 

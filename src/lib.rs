@@ -47,3 +47,15 @@ pub mod warfare;
 pub fn get_version() -> String {
     VERSION.to_string()
 }
+
+pub mod prelude {
+    pub use crate::common::{
+        DISError, GenericHeader, LiveEntityPduHeader, Pdu, PduHeader,
+        constants::MAX_PDU_SIZE_OCTETS,
+        data_types::{ClockTime, EntityId, EntityType, SimulationAddress},
+        enums::{EntityKind, PduType, ProtocolFamily, ProtocolVersion},
+    };
+}
+
+#[cfg(test)]
+mod pdu_round_trips;

@@ -9268,7 +9268,7 @@ pub enum RecordREventType {
     Other = 0,
 }
 
-impl_deku_enum!(RecordREventType, u8, from_u8);
+impl_deku_enum!(RecordREventType, u16, from_u16);
 
 // SISO-REF-010-2023 RecordQueryREventType [UID 334]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
