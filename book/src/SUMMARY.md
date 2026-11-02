@@ -14,6 +14,7 @@
 # Guides
 - [Creating a PDU](guides/creating-a-pdu.md)
 - [Sending PDUs](guides/sending-pdus.md)
+- [Receiving PDUs](guides/receiving-pdus.md)
 
 # Reference
 - [Conformance](reference/conformance.md)
@@ -22,9 +23,7 @@
 - [Errors](reference/errors.rs)
 
 # Development
-- [Contributing](dev/contributing.md)
 - [Architecture](dev/architecture.md)
-- [Adding a PDU](dev/adding-a-pdu.md)
 - [Testing Strategy](dev/testing.md)
 - [Updating Enumerations](dev/enumerations.md)
 
