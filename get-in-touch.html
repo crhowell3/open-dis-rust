@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "searchindex-58a81758.js";
+            window.path_to_searchindex_js = "searchindex-a25af2d5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-2fcd5bbf.js"></script>
+        <script src="toc-a540a839.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -180,25 +180,81 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="get-in-touch"><a class="header" href="#get-in-touch">Get in touch</a></h1>
-<p>If you have any questions about open-dis-rust, feel free to contact a maintainer. If you have
-any feature requests and/or bugs to report, please open a ticket on <a href="https://github.com/crhowell3/open-dis-rust">GitHub</a>.</p>
+                        <h1 id="get-in-touch"><a class="header" href="#get-in-touch">Get In Touch</a></h1>
+<p>open-dis-rust is maintained by volunteers in their spare time. Everything happens on
+<a href="https://github.com/crhowell3/open-dis-rust">GitHub</a>, so whatever you need, start there.
+Please use the channel that fits your request. That way it reaches the right place, and
+other users can find the answer later.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>I want to…</th><th>Go here</th></tr>
+</thead>
+<tbody>
+<tr><td>Ask a question or get help using the crate</td><td><a href="https://github.com/crhowell3/open-dis-rust/discussions">GitHub Discussions</a></td></tr>
+<tr><td>Report a bug or a PDU / data type / enumeration that doesn’t match the standard</td><td><a href="https://github.com/crhowell3/open-dis-rust/issues/new?template=2-bug-report.yml">Bug report</a></td></tr>
+<tr><td>Suggest a new feature or API change</td><td><a href="https://github.com/crhowell3/open-dis-rust/issues/new?template=3-feature-request.yml">Feature request</a></td></tr>
+<tr><td>Report a mistake in this book or the API docs</td><td><a href="https://github.com/crhowell3/open-dis-rust/issues/new?template=4-docs-issue.yml">Documentation issue</a></td></tr>
+<tr><td>Report a security vulnerability</td><td><a href="https://github.com/crhowell3/open-dis-rust/security/advisories/new">Private security advisory</a>. <strong>Please don’t open a public issue for security vulnerabilities.</strong></td></tr>
+<tr><td>Contribute code</td><td><a href="guides/contributing.html">Tips for Contributing</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="before-you-open-an-issue"><a class="header" href="#before-you-open-an-issue">Before you open an issue</a></h2>
+<ul>
+<li><strong>Search first.</strong> Check <a href="https://github.com/crhowell3/open-dis-rust/issues?q=is%3Aissue">open and closed issues</a> and Discussions.
+Somebody may already have run into the same problem.</li>
+<li><strong>Check that you are using the latest release.</strong> Run <code>cargo update -p open-dis-rust</code> and try again. It is possible
+your issue has already been addressed in a new update.</li>
+<li><strong>Check the <a href="https://docs.rs/open-dis-rust">API documentation</a>.</strong> Most questions about a specific type or method could be
+answered there.</li>
+</ul>
+<h2 id="reporting-a-bug"><a class="header" href="#reporting-a-bug">Reporting a bug</a></h2>
+<p>A good report allows a maintainer to reproduce the problem without guessing. Please include:</p>
+<ul>
+<li>The <strong>open-dis-rust version</strong> (from <code>Cargo.lock</code>) and your <strong>Rust version</strong> (<code>rustc --version</code>).</li>
+<li>The <strong>PDU type</strong>, <strong>record</strong>, or <strong>enumeration</strong> involved.</li>
+<li><strong>What you expected vs. what happened</strong>, including the full <code>DISError</code> message if there is one.</li>
+<li>The <strong>smallest code that shows the problem</strong>, if you are able to trim it down.</li>
+</ul>
+<h2 id="encoding-and-interoperability-problems"><a class="header" href="#encoding-and-interoperability-problems">Encoding and interoperability problems</a></h2>
+<p>If a PDU will not decode, or another DIS application cannot read what open-dis-rust sends, the raw bytes are by
+far the most useful thing you can attach:</p>
+<ul>
+<li>A <strong>packet capture</strong> (<code>.pcap</code> or <code>.pcapng</code>) from <a href="https://www.wireshark.org/">Wireshark</a>, trimmed to
+the PDUs in question, or a <strong>hex dump</strong> of the datagram.</li>
+<li>The <strong>other application</strong> involved and its version.</li>
+<li>If you have it, the <strong>section or table of IEEE 1278.1-2012</strong> that you think the crate gets wrong.</li>
+</ul>
+<p>Please remove anything sensitive from captures before attaching them, such as exercise data, IP addresses,
+or real-world locations. Also, <strong>NEVER</strong> post anything CUI or classified. Doing so is a violation of
+federal law and potentially a danger to the security of the United States (or whichever country controls the data).</p>
+<h2 id="security-issues"><a class="header" href="#security-issues">Security issues</a></h2>
+<p>If you find a vulnerability such as a malformed PDU that crashes a receiver or uses unbounded memory, report it
+privately using <a href="https://github.com/crhowell3/open-dis-rust/security/advisories/new">GitHub’s private vulnerability reporting</a>.</p>
+<p>A maintainer will acknowledge your report within 5 days. We will work with you on a fix and agree on a disclosure date before
+anything is made public. See <a href="https://github.com/crhowell3/open-dis-rust/blob/main/SECURITY.md"><code>SECURITY.md</code></a> for which
+versions receive security fixes.</p>
+<h2 id="what-to-expect"><a class="header" href="#what-to-expect">What to expect</a></h2>
+<p>This is a volunteer project, so response times vary. Most issues get a first reply within a week.
+If you post an issue and don’t get a response within a couple weeks, a polite follow-up comment is
+welcome. Pull requests that include tests, and bug reports with a capture attached, are usually handled fastest.</p>
+<p>Everyone taking part is expected to follow the project’s <a href="https://github.com/crhowell3/open-dis-rust/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
 <h2 id="maintainers"><a class="header" href="#maintainers">Maintainers</a></h2>
 <ul>
-<li><a href="https://github.com/crhowell3">https://github.com/crhowell3</a></li>
+<li><strong>Cameron Howell</strong> (<a href="https://github.com/crhowell3">@crhowell3</a>), creator and lead maintainer</li>
 </ul>
+<h2 id="supporting-the-project"><a class="header" href="#supporting-the-project">Supporting the project</a></h2>
+<p>Contributing fixes, documentation, and packet captures from real exercises helps make this crate better.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="acquiring.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="dev/enumerations.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="guides/creating-a-pdu.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -206,13 +262,10 @@ any feature requests and/or bugs to report, please open a ticket on <a href="htt
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="acquiring.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="dev/enumerations.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="guides/creating-a-pdu.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                    </a>
             </nav>
 
         </div>

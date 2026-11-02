@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Open DIS Rust</title>
+        <title>Introduction</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "searchindex-58a81758.js";
+            window.path_to_searchindex_js = "searchindex-a25af2d5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-2fcd5bbf.js"></script>
+        <script src="toc-a540a839.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -180,14 +180,82 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="open-dis-rust"><a class="header" href="#open-dis-rust">open-dis-rust</a></h1>
-<p><strong>open-dis-rust</strong> is an open-source implementation of the IEEE 1278.1-2012 Distributed
-Interactive Simulation (DIS) application protocol. This library defines all Protocol
-Data Units (PDUs) listed within the standard documentation as well as all associated
-data types, records, and enumerations.</p>
-<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
-<p>Open DIS Rust is free and open source. You can find the source code as well as
-report issues and create feature requests on <a href="https://github.com/crhowell3/open-dis-rust">GitHub</a>.</p>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p><strong>open-dis-rust</strong> is an open-source Rust implementation of the IEEE 1278.1-2012
+Distributed Interactive Simulation (DIS) application protocol. This crate defines
+strongly typed Rust structures for each Protocol Data Unit (PDU) along with the
+records and SISO-REF-010 enumerations associated with them. It also gives you
+the code to turn those structs into bytes on the wire and back again.</p>
+<pre><code class="language-rust ignore">let mut pdu = EntityStatePdu::new();
+pdu.entity_id = EntityId::new(1, 1, 1);
+pdu.force_id = ForceId::Friendly;
+
+let mut bytes = BytesMut::new();
+pdu.serialize(&amp;mut bytes)?;</code></pre>
+<h2 id="what-is-dis"><a class="header" href="#what-is-dis">What is DIS?</a></h2>
+<p>DIS is an IEEE standard that enables independently constructed simulations share
+one virtual world in real time. Flight simulators, ground vehicle trainers,
+constructive wargames, radio simulators, and live range instrumentation can all
+join the same exercise. Each one broadcasts PDUs that describe its own entities
+and events and reads the PDUs from other participants in the simulation.</p>
+<p>A few PDUs carry most of the traffic in a typical exercise:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>PDU</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td>Entity State</td><td>Describes a simulation entity, including what it is, where it is, how it is moving, and what it looks like</td></tr>
+<tr><td>Fire / Detonation</td><td>A munition was fired, and it detonated at a certain location</td></tr>
+<tr><td>Transmitter / Signal / Receiver</td><td>Simulates radio traffic, including actual audio</td></tr>
+<tr><td>Start/Resume, Stop/Freeze, Acknowledge</td><td>Simulation management for controlling the exercise</td></tr>
+</tbody>
+</table>
+</div>
+<p>DIS has no central server. Simlators usually exchange PDUs over UDP broadcast or multicast,
+and every participant decides for itself which PDUs to act on.</p>
+<h2 id="what-this-crate-does"><a class="header" href="#what-this-crate-does">What this crate does</a></h2>
+<ul>
+<li>Defines all 72 PDU types defined in the IEEE 1278.1-2012 across every protocol family that
+has PDUs, including Live Entity, Information Operations, and Simulation Management with
+Reliability, to name a few.</li>
+<li>Encodes and decodes PDUs in network (big-endian) byte order, and checks the declared PDU
+length against the actual contents.</li>
+<li>Fills in derived fields for you when serializing. These include the PDU type, protocol
+family, total length, record counts, and padding.</li>
+<li>Provides SISO-REF-010 enumerations implemented as Rust enums.</li>
+<li>Avoids <code>unsafe</code> code and panics. Malformed input comes back as <code>DISError</code> instead of
+crashing the simulation.</li>
+</ul>
+<h2 id="what-this-crate-leaves-to-you"><a class="header" href="#what-this-crate-leaves-to-you">What this crate leaves to you</a></h2>
+<p>This crate is a protocol codec, not a complete DIS framework. Any consumer application is
+responsible for:</p>
+<ul>
+<li><strong>Networking.</strong> Any transport mode works, but it is strongly recommended to use UDP in
+distributed simulation environments. The examples in this crate all use UDP either via
+the Rust standard library or with <code>tokio</code>.</li>
+<li><strong>Timing.</strong> This includes heartbeats and timing out entities that have gone stale.</li>
+<li><strong>Dead reckoning.</strong> This crate carries the dead reckoning parameters, but extrapolating
+positions between updates is up to the consumer.</li>
+<li><strong>Coordinate conversion.</strong> DIS locations are geocentric (ECEF) coordinates in meters.
+Converting to and from latitude, longitude, and altitude needs a separate crate or
+custom implementation.</li>
+</ul>
+<h2 id="how-this-book-is-organized"><a class="header" href="#how-this-book-is-organized">How this book is organized</a></h2>
+<ul>
+<li><strong><a href="acquiring.html">Installation</a></strong> and the <strong><a href="quickstart.html">Quickstart</a></strong> get you sending
+and receiving PDUs in a few minutes.</li>
+<li><strong>Guides</strong> walk through common tasks in more detail.</li>
+<li><strong>Development</strong> explains how the crate is built, for contributors.</li>
+</ul>
+<p>For the full API, see the <a href="https://docs.rs/open-dis-rust">API documentation on docs.rs</a>.</p>
+<h2 id="project-status-and-feedback"><a class="header" href="#project-status-and-feedback">Project status and feedback</a></h2>
+<p>This crate is free and open source under the BSD 2-Clause License. If you find a PDU,
+record, or enumeration that doesn’t match the standard, or one that another DIS
+implementation is unable to parse, please <a href="https://github.com/crhowell3/open-dis-rust/issues">open an issue</a>
+and attach a packet capture if you can. Captures from real exercises are the fastest
+way to find and fix interoperability problems. Since DIS is commonly used in military
+exercises, ensure that you do NOT post any classified data when submitting tickets.</p>
 
                     </main>
 

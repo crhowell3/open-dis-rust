@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-58a81758.js";
+            window.path_to_searchindex_js = "../searchindex-a25af2d5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-2fcd5bbf.js"></script>
+        <script src="../toc-a540a839.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -219,6 +219,7 @@ use std::io;
 use tokio::net::UdpSocket;
 
 use open_dis_rust::simulation_management::AcknowledgePdu;
+use open_dis_rust::common::constants::MAX_PDU_SIZE_OCTETS;
 
 #[tokio::main]
 async fn main() -&gt; io::Result&lt;()&gt; {
@@ -228,10 +229,15 @@ async fn main() -&gt; io::Result&lt;()&gt; {
     socket.connect(remote_addr).await?;
 
     let mut ack_pdu = AcknowledgePdu::new();
-    let mut bytes = BytesMut::new();
 
-    ack_pdu.serialize(&amp;mut bytes);
+    let mut bytes = BytesMut::with_capacity(MAX_PDU_SIZE_OCTETS);
+    let _ = ack_pdu
+        .serialize(&amp;mut bytes)
+        .map_err(|_| io::ErrorKind::InvalidData);
+    
     socket.send(&amp;bytes[..]).await?;
+
+    Ok(())
 }</code></pre>
 <p>We create a UDP socket and bind it to all network interfaces, specifically on port
 <code>3000</code>. We then establish a one-to-one connection to <code>127.0.0.0:3000</code>. Afterwards,
