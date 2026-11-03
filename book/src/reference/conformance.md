@@ -50,3 +50,115 @@ you receive traffic from simulators you do not control.
 
 Each of these produces bytes that differ from the standard in some way. The eventual goal
 is to have this list be completely empty; that is, all known differences have been addressed.
+
+### Underwater Acoustic PDU
+ 
+- The UA Beam Data record is encoded as 25 octets instead of 24, because the
+  padding after the beam ID number is 16 bits instead of 8. Every field after the
+  first beam is misaligned.
+- The emitter system data length and beam data length fields aren't computed, so
+  they're always sent as 0.
+- **To verify:** Shaft RPM Rate of Change is encoded as a 32-bit integer; it may need
+  to be a 32-bit float.
+
+### Electromagnetic Emission PDU
+ 
+The system data length and beam data length fields aren't computed, so they're
+always sent as 0. Receivers that use these lengths to step through the records can't
+parse the PDU.
+ 
+### Linear Object State PDU
+ 
+The general segment appearance in each Linear Segment Parameter record is 32 bits
+instead of 16, which makes each segment 66 octets instead of 64.
+ 
+### Gridded Data PDU
+ 
+Grid data records that use representation type 0 are padded to a 16-bit boundary
+instead of a 32-bit one. Types 1 and 2 are padded correctly.
+ 
+### Data Query PDU
+ 
+The PDU carries full fixed and variable datum records. The standard calls for
+32-bit datum IDs only. The reliable version, Data Query-R, is correct.
+ 
+### Minefield Response NACK PDU
+ 
+Missing PDU sequence numbers are encoded as 64-bit values with no padding. The
+standard calls for 8-bit values padded to a 32-bit boundary.
+ 
+### Directed Energy Fire PDU
+ 
+- The PDU carries Damage Description records (record type 4500). It should carry DE
+  Precision Aimpoint (4000) or DE Area Aimpoint (4001) records.
+- **To verify:** the 32-bit field after Wavelength is treated as padding; it may be
+  Peak Irradiance, a 32-bit float.
+
+## Simplified records
+ 
+These PDUs encode correctly when the affected records are empty, but the records
+are modeled more simply than the standard defines them.
+ 
+### Aggregate State PDU
+ 
+The silent aggregate and silent entity lists are encoded as plain entity types.
+The standard defines Silent Aggregate System records (12 octets each) and Silent
+Entity System records (variable length, with appearance records).
+ 
+### Is Group Of PDU
+ 
+Grouped entity descriptions are encoded as 64-bit values. In the standard, their
+size and contents depend on the grouped entity category.
+ 
+### Environmental Process PDU
+ 
+Environment records include only their 8-octet header. The geometry and state data
+that follows the header isn't represented.
+ 
+### Intercom Control PDU
+ 
+Intercom communications parameter records have a fixed 32-bit body, although the
+standard allows them to be any length given by their record length field.
+ 
+### IFF PDU
+ 
+Layer 1 and layer 2 are decoded into fields. Any further layers, such as Mode 5 and
+Mode S data, are kept as raw octets in `IffLayers::other_layers`.
+ 
+## Still to verify
+ 
+These may differ from the standard. They need checking against the text of
+IEEE 1278.1-2012 or against captures.
+ 
+### Action Request-R PDU
+ 
+There's an extra 32 bits of padding after the action ID, which makes the fixed part
+of the PDU 48 octets. It may need to be 44.
+ 
+### Record Specification record
+ 
+Used by the Transfer Ownership and Set Record-R PDUs. The crate treats the record
+length as a number of octets and doesn't pad the record values. The standard may
+define the length in bits, require a 32-bit padding field after the record set
+serial number, and pad the values to a 64-bit boundary.
+ 
+### Live Entity Fire and Detonation PDUs
+ 
+The flag fields are kept as plain integers, and every optional field is always
+encoded. The standard may use the flags to mark some fields as present or absent.
+ 
+## Fields kept as raw values
+ 
+These fields encode correctly, but the crate doesn't interpret them for you. You
+read and write their bits yourself, using the SISO-REF-010 enumerations.
+ 
+- Entity appearance and entity capabilities, in the Entity State and Entity State
+  Update PDUs.
+- Variable parameter records. These are kept as four generic fields rather than as
+  typed articulated or attached part records.
+- Modulation parameters and antenna patterns in the Transmitter PDU.
+- Signal and Intercom Signal data.
+- Specific object appearance in the object state PDUs.
+
+The Damage Description record defaults to a record type and length of 0. Set them to
+4500 and 40 when you build one yourself.

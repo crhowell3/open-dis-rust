@@ -74,7 +74,7 @@ pub struct TransmitterPdu {
     #[deku(count = "number_of_variable_transmitter_parameters_records")]
     pub variable_transmitter_parameters: Vec<VariableTransmitterParameters>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     TransmitterPdu,
     PduHeader,
     PduType::Transmitter,
@@ -105,7 +105,7 @@ pub struct SignalPdu {
     )]
     pub data: Vec<u8>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     SignalPdu,
     PduHeader,
     PduType::Signal,
@@ -126,7 +126,7 @@ pub struct ReceiverPdu {
     pub transmitter_radio_reference_id: EntityId,
     pub transmitter_radio_id: u16,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ReceiverPdu,
     PduHeader,
     PduType::Receiver,
@@ -157,7 +157,7 @@ pub struct IntercomSignalPdu {
     )]
     pub data: Vec<u8>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     IntercomSignalPdu,
     PduHeader,
     PduType::IntercomSignal,
@@ -189,7 +189,7 @@ pub struct IntercomControlPdu {
     #[deku(count = "intercom_parameters_length")]
     pub intercom_parameters: Vec<IntercomCommunicationsParameters>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     IntercomControlPdu,
     PduHeader,
     PduType::IntercomControl,
@@ -290,16 +290,13 @@ fn write_signal_data<W: Write + Seek>(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

@@ -4,7 +4,6 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BytesMut};
 use chrono::{DateTime, Timelike, Utc};
 
 use crate::common::{
@@ -80,12 +79,12 @@ impl GenericHeader for LiveEntityPduHeader {
         self.length = value;
     }
 
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&self, buf: &mut Vec<u8>) {
         let _ = crate::common::wire::write(self, buf);
     }
 
-    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, crate::common::DISError> {
-        Ok(crate::common::wire::read(buf)?)
+    fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::common::DISError> {
+        crate::common::wire::read(buf).map_err(crate::common::DISError::from_wire)
     }
 }
 

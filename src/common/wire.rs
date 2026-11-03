@@ -4,7 +4,7 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-//! Interface between `bytes` buffers in the public API and `deku`.
+//! Interface between byte slices and vectors and `deku`. Internal to this crate.
 //!
 //! Wire types derive `deku::DekuRead` and `deku::DekuWrite` with the crate's standard
 //! attribute line, which makes them big endian by default and lets a parent pass its
@@ -14,10 +14,9 @@
 //! #[deku(endian = "endian", ctx = "endian: deku::ctx::Endian", ctx_default = "deku::ctx::Endian::Big")]
 //! ```
 //!
-//! [`read`], [`write`], and [`encoded_len`] run those types against a
-//! [`bytes::Buf`] or [`bytes::BytesMut`].
+//! [`read`], [`write`], and [`encoded_len`] run those types against a byte slice
+//! or a `Vec<u8>`.
 
-use bytes::{Buf, BufMut, BytesMut};
 use deku::{
     DekuError, DekuReader, DekuWriter,
     no_std_io::{self, ErrorKind, Read, Seek, SeekFrom, Write},
@@ -31,46 +30,53 @@ fn unsupported_seek() -> no_std_io::Error {
     no_std_io::Error::new(ErrorKind::Unsupported, "only forward seeks are supported")
 }
 
-struct BufSource<'a, B: Buf> {
-    buf: &'a mut B,
+/// Reads from the front of a slice, advancing it as octets are consumed
+struct SliceSource<'a, 'b> {
+    buf: &'a mut &'b [u8],
     position: u64,
 }
 
-impl<B: Buf> Read for BufSource<'_, B> {
-    fn read(&mut self, out: &mut [u8]) -> no_std_io::Result<usize> {
-        let n = out.len().min(self.buf.remaining());
-        if let Some(dst) = out.get_mut(..n) {
-            self.buf.copy_to_slice(dst);
-        }
+impl SliceSource<'_, '_> {
+    fn advance(&mut self, n: usize) {
+        let rest: &[u8] = self.buf;
+        *self.buf = rest.get(n..).unwrap_or_default();
         self.position = self
             .position
             .saturating_add(u64::try_from(n).unwrap_or(u64::MAX));
+    }
+}
+
+impl Read for SliceSource<'_, '_> {
+    fn read(&mut self, out: &mut [u8]) -> no_std_io::Result<usize> {
+        let n = out.len().min(self.buf.len());
+        if let (Some(dst), Some(src)) = (out.get_mut(..n), self.buf.get(..n)) {
+            dst.copy_from_slice(src);
+        }
+        self.advance(n);
         Ok(n)
     }
 }
 
-impl<B: Buf> Seek for BufSource<'_, B> {
+impl Seek for SliceSource<'_, '_> {
     fn seek(&mut self, pos: SeekFrom) -> no_std_io::Result<u64> {
         let SeekFrom::Current(offset) = pos else {
             return Err(unsupported_seek());
         };
         let skip = usize::try_from(offset).map_err(|_| unsupported_seek())?;
-        if skip > self.buf.remaining() {
+        if skip > self.buf.len() {
             return Err(ErrorKind::UnexpectedEof.into());
         }
-        self.buf.advance(skip);
-        self.position = self
-            .position
-            .saturating_add(u64::try_from(skip).unwrap_or(u64::MAX));
+        self.advance(skip);
         Ok(self.position)
     }
 }
 
-struct BytesSink<'a>(&'a mut BytesMut);
+/// Appends to the end of a vector
+struct VecSink<'a>(&'a mut Vec<u8>);
 
-impl Write for BytesSink<'_> {
+impl Write for VecSink<'_> {
     fn write(&mut self, data: &[u8]) -> no_std_io::Result<usize> {
-        self.0.put_slice(data);
+        self.0.extend_from_slice(data);
         Ok(data.len())
     }
 
@@ -79,7 +85,7 @@ impl Write for BytesSink<'_> {
     }
 }
 
-impl Seek for BytesSink<'_> {
+impl Seek for VecSink<'_> {
     fn seek(&mut self, pos: SeekFrom) -> no_std_io::Result<u64> {
         match pos {
             SeekFrom::Current(0) => Ok(u64::try_from(self.0.len()).unwrap_or(u64::MAX)),
@@ -117,12 +123,11 @@ impl Seek for CountingSink {
 ///
 /// Returns a [`DekuError`] if `buf` runs out or a field holds a value the standard
 /// doesn't define
-pub fn read<T, B>(buf: &mut B) -> Result<T, DekuError>
+pub fn read<T>(buf: &mut &[u8]) -> Result<T, DekuError>
 where
     T: for<'a> DekuReader<'a, ()>,
-    B: Buf,
 {
-    let mut source = BufSource { buf, position: 0 };
+    let mut source = SliceSource { buf, position: 0 };
     let mut reader = Reader::new(&mut source);
     T::from_reader_with_ctx(&mut reader, ())
 }
@@ -133,8 +138,8 @@ where
 ///
 /// Returns a [`DekuError`] if a field can't be encoded, i.e., a count that
 /// doesn't fit its field. `buf` may hold a partial encoding afterwards.
-pub fn write<T: DekuWriter<()>>(value: &T, buf: &mut BytesMut) -> Result<(), DekuError> {
-    let mut sink = BytesSink(buf);
+pub fn write<T: DekuWriter<()>>(value: &T, buf: &mut Vec<u8>) -> Result<(), DekuError> {
+    let mut sink = VecSink(buf);
     let mut writer = Writer::new(&mut sink);
     value.to_writer(&mut writer, ())?;
     writer.finalize()
@@ -299,3 +304,5 @@ macro_rules! impl_deku_default_endian {
         }
     };
 }
+
+pub(crate) use impl_deku_default_endian;

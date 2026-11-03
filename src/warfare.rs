@@ -30,7 +30,7 @@ pub struct FirePdu {
     pub velocity: LinearVelocity,
     pub range: f32,
 }
-crate::impl_pdu!(FirePdu, PduHeader, PduType::Fire, ProtocolFamily::Warfare);
+crate::common::pdu::impl_pdu!(FirePdu, PduHeader, PduType::Fire, ProtocolFamily::Warfare);
 
 /// Implemented according to IEEE 1278.1-2012 §7.3.3
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -53,7 +53,7 @@ pub struct DetonationPdu {
     #[deku(count = "number_of_variable_parameters")]
     pub variable_parameters: Vec<VariableParameter>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DetonationPdu,
     PduHeader,
     PduType::Detonation,
@@ -90,7 +90,7 @@ pub struct DirectedEnergyFirePdu {
     #[deku(count = "number_of_de_records")]
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DirectedEnergyFirePdu,
     PduHeader,
     PduType::DirectedEnergyFire,
@@ -114,7 +114,7 @@ pub struct EntityDamageStatusPdu {
     #[deku(count = "number_of_damage_descriptions")]
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     EntityDamageStatusPdu,
     PduHeader,
     PduType::EntityDamageStatus,
@@ -125,16 +125,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

@@ -16,9 +16,9 @@ pub mod live_entity_records;
 pub mod pdu;
 pub mod pdu_header;
 pub mod serialized_length;
-pub mod wire;
+pub(crate) mod wire;
 
-pub use dis_error::DISError;
+pub use dis_error::{DISError, WireFormatError};
 pub use generic_header::GenericHeader;
 pub use live_entity_pdu_header::LiveEntityPduHeader;
 pub use pdu::Pdu;

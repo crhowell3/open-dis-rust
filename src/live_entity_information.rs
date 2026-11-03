@@ -14,6 +14,7 @@ use deku::{
 };
 
 use crate::{
+    common::pdu::impl_pdu,
     common::{
         LiveEntityPduHeader,
         data_types::{
@@ -27,7 +28,6 @@ use crate::{
             RelativeWorldCoordinates,
         },
     },
-    impl_pdu,
 };
 
 bitflags! {
@@ -410,16 +410,13 @@ impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

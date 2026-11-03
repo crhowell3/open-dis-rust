@@ -78,7 +78,7 @@ pub struct AggregateStatePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_list: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     AggregateStatePdu,
     PduHeader,
     PduType::AggregateState,
@@ -101,7 +101,7 @@ pub struct IsGroupOfPdu {
     #[deku(count = "number_of_grouped_entities")]
     pub grouped_entity_descriptions: Vec<u64>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     IsGroupOfPdu,
     PduHeader,
     PduType::IsGroupOf,
@@ -122,7 +122,7 @@ pub struct TransferOwnershipPdu {
     pub transfer_entity_id: EntityId,
     pub record_information: RecordSpecification,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     TransferOwnershipPdu,
     PduHeader,
     PduType::TransferOwnership,
@@ -142,7 +142,7 @@ pub struct IsPartOfPdu {
     pub named_location_id: NamedLocation,
     pub part_entity_type: EntityType,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     IsPartOfPdu,
     PduHeader,
     PduType::IsPartOf,
@@ -165,16 +165,13 @@ const fn id_list_padding(aggregates: usize, entities: usize) -> usize {
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

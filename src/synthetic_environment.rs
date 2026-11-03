@@ -38,7 +38,7 @@ pub struct EnvironmentalProcessPdu {
     #[deku(count = "number_of_environment_records")]
     pub environment_records: Vec<Environment>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     EnvironmentalProcessPdu,
     PduHeader,
     PduType::EnvironmentalProcess,
@@ -74,7 +74,7 @@ pub struct GriddedDataPdu {
     #[deku(read_all, update = "updated_grid_data(&self.grid_data_list)?")]
     pub grid_data_list: Vec<GridDataRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     GriddedDataPdu,
     PduHeader,
     PduType::GriddedData,
@@ -109,7 +109,7 @@ pub struct PointObjectStatePdu {
     pub receiving_id: SimulationAddress,
     padding2: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     PointObjectStatePdu,
     PduHeader,
     PduType::PointObjectState,
@@ -134,7 +134,7 @@ pub struct LinearObjectStatePdu {
     #[deku(count = "number_of_segments")]
     pub linear_segment_parameters: Vec<LinearSegmentParameter>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     LinearObjectStatePdu,
     PduHeader,
     PduType::LinearObjectState,
@@ -165,7 +165,7 @@ pub struct ArealObjectStatePdu {
     #[deku(count = "number_of_points")]
     pub object_location: Vec<WorldCoordinate>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ArealObjectStatePdu,
     PduHeader,
     PduType::ArealObjectState,
@@ -176,16 +176,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

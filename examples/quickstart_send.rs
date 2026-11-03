@@ -1,6 +1,5 @@
 use std::{error::Error, net::UdpSocket, thread, time::Duration};
 
-use bytes::BytesMut;
 use open_dis_rust::prelude::*;
 use open_dis_rust::{
     common::{
@@ -43,8 +42,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         pdu.header_mut().timestamp = PduHeader::calculate_dis_timestamp();
 
         // serialize() fills in the PDU type, family, length and all counts.
-        let mut bytes = BytesMut::new();
-        pdu.serialize(&mut bytes)?;
+        let bytes = pdu.to_bytes()?;
         socket.send(&bytes)?;
         println!("sent {}-byte Entity State PDU, x = {x:.1}", bytes.len());
 

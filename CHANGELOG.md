@@ -1,20 +1,26 @@
 # Changelog
 
-## [1.0.0] - YYYY-MM-DD
+## [1.0.0] - 2026-11-02
 
 The first official release of open-dis-rust!
 
 ### Added
 
 - Wire encoding through [deku](https://crates.io/crates/deku): enums, PDU headers, and every record is written and read using deku
-- `common::wire` with `read`, `write`, and `encoded_len` for using those types with `bytes` buffers
-  - `read` rejects undefined enum values
-- `DISError::WireFormat` for truncated or malformed input
-- `impl_pdu!` for PDUs defined as plain structs with deku attributes
+  - Decoding rejects undefined enum values
+  - deku is an implementation detail and is not part of the public API
+- `Pdu::to_bytes` method, which encodes a PDU into a new `Vec<u8>`
+- `DISError::WireFormat` and `WireFormatError` for truncated or malformed input
+- `RecordReliablePdu` (Record-R, PDU type 63), so every PDU type in IEEE 1278.1-2012 is implemented
+- The `prelude` module for importing the most common traits and types
 - `IFFLayer2` and `IFFLayers` for the IFF PDU's layers after `IFFLayer1`
 
 ### Changed
 
+- The public API uses standard library types instead of the `bytes` crate, and `bytes` is no longer a direct dependency
+  - `Pdu::serialize` appends to a `&mut Vec<u8>` instead of a `&mut BytesMut`; on error, the buffer is left unchanged
+  - `Pdu::deserialze` and `Pdu::deserialize_without_header` read from a `&mut &[u8]` instead of any `B: Buf`
+  - `GenericHeader::serialize` and `GenericHeader::deserialize` change the same way
 - `TimeSpacePositionInformationPdu`: the fields after the location are optional as indicated by the TSPI flag specifies. They are `Option`s,
   and `serialize` sets the flag (now `tspi_flag: TspiFlag`, formerly `tspi_flag: u8`) from the fields that are present. A default TSPI PDU
   is 25 octects
@@ -22,6 +28,7 @@ The first official release of open-dis-rust!
 - `AppearancePdu`: optional fields are read when their flags are set, and `serialize` sets the flags from the fields that are present
 - `AppearancePdu::capabilities` and `EntityStatePdu::entity_capabilities` are raw `u32` capability bits instead of `EntityCapabilities`
 - `VariableTransmitterParameters::record_type` is `VariableRecordTypes` (UID 66)
+- `RecordREventType` is now a `u16` to match the standard
 
 ### Removed
 
@@ -29,6 +36,7 @@ The first official release of open-dis-rust!
   `impl_u8_flag_fields!`. Define PDUs as structs deriving `deku::DekuRead` and `deku::DekuWrite` with `impl_pdu!`
   - `pdu_tests!` is unaffected
 - The `serialize`/`deserialize` methods on records: use `common::wire::write` and `common::wire::read`
+- The `byte` dependency
 - The `deserialize` methods on enums, which turned undefined values into defaults
 - The unused `PduBody` trait 
 

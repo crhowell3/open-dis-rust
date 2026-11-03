@@ -42,7 +42,7 @@ pub struct EntityStatePdu {
     #[deku(count = "number_of_articulation_parameters")]
     pub articulation_parameter: Vec<VariableParameter>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     EntityStatePdu,
     PduHeader,
     PduType::EntityState,
@@ -64,7 +64,7 @@ pub struct CollisionPdu {
     pub mass: f32,
     pub location_wrt_entity: EntityCoordinateVector,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     CollisionPdu,
     PduHeader,
     PduType::Collision,
@@ -93,7 +93,7 @@ pub struct CollisionElasticPdu {
     pub unit_surface_normal: EntityCoordinateVector,
     pub coefficient_of_restitution: f32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     CollisionElasticPdu,
     PduHeader,
     PduType::CollisionElastic,
@@ -117,7 +117,7 @@ pub struct EntityStateUpdatePdu {
     #[deku(count = "number_of_variable_parameters")]
     pub variable_parameter_records: Vec<VariableParameter>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     EntityStateUpdatePdu,
     PduHeader,
     PduType::EntityStateUpdate,
@@ -146,7 +146,7 @@ pub struct AttributePdu {
     #[deku(count = "number_of_attribute_record_sets")]
     pub attribute_record_sets: Vec<AttributeRecordSet>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     AttributePdu,
     PduHeader,
     PduType::Attribute,
@@ -157,16 +157,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

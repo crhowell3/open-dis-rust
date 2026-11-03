@@ -174,7 +174,7 @@ impl DekuUpdate for GridDataRecord {
     }
 }
 
-crate::impl_deku_default_endian!(GridDataRecord);
+crate::common::wire::impl_deku_default_endian!(GridDataRecord);
 
 fn value_count(len: usize) -> Result<u16, DekuError> {
     u16::try_from(len)

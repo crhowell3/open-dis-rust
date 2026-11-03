@@ -31,7 +31,7 @@ pub struct CreateEntityReliablePdu {
     padding2: u16,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     CreateEntityReliablePdu,
     PduHeader,
     PduType::CreateEntityReliable,
@@ -51,7 +51,7 @@ pub struct RemoveEntityReliablePdu {
     padding2: u16,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     RemoveEntityReliablePdu,
     PduHeader,
     PduType::RemoveEntityReliable,
@@ -73,7 +73,7 @@ pub struct StartResumeReliablePdu {
     padding2: u16,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     StartResumeReliablePdu,
     PduHeader,
     PduType::StartResumeReliable,
@@ -95,7 +95,7 @@ pub struct StopFreezeReliablePdu {
     padding: u8,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     StopFreezeReliablePdu,
     PduHeader,
     PduType::StopFreezeReliable,
@@ -114,7 +114,7 @@ pub struct AcknowledgeReliablePdu {
     pub response_flag: AcknowledgeResponseFlag,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     AcknowledgeReliablePdu,
     PduHeader,
     PduType::AcknowledgeReliable,
@@ -150,7 +150,7 @@ pub struct ActionRequestReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ActionRequestReliablePdu,
     PduHeader,
     PduType::ActionRequestReliable,
@@ -182,7 +182,7 @@ pub struct ActionResponseReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ActionResponseReliablePdu,
     PduHeader,
     PduType::ActionResponseReliable,
@@ -217,7 +217,7 @@ pub struct DataQueryReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_ids: Vec<VariableRecordTypes>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DataQueryReliablePdu,
     PduHeader,
     PduType::DataQueryReliable,
@@ -251,7 +251,7 @@ pub struct SetDataReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     SetDataReliablePdu,
     PduHeader,
     PduType::SetDataReliable,
@@ -285,7 +285,7 @@ pub struct DataReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DataReliablePdu,
     PduHeader,
     PduType::DataReliable,
@@ -317,7 +317,7 @@ pub struct EventReportReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     EventReportReliablePdu,
     PduHeader,
     PduType::EventReportReliable,
@@ -347,7 +347,7 @@ pub struct CommentReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     CommentReliablePdu,
     PduHeader,
     PduType::CommentReliable,
@@ -375,7 +375,7 @@ pub struct RecordQueryReliablePdu {
     #[deku(count = "number_of_records")]
     pub record_ids: Vec<u32>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     RecordQueryReliablePdu,
     PduHeader,
     PduType::RecordQueryReliable,
@@ -397,7 +397,7 @@ pub struct SetRecordReliablePdu {
     padding3: u32,
     pub record_sets: RecordSpecification,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     SetRecordReliablePdu,
     PduHeader,
     PduType::SetRecordReliable,
@@ -419,7 +419,7 @@ pub struct RecordReliablePdu {
     pub response_serial_number: u32,
     pub record_sets: RecordSpecification,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     RecordReliablePdu,
     PduHeader,
     PduType::RecordReliable,
@@ -430,16 +430,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

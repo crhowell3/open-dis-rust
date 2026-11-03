@@ -44,7 +44,7 @@ pub struct ElectromagneticEmissionsPdu {
     #[deku(count = "number_of_systems")]
     pub systems: Vec<ElectromagneticEmissionSystemData>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ElectromagneticEmissionsPdu,
     PduHeader,
     PduType::ElectromagneticEmissions,
@@ -70,7 +70,7 @@ pub struct DesignatorPdu {
     padding2: u16,
     pub entity_linear_acceleration: LinearAcceleration,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DesignatorPdu,
     PduHeader,
     PduType::Designator,
@@ -103,7 +103,7 @@ pub struct UnderwaterAcousticPdu {
     /// Each emitter with its location and beams.
     pub emitter_systems: Vec<AcousticEmitterSystemData>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     UnderwaterAcousticPdu,
     PduHeader,
     PduType::UnderwaterAcoustic,
@@ -132,7 +132,7 @@ pub struct IFFPdu {
     )]
     pub layers: IffLayers,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     IFFPdu,
     PduHeader,
     PduType::IFF,
@@ -216,7 +216,7 @@ fn read_iff_layers<R: Read + Seek>(reader: &mut Reader<R>) -> Result<IffLayers, 
             other_layers: octets,
         });
     }
-    let mut rest = bytes::Bytes::from(octets);
+    let mut rest: &[u8] = &octets;
     let layer_2 = crate::common::wire::read(&mut rest)?;
     Ok(IffLayers {
         layer_2: Some(layer_2),
@@ -259,7 +259,7 @@ pub struct SupplementalEmissionPdu {
     #[deku(count = "number_of_vectoring_nozzle_systems")]
     pub vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     SupplementalEmissionPdu,
     PduHeader,
     PduType::SupplementalEmission,
@@ -270,16 +270,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

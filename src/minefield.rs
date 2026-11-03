@@ -51,7 +51,7 @@ pub struct MinefieldStatePdu {
     #[deku(count = "number_of_mine_types")]
     pub mine_type: Vec<EntityType>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     MinefieldStatePdu,
     PduHeader,
     PduType::MinefieldState,
@@ -84,7 +84,7 @@ pub struct MinefieldQueryPdu {
     )]
     pub sensor_types: Vec<u16>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     MinefieldQueryPdu,
     PduHeader,
     PduType::MinefieldQuery,
@@ -133,7 +133,7 @@ pub struct MinefieldDataPdu {
     )]
     pub mines: Vec<Mine>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     MinefieldDataPdu,
     PduHeader,
     PduType::MinefieldData,
@@ -200,7 +200,7 @@ pub struct MinefieldResponseNackPdu {
     #[deku(count = "number_of_missing_pdus")]
     pub missing_pdu_sequence_numbers: Vec<u64>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     MinefieldResponseNackPdu,
     PduHeader,
     PduType::MinefieldResponseNack,
@@ -636,16 +636,13 @@ fn write_trip_wires<W: Write + Seek>(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

@@ -7,7 +7,6 @@
 
 #![allow(clippy::must_use_candidate)]
 
-use bytes::{Buf, BytesMut};
 use chrono::{DateTime, Timelike, Utc};
 
 use crate::common::{
@@ -252,12 +251,12 @@ impl GenericHeader for PduHeader {
         self.length = value;
     }
 
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&self, buf: &mut Vec<u8>) {
         let _ = crate::common::wire::write(self, buf);
     }
 
-    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, crate::common::DISError> {
-        Ok(crate::common::wire::read(buf)?)
+    fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::common::DISError> {
+        crate::common::wire::read(buf).map_err(crate::common::DISError::from_wire)
     }
 }
 
@@ -327,7 +326,7 @@ mod tests {
 
     #[test]
     fn get_pdu_type_returns_correct_type() {
-        let mut buf = BytesMut::new();
+        let mut buf = Vec::new();
         let header = PduHeader::new(PduType::EntityState, ProtocolFamily::default(), 1, 12);
         header.serialize(&mut buf);
         assert_eq!(PduHeader::get_pdu_type(&buf), Some(PduType::EntityState));
@@ -340,7 +339,7 @@ mod tests {
 
     #[test]
     fn get_pdu_type_ignores_trailing_bytes() {
-        let mut buf = BytesMut::new();
+        let mut buf = Vec::new();
         let header = PduHeader::new(PduType::Detonation, ProtocolFamily::default(), 1, 12);
         header.serialize(&mut buf);
         buf.extend_from_slice(&[0xFF; 100]); // simulate a full PDU body

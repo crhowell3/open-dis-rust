@@ -23,7 +23,7 @@ pub struct CreateEntityPdu {
     pub receiving_entity_id: EntityId,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     CreateEntityPdu,
     PduHeader,
     PduType::CreateEntity,
@@ -40,7 +40,7 @@ pub struct RemoveEntityPdu {
     pub receiving_entity_id: EntityId,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     RemoveEntityPdu,
     PduHeader,
     PduType::RemoveEntity,
@@ -59,7 +59,7 @@ pub struct StartResumePdu {
     pub simulation_time: ClockTime,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     StartResumePdu,
     PduHeader,
     PduType::StartResume,
@@ -80,7 +80,7 @@ pub struct StopFreezePdu {
     padding: u16,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     StopFreezePdu,
     PduHeader,
     PduType::StopFreeze,
@@ -99,7 +99,7 @@ pub struct AcknowledgePdu {
     pub response_flag: AcknowledgeResponseFlag,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     AcknowledgePdu,
     PduHeader,
     PduType::Acknowledge,
@@ -131,7 +131,7 @@ pub struct ActionRequestPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ActionRequestPdu,
     PduHeader,
     PduType::ActionRequest,
@@ -163,7 +163,7 @@ pub struct ActionResponsePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ActionResponsePdu,
     PduHeader,
     PduType::ActionResponse,
@@ -195,7 +195,7 @@ pub struct DataQueryPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DataQueryPdu,
     PduHeader,
     PduType::DataQuery,
@@ -227,7 +227,7 @@ pub struct SetDataPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     SetDataPdu,
     PduHeader,
     PduType::SetData,
@@ -259,7 +259,7 @@ pub struct DataPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DataPdu,
     PduHeader,
     PduType::Data,
@@ -291,7 +291,7 @@ pub struct EventReportPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     EventReportPdu,
     PduHeader,
     PduType::EventReport,
@@ -321,7 +321,7 @@ pub struct CommentPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     CommentPdu,
     PduHeader,
     PduType::Comment,
@@ -332,16 +332,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

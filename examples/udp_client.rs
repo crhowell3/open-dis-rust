@@ -25,7 +25,6 @@ mod udp {
     use std::io;
     use std::net::SocketAddr;
 
-    use bytes::BytesMut;
     use tokio::net::UdpSocket;
 
     use open_dis_rust::common::data_types::EntityId;
@@ -63,10 +62,9 @@ mod udp {
         header.exercise_id = 1;
         header.timestamp = PduHeader::calculate_dis_timestamp();
 
-        let mut bytes = BytesMut::with_capacity(MAX_PDU_SIZE_OCTETS);
-        let _ = ack
-            .serialize(&mut bytes)
-            .map_err(|_| io::ErrorKind::InvalidData);
+        let mut bytes = Vec::with_capacity(MAX_PDU_SIZE_OCTETS);
+        ack.serialize(&mut bytes)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
         writer.send(&bytes).await?;
 
@@ -79,10 +77,8 @@ mod udp {
             let n = reader.recv(&mut buf[..]).await?;
 
             if n > 0 {
-                dbg!(
-                    AcknowledgePdu::deserialize(&mut BytesMut::from(buf.as_slice()))
-                        .unwrap_or_default()
-                );
+                let mut datagram = buf.get(..n).unwrap_or_default();
+                dbg!(AcknowledgePdu::deserialize(&mut datagram).unwrap_or_default());
                 break;
             }
         }

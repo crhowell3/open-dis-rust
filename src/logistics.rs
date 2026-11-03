@@ -29,7 +29,7 @@ pub struct ServiceRequestPdu {
     #[deku(count = "number_of_supply_types")]
     pub supplies: Vec<SupplyQuantity>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ServiceRequestPdu,
     PduHeader,
     PduType::ServiceRequest,
@@ -51,7 +51,7 @@ pub struct ResupplyOfferPdu {
     #[deku(count = "number_of_supply_types")]
     pub supplies: Vec<SupplyQuantity>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ResupplyOfferPdu,
     PduHeader,
     PduType::ResupplyOffer,
@@ -73,7 +73,7 @@ pub struct ResupplyReceivedPdu {
     #[deku(count = "number_of_supply_types")]
     pub supplies: Vec<SupplyQuantity>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ResupplyReceivedPdu,
     PduHeader,
     PduType::ResupplyReceived,
@@ -89,7 +89,7 @@ pub struct ResupplyCancelPdu {
     pub receiving_entity_id: EntityId,
     pub supplying_entity_id: EntityId,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ResupplyCancelPdu,
     PduHeader,
     PduType::ResupplyCancel,
@@ -107,7 +107,7 @@ pub struct RepairCompletePdu {
     pub repair: RepairCompleteRepair,
     padding: u16,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     RepairCompletePdu,
     PduHeader,
     PduType::RepairComplete,
@@ -126,7 +126,7 @@ pub struct RepairResponsePdu {
     padding: u8,
     padding2: u16,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     RepairResponsePdu,
     PduHeader,
     PduType::RepairResponse,
@@ -137,16 +137,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

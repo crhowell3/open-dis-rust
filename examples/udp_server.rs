@@ -27,7 +27,9 @@ impl Server {
 
         loop {
             if let Some((size, peer)) = to_send {
-                let amt = socket.send_to(&buf[..size], &peer).await?;
+                let amt = socket
+                    .send_to(buf.get(..size).unwrap_or_default(), &peer)
+                    .await?;
 
                 println!("Echoed {amt}/{size} bytes to {peer}");
             }

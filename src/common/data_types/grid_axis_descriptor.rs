@@ -175,7 +175,7 @@ impl DekuUpdate for GridAxisDescriptor {
     }
 }
 
-crate::impl_deku_default_endian!(GridAxisDescriptor);
+crate::common::wire::impl_deku_default_endian!(GridAxisDescriptor);
 
 /// Padding after `points` 16-bit x values, to a 64-bit boundary. The rest of
 /// the irregular-axis record is 40 octets, already a multiple of 8.
