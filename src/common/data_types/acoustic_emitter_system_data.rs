@@ -16,7 +16,7 @@ use super::{acoustic_beam_data::AcousticBeamData, acoustic_emitter_system::Acous
 pub struct AcousticEmitterSystemData {
     pub emitter_system_data_length: u8,
     #[deku(update = "self.beam_records.len()")]
-    pub number_of_beams: u8,
+    pub(crate) number_of_beams: u8,
     pub pad2: u16,
     pub acoustic_emitter_system: AcousticEmitterSystem,
     pub emitter_location: Vector3Float,
@@ -28,7 +28,6 @@ impl AcousticEmitterSystemData {
     #[must_use]
     pub const fn new(
         emitter_system_data_length: u8,
-        number_of_beams: u8,
         pad2: u16,
         acoustic_emitter_system: AcousticEmitterSystem,
         emitter_location: Vector3Float,
@@ -36,7 +35,7 @@ impl AcousticEmitterSystemData {
     ) -> Self {
         Self {
             emitter_system_data_length,
-            number_of_beams,
+            number_of_beams: 0,
             pad2,
             acoustic_emitter_system,
             emitter_location,
@@ -44,4 +43,3 @@ impl AcousticEmitterSystemData {
         }
     }
 }
-

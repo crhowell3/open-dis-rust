@@ -60,7 +60,7 @@ mod udp {
 
         let header = ack.header_mut();
         header.exercise_id = 1;
-        header.timestamp = PduHeader::calculate_dis_timestamp();
+        header.timestamp = Timestamp::now();
 
         let mut bytes = Vec::with_capacity(MAX_PDU_SIZE_OCTETS);
         ack.serialize(&mut bytes)

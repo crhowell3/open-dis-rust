@@ -13,7 +13,7 @@ use super::acoustic_beam_fundamental_parameter::AcousticBeamFundamentalParameter
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct AcousticBeamData {
-    pub beam_data_length: u16,
+    pub beam_data_length: u8,
     pub beam_id_number: u8,
     pub pad2: u16,
     pub fundamental_data_parameters: AcousticBeamFundamentalParameter,
@@ -22,7 +22,7 @@ pub struct AcousticBeamData {
 impl AcousticBeamData {
     #[must_use]
     pub const fn new(
-        beam_data_length: u16,
+        beam_data_length: u8,
         beam_id_number: u8,
         pad2: u16,
         fundamental_data_parameters: AcousticBeamFundamentalParameter,

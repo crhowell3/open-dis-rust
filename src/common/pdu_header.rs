@@ -7,10 +7,8 @@
 
 #![allow(clippy::must_use_candidate)]
 
-use chrono::{DateTime, Timelike, Utc};
-
 use crate::common::{
-    GenericHeader, SerializedLength,
+    GenericHeader, Timestamp,
     enums::{
         ActiveInterrogationIndicator, CoupledExtensionIndicator, DetonationTypeIndicator,
         FireTypeIndicator, IntercomAttachedIndicator, LVCIndicator, PduStatusIFFSimulationMode,
@@ -18,9 +16,6 @@ use crate::common::{
         TransferredEntityIndicator,
     },
 };
-
-const MICROS_PER_HOUR: u64 = 3_600_000_000;
-const DIS_UNITS_PER_HOUR: u64 = 2_147_483_648;
 
 mod status_record {
     #![allow(
@@ -197,14 +192,17 @@ pub struct PduHeader {
     pub protocol_version: ProtocolVersion,
     /// Exercise ID
     pub exercise_id: u8,
-    /// Type of PDU, unique for each PDU class
-    pub pdu_type: PduType,
-    /// Value that refers to the protocol family
-    pub protocol_family: ProtocolFamily,
-    /// Timestamp value
-    pub timestamp: u32,
-    /// Length, in bytes, of the PDU
-    pub length: u16,
+    /// Type of PDU, set from the PDU when it's encoded. Read it with
+    /// [`GenericHeader::pdu_type`].
+    pub(crate) pdu_type: PduType,
+    /// Protocol family, set from the PDU when it's encoded. Read it with
+    /// [`GenericHeader::protocol_family`].
+    pub(crate) protocol_family: ProtocolFamily,
+    /// When the data in the PDU was valid. New headers use [`Timestamp::now`].
+    pub timestamp: Timestamp,
+    /// Length of the PDU in octets, header included, set when it's encoded. Read it
+    /// with [`GenericHeader::length`].
+    pub(crate) length: u16,
     /// PDU status record
     pub status_record: PduStatusRecord,
     /// Padding
@@ -218,7 +216,7 @@ impl Default for PduHeader {
             exercise_id: 1,
             pdu_type: PduType::default(),
             protocol_family: ProtocolFamily::default(),
-            timestamp: Self::calculate_dis_timestamp(),
+            timestamp: Timestamp::now(),
             length: 0,
             status_record: PduStatusRecord::default(),
             padding: 0,
@@ -231,24 +229,12 @@ impl GenericHeader for PduHeader {
         self.pdu_type
     }
 
-    fn set_pdu_type(&mut self, value: PduType) {
-        self.pdu_type = value;
-    }
-
     fn protocol_family(&self) -> ProtocolFamily {
         self.protocol_family
     }
 
-    fn set_protocol_family(&mut self, value: ProtocolFamily) {
-        self.protocol_family = value;
-    }
-
     fn length(&self) -> u16 {
         self.length
-    }
-
-    fn set_length(&mut self, value: u16) {
-        self.length = value;
     }
 
     fn serialize(&self, buf: &mut Vec<u8>) {
@@ -260,74 +246,52 @@ impl GenericHeader for PduHeader {
     }
 }
 
-fn micros_past_hour(now: &DateTime<Utc>) -> Option<u64> {
-    u64::from(now.minute())
-        .checked_mul(60_000_000)?
-        .checked_add(u64::from(now.second()).checked_mul(1_000_000)?)?
-        .checked_add(u64::from(now.timestamp_subsec_micros()))
-}
-
 impl PduHeader {
+    /// A header for the given exercise, timestamped now. The PDU type, protocol
+    /// family and length are set when the PDU is encoded.
     #[must_use]
-    pub fn new(
-        pdu_type: PduType,
-        protocol_family: ProtocolFamily,
-        exercise_id: u8,
-        length: u16,
-    ) -> Self {
+    pub fn new(exercise_id: u8) -> Self {
         Self {
-            protocol_version: ProtocolVersion::IEEE1278_1_2012,
             exercise_id,
-            pdu_type,
-            protocol_family,
-            timestamp: Self::calculate_dis_timestamp(),
-            length,
-            status_record: PduStatusRecord::default(),
-            padding: 0,
+            ..Self::default()
         }
-    }
-
-    /// Gets the current time in terms of IEEE-1278.1 DIS time units
-    #[must_use]
-    #[allow(
-        clippy::cast_precision_loss,
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss
-    )]
-    pub fn calculate_dis_timestamp() -> u32 {
-        let now = Utc::now();
-
-        micros_past_hour(&now)
-            .and_then(|us| us.checked_mul(DIS_UNITS_PER_HOUR))
-            .and_then(|v| v.checked_div(MICROS_PER_HOUR))
-            .and_then(|v| u32::try_from(v).ok())
-            .and_then(|v| v.checked_mul(2))
-            .map_or(u32::MAX, |v| v | 1)
     }
 
     /// Looks at the PDU type from a raw byte buffer.
     /// Only deserializes the 12-byte header.
     #[must_use]
     pub fn get_pdu_type(bytes: &[u8]) -> Option<PduType> {
-        let mut buf = bytes.get(..Self::LENGTH)?;
+        let mut buf = bytes.get(..crate::common::constants::PDU_HEADER_SIZE)?;
         Self::deserialize(&mut buf)
             .ok()
             .map(|header| header.pdu_type)
     }
 }
 
-impl SerializedLength for PduHeader {
-    const LENGTH: usize = 12;
+impl crate::common::generic_header::SetDerivedFields for PduHeader {
+    fn set_pdu_type(&mut self, value: PduType) {
+        self.pdu_type = value;
+    }
+
+    fn set_protocol_family(&mut self, value: ProtocolFamily) {
+        self.protocol_family = value;
+    }
+
+    fn set_length(&mut self, value: u16) {
+        self.length = value;
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::generic_header::SetDerivedFields;
 
     #[test]
     fn get_pdu_type_returns_correct_type() {
         let mut buf = Vec::new();
-        let header = PduHeader::new(PduType::EntityState, ProtocolFamily::default(), 1, 12);
+        let mut header = PduHeader::new(1);
+        header.set_pdu_type(PduType::EntityState);
         header.serialize(&mut buf);
         assert_eq!(PduHeader::get_pdu_type(&buf), Some(PduType::EntityState));
     }
@@ -340,7 +304,8 @@ mod tests {
     #[test]
     fn get_pdu_type_ignores_trailing_bytes() {
         let mut buf = Vec::new();
-        let header = PduHeader::new(PduType::Detonation, ProtocolFamily::default(), 1, 12);
+        let mut header = PduHeader::new(1);
+        header.set_pdu_type(PduType::Detonation);
         header.serialize(&mut buf);
         buf.extend_from_slice(&[0xFF; 100]); // simulate a full PDU body
         assert_eq!(PduHeader::get_pdu_type(&buf), Some(PduType::Detonation));

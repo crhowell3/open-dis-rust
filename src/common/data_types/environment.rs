@@ -3,6 +3,8 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+use crate::common::enums::EnvironmentalProcessRecordType;
+
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -10,7 +12,7 @@
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct Environment {
-    pub environment_type: u32,
+    pub environment_type: EnvironmentalProcessRecordType,
     pub length: u16,
     pub index: u8,
     pub padding: u8,
@@ -18,7 +20,12 @@ pub struct Environment {
 
 impl Environment {
     #[must_use]
-    pub const fn new(environment_type: u32, length: u16, index: u8, padding: u8) -> Self {
+    pub const fn new(
+        environment_type: EnvironmentalProcessRecordType,
+        length: u16,
+        index: u8,
+        padding: u8,
+    ) -> Self {
         Self {
             environment_type,
             length,

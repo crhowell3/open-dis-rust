@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for _ in 0..10 {
         pdu.entity_location = WorldCoordinate::new(x, 0.0, 0.0);
-        pdu.header_mut().timestamp = PduHeader::calculate_dis_timestamp();
+        pdu.header_mut().timestamp = Timestamp::now();
 
         // serialize() fills in the PDU type, family, length and all counts.
         let bytes = pdu.to_bytes()?;

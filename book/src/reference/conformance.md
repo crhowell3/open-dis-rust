@@ -53,9 +53,6 @@ is to have this list be completely empty; that is, all known differences have be
 
 ### Underwater Acoustic PDU
  
-- The UA Beam Data record is encoded as 25 octets instead of 24, because the
-  padding after the beam ID number is 16 bits instead of 8. Every field after the
-  first beam is misaligned.
 - The emitter system data length and beam data length fields aren't computed, so
   they're always sent as 0.
 - **To verify:** Shaft RPM Rate of Change is encoded as a 32-bit integer; it may need
@@ -129,11 +126,6 @@ Mode S data, are kept as raw octets in `IffLayers::other_layers`.
  
 These may differ from the standard. They need checking against the text of
 IEEE 1278.1-2012 or against captures.
- 
-### Action Request-R PDU
- 
-There's an extra 32 bits of padding after the action ID, which makes the fixed part
-of the PDU 48 octets. It may need to be 44.
  
 ### Record Specification record
  

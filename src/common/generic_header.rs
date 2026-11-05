@@ -10,14 +10,13 @@ use crate::common::{
 };
 
 pub trait GenericHeader: Sized {
+    const LENGTH: usize = 12;
+
     fn pdu_type(&self) -> PduType;
-    fn set_pdu_type(&mut self, value: PduType);
 
     fn protocol_family(&self) -> ProtocolFamily;
-    fn set_protocol_family(&mut self, value: ProtocolFamily);
 
     fn length(&self) -> u16;
-    fn set_length(&mut self, value: u16);
 
     /// Encodes the header and appends it to `buf`
     fn serialize(&self, buf: &mut Vec<u8>);
@@ -29,4 +28,12 @@ pub trait GenericHeader: Sized {
     ///
     /// Will return a `DISError` if deserialization fails
     fn deserialize(buf: &mut &[u8]) -> Result<Self, DISError>;
+}
+
+/// Sets the header fields that encoding derives from the PDU. Private to the crate
+/// so that those fields stay read-only for users.
+pub(crate) trait SetDerivedFields {
+    fn set_pdu_type(&mut self, value: PduType);
+    fn set_protocol_family(&mut self, value: ProtocolFamily);
+    fn set_length(&mut self, value: u16);
 }
