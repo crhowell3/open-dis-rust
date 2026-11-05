@@ -5,8 +5,9 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
-    GenericHeader, Timestamp,
+    GenericHeader,
     enums::{DISLiveEntitySubprotocolNumber, PduType, ProtocolFamily, ProtocolVersion},
+    records::Timestamp,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
@@ -29,7 +30,7 @@ pub struct LiveEntityPduHeader {
     /// When the data in the PDU was valid. New headers use [`Timestamp::now`].
     pub timestamp: Timestamp,
     /// Length of the PDU in octets, including the header. This value is set
-    /// upon encodingg. Read it with [`GenericHeader::length`].
+    /// upon encoding. Read it with [`GenericHeader::length`].
     pub(crate) length: u16,
     /// The subprotocol to be used to decode the PDU
     pub subprotocol_number: DISLiveEntitySubprotocolNumber,

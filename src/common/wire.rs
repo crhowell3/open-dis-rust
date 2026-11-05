@@ -273,8 +273,6 @@ where
         .collect()
 }
 
-#[macro_export]
-#[doc(hidden)]
 macro_rules! impl_deku_default_endian {
     ($name:ty) => {
         impl<'a> deku::DekuReader<'a, ()> for $name {

@@ -3,9 +3,7 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use super::{
-    fundamental_parameter_data::FundamentalParameterData, track_jam_target::TrackJamTarget,
-};
+use super::{fundamental_parameter_data::FundamentalParameterData, track_jam_target::TrackJamData};
 
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -25,5 +23,5 @@ pub struct ElectromagneticEmissionBeamData {
     pub pad4: u8,
     pub jamming_mode_sequence: u32,
     #[deku(count = "number_of_track_jam_targets")]
-    pub track_jam_targets: Vec<TrackJamTarget>,
+    pub track_jam_targets: Vec<TrackJamData>,
 }

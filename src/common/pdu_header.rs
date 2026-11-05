@@ -8,13 +8,14 @@
 #![allow(clippy::must_use_candidate)]
 
 use crate::common::{
-    GenericHeader, Timestamp,
+    GenericHeader,
     enums::{
         ActiveInterrogationIndicator, CoupledExtensionIndicator, DetonationTypeIndicator,
         FireTypeIndicator, IntercomAttachedIndicator, LVCIndicator, PduStatusIFFSimulationMode,
         PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator,
         TransferredEntityIndicator,
     },
+    records::Timestamp,
 };
 
 mod status_record {

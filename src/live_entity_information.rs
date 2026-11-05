@@ -17,15 +17,14 @@ use crate::{
     common::pdu::impl_pdu,
     common::{
         LiveEntityPduHeader,
-        data_types::{
-            EntityType, VariableParameter, entity_marking::EntityMarking,
-            fixed_binary_16::FixedBinary16, munition_descriptor::MunitionDescriptor,
-        },
         enums::{ForceId, PduType, ProtocolFamily, impl_deku_bitflags},
         live_entity_records::{
             LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
             LiveEntityOrientation16, LiveEventIdentifier, OrientationError, PositionError,
             RelativeWorldCoordinates,
+        },
+        records::{
+            EntityMarking, EntityType, FixedBinary16, MunitionDescriptor, VariableParameter,
         },
     },
 };

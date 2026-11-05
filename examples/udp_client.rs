@@ -27,8 +27,8 @@ mod udp {
 
     use tokio::net::UdpSocket;
 
-    use open_dis_rust::common::data_types::EntityId;
     use open_dis_rust::common::enums::{AcknowledgeFlag, AcknowledgeResponseFlag};
+    use open_dis_rust::common::records::EntityIdentifier;
     use open_dis_rust::prelude::*;
     use open_dis_rust::simulation_management::AcknowledgePdu;
 
@@ -52,8 +52,11 @@ mod udp {
     async fn send(writer: &UdpSocket) -> Result<(), io::Error> {
         let mut ack = AcknowledgePdu::new();
 
-        ack.originating_entity_id = EntityId::new(1, 1, 0);
-        ack.receiving_entity_id = EntityId::new(1, 2, 0);
+        let originating_simulation_address = SimulationAddress::new(1, 1);
+        ack.originating_entity_id = EntityIdentifier::new(originating_simulation_address, 0);
+
+        let receiving_simulation_address = SimulationAddress::new(1, 1);
+        ack.receiving_entity_id = EntityIdentifier::new(receiving_simulation_address, 0);
         ack.acknowledge_flag = AcknowledgeFlag::CreateEntity;
         ack.response_flag = AcknowledgeResponseFlag::AbleToComply;
         ack.request_id = 42;

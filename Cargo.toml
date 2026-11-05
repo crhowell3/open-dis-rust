@@ -12,7 +12,6 @@ keywords = ["DIS", "IEEE", "Simulation"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-approx = "0.5.1"
 bitflags = "2.5.0"
 deku = "0.20.3"
 modular-bitfield = "0.13.0"
@@ -21,7 +20,7 @@ num-traits = "0.2.17"
 thiserror = "1.0.50"
 
 [dev-dependencies]
-futures = "0.3.31"
+approx = "0.5.1"
 tokio = { version = "1.37.0", features = ["full"] }
 tokio-util = { version = "0.7.10", features = ["codec"] }
 

@@ -8,7 +8,7 @@ use super::{
     emitter_system::EmitterSystem,
 };
 
-use crate::common::data_types::vector3_float::Vector3Float;
+use crate::common::records::vector3_float::Vector3Float;
 
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -26,4 +26,3 @@ pub struct ElectromagneticEmissionSystemData {
     #[deku(count = "number_of_beams")]
     pub beam_data_records: Vec<ElectromagneticEmissionBeamData>,
 }
-

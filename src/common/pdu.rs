@@ -336,7 +336,7 @@ pub(crate) use pdu_tests;
 mod tests {
     use super::*;
     use crate::{
-        common::data_types::VariableDatumRecord,
+        common::records::VariableDatumRecord,
         entity_information::EntityStatePdu,
         simulation_management::{AcknowledgePdu, CommentPdu},
     };

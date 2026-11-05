@@ -22,37 +22,18 @@
 
 use crate::common::{
     DISError,
-    data_types::{
-        ClockTime, EntityCoordinateVector, EntityId, EntityType, EulerAngles, VariableParameter,
-        WorldCoordinate,
-        acoustic_beam_data::AcousticBeamData,
-        acoustic_emitter_system_data::AcousticEmitterSystemData,
-        aggregate_id::AggregateId,
-        antenna_pattern::AntennaPattern,
-        apa_data::ApaData,
-        attribute_record::AttributeRecord,
-        attribute_record_set::AttributeRecordSet,
-        datum_records::{FixedDatumRecord, VariableDatumRecord},
-        directed_energy_damage::DirectedEnergyDamage,
-        electromagnetic_emission_beam_data::ElectromagneticEmissionBeamData,
-        electromagnetic_emission_system_data::ElectromagneticEmissionSystemData,
-        environment::Environment,
-        grid_axis_descriptor::{GridAxisDescriptor, GridAxisType},
-        grid_data_record::{DataRepresentationType, GridDataRecord},
-        iff_fundamental_parameter_data::IFFFundamentalParameterData,
-        intercom_communications_parameters::IntercomCommunicationsParameters,
-        linear_segment_parameter::LinearSegmentParameter,
-        modulation_parameters::ModulationParameters,
-        point::Point,
-        propulsion_system_data::PropulsionSystemData,
-        shaft_rpms::ShaftRPMs,
-        supply_quantity::SupplyQuantity,
-        track_jam_target::TrackJamTarget,
-        variable_transmitter_parameters::VariableTransmitterParameters,
-        vectoring_nozzle_system_data::VectoringNozzleSystemData,
-    },
     enums::{GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes},
     pdu::Pdu,
+    records::{
+        AcousticBeamData, AcousticEmitterSystemData, AggregateIdentifier, AntennaPattern, ApaData,
+        Attribute, AttributeRecordSet, ClockTime, DataRepresentationType, DirectedEnergyDamage,
+        ElectromagneticEmissionBeamData, ElectromagneticEmissionSystemData, EntityIdentifier,
+        EntityType, Environment, EulerAngles, FixedDatumRecord, GridAxisDescriptor, GridAxisType,
+        GridData, IFFFundamentalParameterData, IntercomCommunicationsParameters,
+        LinearSegmentParameter, ModulationParameters, Point, PropulsionSystemData, ShaftRPMs,
+        SupplyQuantity, TrackJamData, VariableDatumRecord, VariableParameter,
+        VariableTransmitterParameters, Vector, VectoringNozzleSystemData, WorldCoordinates,
+    },
 };
 use crate::{
     distributed_emissions::*, entity_information::*, entity_management::*, logistics::*,
@@ -101,7 +82,7 @@ fn ee_system(beams: usize, targets: usize) -> ElectromagneticEmissionSystemData 
     ElectromagneticEmissionSystemData {
         beam_data_records: vec![
             ElectromagneticEmissionBeamData {
-                track_jam_targets: vec![TrackJamTarget::default(); targets],
+                track_jam_targets: vec![TrackJamData::default(); targets],
                 ..ElectromagneticEmissionBeamData::default()
             };
             beams
@@ -199,9 +180,9 @@ lists!(
     |p| {
         p.attribute_record_sets = vec![
             AttributeRecordSet {
-                attribute_records: vec![AttributeRecord {
+                attribute_records: vec![Attribute {
                     record_specific_fields: vec![1, 2, 3],
-                    ..AttributeRecord::default()
+                    ..Attribute::default()
                 }],
                 ..AttributeRecordSet::default()
             };
@@ -225,8 +206,8 @@ lists!(
     aggregate_state,
     AggregateStatePdu,
     |p| {
-        p.aggregate_id_list = vec![AggregateId::default(); 1];
-        p.entity_id_list = vec![EntityId::default(); 2];
+        p.aggregate_id_list = vec![AggregateIdentifier::default(); 1];
+        p.entity_id_list = vec![EntityIdentifier::default(); 2];
         p.silent_aggregate_system_list = vec![EntityType::default(); 3];
         p.silent_entity_system_list = vec![EntityType::default(); 4];
         p.variable_datum_list = vec![VariableDatumRecord::default(); 5];
@@ -245,8 +226,8 @@ fn aggregate_state_pads_id_lists_to_32_bits() {
     let base = to_bytes(&mut AggregateStatePdu::new()).len();
     for (aggregates, entities, padding) in [(0, 0, 0), (1, 0, 2), (0, 1, 2), (1, 1, 0), (2, 1, 2)] {
         let mut pdu = AggregateStatePdu::new();
-        pdu.aggregate_id_list = vec![AggregateId::default(); aggregates];
-        pdu.entity_id_list = vec![EntityId::default(); entities];
+        pdu.aggregate_id_list = vec![AggregateIdentifier::default(); aggregates];
+        pdu.entity_id_list = vec![EntityIdentifier::default(); entities];
         let mut decoded = round_trip(&mut pdu);
         let bytes = to_bytes(&mut decoded);
         assert_eq!(
@@ -352,11 +333,11 @@ lists!(
 mod minefield_data {
     use super::*;
 
-    fn point(x: f32) -> EntityCoordinateVector {
-        EntityCoordinateVector {
-            x_coordinate: x,
-            y_coordinate: 0.0,
-            z_coordinate: 0.0,
+    fn point(x: f32) -> Vector {
+        Vector {
+            first_vector_component: x,
+            second_vector_component: 0.0,
+            third_vector_component: 0.0,
         }
     }
 
@@ -368,7 +349,7 @@ mod minefield_data {
         }
     }
 
-    fn full_mine(entity_number: u16, wires: Vec<Vec<EntityCoordinateVector>>) -> Mine {
+    fn full_mine(entity_number: u16, wires: Vec<Vec<Vector>>) -> Mine {
         Mine {
             ground_burial_depth_offset: Some(1.0),
             water_burial_depth_offset: Some(2.0),
@@ -423,7 +404,7 @@ mod minefield_data {
         let decoded = round_trip(&mut pdu);
         let wires = decoded.mines[0].trip_wires.as_ref().unwrap();
         assert_eq!(wires.iter().map(Vec::len).collect::<Vec<_>>(), [1, 3]);
-        assert_eq!(wires[1][2].x_coordinate, 4.0);
+        assert_eq!(wires[1][2].first_vector_component, 4.0);
         assert_eq!(decoded.mines[1].trip_wires.as_ref().map(Vec::len), Some(0));
         assert_eq!(
             decoded.mines[1].scalar_detection_coefficients.as_deref(),
@@ -559,11 +540,11 @@ mod gridded_data {
         }
     }
 
-    fn record(data: DataRepresentationType) -> GridDataRecord {
-        GridDataRecord {
+    fn record(data: DataRepresentationType) -> GridData {
+        GridData {
             sample_type: 0x1234,
             data,
-            ..GridDataRecord::default()
+            ..GridData::default()
         }
     }
 
@@ -889,7 +870,7 @@ lists!(
     areal_object_state,
     ArealObjectStatePdu,
     |p| {
-        p.object_location = vec![WorldCoordinate::default(); 4];
+        p.object_location = vec![WorldCoordinates::default(); 4];
     },
     |d| {
         assert_eq!(d.number_of_points, 4);

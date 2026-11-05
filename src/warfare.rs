@@ -6,12 +6,12 @@
 //! The Warfare protocol family
 
 use crate::common::{
-    data_types::{
-        ClockTime, DirectedEnergyDamage, EntityCoordinateVector, EntityId, EntityType, EventId,
-        LinearVelocity, MunitionDescriptor, VariableParameter, WorldCoordinate,
-    },
     enums::{DEFirePulseShape, DetonationResult, PduType, ProtocolFamily},
     pdu_header::PduHeader,
+    records::{
+        ClockTime, DirectedEnergyDamage, EntityIdentifier, EntityType, EventIdentifier,
+        MunitionDescriptor, VariableParameter, Vector, WorldCoordinates,
+    },
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.3.2
@@ -20,14 +20,14 @@ use crate::common::{
 pub struct FirePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub firing_entity_id: EntityId,
-    pub target_entity_id: EntityId,
-    pub munition_expendable_id: EntityId,
-    pub event_id: EventId,
+    pub firing_entity_id: EntityIdentifier,
+    pub target_entity_id: EntityIdentifier,
+    pub munition_expendable_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
     pub fire_mission_index: u32,
-    pub location_in_world_coordinates: WorldCoordinate,
+    pub location_in_world_coordinates: WorldCoordinates,
     pub descriptor: MunitionDescriptor,
-    pub velocity: LinearVelocity,
+    pub velocity: Vector,
     pub range: f32,
 }
 crate::common::pdu::impl_pdu!(FirePdu, PduHeader, PduType::Fire, ProtocolFamily::Warfare);
@@ -38,14 +38,14 @@ crate::common::pdu::impl_pdu!(FirePdu, PduHeader, PduType::Fire, ProtocolFamily:
 pub struct DetonationPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub firing_entity_id: EntityId,
-    pub target_entity_id: EntityId,
-    pub exploding_entity_id: EntityId,
-    pub event_id: EventId,
-    pub velocity: LinearVelocity,
-    pub location_in_world_coordinates: WorldCoordinate,
+    pub firing_entity_id: EntityIdentifier,
+    pub target_entity_id: EntityIdentifier,
+    pub exploding_entity_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
+    pub velocity: Vector,
+    pub location_in_world_coordinates: WorldCoordinates,
     pub descriptor: MunitionDescriptor,
-    pub location_in_entitys_coordinates: EntityCoordinateVector,
+    pub location_in_entitys_coordinates: Vector,
     pub detonation_result: DetonationResult,
     #[deku(update = "self.variable_parameters.len()")]
     pub number_of_variable_parameters: u8,
@@ -66,12 +66,12 @@ crate::common::pdu::impl_pdu!(
 pub struct DirectedEnergyFirePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub firing_entity_id: EntityId,
-    pub event_id: EventId,
+    pub firing_entity_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
     pub munition_type: EntityType,
     pub shot_start_time: ClockTime,
     pub cumulative_shot_time: f32,
-    pub aperture_emitter_location: EntityCoordinateVector,
+    pub aperture_emitter_location: Vector,
     pub aperture_diameter: f32,
     pub wavelength: f32,
     padding: u32,
@@ -103,7 +103,7 @@ crate::common::pdu::impl_pdu!(
 pub struct EntityDamageStatusPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub damaged_entity_id: EntityId,
+    pub damaged_entity_id: EntityIdentifier,
     padding: u16,
     padding2: u16,
     #[deku(

@@ -95,7 +95,7 @@ fn fixture(s: &str) -> Vec<u8> {
 #[test]
 fn acknowledge_encodes_to_golden_bytes() {
     let mut pdu = AcknowledgePdu::new();
-    pdu.header_mut().timestamp = 0; // fixed, so the bytes are repeatable
+    pdu.header_mut().timestamp = Timestamp::from_raw(0); // fixed, so the bytes are repeatable
     pdu.originating_entity_id = EntityId::new(1, 1, 0);
     pdu.receiving_entity_id = EntityId::new(1, 2, 0);
     pdu.acknowledge_flag = AcknowledgeFlag::CreateEntity;

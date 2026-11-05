@@ -9,13 +9,13 @@
 #![allow(deprecated)]
 
 use crate::common::{
-    data_types::{
-        AttributeRecordSet, DeadReckoningParameters, EntityCoordinateVector, EntityId,
-        EntityMarking, EntityType, EulerAngles, EventId, LinearVelocity, SimulationAddress,
-        VariableParameter, WorldCoordinate,
-    },
     enums::{DISAttributeActionCode, ForceId, PduType, ProtocolFamily},
     pdu_header::PduHeader,
+    records::{
+        AttributeRecordSet, DeadReckoningParameters, EntityIdentifier, EntityMarking, EntityType,
+        EulerAngles, EventIdentifier, SimulationAddress, VariableParameter, Vector,
+        WorldCoordinates,
+    },
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.2.2
@@ -24,14 +24,14 @@ use crate::common::{
 pub struct EntityStatePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub entity_id: EntityId,
+    pub entity_id: EntityIdentifier,
     pub force_id: ForceId,
     #[deku(update = "self.articulation_parameter.len()")]
     pub number_of_articulation_parameters: u8,
     pub entity_type: EntityType,
     pub alternative_entity_type: EntityType,
-    pub entity_linear_velocity: LinearVelocity,
-    pub entity_location: WorldCoordinate,
+    pub entity_linear_velocity: Vector,
+    pub entity_location: WorldCoordinates,
     pub entity_orientation: EulerAngles,
     pub entity_appearance: u32,
     pub dead_reckoning_parameters: DeadReckoningParameters,
@@ -55,14 +55,14 @@ crate::common::pdu::impl_pdu!(
 pub struct CollisionPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub issuing_entity_id: EntityId,
-    pub colliding_entity_id: EntityId,
-    pub event_id: EventId,
+    pub issuing_entity_id: EntityIdentifier,
+    pub colliding_entity_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
     pub collision_type: u8,
     padding: u8,
-    pub velocity: LinearVelocity,
+    pub velocity: Vector,
     pub mass: f32,
-    pub location_wrt_entity: EntityCoordinateVector,
+    pub location_wrt_entity: Vector,
 }
 crate::common::pdu::impl_pdu!(
     CollisionPdu,
@@ -77,20 +77,20 @@ crate::common::pdu::impl_pdu!(
 pub struct CollisionElasticPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub issuing_entity_id: EntityId,
-    pub colliding_entity_id: EntityId,
-    pub event_id: EventId,
+    pub issuing_entity_id: EntityIdentifier,
+    pub colliding_entity_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
     padding: u16,
-    pub contact_velocity: LinearVelocity,
+    pub contact_velocity: Vector,
     pub mass: f32,
-    pub location_of_impact: EntityCoordinateVector,
+    pub location_of_impact: Vector,
     pub collision_intermediate_result_xx: f32,
     pub collision_intermediate_result_xy: f32,
     pub collision_intermediate_result_xz: f32,
     pub collision_intermediate_result_yy: f32,
     pub collision_intermediate_result_yz: f32,
     pub collision_intermediate_result_zz: f32,
-    pub unit_surface_normal: EntityCoordinateVector,
+    pub unit_surface_normal: Vector,
     pub coefficient_of_restitution: f32,
 }
 crate::common::pdu::impl_pdu!(
@@ -106,12 +106,12 @@ crate::common::pdu::impl_pdu!(
 pub struct EntityStateUpdatePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub entity_id: EntityId,
+    pub entity_id: EntityIdentifier,
     padding: u8,
     #[deku(update = "self.variable_parameter_records.len()")]
     pub number_of_variable_parameters: u8,
-    pub entity_linear_velocity: LinearVelocity,
-    pub entity_location: WorldCoordinate,
+    pub entity_linear_velocity: Vector,
+    pub entity_location: WorldCoordinates,
     pub entity_orientation: EulerAngles,
     pub entity_appearance: u32,
     #[deku(count = "number_of_variable_parameters")]

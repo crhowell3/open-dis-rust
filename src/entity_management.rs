@@ -7,17 +7,17 @@
 //! The Entity Management protocol family
 
 use crate::common::{
-    data_types::{
-        AggregateId, AggregateMarking, EntityId, EntityType, EulerAngles, LinearVelocity,
-        NamedLocation, RecordSpecification, Relationship, SimulationIdentifier,
-        VariableDatumRecord, Vector3Float, WorldCoordinate,
-    },
     enums::{
         AggregateStateAggregateState, AggregateStateFormation, ForceId,
         IsGroupOfGroupedEntityCategory, PduType, ProtocolFamily, RequiredReliabilityService,
         TransferControlTransferType,
     },
     pdu_header::PduHeader,
+    records::{
+        AggregateIdentifier, AggregateMarking, EntityIdentifier, EntityType, EulerAngles,
+        NamedLocationIdentification, RecordSpecification, Relationship, SimulationIdentifier,
+        VariableDatumRecord, Vector, Vector3Float, WorldCoordinates,
+    },
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.8.2
@@ -26,7 +26,7 @@ use crate::common::{
 pub struct AggregateStatePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub aggregate_id: AggregateId,
+    pub aggregate_id: AggregateIdentifier,
     pub force_id: ForceId,
     pub aggregate_state: AggregateStateAggregateState,
     pub aggregate_type: EntityType,
@@ -34,8 +34,8 @@ pub struct AggregateStatePdu {
     pub aggregate_marking: AggregateMarking,
     pub dimensions: Vector3Float,
     pub orientation: EulerAngles,
-    pub center_of_mass: WorldCoordinate,
-    pub velocity: LinearVelocity,
+    pub center_of_mass: WorldCoordinates,
+    pub velocity: Vector,
     #[deku(
         update = "self.aggregate_id_list.len()",
         assert = "crate::common::wire::fits_in_pdu(*number_of_dis_aggregates)"
@@ -57,9 +57,9 @@ pub struct AggregateStatePdu {
     )]
     pub number_of_silent_entity_types: u16,
     #[deku(count = "number_of_dis_aggregates")]
-    pub aggregate_id_list: Vec<AggregateId>,
+    pub aggregate_id_list: Vec<AggregateIdentifier>,
     #[deku(count = "number_of_dis_entities")]
-    pub entity_id_list: Vec<EntityId>,
+    pub entity_id_list: Vec<EntityIdentifier>,
     /// Zero octets that bring the two ID lists to a 32-bit boundary.
     #[deku(
         count = "id_list_padding(usize::from(*number_of_dis_aggregates), usize::from(*number_of_dis_entities))",
@@ -91,7 +91,7 @@ crate::common::pdu::impl_pdu!(
 pub struct IsGroupOfPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub group_entity_id: EntityId,
+    pub group_entity_id: EntityIdentifier,
     pub grouped_entity_category: IsGroupOfGroupedEntityCategory,
     #[deku(update = "self.grouped_entity_descriptions.len()")]
     pub number_of_grouped_entities: u8,
@@ -119,7 +119,7 @@ pub struct TransferOwnershipPdu {
     pub request_id: u32,
     pub required_reliability_service: RequiredReliabilityService,
     pub transfer_type: TransferControlTransferType,
-    pub transfer_entity_id: EntityId,
+    pub transfer_entity_id: EntityIdentifier,
     pub record_information: RecordSpecification,
 }
 crate::common::pdu::impl_pdu!(
@@ -135,11 +135,11 @@ crate::common::pdu::impl_pdu!(
 pub struct IsPartOfPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub relationship: Relationship,
     pub part_location: Vector3Float,
-    pub named_location_id: NamedLocation,
+    pub named_location_id: NamedLocationIdentification,
     pub part_entity_type: EntityType,
 }
 crate::common::pdu::impl_pdu!(

@@ -4,8 +4,8 @@
 //     Licensed under the BSD-2-Clause License
 
 use crate::common::{
-    data_types::{EntityCoordinateVector, EventId},
     enums::{ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor},
+    records::{EventIdentifier, Vector},
 };
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -18,14 +18,14 @@ pub struct DirectedEnergyDamage {
     pub record_type: u32,
     pub record_length: u16,
     padding: u16,
-    pub damage_location: EntityCoordinateVector,
+    pub damage_location: Vector,
     pub damage_diameter: f32,
     pub temperature: f32,
     pub component_identification: ComponentIdentification,
     pub component_damage_status: ComponentDamageStatus,
     pub component_visual_damage_status: u8, // TODO(cameron): implement ComponentVisualDamageStatus record
     pub component_visual_smoke_color: ComponentVisualSmokeColor,
-    pub fire_event_id: EventId,
+    pub fire_event_id: EventIdentifier,
     padding2: u16,
 }
 
@@ -35,14 +35,14 @@ impl DirectedEnergyDamage {
     pub const fn new(
         record_type: u32,
         record_length: u16,
-        damage_location: EntityCoordinateVector,
+        damage_location: Vector,
         damage_diameter: f32,
         temperature: f32,
         component_identification: ComponentIdentification,
         component_damage_status: ComponentDamageStatus,
         component_visual_damage_status: u8,
         component_visual_smoke_color: ComponentVisualSmokeColor,
-        fire_event_id: EventId,
+        fire_event_id: EventIdentifier,
     ) -> Self {
         Self {
             record_type,

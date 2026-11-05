@@ -10,8 +10,6 @@ use crate::common::{
 };
 
 pub trait GenericHeader: Sized {
-    const LENGTH: usize = 12;
-
     fn pdu_type(&self) -> PduType;
 
     fn protocol_family(&self) -> ProtocolFamily;

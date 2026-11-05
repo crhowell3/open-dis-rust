@@ -3,7 +3,7 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::data_types::fixed_binary_8::FixedBinary8;
+use crate::common::records::fixed_binary_8::FixedBinary8;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(

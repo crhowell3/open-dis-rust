@@ -6,12 +6,12 @@
 //! The Logistics protocol family
 
 use crate::common::{
-    data_types::{EntityId, SupplyQuantity},
     enums::{
         PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
         ServiceRequestServiceTypeRequested,
     },
     pdu_header::PduHeader,
+    records::{EntityIdentifier, SupplyQuantity},
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.4.2
@@ -20,8 +20,8 @@ use crate::common::{
 pub struct ServiceRequestPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub servicing_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub servicing_entity_id: EntityIdentifier,
     pub service_type_requested: ServiceRequestServiceTypeRequested,
     #[deku(update = "self.supplies.len()")]
     pub number_of_supply_types: u8,
@@ -42,8 +42,8 @@ crate::common::pdu::impl_pdu!(
 pub struct ResupplyOfferPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub supplying_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub supplying_entity_id: EntityIdentifier,
     #[deku(update = "self.supplies.len()")]
     pub number_of_supply_types: u8,
     padding: u8,
@@ -64,8 +64,8 @@ crate::common::pdu::impl_pdu!(
 pub struct ResupplyReceivedPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub supplying_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub supplying_entity_id: EntityIdentifier,
     #[deku(update = "self.supplies.len()")]
     pub number_of_supply_types: u8,
     padding: u8,
@@ -86,8 +86,8 @@ crate::common::pdu::impl_pdu!(
 pub struct ResupplyCancelPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub supplying_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub supplying_entity_id: EntityIdentifier,
 }
 crate::common::pdu::impl_pdu!(
     ResupplyCancelPdu,
@@ -102,8 +102,8 @@ crate::common::pdu::impl_pdu!(
 pub struct RepairCompletePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub repairing_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub repairing_entity_id: EntityIdentifier,
     pub repair: RepairCompleteRepair,
     padding: u16,
 }
@@ -120,8 +120,8 @@ crate::common::pdu::impl_pdu!(
 pub struct RepairResponsePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub repairing_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub repairing_entity_id: EntityIdentifier,
     pub repair_result: RepairResponseRepairResult,
     padding: u8,
     padding2: u16,

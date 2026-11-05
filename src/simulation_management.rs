@@ -8,9 +8,9 @@
 
 use crate::common::enums::{ActionResponseRequestStatus, EventType, FrozenBehavior, Reason};
 use crate::common::{
-    data_types::{ClockTime, EntityId, FixedDatumRecord, VariableDatumRecord},
     enums::{AcknowledgeFlag, AcknowledgeResponseFlag, PduType, ProtocolFamily},
     pdu_header::PduHeader,
+    records::{ClockTime, EntityIdentifier, FixedDatumRecord, VariableDatumRecord},
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.5.2
@@ -19,8 +19,8 @@ use crate::common::{
 pub struct CreateEntityPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
 }
 crate::common::pdu::impl_pdu!(
@@ -36,8 +36,8 @@ crate::common::pdu::impl_pdu!(
 pub struct RemoveEntityPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
 }
 crate::common::pdu::impl_pdu!(
@@ -53,8 +53,8 @@ crate::common::pdu::impl_pdu!(
 pub struct StartResumePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub real_world_time: ClockTime,
     pub simulation_time: ClockTime,
     pub request_id: u32,
@@ -72,8 +72,8 @@ crate::common::pdu::impl_pdu!(
 pub struct StopFreezePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub real_world_time: ClockTime,
     pub reason: Reason,
     pub frozen_behavior: FrozenBehavior,
@@ -93,8 +93,8 @@ crate::common::pdu::impl_pdu!(
 pub struct AcknowledgePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub acknowledge_flag: AcknowledgeFlag,
     pub response_flag: AcknowledgeResponseFlag,
     pub request_id: u32,
@@ -112,8 +112,8 @@ crate::common::pdu::impl_pdu!(
 pub struct ActionRequestPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub action_id: u32,
     #[deku(
@@ -144,8 +144,8 @@ crate::common::pdu::impl_pdu!(
 pub struct ActionResponsePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub request_status: ActionResponseRequestStatus,
     #[deku(
@@ -176,8 +176,8 @@ crate::common::pdu::impl_pdu!(
 pub struct DataQueryPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub time_interval: u32,
     #[deku(
@@ -208,8 +208,8 @@ crate::common::pdu::impl_pdu!(
 pub struct SetDataPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     padding: u32,
     #[deku(
@@ -240,8 +240,8 @@ crate::common::pdu::impl_pdu!(
 pub struct DataPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     padding: u32,
     #[deku(
@@ -272,8 +272,8 @@ crate::common::pdu::impl_pdu!(
 pub struct EventReportPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub event_type: EventType,
     padding: u32,
     #[deku(
@@ -304,8 +304,8 @@ crate::common::pdu::impl_pdu!(
 pub struct CommentPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     #[deku(
         update = "self.fixed_datum_records.len()",
         assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"

@@ -7,15 +7,15 @@
 //! The Simulation Management with Reliability (SIMAN-R) protocol family
 
 use crate::common::{
-    data_types::{
-        ClockTime, EntityId, RecordSpecification, {FixedDatumRecord, VariableDatumRecord},
-    },
     enums::{
         AcknowledgeFlag, AcknowledgeResponseFlag, ActionResponseRequestStatus, EventType,
         FrozenBehavior, PduType, ProtocolFamily, Reason, RecordQueryREventType, RecordREventType,
         RequiredReliabilityService, VariableRecordTypes,
     },
     pdu_header::PduHeader,
+    records::{
+        ClockTime, EntityIdentifier, RecordSpecification, {FixedDatumRecord, VariableDatumRecord},
+    },
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.11.2
@@ -24,8 +24,8 @@ use crate::common::{
 pub struct CreateEntityReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub required_reliability_service: RequiredReliabilityService,
     padding: u8,
     padding2: u16,
@@ -44,8 +44,8 @@ crate::common::pdu::impl_pdu!(
 pub struct RemoveEntityReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub required_reliability_service: RequiredReliabilityService,
     padding: u8,
     padding2: u16,
@@ -64,8 +64,8 @@ crate::common::pdu::impl_pdu!(
 pub struct StartResumeReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub real_world_time: ClockTime,
     pub simulation_time: ClockTime,
     pub required_reliability_service: RequiredReliabilityService,
@@ -86,8 +86,8 @@ crate::common::pdu::impl_pdu!(
 pub struct StopFreezeReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub real_world_time: ClockTime,
     pub reason: Reason,
     pub frozen_behavior: FrozenBehavior,
@@ -108,8 +108,8 @@ crate::common::pdu::impl_pdu!(
 pub struct AcknowledgeReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub acknowledge_flag: AcknowledgeFlag,
     pub response_flag: AcknowledgeResponseFlag,
     pub request_id: u32,
@@ -127,8 +127,8 @@ crate::common::pdu::impl_pdu!(
 pub struct ActionRequestReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub required_reliability_service: RequiredReliabilityService,
     padding: u8,
     padding2: u16,
@@ -163,8 +163,8 @@ crate::common::pdu::impl_pdu!(
 pub struct ActionResponseReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub request_status: ActionResponseRequestStatus,
     #[deku(
@@ -195,8 +195,8 @@ crate::common::pdu::impl_pdu!(
 pub struct DataQueryReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub required_reliability_service: RequiredReliabilityService,
     padding: u8,
     padding2: u16,
@@ -230,8 +230,8 @@ crate::common::pdu::impl_pdu!(
 pub struct SetDataReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub required_reliability_service: RequiredReliabilityService,
     padding: u8,
     padding2: u16,
@@ -264,8 +264,8 @@ crate::common::pdu::impl_pdu!(
 pub struct DataReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub required_reliability_service: RequiredReliabilityService,
     padding: u8,
@@ -298,8 +298,8 @@ crate::common::pdu::impl_pdu!(
 pub struct EventReportReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub event_type: EventType,
     padding: u32,
     #[deku(
@@ -330,8 +330,8 @@ crate::common::pdu::impl_pdu!(
 pub struct CommentReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     #[deku(
         update = "self.fixed_datum_records.len()",
         assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
@@ -360,8 +360,8 @@ crate::common::pdu::impl_pdu!(
 pub struct RecordQueryReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub required_reliability_service: RequiredReliabilityService,
     padding: u8,
@@ -388,8 +388,8 @@ crate::common::pdu::impl_pdu!(
 pub struct SetRecordReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub required_reliability_service: RequiredReliabilityService,
     padding: u8,
@@ -410,8 +410,8 @@ crate::common::pdu::impl_pdu!(
 pub struct RecordReliablePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub required_reliability_service: RequiredReliabilityService,
     padding: u8,

@@ -4,7 +4,7 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use crate::common::data_types::fixed_binary_16::FixedBinary16;
+use crate::common::records::fixed_binary_16::FixedBinary16;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(

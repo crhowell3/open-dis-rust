@@ -5,10 +5,8 @@
 //     Licensed under the BSD 2-Clause License
 
 use crate::common::{
-    data_types::{
-        angular_velocity_vector::AngularVelocity, linear_acceleration::LinearAcceleration,
-    },
     enums::DeadReckoningAlgorithm,
+    records::{angular_velocity_vector::AngularVelocityVector, vector::Vector},
 };
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -20,16 +18,16 @@ use crate::common::{
 pub struct DeadReckoningParameters {
     pub dead_reckoning_algorithm: DeadReckoningAlgorithm,
     pub dead_reckoning_other_parameters: [u8; 15],
-    pub entity_linear_acceleration: LinearAcceleration,
-    pub entity_angular_velocity: AngularVelocity,
+    pub entity_linear_acceleration: Vector,
+    pub entity_angular_velocity: AngularVelocityVector,
 }
 
 impl DeadReckoningParameters {
     #[must_use]
     pub const fn new(
         dead_reckoning_algorithm: DeadReckoningAlgorithm,
-        entity_linear_acceleration: LinearAcceleration,
-        entity_angular_velocity: AngularVelocity,
+        entity_linear_acceleration: Vector,
+        entity_angular_velocity: AngularVelocityVector,
     ) -> Self {
         Self {
             dead_reckoning_algorithm,

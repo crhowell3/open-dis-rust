@@ -3,7 +3,7 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::data_types::vector3_float::Vector3Float;
+use crate::common::records::vector3_float::Vector3Float;
 
 use super::{acoustic_beam_data::AcousticBeamData, acoustic_emitter_system::AcousticEmitterSystem};
 
@@ -16,7 +16,7 @@ use super::{acoustic_beam_data::AcousticBeamData, acoustic_emitter_system::Acous
 pub struct AcousticEmitterSystemData {
     pub emitter_system_data_length: u8,
     #[deku(update = "self.beam_records.len()")]
-    pub(crate) number_of_beams: u8,
+    pub number_of_beams: u8,
     pub pad2: u16,
     pub acoustic_emitter_system: AcousticEmitterSystem,
     pub emitter_location: Vector3Float,

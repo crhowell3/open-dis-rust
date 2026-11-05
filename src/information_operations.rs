@@ -7,12 +7,12 @@
 //! The Information Operations protocol family
 
 use crate::common::{
-    data_types::{EntityId, SimulationIdentifier, StandardVariableSpecification},
     enums::{
         IOActionIOActionPhase, IOActionIOActionType, IOActionIOSimulationSource,
         IOActionIOWarfareType, IOReportIOReportType, PduType, ProtocolFamily,
     },
     pdu_header::PduHeader,
+    records::{EntityIdentifier, SimulationIdentifier, StandardVariableSpecification},
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.12.3
@@ -25,8 +25,8 @@ pub struct InformationOperationsReportPdu {
     pub io_simulation_source: IOActionIOSimulationSource,
     pub io_report_type: IOReportIOReportType,
     padding: u8,
-    pub io_attacker_entity_id: EntityId,
-    pub primary_target_entity_id: EntityId,
+    pub io_attacker_entity_id: EntityIdentifier,
+    pub primary_target_entity_id: EntityIdentifier,
     padding2: u16,
     padding3: u16,
     pub io_records: StandardVariableSpecification,
@@ -52,8 +52,8 @@ pub struct InformationOperationsActionPdu {
     pub io_action_type: IOActionIOActionType,
     pub io_action_phase: IOActionIOActionPhase,
     padding: u32,
-    pub io_attacker_entity_id: EntityId,
-    pub io_primary_target_entity_id: EntityId,
+    pub io_attacker_entity_id: EntityIdentifier,
+    pub io_primary_target_entity_id: EntityIdentifier,
     padding2: u16,
     pub io_records: StandardVariableSpecification,
 }

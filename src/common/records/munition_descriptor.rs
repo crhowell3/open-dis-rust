@@ -3,7 +3,7 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use super::simulation_address::SimulationAddress;
+use crate::common::records::entity_type::EntityType;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -11,21 +11,30 @@ use super::simulation_address::SimulationAddress;
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct EventId {
-    pub simulation_address: SimulationAddress,
-    pub event_identifier: u16,
+pub struct MunitionDescriptor {
+    pub munition_type: EntityType,
+    pub warhead: u16,
+    pub fuse: u16,
+    pub quantity: u16,
+    pub rate: u16,
 }
 
-impl EventId {
+impl MunitionDescriptor {
     #[must_use]
     pub const fn new(
-        site_identifier: u16,
-        application_identifier: u16,
-        event_identifier: u16,
+        munition_type: EntityType,
+        warhead: u16,
+        fuse: u16,
+        quantity: u16,
+        rate: u16,
     ) -> Self {
         Self {
-            simulation_address: SimulationAddress::new(site_identifier, application_identifier),
-            event_identifier,
+            munition_type,
+            warhead,
+            fuse,
+            quantity,
+            rate,
         }
     }
 }
+
