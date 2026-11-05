@@ -36,7 +36,9 @@ The first official release of open-dis-rust!
   `impl_u8_flag_fields!`. Define PDUs as structs deriving `deku::DekuRead` and `deku::DekuWrite` with `impl_pdu!`
   - `pdu_tests!` is unaffected
 - The `serialize`/`deserialize` methods on records: use `common::wire::write` and `common::wire::read`
-- The `byte` dependency
+- The `byte` and `chrono` dependencies
+- `PduHeader::calculate_dis_timestamp` and `LiveEntityPduHeader::calculate_dis_timestamp`: use `Timestamp::now()` instead
+- The `SerializedLength` trait. Every PDU header is 12 octets: use `constants::PDU_HEADER_SIZE` which is also in the prelude
 - The `deserialize` methods on enums, which turned undefined values into defaults
 - The unused `PduBody` trait 
 
