@@ -14,7 +14,6 @@ keywords = ["DIS", "IEEE", "Simulation"]
 [dependencies]
 approx = "0.5.1"
 bitflags = "2.5.0"
-chrono = "0.4.31"
 deku = "0.20.3"
 modular-bitfield = "0.13.0"
 num-derive = "0.4.1"
