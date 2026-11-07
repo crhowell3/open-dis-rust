@@ -464,7 +464,7 @@ fn deku_matches_from_primitive_for_every_enum() {
     check_u16::<GriddedDataCoordinateSystem>(GriddedDataCoordinateSystem::from_u16);
     check_u8::<GriddedDataConstantGrid>(GriddedDataConstantGrid::from_u8);
     check_u16::<GriddedDataSampleType>(GriddedDataSampleType::from_u16);
-    check_u8::<GriddedDataDataRepresentation>(GriddedDataDataRepresentation::from_u8);
+    check_u16::<GriddedDataDataRepresentation>(GriddedDataDataRepresentation::from_u16);
     check_u8::<EnvironmentalProcessModelType>(EnvironmentalProcessModelType::from_u8);
     check_u32::<EnvironmentalProcessRecordType>(
         &[

@@ -8265,7 +8265,7 @@ pub enum GriddedDataDataRepresentation {
     Type2 = 2,
 }
 
-impl_deku_enum!(GriddedDataDataRepresentation, u8, from_u8);
+impl_deku_enum!(GriddedDataDataRepresentation, u16, from_u16);
 
 // SISO-REF-010-2023 EnvironmentalProcessModelType [UID 248]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
