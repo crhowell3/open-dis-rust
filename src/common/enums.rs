@@ -8254,7 +8254,7 @@ pub enum GriddedDataSampleType {
     NotSpecified = 0,
 }
 
-impl_deku_enum!(GriddedDataSampleType, u8, from_u8);
+impl_deku_enum!(GriddedDataSampleType, u16, from_u16);
 
 // SISO-REF-010-2023 GriddedDataDataRepresentation [UID 247]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]

@@ -1319,7 +1319,7 @@ const ABSOLUTE_BIT: u32 = 1;
 ///
 /// ```
 /// use std::time::Duration;
-/// use open_dis_rust::common::Timestamp;
+/// use open_dis_rust::common::records::Timestamp;
 ///
 /// let start = Timestamp::absolute(Duration::from_secs(3599)); // 59:59
 /// let later = Timestamp::absolute(Duration::from_secs(1));    // 00:01, in the next hour
