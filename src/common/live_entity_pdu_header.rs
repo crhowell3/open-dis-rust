@@ -4,16 +4,11 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BytesMut};
-use chrono::{DateTime, Timelike, Utc};
-
 use crate::common::{
-    GenericHeader, SerializedLength,
+    GenericHeader,
     enums::{DISLiveEntitySubprotocolNumber, PduType, ProtocolFamily, ProtocolVersion},
+    records::Timestamp,
 };
-
-const MICROS_PER_HOUR: u64 = 3_600_000_000;
-const DIS_UNITS_PER_HOUR: u64 = 2_147_483_648;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -26,14 +21,17 @@ pub struct LiveEntityPduHeader {
     pub protocol_version: ProtocolVersion,
     /// Exercise ID
     pub exercise_id: u8,
-    /// Type of PDU, unique for each PDU class
-    pub pdu_type: PduType,
-    /// Value that refers to the protocol family
-    pub protocol_family: ProtocolFamily,
-    /// Timestamp value
-    pub timestamp: u32,
-    /// Length, in bytes, of the PDU
-    pub length: u16,
+    /// Type of PDU set from the PDU when it is encoded. Read it with
+    /// [`GenericHeader::pdu_type`].
+    pub(crate) pdu_type: PduType,
+    /// Protocol family set from the PDU when it is encoded. Read it with
+    /// [`GenericHeader::protocol_family`].
+    pub(crate) protocol_family: ProtocolFamily,
+    /// When the data in the PDU was valid. New headers use [`Timestamp::now`].
+    pub timestamp: Timestamp,
+    /// Length of the PDU in octets, including the header. This value is set
+    /// upon encoding. Read it with [`GenericHeader::length`].
+    pub(crate) length: u16,
     /// The subprotocol to be used to decode the PDU
     pub subprotocol_number: DISLiveEntitySubprotocolNumber,
     /// Padded so that this header maintains the same length as the PDU Header
@@ -47,7 +45,7 @@ impl Default for LiveEntityPduHeader {
             exercise_id: 1,
             pdu_type: PduType::default(),
             protocol_family: ProtocolFamily::default(),
-            timestamp: Self::calculate_dis_timestamp(),
+            timestamp: Timestamp::now(),
             length: 0,
             subprotocol_number: DISLiveEntitySubprotocolNumber::default(),
             padding: 0,
@@ -60,80 +58,43 @@ impl GenericHeader for LiveEntityPduHeader {
         self.pdu_type
     }
 
-    fn set_pdu_type(&mut self, value: PduType) {
-        self.pdu_type = value;
-    }
-
     fn protocol_family(&self) -> ProtocolFamily {
         self.protocol_family
-    }
-
-    fn set_protocol_family(&mut self, value: ProtocolFamily) {
-        self.protocol_family = value;
     }
 
     fn length(&self) -> u16 {
         self.length
     }
 
-    fn set_length(&mut self, value: u16) {
-        self.length = value;
-    }
-
-    fn serialize(&self, buf: &mut BytesMut) {
+    fn serialize(&self, buf: &mut Vec<u8>) {
         let _ = crate::common::wire::write(self, buf);
     }
 
-    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, crate::common::DISError> {
-        Ok(crate::common::wire::read(buf)?)
+    fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::common::DISError> {
+        crate::common::wire::read(buf).map_err(crate::common::DISError::from_wire)
     }
-}
-
-fn micros_past_hour(now: &DateTime<Utc>) -> Option<u64> {
-    u64::from(now.minute())
-        .checked_mul(60_000_000)?
-        .checked_add(u64::from(now.second()).checked_mul(1_000_000)?)?
-        .checked_add(u64::from(now.timestamp_subsec_micros()))
 }
 
 impl LiveEntityPduHeader {
     #[must_use]
-    pub fn new(
-        pdu_type: PduType,
-        protocol_family: ProtocolFamily,
-        exercise_id: u8,
-        length: u16,
-    ) -> Self {
+    pub fn new(exercise_id: u8) -> Self {
         Self {
-            protocol_version: ProtocolVersion::IEEE1278_1_2012,
             exercise_id,
-            pdu_type,
-            protocol_family,
-            timestamp: Self::calculate_dis_timestamp(),
-            length,
-            ..Default::default()
+            ..Self::default()
         }
-    }
-
-    /// Gets the current time in terms of IEEE-1278.1 DIS time units
-    #[must_use]
-    #[allow(
-        clippy::cast_precision_loss,
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss
-    )]
-    pub fn calculate_dis_timestamp() -> u32 {
-        let now = Utc::now();
-
-        micros_past_hour(&now)
-            .and_then(|us| us.checked_mul(DIS_UNITS_PER_HOUR))
-            .and_then(|v| v.checked_div(MICROS_PER_HOUR))
-            .and_then(|v| u32::try_from(v).ok())
-            .and_then(|v| v.checked_mul(2))
-            .map_or(u32::MAX, |v| v | 1)
     }
 }
 
-impl SerializedLength for LiveEntityPduHeader {
-    const LENGTH: usize = 12;
+impl crate::common::generic_header::SetDerivedFields for LiveEntityPduHeader {
+    fn set_pdu_type(&mut self, value: PduType) {
+        self.pdu_type = value;
+    }
+
+    fn set_protocol_family(&mut self, value: ProtocolFamily) {
+        self.protocol_family = value;
+    }
+
+    fn set_length(&mut self, value: u16) {
+        self.length = value;
+    }
 }

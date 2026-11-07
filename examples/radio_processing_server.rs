@@ -9,11 +9,11 @@ use std::error::Error;
 use std::net::SocketAddr;
 use std::{env, io};
 use tokio::net::UdpSocket;
-use bytes::BytesMut;
+
 use open_dis_rust::{
-    common::{pdu::Pdu, pdu_header::PduHeader, enums::PduType},
+    common::{enums::PduType, pdu::Pdu, pdu_header::PduHeader},
     radio_communications::{
-        TransmitterPdu, SignalPdu, ReceiverPdu, IntercomSignalPdu, IntercomControlPdu,
+        IntercomControlPdu, IntercomSignalPdu, ReceiverPdu, SignalPdu, TransmitterPdu,
     },
 };
 
@@ -27,14 +27,22 @@ enum ParsedPdu {
 
 fn deserialize_pdu(bytes: &[u8]) -> Option<ParsedPdu> {
     let pdu_type = PduHeader::get_pdu_type(bytes)?;
-    let mut buf = BytesMut::from(bytes);
+    let mut buf = bytes;
 
     match pdu_type {
-        PduType::Transmitter     => TransmitterPdu::deserialize(&mut buf).ok().map(ParsedPdu::Transmitter),
-        PduType::Signal          => SignalPdu::deserialize(&mut buf).ok().map(ParsedPdu::Signal),
-        PduType::Receiver        => ReceiverPdu::deserialize(&mut buf).ok().map(ParsedPdu::Receiver),
-        PduType::IntercomSignal  => IntercomSignalPdu::deserialize(&mut buf).ok().map(ParsedPdu::IntercomSignal),
-        PduType::IntercomControl => IntercomControlPdu::deserialize(&mut buf).ok().map(ParsedPdu::IntercomControl),
+        PduType::Transmitter => TransmitterPdu::deserialize(&mut buf)
+            .ok()
+            .map(ParsedPdu::Transmitter),
+        PduType::Signal => SignalPdu::deserialize(&mut buf).ok().map(ParsedPdu::Signal),
+        PduType::Receiver => ReceiverPdu::deserialize(&mut buf)
+            .ok()
+            .map(ParsedPdu::Receiver),
+        PduType::IntercomSignal => IntercomSignalPdu::deserialize(&mut buf)
+            .ok()
+            .map(ParsedPdu::IntercomSignal),
+        PduType::IntercomControl => IntercomControlPdu::deserialize(&mut buf)
+            .ok()
+            .map(ParsedPdu::IntercomControl),
         _ => None,
     }
 }
@@ -55,26 +63,36 @@ impl Server {
 
         loop {
             if let Some((size, peer)) = to_send {
-                match deserialize_pdu(&buf[..size]) {
+                match deserialize_pdu(&buf.get(..size).unwrap_or_default()) {
                     Some(ParsedPdu::Transmitter(p)) => {
-                        println!("Transmitter from {peer}: entity={:?} freq={} state={:?}",
-                            p.entity_id, p.frequency, p.transmit_state);
+                        println!(
+                            "Transmitter from {peer}: entity={:?} freq={} state={:?}",
+                            p.entity_id, p.frequency, p.transmit_state
+                        );
                     }
                     Some(ParsedPdu::Signal(p)) => {
-                        println!("Signal from {peer}: entity={:?} samples={} data_length={}",
-                            p.entity_id, p.samples, p.data_length);
+                        println!(
+                            "Signal from {peer}: entity={:?} samples={} data_length={}",
+                            p.entity_id, p.samples, p.data_length
+                        );
                     }
                     Some(ParsedPdu::Receiver(p)) => {
-                        println!("Receiver from {peer}: entity={:?} state={:?} power={}",
-                            p.entity_id, p.receiver_state, p.received_power);
+                        println!(
+                            "Receiver from {peer}: entity={:?} state={:?} power={}",
+                            p.entity_id, p.receiver_state, p.received_power
+                        );
                     }
                     Some(ParsedPdu::IntercomSignal(p)) => {
-                        println!("IntercomSignal from {peer}: intercom={:?} samples={}",
-                            p.intercom_reference_id, p.samples);
+                        println!(
+                            "IntercomSignal from {peer}: intercom={:?} samples={}",
+                            p.intercom_reference_id, p.samples
+                        );
                     }
                     Some(ParsedPdu::IntercomControl(p)) => {
-                        println!("IntercomControl from {peer}: intercom={:?} command={:?} transmit_state={:?}",
-                            p.source_intercom_reference_id, p.command, p.transmit_line_state);
+                        println!(
+                            "IntercomControl from {peer}: intercom={:?} command={:?} transmit_state={:?}",
+                            p.source_intercom_reference_id, p.command, p.transmit_line_state
+                        );
                     }
                     None => {
                         println!("Unknown or non-radio PDU ({size} bytes) from {peer}");

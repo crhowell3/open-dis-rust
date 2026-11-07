@@ -35,8 +35,9 @@ The bytes do not form a valid PDU. This is the most common decoding error. It ha
   PDU wire format error: VariableDatumRecord: 16 bits needs 2 octets, but value has 3
 ```
 
-This variant wraps the underlying `deku::DekuError`. Match on `WireFormat(_)` rather than on the 
-inner error type because its type may change in a future release.
+The variant holds a `WireFormatError`, whose message describes the problem. The
+error from the crate's internal encoding library isn't exposed, so match on
+`WireFormat(_)` and use the message.
 
 ### `InvalidHeader`
 

@@ -11,8 +11,7 @@ let mut pdu = EntityStatePdu::new();
 pdu.entity_id = EntityId::new(1, 1, 1);
 pdu.force_id = ForceId::Friendly;
 
-let mut bytes = BytesMut::new();
-pdu.serialize(&mut bytes)?;
+let bytes: Vec<u8> = pdu.to_bytes()?; // ready to send over UDP
 ```
 
 ## What is DIS?

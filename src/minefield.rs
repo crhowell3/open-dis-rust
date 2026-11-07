@@ -17,11 +17,12 @@ use deku::{
 
 use crate::common::{
     PduHeader,
-    data_types::{
-        ClockTime, EntityCoordinateVector, EntityId, EntityType, EulerAngles, MinefieldIdentifier,
-        Point, WorldCoordinate,
-    },
+    data_types::point::Point,
     enums::{ForceId, MinefieldStateProtocolMode, PduType, ProtocolFamily},
+    records::{
+        ClockTime, EntityIdentifier, EntityType, EulerAngles, MinefieldIdentifier, Vector,
+        WorldCoordinates,
+    },
     wire,
 };
 
@@ -42,7 +43,7 @@ pub struct MinefieldStatePdu {
         assert = "crate::common::wire::fits_in_pdu(*number_of_mine_types)"
     )]
     pub number_of_mine_types: u16,
-    pub minefield_location: WorldCoordinate,
+    pub minefield_location: WorldCoordinates,
     pub minefield_orientation: EulerAngles,
     pub appearance: u16,
     pub protocol_mode: MinefieldStateProtocolMode,
@@ -51,7 +52,7 @@ pub struct MinefieldStatePdu {
     #[deku(count = "number_of_mine_types")]
     pub mine_type: Vec<EntityType>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     MinefieldStatePdu,
     PduHeader,
     PduType::MinefieldState,
@@ -65,7 +66,7 @@ pub struct MinefieldQueryPdu {
     #[deku(skip)]
     header: PduHeader,
     pub minefield_id: MinefieldIdentifier,
-    pub requesting_entity_id: EntityId,
+    pub requesting_entity_id: EntityIdentifier,
     pub request_id: u8,
     #[deku(update = "self.requested_perimeter_points.len()")]
     pub number_of_perimeter_points: u8,
@@ -84,7 +85,7 @@ pub struct MinefieldQueryPdu {
     )]
     pub sensor_types: Vec<u16>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     MinefieldQueryPdu,
     PduHeader,
     PduType::MinefieldQuery,
@@ -104,7 +105,7 @@ pub struct MinefieldDataPdu {
     #[deku(skip)]
     header: PduHeader,
     pub minefield_id: MinefieldIdentifier,
-    pub requesting_entity_id: EntityId,
+    pub requesting_entity_id: EntityIdentifier,
     pub minefield_sequence_number: u16,
     pub request_id: u8,
     pub pdu_sequence_number: u8,
@@ -133,7 +134,7 @@ pub struct MinefieldDataPdu {
     )]
     pub mines: Vec<Mine>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     MinefieldDataPdu,
     PduHeader,
     PduType::MinefieldData,
@@ -165,7 +166,7 @@ crate::common::enums::impl_deku_bitflags!(MinefieldDataFilter, u32);
 /// every mine in the PDU or on none.
 #[derive(Debug, Default, Clone)]
 pub struct Mine {
-    pub location: EntityCoordinateVector,
+    pub location: Vector,
     /// Required when the water or snow burial depth offset is sent.
     pub ground_burial_depth_offset: Option<f32>,
     pub water_burial_depth_offset: Option<f32>,
@@ -183,7 +184,7 @@ pub struct Mine {
     /// SISO-REF-010 UID 202, an 8-bit record.
     pub paint_scheme: Option<u8>,
     /// Each trip/detonation wire's vertices, in order.
-    pub trip_wires: Option<Vec<Vec<EntityCoordinateVector>>>,
+    pub trip_wires: Option<Vec<Vec<Vector>>>,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §7.9.5
@@ -192,15 +193,15 @@ pub struct Mine {
 pub struct MinefieldResponseNackPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub minefield_id: EntityId,
-    pub requesting_entity_id: EntityId,
+    pub minefield_id: EntityIdentifier,
+    pub requesting_entity_id: EntityIdentifier,
     pub request_id: u8,
     #[deku(update = "self.missing_pdu_sequence_numbers.len()")]
     pub number_of_missing_pdus: u8,
     #[deku(count = "number_of_missing_pdus")]
     pub missing_pdu_sequence_numbers: Vec<u64>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     MinefieldResponseNackPdu,
     PduHeader,
     PduType::MinefieldResponseNack,
@@ -388,7 +389,7 @@ fn read_mines<R: Read + Seek>(
     filter: MinefieldDataFilter,
 ) -> Result<Vec<Mine>, DekuError> {
     use MinefieldDataFilter as F;
-    let mut mines: Vec<Mine> = wire::read_n::<EntityCoordinateVector, _>(reader, n, Endian::Big)?
+    let mut mines: Vec<Mine> = wire::read_n::<Vector, _>(reader, n, Endian::Big)?
         .into_iter()
         .map(|location| Mine {
             location,
@@ -636,16 +637,13 @@ fn write_trip_wires<W: Write + Seek>(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

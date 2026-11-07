@@ -3,7 +3,9 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::data_types::fixed_binary_8::FixedBinary8;
+use crate::common::data_types::fixed_binary::FixedBinary8;
+
+pub type LELinearAccelerationComponent = FixedBinary8<0>;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -12,14 +14,18 @@ use crate::common::data_types::fixed_binary_8::FixedBinary8;
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct LEEntityLinearAcceleration {
-    pub first_vector_component: FixedBinary8,
-    pub second_vector_component: FixedBinary8,
-    pub third_vector_component: FixedBinary8,
+    pub first_vector_component: LELinearAccelerationComponent,
+    pub second_vector_component: LELinearAccelerationComponent,
+    pub third_vector_component: LELinearAccelerationComponent,
 }
 
 impl LEEntityLinearAcceleration {
     #[must_use]
-    pub const fn new(x: FixedBinary8, y: FixedBinary8, z: FixedBinary8) -> Self {
+    pub const fn new(
+        x: LELinearAccelerationComponent,
+        y: LELinearAccelerationComponent,
+        z: LELinearAccelerationComponent,
+    ) -> Self {
         Self {
             first_vector_component: x,
             second_vector_component: y,
@@ -27,4 +33,3 @@ impl LEEntityLinearAcceleration {
         }
     }
 }
-

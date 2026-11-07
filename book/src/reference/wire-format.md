@@ -38,19 +38,20 @@ It reads only the header.
 
 ### Timestamps
 
-The tiemstamp counts time since the start of the current hour. Bits 31 to 1 hold the time
+The timestamp counts time since the start of the current hour. Bits 31 to 1 hold the time
 in units of 3600/2³¹ seconds, which is about 1.676 µs. Bit 0 is `1` for an absolute
 timestamp (synchronized to real time) and `0` for a relative.
 
-`PduHeader::calculate_dis_timestamp()` returns an absolute timestamp for the current UTC time.
-`new()` sets it once when you create a PDU, so set it again before each send if you reuse
-a PDU:
+The header's `timestamp` field is a `Timestamp`. `Timestamp::now()` gives an absolute
+timestamp for the current UTC time. `new()` sets it once when you create a PDU, so set it
+again before each send if you reuse a PDU:
 
 ```rust,ignore
-pdu.header_mut().timestamp = PduHeader::calculate_dis_timestamp();
+pdu.header_mut().timestamp = Timestamp::now();
 ```
 
-To send relative timestamps, compute the value yourself and leave bit 0 clear.
+For relative timestamps, use `Timestamp::relative(duration)`. See
+[Timestamps](../concepts/timestamps.md) for the rest of the type.
 
 ### PDU Status
 
@@ -91,7 +92,8 @@ You set the **exercise ID**, the **timestamp**, and the **PDU Status** bits. The
 version defaults to `7`, which represents `IEEE 1278.1-2012`.
 
 `new()` also runs these updates, so a freshly created PDU already has the right length in
-its header.
+its header. Read the header's PDU type, protocol family, and length with the `GenericHeader`
+methods `pdu_type()`, `protocol_family()`, and `length()`.
 
 ## Strings
 
@@ -108,7 +110,7 @@ buffer, so you can decode a bundle in a loop:
 ```rust,ignore
 let mut rest: &[u8] = datagram;
 
-while rest.len() >= PduHeader::length() {
+while rest.len() >= PDU_HEADER_SIZE {
     match PduHeader::get_pdu_type(rest) {
         Some(PduType::EntityState) => {
             let pdu = EntityStatePdu::deserialize(&mut rest)?;
@@ -117,14 +119,16 @@ while rest.len() >= PduHeader::length() {
         _ => {
             // Skip a PDU we do not want to handle, using the length field (octets 8-9)
             let len = rest.get(8..10).map_or(0, |b| usize::from(u16::from_be_bytes([b[0], b[1]])));
-            if len < PduHeader::length() || len > rest.len() {
+            if len < PDU_HEADER_SIZE || len > rest.len() {
                 break; // malformed: drop the rest of the datagram
             }
-            rest = &rest[len..];
+            rest = rest.get(len..).unwrap_or_default();
         }
     }
 }
 ```
+
+`PDU_HEADER_SIZE` (12 octets) is in `common::constants`, which is also re-exported in the prelude.
 
 To send a bundle, serialize each PDU into the same buffer, one after another, and keep
 the total under the network's maximum datagram size.

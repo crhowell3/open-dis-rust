@@ -61,7 +61,6 @@ a comment, so a reviewer can check it against the standard line by line:
 ```rust,ignore
 #![allow(clippy::unwrap_used, reason = "test helpers")]
  
-use bytes::BytesMut;
 use open_dis_rust::{
     common::{
         Pdu,
@@ -96,16 +95,14 @@ fn fixture(s: &str) -> Vec<u8> {
 #[test]
 fn acknowledge_encodes_to_golden_bytes() {
     let mut pdu = AcknowledgePdu::new();
-    pdu.header_mut().timestamp = 0; // fixed, so the bytes are repeatable
+    pdu.header_mut().timestamp = Timestamp::from_raw(0); // fixed, so the bytes are repeatable
     pdu.originating_entity_id = EntityId::new(1, 1, 0);
     pdu.receiving_entity_id = EntityId::new(1, 2, 0);
     pdu.acknowledge_flag = AcknowledgeFlag::CreateEntity;
     pdu.response_flag = AcknowledgeResponseFlag::AbleToComply;
     pdu.request_id = 42;
  
-    let mut bytes = BytesMut::new();
-    pdu.serialize(&mut bytes).unwrap();
-    assert_eq!(bytes.as_ref(), fixture(ACKNOWLEDGE).as_slice());
+    assert_eq!(pdu.to_bytes().unwrap(), fixture(ACKNOWLEDGE));
 }
  
 #[test]
@@ -159,7 +156,7 @@ fuzz_target!(|data: &[u8]| {
     let mut input = data;
     if let Ok(mut pdu) = EntityStatePdu::deserialize(&mut input) {
         let mut out = bytes::BytesMut::new();
-        pdu.serialize(&mut out).expect("a decoded PDU must re-encode");
+        pdu.to_bytes().expect("a decoded PDU must re-encode");
     }
 });
 ```

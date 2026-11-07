@@ -1,34 +1,67 @@
 # Changelog
 
-## [1.0.0] - YYYY-MM-DD
+## [1.0.0] - 2026-11-05
 
 The first official release of open-dis-rust!
 
 ### Added
 
 - Wire encoding through [deku](https://crates.io/crates/deku): enums, PDU headers, and every record is written and read using deku
-- `common::wire` with `read`, `write`, and `encoded_len` for using those types with `bytes` buffers
-  - `read` rejects undefined enum values
-- `DISError::WireFormat` for truncated or malformed input
-- `impl_pdu!` for PDUs defined as plain structs with deku attributes
+  - Decoding rejects undefined enum values
+  - deku is an implementation detail and is not part of the public API
+- `Pdu::to_bytes` method, which encodes a PDU into a new `Vec<u8>`
+- `common::Timestamp`, a type for DIS timestamps, also in the prelude. `Timestamp::now()`, `absolute()` and
+  `relative()` create one; `is_absolute()`, `time_past_hour()` and `duration_since()` read one, and
+  `duration_since()` allows for the hour wrapping around
+- `ClockTime::now()`
+- `tspi_flag()`, `appearance_flags1()`, `appearance_flags2()` and `MinefieldDataPdu::data_filter()`, for reading
+  the flags that encoding derives
+- `DISError::WireFormat` and `WireFormatError` for truncated or malformed input
+- `RecordReliablePdu` (Record-R, PDU type 63), so every PDU type in IEEE 1278.1-2012 is implemented
+- The `prelude` module for importing the most common traits and types
 - `IFFLayer2` and `IFFLayers` for the IFF PDU's layers after `IFFLayer1`
 
 ### Changed
 
+- Renamed `data_types` module to `records` to match more closely with IEEE 1278.1-2012 naming conventions
+- The public API uses standard library types instead of the `bytes` crate, and `bytes` is no longer a direct dependency
+  - `Pdu::serialize` appends to a `&mut Vec<u8>` instead of a `&mut BytesMut`; on error, the buffer is left unchanged
+  - `Pdu::deserialize` and `Pdu::deserialize_without_header` read from a `&mut &[u8]` instead of any `B: Buf`
+  - `GenericHeader::serialize` and `GenericHeader::deserialize` change the same way
+  - `Vec<u8>`, `&[u8]`, `bytes::Bytes` and `bytes::BytesMut` all work: pass `&mut &buf[..]` to decode from any of them
 - `TimeSpacePositionInformationPdu`: the fields after the location are optional as indicated by the TSPI flag specifies. They are `Option`s,
   and `serialize` sets the flag (now `tspi_flag: TspiFlag`, formerly `tspi_flag: u8`) from the fields that are present. A default TSPI PDU
-  is 25 octects
+  is 25 octets
   - `system_specific_data` is now an `Option<Vec<u8>>` and its length is written automatically, so `system_specific_data_length` has been removed
+- Header timestamps and `ClockTime::time_past_hour` are `Timestamp`s instead of `u32`s. Use `Timestamp::now()`
+  where you used `PduHeader::calculate_dis_timestamp()`, and `Timestamp::from_raw()` and `to_raw()` for the wire value
+- Fields that encoding derives are read-only, so they can no longer be set and then silently overwritten:
+  - The header's PDU type, protocol family and length. Read them with `GenericHeader::pdu_type()`,
+    `protocol_family()` and `length()`
+  - Every list count, such as `EntityStatePdu::number_of_articulation_parameters`. Use the list's `len()`
+  - Record and blob lengths, such as `AttributeRecord::record_length` and `TransmitterPdu::antenna_pattern_length`
+  - The TSPI, Appearance and Minefield Data PDUs' flags, and the grid axis type and data representation
+  - The Signal and Intercom Signal PDUs' `data_length` stays writable, because it's in bits
+- `GenericHeader` no longer has `set_pdu_type`, `set_protocol_family` or `set_length`, and `Pdu::finalize` has no
+  default implementation
+- `PduHeader::new` and `LiveEntityPduHeader::new` take only an exercise ID
+- Constructors no longer take derived values: `RecordSpecification::new`, `StandardVariableRecords::new`,
+  `StandardVariableSpecification::new`, `AcousticEmitterSystemData::new`, `GridAxisDescriptor::new` and
+  `GridDataRecord::new`
 - `AppearancePdu`: optional fields are read when their flags are set, and `serialize` sets the flags from the fields that are present
 - `AppearancePdu::capabilities` and `EntityStatePdu::entity_capabilities` are raw `u32` capability bits instead of `EntityCapabilities`
 - `VariableTransmitterParameters::record_type` is `VariableRecordTypes` (UID 66)
+- `RecordREventType` is now a `u16` to match the standard
 
 ### Removed
 
 - The `pdu_macro` module: `FieldSerialize`, `FieldDeserialize`, `FieldLen`, `FieldDeserializeWithLen`, `define_pdu!`, `impl_record_fields!`, and
-  `impl_u8_flag_fields!`. Define PDUs as structs deriving `deku::DekuRead` and `deku::DekuWrite` with `impl_pdu!`
-  - `pdu_tests!` is unaffected
+  `impl_u8_flag_fields!`. PDUs are now defined internally with deku, and the macros that define and test them are
+  private to the crate
 - The `serialize`/`deserialize` methods on records: use `common::wire::write` and `common::wire::read`
+- The `bytes` and `chrono` dependencies
+- `PduHeader::calculate_dis_timestamp` and `LiveEntityPduHeader::calculate_dis_timestamp`: use `Timestamp::now()` instead
+- The `SerializedLength` trait. Every PDU header is 12 octets: use `constants::PDU_HEADER_SIZE` which is also in the prelude
 - The `deserialize` methods on enums, which turned undefined values into defaults
 - The unused `PduBody` trait 
 
@@ -39,7 +72,7 @@ The first official release of open-dis-rust!
 - `DeadReckoningParameters` encodes `dead_reckoning_other_paramters` instead of 15 octets of `0`
 - `SimulationIdentifier` encodes `reference_number` instead of `0`
 - `VariableTransmitterParameters` decodes its record type as 32 bits, matching how it is encoded
-- Counts and lengths read from the wire are checkec against the maximum PDU size before anything is allocated
+- Counts and lengths read from the wire are checked against the maximum PDU size before anything is allocated
 - Decoding a truncated or malformed record no longer panics
 - Lists and optional fields in every PDU now decode instead of coming back empty
 - `AggregateStatePdu` pads its ID lists to a 32-bit boundary according to how many IDs they hold

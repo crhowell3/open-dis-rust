@@ -4,8 +4,6 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use bytes::{Buf, BytesMut};
-
 use crate::common::{
     DISError,
     enums::{PduType, ProtocolFamily},
@@ -13,20 +11,27 @@ use crate::common::{
 
 pub trait GenericHeader: Sized {
     fn pdu_type(&self) -> PduType;
-    fn set_pdu_type(&mut self, value: PduType);
 
     fn protocol_family(&self) -> ProtocolFamily;
-    fn set_protocol_family(&mut self, value: ProtocolFamily);
 
     fn length(&self) -> u16;
-    fn set_length(&mut self, value: u16);
 
-    fn serialize(&self, buf: &mut BytesMut);
+    /// Encodes the header and appends it to `buf`
+    fn serialize(&self, buf: &mut Vec<u8>);
 
-    /// Attempts to deserialize a PDU from the buffer
+    /// Decodes a header from the front of `buf`, advancing `buf`
+    /// past it.
     ///
     /// # Errors
     ///
     /// Will return a `DISError` if deserialization fails
-    fn deserialize<B: Buf>(buf: &mut B) -> Result<Self, DISError>;
+    fn deserialize(buf: &mut &[u8]) -> Result<Self, DISError>;
+}
+
+/// Sets the header fields that encoding derives from the PDU. Private to the crate
+/// so that those fields stay read-only for users.
+pub(crate) trait SetDerivedFields {
+    fn set_pdu_type(&mut self, value: PduType);
+    fn set_protocol_family(&mut self, value: ProtocolFamily);
+    fn set_length(&mut self, value: u16);
 }

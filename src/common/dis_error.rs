@@ -70,10 +70,34 @@ pub enum DISError {
     PduSizeExceeded { size: usize, max_size: usize },
 
     #[error("PDU wire format error: {0}")]
-    WireFormat(#[from] deku::DekuError),
+    WireFormat(WireFormatError),
 }
 
+/// The bytes do not form a valid PDU. This is usually caused by the buffer being
+/// truncated partway through a field, an enumerated field held an undefined value,
+/// or a record's fields were inconsistent.
+///
+/// The message describes what went wrong. The error from the crate's internal
+/// encoding library is deliberately not exposed so that the library can change
+/// without breaking this crate's API.
+#[derive(Debug)]
+pub struct WireFormatError(deku::DekuError);
+
+impl std::fmt::Display for WireFormatError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(&self.0, f)
+    }
+}
+
+impl std::error::Error for WireFormatError {}
+
 impl DISError {
+    /// Wraps an error from the encoding library. Internal: keeps `deku` out of the
+    /// public API, which a `From` impl would set.
+    pub(crate) const fn from_wire(error: deku::DekuError) -> Self {
+        Self::WireFormat(WireFormatError(error))
+    }
+
     /// Create a new `InvalidHeader` error with optional source error
     pub fn invalid_header<S: Into<String>>(
         reason: S,

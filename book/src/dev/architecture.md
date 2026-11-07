@@ -19,7 +19,7 @@ src/
     ├── pdu_header.rs              PduHeader and PduStatusRecord
     ├── live_entity_pdu_header.rs  LiveEntityPduHeader
     ├── generic_header.rs          the GenericHeader trait both headers implement
-    ├── wire.rs                    bridges bytes buffers to deku, plus encoding helpers
+    ├── wire.rs                    bridges byte slices and vectors to deku, plus encoding helpers
     ├── data_types/                the records PDUs are built from, one per file
     ├── live_entity_records/       the compact records used by Live Entity PDUs
     ├── enums.rs                   SISO-REF-010 enumerations
@@ -87,7 +87,7 @@ decode.
 `impl_pdu!` turns a deku struct into a PDU. One line per PDU:
  
 ```rust,ignore
-crate::impl_pdu!(ServiceRequestPdu, PduHeader, PduType::ServiceRequest, ProtocolFamily::Logistics);
+crate::common::pdu::impl_pdu!(ServiceRequestPdu, PduHeader, PduType::ServiceRequest, ProtocolFamily::Logistics);
 ```
 
 It implements the `Pdu` trait and adds a `new()` constructor. The generated methods
@@ -99,9 +99,10 @@ work like this:
 2. Run deku's update rules (`DekuUpdate::update`), which recompute derived fields such
    as counts, lengths and flags from the data. See
    [Derived fields](#derived-fields-and-update-rules).
-3. Encode the body into a temporary buffer.
+3. Append the header and then the body to the caller's `Vec<u8>`.
 4. Compute the total length, header plus body, and fail if it's over 8192 octets.
-5. Write the header with that length, then the body.
+5. Rewrite the header in place with the real length. If any step fails, the vector is truncated
+   back to its original length so callers never see a partial PDU.
 
 **Decoding (`deserialize`):**
  
@@ -111,7 +112,8 @@ work like this:
    shorter.
 4. Decode the body from those octets only, so a bad PDU can't read into the next one.
 5. Fail if any of those octets weren't used.
-6. Attach the header to the decoded body.
+6. Attach the header to the decoded body and advance the caller's slice past the PDU.
+
 `new()` is `Default::default()` plus the PDU type, family and length, so a new PDU is
 always valid to send.
 
@@ -169,6 +171,26 @@ The enumerations in `enums.rs` take three forms:
   `PduStatusRecord`.
 
 [Updating Enumerations](enumerations.md) covers how to change them.
+
+## What is public and what is not
+
+The public API is the PDU and record structs, the enumerations, the `Pdu` and
+`GenericHeader` traits, and `DISError`. Everything that names a `deku` type is
+internal: the `wire` module, `impl_pdu!`, `pdu_tests!` and `impl_deku_default_endian!`
+are all private to the crate, and `DISError::WireFormat` wraps deku's error in the
+opaque `WireFormatError` variant.
+
+This keeps deku, which hasn't reached 1.0, out of the crate's stable API, so the crate
+can upgrade deku without a breaking release. Keep it that way:
+
+- Don't add a public function, trait method, or `From` impl that takes or returns a
+  deku type. Convert deku errors with `DISError::from_wire`, which is `pub(crate)`.
+- Public encoding and decoding go through `Vec<u8>` and `&[u8]`, not through deku's
+  readers and writers or another crate's buffer types.
+
+The structs still implement deku's `DekuRead` and `DekuWrite` because they're
+derived. Those impls are visible in the API documentation, but they aren't part of the
+stable API, and users shouldn't call them.
 
 ## Rules the code follows
 

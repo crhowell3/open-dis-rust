@@ -20,41 +20,24 @@
     clippy::float_cmp
 )]
 
-use bytes::{Buf, Bytes, BytesMut};
-
 use crate::common::{
     DISError,
+    data_types::point::Point,
     data_types::{
-        ClockTime, EntityCoordinateVector, EntityId, EntityType, EulerAngles, VariableParameter,
-        WorldCoordinate,
-        acoustic_beam_data::AcousticBeamData,
-        acoustic_emitter_system_data::AcousticEmitterSystemData,
-        aggregate_id::AggregateId,
-        antenna_pattern::AntennaPattern,
-        apa_data::ApaData,
-        attribute_record::AttributeRecord,
-        attribute_record_set::AttributeRecordSet,
-        datum_records::{FixedDatumRecord, VariableDatumRecord},
-        directed_energy_damage::DirectedEnergyDamage,
-        electromagnetic_emission_beam_data::ElectromagneticEmissionBeamData,
-        electromagnetic_emission_system_data::ElectromagneticEmissionSystemData,
-        environment::Environment,
-        grid_axis_descriptor::{GridAxisDescriptor, GridAxisType},
-        grid_data_record::{DataRepresentationType, GridDataRecord},
-        iff_fundamental_parameter_data::IFFFundamentalParameterData,
-        intercom_communications_parameters::IntercomCommunicationsParameters,
-        linear_segment_parameter::LinearSegmentParameter,
-        modulation_parameters::ModulationParameters,
-        point::Point,
-        propulsion_system_data::PropulsionSystemData,
-        shaft_rpms::ShaftRPMs,
-        supply_quantity::SupplyQuantity,
-        track_jam_target::TrackJamTarget,
-        variable_transmitter_parameters::VariableTransmitterParameters,
-        vectoring_nozzle_system_data::VectoringNozzleSystemData,
+        AcousticEmitterSystemData, ApaData, AttributeRecordSet, DataRepresentationType,
+        DirectedEnergyDamage, ElectromagneticEmissionBeamData, ElectromagneticEmissionSystemData,
+        GridAxisType, IFFFundamentalParameterData, ShaftRPMs,
     },
     enums::{GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes},
     pdu::Pdu,
+    records::{
+        AcousticBeamData, AggregateIdentifier, AntennaPattern, Attribute, ClockTime,
+        EntityIdentifier, EntityType, Environment, EulerAngles, FixedDatumRecord,
+        GridAxisDescriptor, GridData, IntercomCommunicationsParameters, LinearSegmentParameter,
+        ModulationParameters, PropulsionSystemData, SupplyQuantity, TrackJamData,
+        VariableDatumRecord, VariableParameter, VariableTransmitterParameters, Vector,
+        VectoringNozzleSystemData, WorldCoordinates,
+    },
 };
 use crate::{
     distributed_emissions::*, entity_information::*, entity_management::*, logistics::*,
@@ -62,10 +45,8 @@ use crate::{
     simulation_management_with_reliability::*, synthetic_environment::*, warfare::*,
 };
 
-fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-    let mut buf = BytesMut::new();
-    pdu.serialize(&mut buf).unwrap();
-    buf.freeze()
+fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+    pdu.to_bytes().unwrap()
 }
 
 /// Serialize, decode, re-serialize: the bytes must match and be fully read.
@@ -76,9 +57,9 @@ fn round_trip<P: Pdu>(pdu: &mut P) -> P {
         original.len(),
         "header length"
     );
-    let mut buf = original.clone();
+    let mut buf: &[u8] = &original;
     let mut decoded = P::deserialize(&mut buf).unwrap_or_else(|e| panic!("decode failed: {e}"));
-    assert_eq!(buf.remaining(), 0, "bytes left over");
+    assert!(buf.is_empty(), "bytes left over");
     assert_eq!(to_bytes(&mut decoded), original, "re-encoded bytes differ");
     decoded
 }
@@ -105,7 +86,7 @@ fn ee_system(beams: usize, targets: usize) -> ElectromagneticEmissionSystemData 
     ElectromagneticEmissionSystemData {
         beam_data_records: vec![
             ElectromagneticEmissionBeamData {
-                track_jam_targets: vec![TrackJamTarget::default(); targets],
+                track_jam_targets: vec![TrackJamData::default(); targets],
                 ..ElectromagneticEmissionBeamData::default()
             };
             beams
@@ -203,9 +184,9 @@ lists!(
     |p| {
         p.attribute_record_sets = vec![
             AttributeRecordSet {
-                attribute_records: vec![AttributeRecord {
+                attribute_records: vec![Attribute {
                     record_specific_fields: vec![1, 2, 3],
-                    ..AttributeRecord::default()
+                    ..Attribute::default()
                 }],
                 ..AttributeRecordSet::default()
             };
@@ -229,8 +210,8 @@ lists!(
     aggregate_state,
     AggregateStatePdu,
     |p| {
-        p.aggregate_id_list = vec![AggregateId::default(); 1];
-        p.entity_id_list = vec![EntityId::default(); 2];
+        p.aggregate_id_list = vec![AggregateIdentifier::default(); 1];
+        p.entity_id_list = vec![EntityIdentifier::default(); 2];
         p.silent_aggregate_system_list = vec![EntityType::default(); 3];
         p.silent_entity_system_list = vec![EntityType::default(); 4];
         p.variable_datum_list = vec![VariableDatumRecord::default(); 5];
@@ -249,8 +230,8 @@ fn aggregate_state_pads_id_lists_to_32_bits() {
     let base = to_bytes(&mut AggregateStatePdu::new()).len();
     for (aggregates, entities, padding) in [(0, 0, 0), (1, 0, 2), (0, 1, 2), (1, 1, 0), (2, 1, 2)] {
         let mut pdu = AggregateStatePdu::new();
-        pdu.aggregate_id_list = vec![AggregateId::default(); aggregates];
-        pdu.entity_id_list = vec![EntityId::default(); entities];
+        pdu.aggregate_id_list = vec![AggregateIdentifier::default(); aggregates];
+        pdu.entity_id_list = vec![EntityIdentifier::default(); entities];
         let mut decoded = round_trip(&mut pdu);
         let bytes = to_bytes(&mut decoded);
         assert_eq!(
@@ -356,11 +337,11 @@ lists!(
 mod minefield_data {
     use super::*;
 
-    fn point(x: f32) -> EntityCoordinateVector {
-        EntityCoordinateVector {
-            x_coordinate: x,
-            y_coordinate: 0.0,
-            z_coordinate: 0.0,
+    fn point(x: f32) -> Vector {
+        Vector {
+            first_vector_component: x,
+            second_vector_component: 0.0,
+            third_vector_component: 0.0,
         }
     }
 
@@ -372,7 +353,7 @@ mod minefield_data {
         }
     }
 
-    fn full_mine(entity_number: u16, wires: Vec<Vec<EntityCoordinateVector>>) -> Mine {
+    fn full_mine(entity_number: u16, wires: Vec<Vec<Vector>>) -> Mine {
         Mine {
             ground_burial_depth_offset: Some(1.0),
             water_burial_depth_offset: Some(2.0),
@@ -427,7 +408,7 @@ mod minefield_data {
         let decoded = round_trip(&mut pdu);
         let wires = decoded.mines[0].trip_wires.as_ref().unwrap();
         assert_eq!(wires.iter().map(Vec::len).collect::<Vec<_>>(), [1, 3]);
-        assert_eq!(wires[1][2].x_coordinate, 4.0);
+        assert_eq!(wires[1][2].first_vector_component, 4.0);
         assert_eq!(decoded.mines[1].trip_wires.as_ref().map(Vec::len), Some(0));
         assert_eq!(
             decoded.mines[1].scalar_detection_coefficients.as_deref(),
@@ -468,10 +449,10 @@ mod minefield_data {
             orientation: Some(EulerAngles::default()),
             ..plain_mine(1)
         }];
-        let mut bytes = to_bytes(&mut pdu).to_vec();
+        let mut bytes = to_bytes(&mut pdu);
         assert_eq!(&bytes[32..36], &[0, 0, 0, 0b1011]);
         bytes[35] = 0b0010;
-        let decoded = MinefieldDataPdu::deserialize(&mut Bytes::from(bytes)).unwrap();
+        let decoded = MinefieldDataPdu::deserialize(&mut bytes.as_slice()).unwrap();
         assert_eq!(decoded.mines[0].ground_burial_depth_offset, Some(1.5));
         assert!(decoded.mines[0].orientation.is_some());
     }
@@ -483,7 +464,7 @@ mod minefield_data {
             water_burial_depth_offset: Some(1.0),
             ..plain_mine(1)
         }];
-        assert!(pdu.serialize(&mut BytesMut::new()).is_err());
+        assert!(pdu.serialize(&mut Vec::new()).is_err());
     }
 
     #[test]
@@ -496,7 +477,7 @@ mod minefield_data {
             },
             plain_mine(2),
         ];
-        let err = pdu.serialize(&mut BytesMut::new()).unwrap_err();
+        let err = pdu.serialize(&mut Vec::new()).unwrap_err();
         assert!(
             err.to_string()
                 .contains("reflectance is set on 1 of 2 mines"),
@@ -512,7 +493,7 @@ mod minefield_data {
             scalar_detection_coefficients: Some(vec![1]),
             ..plain_mine(1)
         }];
-        assert!(pdu.serialize(&mut BytesMut::new()).is_err());
+        assert!(pdu.serialize(&mut Vec::new()).is_err());
     }
 
     #[test]
@@ -536,6 +517,8 @@ mod minefield_data {
 }
 
 mod gridded_data {
+    use crate::common::enums::GriddedDataSampleType;
+
     use super::*;
 
     /// Fixed fields up to and including the padding after Vector Dimension.
@@ -563,11 +546,11 @@ mod gridded_data {
         }
     }
 
-    fn record(data: DataRepresentationType) -> GridDataRecord {
-        GridDataRecord {
-            sample_type: 0x1234,
+    fn record(data: DataRepresentationType) -> GridData {
+        GridData {
+            sample_type: GriddedDataSampleType::NotSpecified,
             data,
-            ..GridDataRecord::default()
+            ..GridData::default()
         }
     }
 
@@ -664,7 +647,10 @@ mod gridded_data {
             3,
             "records are read to the end of the PDU"
         );
-        assert_eq!(decoded.grid_data_list[0].sample_type, 0x1234);
+        assert_eq!(
+            decoded.grid_data_list[0].sample_type,
+            GriddedDataSampleType::NotSpecified
+        );
         assert_eq!(
             decoded.grid_data_list[1].data_representation,
             GriddedDataDataRepresentation::Type2
@@ -705,9 +691,9 @@ mod gridded_data {
         pdu.grid_data_list = vec![record(DataRepresentationType::Type2 {
             data_values: vec![],
         })];
-        let mut bytes = to_bytes(&mut pdu).to_vec();
+        let mut bytes = to_bytes(&mut pdu);
         bytes[FIXED + 3] = 7;
-        let err = GriddedDataPdu::deserialize(&mut Bytes::from(bytes)).unwrap_err();
+        let err = GriddedDataPdu::deserialize(&mut bytes.as_slice()).unwrap_err();
         assert!(
             err.to_string().contains("GriddedDataDataRepresentation"),
             "{err}"
@@ -893,7 +879,7 @@ lists!(
     areal_object_state,
     ArealObjectStatePdu,
     |p| {
-        p.object_location = vec![WorldCoordinate::default(); 4];
+        p.object_location = vec![WorldCoordinates::default(); 4];
     },
     |d| {
         assert_eq!(d.number_of_points, 4);
@@ -1001,7 +987,7 @@ mod iff {
 /// unchanged. (Not necessarily the input: padding, for one, is re-encoded
 /// as zeros.)
 fn fuzz<P: Pdu + Default>() {
-    let header = to_bytes(&mut P::default()).slice(..12);
+    let header = to_bytes(&mut P::default())[..12].to_vec();
     let mut state = 0x9E37_79B9_7F4A_7C15_u64;
     for _ in 0..300 {
         let mut next = || {
@@ -1011,17 +997,17 @@ fn fuzz<P: Pdu + Default>() {
             state
         };
         let len = 12 + (next() % 160) as usize;
-        let mut bytes = header.to_vec();
+        let mut bytes = header.clone();
         bytes.extend((12..len).map(|_| next() as u8));
         bytes[8..10].copy_from_slice(&(len as u16).to_be_bytes());
-        let Ok(mut decoded) = P::deserialize(&mut Bytes::from(bytes)) else {
+        let Ok(mut decoded) = P::deserialize(&mut bytes.as_slice()) else {
             continue;
         };
-        let Ok(()) = decoded.serialize(&mut BytesMut::new()) else {
+        let Ok(()) = decoded.serialize(&mut Vec::new()) else {
             continue; // e.g. a decoded count too large to re-encode
         };
         let canonical = to_bytes(&mut decoded);
-        let mut again = P::deserialize(&mut canonical.clone()).unwrap_or_else(|e| {
+        let mut again = P::deserialize(&mut canonical.as_slice()).unwrap_or_else(|e| {
             panic!(
                 "{}: re-encoded bytes don't decode: {e}",
                 std::any::type_name::<P>()
@@ -1117,7 +1103,7 @@ fn truncation_is_an_error_for_every_pdu() {
         let bytes = to_bytes(&mut P::default());
         for cut in [0, 11, 12, bytes.len() - 1] {
             assert!(
-                P::deserialize(&mut bytes.slice(..cut)).is_err(),
+                P::deserialize(&mut &bytes[..cut]).is_err(),
                 "{}: {cut} of {} octets",
                 std::any::type_name::<P>(),
                 bytes.len()
@@ -1201,13 +1187,12 @@ fn truncation_is_an_error_for_every_pdu() {
 fn undefined_enum_values_are_errors_not_defaults() {
     // Setting each octet of a Fire PDU in turn to 200 must, somewhere, hit an
     // enumeration (such as the munition's EntityKind) and fail to decode.
-    let mut bytes = to_bytes(&mut FirePdu::new()).to_vec();
+    let mut bytes = to_bytes(&mut FirePdu::new());
     let mut saw_enum_error = false;
     for offset in 12..bytes.len() {
         let original = bytes[offset];
         bytes[offset] = 200;
-        if let Err(DISError::WireFormat(e)) = FirePdu::deserialize(&mut Bytes::from(bytes.clone()))
-        {
+        if let Err(DISError::WireFormat(e)) = FirePdu::deserialize(&mut bytes.as_slice()) {
             saw_enum_error |= e.to_string().contains("is not a defined");
         }
         bytes[offset] = original;
