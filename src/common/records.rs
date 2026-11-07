@@ -16,8 +16,16 @@ use deku::{
 };
 use num_traits::FromPrimitive;
 
-use crate::common::data_types::*;
-use crate::common::enums::*;
+use crate::common::data_types::{
+    AcousticBeamFundamentalParameter, DataRepresentationType, GridAxisType,
+    RecordSpecificationElement, StandardVariableRecords,
+};
+use crate::common::enums::{
+    Country, EmitterName, EmitterSystemFunction, EntityAssociationAssociationType, EntityKind,
+    EntityMarkingCharacterSet, EnvironmentalProcessRecordType, GridAxisDescriptorAxisType,
+    GriddedDataDataRepresentation, GriddedDataSampleType, IntercomControlRecordType,
+    UAAcousticEmitterSystemFunction, UAAcousticSystemName, VariableRecordTypes,
+};
 use crate::common::wire;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -195,7 +203,6 @@ impl Association {
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-
 pub struct Attribute {
     pub record_type: u32,
     #[deku(
