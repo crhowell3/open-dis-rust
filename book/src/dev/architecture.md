@@ -20,7 +20,8 @@ src/
     ├── live_entity_pdu_header.rs  LiveEntityPduHeader
     ├── generic_header.rs          the GenericHeader trait both headers implement
     ├── wire.rs                    bridges byte slices and vectors to deku, plus encoding helpers
-    ├── data_types/                the records PDUs are built from, one per file
+    ├── records.rs                 the records PDUs are built from
+    ├── data_types.rs              other non-record data types defined or implied in the standard
     ├── live_entity_records/       the compact records used by Live Entity PDUs
     ├── enums.rs                   SISO-REF-010 enumerations
     ├── enums/deku_tests.rs        encoding tests for every enumeration
@@ -58,7 +59,7 @@ big-endian when used on their own:
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct EntityId {
+pub struct EntityIdentifier {
     pub simulation_address: SimulationAddress,
     pub entity_id: u16,
 }
@@ -72,7 +73,7 @@ Every PDU struct starts with its header, marked `#[deku(skip)]`:
 pub struct ServiceRequestPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
     …
 }
 ```

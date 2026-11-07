@@ -68,8 +68,8 @@ acknowledge_pdu.originating_entity_id.simulation_address.application_id = 1;
 acknowledge_pdu.originating_entity_id.simulation_address.site_id = 3;
 acknowledge_pdu.originating_entity_id.entity_id = 12;
 
-// Assignment can also occur by creating an EntityId and assigning
-let mut origin_id = EntityId::new();
+// Assignment can also occur by creating an EntityIdentifier and assigning
+let mut origin_id = EntityIdentifier::new();
 origin_id.simulation_address.application_id = 1;
 origin_id.simulation_address.site_id = 4;
 origin_id.entity_id = 15;

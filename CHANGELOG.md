@@ -52,6 +52,8 @@ The first official release of open-dis-rust!
 - `AppearancePdu::capabilities` and `EntityStatePdu::entity_capabilities` are raw `u32` capability bits instead of `EntityCapabilities`
 - `VariableTransmitterParameters::record_type` is `VariableRecordTypes` (UID 66)
 - `RecordREventType` is now a `u16` to match the standard
+- `EntityId` is now `EntityIdentifier`
+- Records and data types have been reorganized into a `records` and a `data_types` module instead of being lumped into one
 
 ### Removed
 

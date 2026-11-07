@@ -64,7 +64,7 @@ a comment, so a reviewer can check it against the standard line by line:
 use open_dis_rust::{
     common::{
         Pdu,
-        data_types::EntityId,
+        data_types::EntityIdentifier,
         enums::{AcknowledgeFlag, AcknowledgeResponseFlag},
     },
     simulation_management::AcknowledgePdu,
@@ -96,8 +96,8 @@ fn fixture(s: &str) -> Vec<u8> {
 fn acknowledge_encodes_to_golden_bytes() {
     let mut pdu = AcknowledgePdu::new();
     pdu.header_mut().timestamp = Timestamp::from_raw(0); // fixed, so the bytes are repeatable
-    pdu.originating_entity_id = EntityId::new(1, 1, 0);
-    pdu.receiving_entity_id = EntityId::new(1, 2, 0);
+    pdu.originating_entity_id = EntityIdentifier::new(1, 1, 0);
+    pdu.receiving_entity_id = EntityIdentifier::new(1, 2, 0);
     pdu.acknowledge_flag = AcknowledgeFlag::CreateEntity;
     pdu.response_flag = AcknowledgeResponseFlag::AbleToComply;
     pdu.request_id = 42;
@@ -109,7 +109,7 @@ fn acknowledge_encodes_to_golden_bytes() {
 fn acknowledge_decodes_from_golden_bytes() {
     let bytes = fixture(ACKNOWLEDGE);
     let pdu = AcknowledgePdu::deserialize(&mut bytes.as_slice()).unwrap();
-    assert_eq!(pdu.receiving_entity_id, EntityId::new(1, 2, 0));
+    assert_eq!(pdu.receiving_entity_id, EntityIdentifier::new(1, 2, 0));
     assert_eq!(pdu.response_flag, AcknowledgeResponseFlag::AbleToComply);
     assert_eq!(pdu.request_id, 42);
 }
