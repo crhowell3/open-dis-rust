@@ -42,7 +42,7 @@ advance rather than assigned by the protocol. In open-dis-rust, they are stored 
 `SimulationAddress`:
 
 ```rust,ignore
-use open_dis_rust::common::data_types::SimulationAddress;
+use open_dis_rust::common::records::SimulationAddress;
 
 let me = SimulationAddress::new(1, 100); // site 1, application 100
 ```
@@ -54,7 +54,7 @@ such as a vehicle, an aircraft, a person, or a munition in flight. Its **entity 
 its simulation address plus a 16-bit entity number:
 
 ```rust,ignore
-use open_dis_rust::common::data_types::EntityIdentifier;
+use open_dis_rust::common::records::EntityIdentifier;
 
 let tank = EntityIdentifier::new(1, 100, 7); // entity 7 of site 1, application 100
 ```

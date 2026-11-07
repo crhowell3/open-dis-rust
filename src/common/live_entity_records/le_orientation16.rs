@@ -22,4 +22,3 @@ impl LiveEntityOrientation16 {
         Self { psi, theta, phi }
     }
 }
-

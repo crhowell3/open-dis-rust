@@ -5,7 +5,7 @@ page lists every type with its number, protocol family, Rust type, and status.
 
 | Status | Count | Meaning |
 | --- | --- | --- |
-| Complete | 54 | Implemented, with no known differences from the standard. |
+| Complete | 55 | Implemented, with no known differences from the standard. |
 | Partial | 5 | Implemented, but some variable-length records are kept as raw values or are simplified. |
 | Known Issues | 7 | Implemented, but at least one field is encoded differently from the standard. | 
 | To Verify | 5 | Implemented, but at least one field may differ from the standard and still needs to be verified. |

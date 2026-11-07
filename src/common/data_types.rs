@@ -15,11 +15,9 @@ use crate::common::{
 };
 
 pub mod fixed_binary;
-pub mod jamming_technique;
 pub mod point;
 
 pub use fixed_binary::{FixedBinary8, FixedBinary16};
-pub use jamming_technique::JammingTechnique;
 pub use point::Point;
 
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]

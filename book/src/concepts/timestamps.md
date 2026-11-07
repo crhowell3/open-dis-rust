@@ -19,7 +19,7 @@ date. Bits 31 to 1 hold that time in units of 3600/2³¹ seconds, which is about
 ```
 
 At the start of each hour, the count resets to 0. A receiver comparing timestamps
-must accommodate for this, as show [below](#working-with-timestamps).
+must accommodate for this, as show below.
 
 ## Absolute and relative time
 
@@ -126,7 +126,7 @@ such as Start/Resume use a **Clock Time** record (`ClockTime`) for this. It has 
 To build one for the current time, use `ClockTime::now()`:
 
 ```rust,ignore
-use open_dis_rust::common::data_types::ClockTime;
+use open_dis_rust::common::records::ClockTime;
 
 start.real_world_time = ClockTime::now();
 ```
@@ -135,7 +135,7 @@ To build one yourself, pass the hour and a `Timestamp`:
 
 ```rust,ignore
 use std::time::Duration;
-use open_dis_rust::common::{Timestamp, data_types::ClockTime};
+use open_dis_rust::common::{Timestamp, records::ClockTime};
 
 // 06:00 UTC on 1 January 2026 is 490,902 hours after the Unix epoch
 let dawn = ClockTime::new(490_902, Timestamp::absolute(Duration::ZERO));
