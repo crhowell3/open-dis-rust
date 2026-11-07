@@ -4,7 +4,9 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use crate::common::records::fixed_binary_8::FixedBinary8;
+use crate::common::data_types::fixed_binary::FixedBinary8;
+
+pub type LEAngularVelocityComponent = FixedBinary8<0>;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -16,11 +18,11 @@ use crate::common::records::fixed_binary_8::FixedBinary8;
 /// For all fields, assume right-hand rule for directionality
 pub struct LEEntityAngularVelocity {
     /// The angular velocity in radians/second about the entity's X-axis
-    pub rate_about_x_axis: FixedBinary8,
+    pub rate_about_x_axis: LEAngularVelocityComponent,
     /// The angular velocity in radians/second about the entity's Y-axis
-    pub rate_about_y_axis: FixedBinary8,
+    pub rate_about_y_axis: LEAngularVelocityComponent,
     /// The angular velocity in radians/second about the entity's Z-axis
-    pub rate_about_z_axis: FixedBinary8,
+    pub rate_about_z_axis: LEAngularVelocityComponent,
 }
 
 impl LEEntityAngularVelocity {

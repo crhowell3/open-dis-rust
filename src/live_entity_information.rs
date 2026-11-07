@@ -17,15 +17,14 @@ use crate::{
     common::pdu::impl_pdu,
     common::{
         LiveEntityPduHeader,
+        data_types::{FixedBinary16, MunitionDescriptor},
         enums::{ForceId, PduType, ProtocolFamily, impl_deku_bitflags},
         live_entity_records::{
             LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
             LiveEntityOrientation16, LiveEventIdentifier, OrientationError, PositionError,
             RelativeWorldCoordinates,
         },
-        records::{
-            EntityMarking, EntityType, FixedBinary16, MunitionDescriptor, VariableParameter,
-        },
+        records::{EntityMarking, EntityType, VariableParameter},
     },
 };
 
@@ -69,7 +68,7 @@ pub struct TimeSpacePositionInformationPdu {
     #[deku(cond = "tspi_flag.contains(TspiFlag::DEAD_RECKONING)")]
     pub dead_reckoning_parameters: Option<LEDeadReckoningParameters>,
     #[deku(cond = "tspi_flag.contains(TspiFlag::MEASURED_SPEED)")]
-    pub measured_speed: Option<FixedBinary16>,
+    pub measured_speed: Option<FixedBinary16<0>>,
     /// Up to 255 octets. Sent as a one-octet length followed by the data.
     #[deku(
         cond = "tspi_flag.contains(TspiFlag::SYSTEM_SPECIFIC_DATA)",

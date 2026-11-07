@@ -6,11 +6,12 @@
 //! The Warfare protocol family
 
 use crate::common::{
+    data_types::{DirectedEnergyDamage, MunitionDescriptor},
     enums::{DEFirePulseShape, DetonationResult, PduType, ProtocolFamily},
     pdu_header::PduHeader,
     records::{
-        ClockTime, DirectedEnergyDamage, EntityIdentifier, EntityType, EventIdentifier,
-        MunitionDescriptor, VariableParameter, Vector, WorldCoordinates,
+        ClockTime, EntityIdentifier, EntityType, EventIdentifier, VariableParameter, Vector,
+        WorldCoordinates,
     },
 };
 

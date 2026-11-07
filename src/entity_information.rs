@@ -9,12 +9,12 @@
 #![allow(deprecated)]
 
 use crate::common::{
+    data_types::{AttributeRecordSet, DeadReckoningParameters},
     enums::{DISAttributeActionCode, ForceId, PduType, ProtocolFamily},
     pdu_header::PduHeader,
     records::{
-        AttributeRecordSet, DeadReckoningParameters, EntityIdentifier, EntityMarking, EntityType,
-        EulerAngles, EventIdentifier, SimulationAddress, VariableParameter, Vector,
-        WorldCoordinates,
+        EntityIdentifier, EntityMarking, EntityType, EulerAngles, EventIdentifier,
+        SimulationAddress, VariableParameter, Vector, WorldCoordinates,
     },
 };
 

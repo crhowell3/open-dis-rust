@@ -22,17 +22,21 @@
 
 use crate::common::{
     DISError,
+    data_types::point::Point,
+    data_types::{
+        AcousticEmitterSystemData, ApaData, AttributeRecordSet, DataRepresentationType,
+        DirectedEnergyDamage, ElectromagneticEmissionBeamData, ElectromagneticEmissionSystemData,
+        GridAxisType, IFFFundamentalParameterData, ShaftRPMs,
+    },
     enums::{GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes},
     pdu::Pdu,
     records::{
-        AcousticBeamData, AcousticEmitterSystemData, AggregateIdentifier, AntennaPattern, ApaData,
-        Attribute, AttributeRecordSet, ClockTime, DataRepresentationType, DirectedEnergyDamage,
-        ElectromagneticEmissionBeamData, ElectromagneticEmissionSystemData, EntityIdentifier,
-        EntityType, Environment, EulerAngles, FixedDatumRecord, GridAxisDescriptor, GridAxisType,
-        GridData, IFFFundamentalParameterData, IntercomCommunicationsParameters,
-        LinearSegmentParameter, ModulationParameters, Point, PropulsionSystemData, ShaftRPMs,
-        SupplyQuantity, TrackJamData, VariableDatumRecord, VariableParameter,
-        VariableTransmitterParameters, Vector, VectoringNozzleSystemData, WorldCoordinates,
+        AcousticBeamData, AggregateIdentifier, AntennaPattern, Attribute, ClockTime,
+        EntityIdentifier, EntityType, Environment, EulerAngles, FixedDatumRecord,
+        GridAxisDescriptor, GridData, IntercomCommunicationsParameters, LinearSegmentParameter,
+        ModulationParameters, PropulsionSystemData, SupplyQuantity, TrackJamData,
+        VariableDatumRecord, VariableParameter, VariableTransmitterParameters, Vector,
+        VectoringNozzleSystemData, WorldCoordinates,
     },
 };
 use crate::{
@@ -513,6 +517,8 @@ mod minefield_data {
 }
 
 mod gridded_data {
+    use crate::common::enums::GriddedDataSampleType;
+
     use super::*;
 
     /// Fixed fields up to and including the padding after Vector Dimension.
@@ -542,7 +548,7 @@ mod gridded_data {
 
     fn record(data: DataRepresentationType) -> GridData {
         GridData {
-            sample_type: 0x1234,
+            sample_type: GriddedDataSampleType::NotSpecified,
             data,
             ..GridData::default()
         }
@@ -641,7 +647,10 @@ mod gridded_data {
             3,
             "records are read to the end of the PDU"
         );
-        assert_eq!(decoded.grid_data_list[0].sample_type, 0x1234);
+        assert_eq!(
+            decoded.grid_data_list[0].sample_type,
+            GriddedDataSampleType::NotSpecified
+        );
         assert_eq!(
             decoded.grid_data_list[1].data_representation,
             GriddedDataDataRepresentation::Type2

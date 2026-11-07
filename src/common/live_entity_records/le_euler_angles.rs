@@ -4,7 +4,9 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use crate::common::records::fixed_binary_8::FixedBinary8;
+use crate::common::data_types::fixed_binary::FixedBinary8;
+
+pub type LEEulerAnglesComponent = FixedBinary8<0>;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -15,18 +17,21 @@ use crate::common::records::fixed_binary_8::FixedBinary8;
 /// Implemented according to IEEE 1278.1-2012 §6.2.32
 pub struct LEEulerAngles {
     /// Angle of rotation about the Z-axis
-    pub psi: FixedBinary8,
+    pub psi: LEEulerAnglesComponent,
     /// Angle of rotation about the Y-axis
-    pub theta: FixedBinary8,
+    pub theta: LEEulerAnglesComponent,
     /// Angle of rotation about the X-axis
-    pub phi: FixedBinary8,
+    pub phi: LEEulerAnglesComponent,
 }
 
 impl LEEulerAngles {
     #[must_use]
     #[allow(clippy::similar_names)]
-    pub const fn new(psi: FixedBinary8, theta: FixedBinary8, phi: FixedBinary8) -> Self {
+    pub const fn new(
+        psi: LEEulerAnglesComponent,
+        theta: LEEulerAnglesComponent,
+        phi: LEEulerAnglesComponent,
+    ) -> Self {
         Self { psi, theta, phi }
     }
 }
-

@@ -14,6 +14,7 @@ use deku::{
 };
 
 use crate::common::{
+    data_types::RadioEntityType,
     enums::{
         IntercomControlCommand, IntercomControlControlType, IntercomControlTransmitLineState,
         PduType, ProtocolFamily, ReceiverReceiverState, SignalTDLType,
@@ -23,7 +24,7 @@ use crate::common::{
     pdu_header::PduHeader,
     records::{
         AntennaPattern, EntityIdentifier, IntercomCommunicationsParameters, ModulationParameters,
-        ModulationType, RadioEntityType, VariableTransmitterParameters, Vector, WorldCoordinates,
+        ModulationType, VariableTransmitterParameters, Vector, WorldCoordinates,
     },
 };
 

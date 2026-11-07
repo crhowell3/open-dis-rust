@@ -16,7 +16,7 @@ use crate::common::{
     records::{
         AggregateIdentifier, AggregateMarking, EntityIdentifier, EntityType, EulerAngles,
         NamedLocationIdentification, RecordSpecification, Relationship, SimulationIdentifier,
-        VariableDatumRecord, Vector, Vector3Float, WorldCoordinates,
+        VariableDatumRecord, Vector, WorldCoordinates,
     },
 };
 
@@ -32,7 +32,7 @@ pub struct AggregateStatePdu {
     pub aggregate_type: EntityType,
     pub formation: AggregateStateFormation,
     pub aggregate_marking: AggregateMarking,
-    pub dimensions: Vector3Float,
+    pub dimensions: Vector,
     pub orientation: EulerAngles,
     pub center_of_mass: WorldCoordinates,
     pub velocity: Vector,
@@ -138,7 +138,7 @@ pub struct IsPartOfPdu {
     pub originating_entity_id: EntityIdentifier,
     pub receiving_entity_id: EntityIdentifier,
     pub relationship: Relationship,
-    pub part_location: Vector3Float,
+    pub part_location: Vector,
     pub named_location_id: NamedLocationIdentification,
     pub part_entity_type: EntityType,
 }
