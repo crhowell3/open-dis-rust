@@ -4,13 +4,10 @@
 //     Licensed under the BSD-2-Clause License
 
 use crate::common::{
-    enums::{
-        ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor,
-        DeadReckoningAlgorithm, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
-    },
+    enums::{DeadReckoningAlgorithm, GridAxisDescriptorAxisType, GriddedDataDataRepresentation},
     records::{
-        AcousticBeamData, AcousticEmitterSystem, AngularVelocityVector, Attribute, EmitterSystem,
-        EntityIdentifier, EntityType, EventIdentifier, TrackJamData, Vector,
+        AcousticEmitterSystem, AngularVelocityVector, Attribute, EmitterSystem, EntityIdentifier,
+        EntityType, TrackJamData, Vector,
     },
 };
 
@@ -19,6 +16,36 @@ pub mod point;
 
 pub use fixed_binary::{FixedBinary8, FixedBinary16};
 pub use point::Point;
+
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct AcousticBeamData {
+    pub beam_data_length: u8,
+    pub beam_id_number: u8,
+    pub pad2: u16,
+    pub fundamental_data_parameters: AcousticBeamFundamentalParameter,
+}
+
+impl AcousticBeamData {
+    #[must_use]
+    pub const fn new(
+        beam_data_length: u8,
+        beam_id_number: u8,
+        pad2: u16,
+        fundamental_data_parameters: AcousticBeamFundamentalParameter,
+    ) -> Self {
+        Self {
+            beam_data_length,
+            beam_id_number,
+            pad2,
+            fundamental_data_parameters,
+        }
+    }
+}
 
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -459,59 +486,6 @@ pub struct ElectromagneticEmissionSystemData {
     pub location: Vector,
     #[deku(count = "number_of_beams")]
     pub beam_data_records: Vec<ElectromagneticEmissionBeamData>,
-}
-
-#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct DirectedEnergyDamage {
-    pub record_type: u32,
-    pub record_length: u16,
-    padding: u16,
-    pub damage_location: Vector,
-    pub damage_diameter: f32,
-    pub temperature: f32,
-    pub component_identification: ComponentIdentification,
-    pub component_damage_status: ComponentDamageStatus,
-    pub component_visual_damage_status: u8, // TODO(cameron): implement ComponentVisualDamageStatus record
-    pub component_visual_smoke_color: ComponentVisualSmokeColor,
-    pub fire_event_id: EventIdentifier,
-    padding2: u16,
-}
-
-impl DirectedEnergyDamage {
-    #[must_use]
-    #[allow(clippy::too_many_arguments)]
-    pub const fn new(
-        record_type: u32,
-        record_length: u16,
-        damage_location: Vector,
-        damage_diameter: f32,
-        temperature: f32,
-        component_identification: ComponentIdentification,
-        component_damage_status: ComponentDamageStatus,
-        component_visual_damage_status: u8,
-        component_visual_smoke_color: ComponentVisualSmokeColor,
-        fire_event_id: EventIdentifier,
-    ) -> Self {
-        Self {
-            record_type,
-            record_length,
-            padding: 0_u16,
-            damage_location,
-            damage_diameter,
-            temperature,
-            component_identification,
-            component_damage_status,
-            component_visual_damage_status,
-            component_visual_smoke_color,
-            fire_event_id,
-            padding2: 0_u16,
-        }
-    }
 }
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]

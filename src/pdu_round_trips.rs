@@ -24,14 +24,14 @@ use crate::common::{
     DISError,
     data_types::point::Point,
     data_types::{
-        AcousticEmitterSystemData, ApaData, AttributeRecordSet, DataRepresentationType,
-        DirectedEnergyDamage, ElectromagneticEmissionBeamData, ElectromagneticEmissionSystemData,
+        AcousticBeamData, AcousticEmitterSystemData, ApaData, AttributeRecordSet,
+        DataRepresentationType, ElectromagneticEmissionBeamData, ElectromagneticEmissionSystemData,
         GridAxisType, IFFFundamentalParameterData, ShaftRPMs,
     },
     enums::{GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes},
     pdu::Pdu,
     records::{
-        AcousticBeamData, AggregateIdentifier, AntennaPattern, Attribute, ClockTime,
+        AggregateIdentifier, AntennaPattern, Attribute, ClockTime, DirectedEnergyDamage,
         EntityIdentifier, EntityType, Environment, EulerAngles, FixedDatumRecord,
         GridAxisDescriptor, GridData, IntercomCommunicationsParameters, LinearSegmentParameter,
         ModulationParameters, PropulsionSystemData, SupplyQuantity, TrackJamData,

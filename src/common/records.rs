@@ -17,46 +17,18 @@ use deku::{
 use num_traits::FromPrimitive;
 
 use crate::common::data_types::{
-    AcousticBeamFundamentalParameter, DataRepresentationType, GridAxisType,
-    RecordSpecificationElement, StandardVariableRecords,
+    DataRepresentationType, GridAxisType, RecordSpecificationElement, StandardVariableRecords,
 };
 use crate::common::enums::{
-    Country, EmitterName, EmitterSystemFunction, EntityAssociationAssociationType, EntityKind,
-    EntityMarkingCharacterSet, EnvironmentalProcessRecordType, GridAxisDescriptorAxisType,
-    GriddedDataDataRepresentation, GriddedDataSampleType, IntercomControlRecordType,
-    UAAcousticEmitterSystemFunction, UAAcousticSystemName, VariableRecordTypes,
+    AggregateStateAggregateKind, BeamStatusBeamState, ComponentDamageStatus,
+    ComponentIdentification, ComponentVisualSmokeColor, Country, EmitterName,
+    EmitterSystemFunction, EntityAssociationAssociationType, EntityKind, EntityMarkingCharacterSet,
+    EnvironmentalProcessRecordType, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
+    GriddedDataSampleType, IFFSimulationMode, IntercomControlRecordType, OtherKinds,
+    TransponderInterrogatorIndicator, UAAcousticEmitterSystemFunction, UAAcousticSystemName,
+    VariableRecordTypes,
 };
 use crate::common::wire;
-
-#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct AcousticBeamData {
-    pub beam_data_length: u8,
-    pub beam_id_number: u8,
-    pub pad2: u16,
-    pub fundamental_data_parameters: AcousticBeamFundamentalParameter,
-}
-
-impl AcousticBeamData {
-    #[must_use]
-    pub const fn new(
-        beam_data_length: u8,
-        beam_id_number: u8,
-        pad2: u16,
-        fundamental_data_parameters: AcousticBeamFundamentalParameter,
-    ) -> Self {
-        Self {
-            beam_data_length,
-            beam_id_number,
-            pad2,
-            fundamental_data_parameters,
-        }
-    }
-}
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -129,6 +101,47 @@ impl AggregateMarking {
         }
     }
 }
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.5
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct AggregateType {
+    pub aggregate_kind: AggregateStateAggregateKind,
+    pub domain: OtherKinds,
+    pub country: Country,
+    pub category: u8,
+    pub subcategory: u8,
+    pub specific: u8,
+    pub extra: u8,
+}
+
+impl AggregateType {
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            aggregate_kind: AggregateStateAggregateKind::Other,
+            domain: OtherKinds::Other,
+            country: Country::Other,
+            category: 0,
+            subcategory: 0,
+            specific: 0,
+            extra: 0,
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.6
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct Angle(f32);
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.7
 /// For all fields, assume right-hand rule for directionality
@@ -265,6 +278,229 @@ impl BeamData {
     }
 }
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.12
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct BeamStatus {
+    raw: u8,
+}
+
+impl BeamStatus {
+    const BEAM_STATE: u8 = 0b0000_0001;
+
+    /// A Beam Status record with the given state and the padding bits clear.
+    #[must_use]
+    pub const fn new(beam_state: BeamStatusBeamState) -> Self {
+        let mut status = Self { raw: 0 };
+        status.set_beam_state(beam_state);
+        status
+    }
+
+    /// Whether the beam is active or deactivated
+    #[must_use]
+    pub const fn beam_state(self) -> BeamStatusBeamState {
+        if self.raw & Self::BEAM_STATE == 0 {
+            BeamStatusBeamState::Active
+        } else {
+            BeamStatusBeamState::Deactivated
+        }
+    }
+
+    /// Sets the Beam State bit, leaving the padding bits as they are
+    pub const fn set_beam_state(&mut self, beam_state: BeamStatusBeamState) {
+        self.raw = match beam_state {
+            BeamStatusBeamState::Active => self.raw & !Self::BEAM_STATE,
+            BeamStatusBeamState::Deactivated => self.raw | Self::BEAM_STATE,
+        };
+    }
+
+    /// A Beam Status record from its wire octet. The padding bits are kept so
+    /// a decoded record encodes back to the same octet
+    #[must_use]
+    pub const fn from_raw(raw: u8) -> Self {
+        Self { raw }
+    }
+
+    /// The record's wire octet
+    #[must_use]
+    pub const fn to_raw(self) -> u8 {
+        self.raw
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.13 & §B.2.4
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ChangeOptions {
+    raw: u8,
+}
+
+impl ChangeOptions {
+    /// Change Indicator (bit 0): `true` when this is the entity's first IFF PDU, its data
+    /// changed since the last one, or it's the first heartbeat after a PDU that had this
+    /// bit set. Every system type implements it.
+    #[must_use]
+    pub const fn initial_report_or_change(self) -> bool {
+        self.raw & (1 << 0) != 0
+    }
+
+    /// Sets bit 0. See [`initial_report_or_change`](Self::initial_report_or_change).
+    pub const fn set_initial_report_or_change(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 0;
+        } else {
+            self.raw &= !(1 << 0);
+        }
+    }
+
+    /// System-Specific Field 1 (bit 1). Its meaning depends on the system type: for
+    /// a system with a Mode 4 capability, it's the Alternate Mode 4 Indicator; `true`
+    /// when present. Systems that don't implement it set this to `false`.
+    #[must_use]
+    pub const fn system_specific_1(self) -> bool {
+        self.raw & (1 << 1) != 0
+    }
+
+    /// Sets bit 1. See [`system_specific_1`](Self::system_specific_1).
+    pub const fn set_system_specific_1(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 1;
+        } else {
+            self.raw &= !(1 << 1);
+        }
+    }
+
+    /// System-Specific Field 2 (bit 2). Its meaning depends on the system type: for
+    /// a system with a Mode C capability, it's the Alternate Mode C Indicator; `true`
+    /// when present. Systems that don't implement it set this to `false`.
+    #[must_use]
+    pub const fn system_specific_2(self) -> bool {
+        self.raw & (1 << 2) != 0
+    }
+
+    /// Sets bit 2. See [`system_specific_2`](Self::system_specific_2).
+    pub const fn set_system_specific_2(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 2;
+        } else {
+            self.raw &= !(1 << 2);
+        }
+    }
+
+    /// Heartbeat Indicator (bit 3): `true` when this IFF PDU is a heartbeat. Optional for
+    /// system types 1 to 5, required for the rest.
+    #[must_use]
+    pub const fn heartbeat(self) -> bool {
+        self.raw & (1 << 3) != 0
+    }
+
+    /// Sets bit 3. See [`heartbeat`](Self::heartbeat).
+    pub const fn set_heartbeat(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 3;
+        } else {
+            self.raw &= !(1 << 3);
+        }
+    }
+
+    const TRANSPONDER_INTERROGATOR: u8 = 1 << 4;
+    const SIMULATION_MODE: u8 = 1 << 5;
+
+    /// Transponder/Interrogator Indicator (bit 4) \[UID 337\]. Optional for system types
+    /// 1 to 5, required for the rest. A combined system can be either, so the system type
+    /// and name along do not say which.
+    #[must_use]
+    pub const fn transponder_interrogator(self) -> TransponderInterrogatorIndicator {
+        if self.raw & Self::TRANSPONDER_INTERROGATOR == 0 {
+            TransponderInterrogatorIndicator::Transponder
+        } else {
+            TransponderInterrogatorIndicator::Interrogator
+        }
+    }
+
+    /// Sets bit 4. See [`transponder_interrogator`](Self::transponder_interrogator).
+    pub const fn set_transponder_interrogator(&mut self, value: TransponderInterrogatorIndicator) {
+        self.raw = match value {
+            TransponderInterrogatorIndicator::Transponder => {
+                self.raw & !Self::TRANSPONDER_INTERROGATOR
+            }
+            TransponderInterrogatorIndicator::Interrogator => {
+                self.raw | Self::TRANSPONDER_INTERROGATOR
+            }
+        };
+    }
+
+    /// Simulation Mode (bit 5) \[UID 338\]: Regeneration or Interactive. Every system type
+    /// implements it.
+    #[must_use]
+    pub const fn simulation_mode(self) -> IFFSimulationMode {
+        if self.raw & Self::SIMULATION_MODE == 0 {
+            IFFSimulationMode::Regeneration
+        } else {
+            IFFSimulationMode::Interactive
+        }
+    }
+
+    /// Sets bit 5. See [`simulation_mode`](Self::simulation_mode).
+    pub const fn set_simulation_mode(&mut self, value: IFFSimulationMode) {
+        self.raw = match value {
+            IFFSimulationMode::Regeneration => self.raw & !Self::SIMULATION_MODE,
+            IFFSimulationMode::Interactive => self.raw | Self::SIMULATION_MODE,
+        }
+    }
+
+    /// Interactive Capable (bit 6): `true` when the IFF system is capable of the
+    /// Interactive simulation mode.
+    #[must_use]
+    pub const fn interactive_capable(self) -> bool {
+        self.raw & (1 << 6) != 0
+    }
+
+    /// Sets bit 6. See [`interactive_capable`](Self::interactive_capable).
+    pub const fn set_interactive_capable(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 6;
+        } else {
+            self.raw &= !(1 << 6);
+        }
+    }
+
+    /// Test Mode (bit 7): `true` when the IFF system is in equipment test mode.
+    #[must_use]
+    pub const fn test_mode(self) -> bool {
+        self.raw & (1 << 7) != 0
+    }
+
+    /// Sets bit 7. See [`test_mode`](Self::test_mode).
+    pub const fn set_test_mode(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 7;
+        } else {
+            self.raw &= !(1 << 7);
+        }
+    }
+
+    /// A Change/Options record from its wire octet.
+    #[must_use]
+    pub const fn from_raw(raw: u8) -> Self {
+        Self { raw }
+    }
+
+    /// The record's wire octet.
+    #[must_use]
+    pub const fn to_raw(self) -> u8 {
+        self.raw
+    }
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.14
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -296,6 +532,233 @@ impl ClockTime {
             .unwrap_or_default();
         let hour = u32::try_from(since_epoch.as_secs() / 3600).unwrap_or(u32::MAX);
         Self::new(hour, Timestamp::absolute(since_epoch))
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.15
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct DirectedEnergyDamage {
+    pub record_type: u32,
+    pub record_length: u16,
+    padding: u16,
+    pub damage_location: Vector,
+    pub damage_diameter: f32,
+    pub temperature: f32,
+    pub component_identification: ComponentIdentification,
+    pub component_damage_status: ComponentDamageStatus,
+    pub component_visual_damage_status: u8, // TODO(cameron): implement ComponentVisualDamageStatus record
+    pub component_visual_smoke_color: ComponentVisualSmokeColor,
+    pub fire_event_id: EventIdentifier,
+    padding2: u16,
+}
+
+impl DirectedEnergyDamage {
+    #[must_use]
+    #[allow(clippy::too_many_arguments)]
+    pub const fn new(
+        damage_location: Vector,
+        damage_diameter: f32,
+        temperature: f32,
+        component_identification: ComponentIdentification,
+        component_damage_status: ComponentDamageStatus,
+        component_visual_damage_status: u8,
+        component_visual_smoke_color: ComponentVisualSmokeColor,
+        fire_event_id: EventIdentifier,
+    ) -> Self {
+        Self {
+            record_type: 4500,
+            record_length: 40,
+            padding: 0_u16,
+            damage_location,
+            damage_diameter,
+            temperature,
+            component_identification,
+            component_damage_status,
+            component_visual_damage_status,
+            component_visual_smoke_color,
+            fire_event_id,
+            padding2: 0_u16,
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.15
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct DataFilter {
+    raw: u32,
+}
+
+impl DataFilter {
+    /// Ground Burial Depth Offet (bit 0).
+    #[must_use]
+    pub const fn ground_burial_depth_offset(self) -> bool {
+        self.raw & (1 << 0) != 0
+    }
+
+    /// Sets bit 0. See [`ground_burial_depth_offset`](Self::ground_burial_depth_offset).
+    pub const fn set_ground_burial_depth_offset(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 0;
+        } else {
+            self.raw &= !(1 << 0);
+        }
+    }
+
+    /// Water Burial Depth Offset (bit 1).
+    #[must_use]
+    pub const fn water_burial_depth_offset(self) -> bool {
+        self.raw & (1 << 1) != 0
+    }
+
+    /// Sets bit 1. See [`water_burial_depth_offset`](Self::water_burial_depth_offset).
+    pub const fn set_water_burial_depth_offset(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 1;
+        } else {
+            self.raw &= !(1 << 1);
+        }
+    }
+
+    /// Snow Burial Depth Offset (bit 2).
+    #[must_use]
+    pub const fn snow_burial_depth_offset(self) -> bool {
+        self.raw & (1 << 2) != 0
+    }
+
+    /// Sets bit 2. See [`snow_burial_depth_offset`](Self::snow_burial_depth_offset).
+    pub const fn set_snow_burial_depth_offset(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 2;
+        } else {
+            self.raw &= !(1 << 2);
+        }
+    }
+
+    /// Mine Orientation (bit 3).
+    #[must_use]
+    pub const fn mine_orientation(self) -> bool {
+        self.raw & (1 << 3) != 0
+    }
+
+    /// Sets bit 3. See [`mine_orientation`](Self::mine_orientation).
+    pub const fn set_mine_orientation(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 3;
+        } else {
+            self.raw &= !(1 << 3);
+        }
+    }
+
+    /// Thermal Contrast (bit 4).
+    #[must_use]
+    pub const fn thermal_contrast(self) -> bool {
+        self.raw & (1 << 4) != 0
+    }
+
+    /// Sets bit 4. See [`thermal_contrast`](Self::thermal_contrast).
+    pub const fn set_thermal_contrast(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 4;
+        } else {
+            self.raw &= !(1 << 4);
+        }
+    }
+
+    /// Reflectance (bit 5).
+    #[must_use]
+    pub const fn reflectance(self) -> bool {
+        self.raw & (1 << 5) != 0
+    }
+
+    /// Sets bit 5. See [`reflectance`](Self::reflectance).
+    pub const fn set_reflectance(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 5;
+        } else {
+            self.raw &= !(1 << 5);
+        }
+    }
+
+    /// Mine Emplacement Time (bit 6).
+    #[must_use]
+    pub const fn mine_emplacement_time(self) -> bool {
+        self.raw & (1 << 6) != 0
+    }
+
+    /// Sets bit 6. See [`mine_emplacement_time`](Self::mine_emplacement_time).
+    pub const fn set_mine_emplacement_time(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 6;
+        } else {
+            self.raw &= !(1 << 6);
+        }
+    }
+
+    /// Trip/Detonation Wire (bit 7).
+    #[must_use]
+    pub const fn trip_detonation_wire(self) -> bool {
+        self.raw & (1 << 7) != 0
+    }
+
+    /// Sets bit 7. See [`trip_detonation_wire`](Self::trip_detonation_wire).
+    pub const fn set_trip_detonation_wire(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 7;
+        } else {
+            self.raw &= !(1 << 7);
+        }
+    }
+
+    /// Fusing (bit 8).
+    #[must_use]
+    pub const fn fusing(self) -> bool {
+        self.raw & (1 << 8) != 0
+    }
+
+    /// Sets bit 8. See [`fusing`](Self::fusing).
+    pub const fn set_fusing(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 8;
+        } else {
+            self.raw &= !(1 << 8);
+        }
+    }
+
+    /// Scalar Detection Coefficient (bit 9).
+    #[must_use]
+    pub const fn scalar_detection_coefficient(self) -> bool {
+        self.raw & (1 << 9) != 0
+    }
+
+    /// Sets bit 9. See [`scalar_detection_coefficient`](Self::scalar_detection_coefficient).
+    pub const fn set_scalar_detection_coefficient(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 9;
+        } else {
+            self.raw &= !(1 << 9);
+        }
+    }
+
+    /// A Data Filter record from its wire octets.
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self { raw }
+    }
+
+    /// The record's wire octets.
+    #[must_use]
+    pub const fn to_raw(self) -> u32 {
+        self.raw
     }
 }
 

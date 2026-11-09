@@ -365,3 +365,113 @@ mod jamming_techniques {
         assert_eq!(decoded, JammingTechnique::DRFM_LEVEL_E);
     }
 }
+
+#[test]
+fn beam_status_state_is_bit_zero() {
+    use crate::common::enums::BeamStatusBeamState;
+
+    assert_eq!(
+        BeamStatus::default().beam_state(),
+        BeamStatusBeamState::Active
+    );
+    assert_eq!(BeamStatus::new(BeamStatusBeamState::Active).to_raw(), 0);
+    assert_eq!(
+        BeamStatus::new(BeamStatusBeamState::Deactivated).to_raw(),
+        1
+    );
+    assert_eq!(
+        BeamStatus::from_raw(0b1111_1110).beam_state(),
+        BeamStatusBeamState::Active
+    );
+    assert_eq!(
+        BeamStatus::from_raw(0b0000_0001).beam_state(),
+        BeamStatusBeamState::Deactivated
+    );
+}
+
+#[test]
+fn beam_status_keeps_padding_bits() {
+    use crate::common::enums::BeamStatusBeamState;
+
+    let mut status = BeamStatus::from_raw(0b1010_0000);
+    status.set_beam_state(BeamStatusBeamState::Deactivated);
+    assert_eq!(status.to_raw(), 0b1010_0001);
+    status.set_beam_state(BeamStatusBeamState::Active);
+    assert_eq!(status.to_raw(), 0b1010_0000);
+
+    let mut buf = Vec::new();
+    wire::write(&BeamStatus::from_raw(0xA1), &mut buf).unwrap();
+    assert_eq!(buf, [0xA1]);
+    let decoded: BeamStatus = wire::read(&mut buf.as_slice()).unwrap();
+    assert_eq!(decoded.to_raw(), 0xA1);
+}
+
+#[test]
+fn change_options_fields_are_at_specified_bits() {
+    use crate::common::enums::{IFFSimulationMode, TransponderInterrogatorIndicator};
+
+    type Setter = fn(&mut ChangeOptions);
+    let setters: [(u8, Setter); 8] = [
+        (0, |o| o.set_initial_report_or_change(true)),
+        (1, |o| o.set_system_specific_1(true)),
+        (2, |o| o.set_system_specific_2(true)),
+        (3, |o| o.set_heartbeat(true)),
+        (4, |o| {
+            o.set_transponder_interrogator(TransponderInterrogatorIndicator::Interrogator)
+        }),
+        (5, |o| o.set_simulation_mode(IFFSimulationMode::Interactive)),
+        (6, |o| o.set_interactive_capable(true)),
+        (7, |o| o.set_test_mode(true)),
+    ];
+
+    for (bit, set) in setters {
+        let mut options = ChangeOptions::default();
+        set(&mut options);
+        assert_eq!(options.to_raw(), 1 << bit, "field for bit {bit}");
+    }
+}
+
+#[test]
+fn change_options_getters_read_specified_bits() {
+    use crate::common::enums::{IFFSimulationMode, TransponderInterrogatorIndicator};
+
+    let all = ChangeOptions::from_raw(0xFF);
+    assert!(all.initial_report_or_change());
+    assert!(all.system_specific_1() && all.system_specific_2());
+    assert!(all.heartbeat() && all.interactive_capable() && all.test_mode());
+    assert_eq!(
+        all.transponder_interrogator(),
+        TransponderInterrogatorIndicator::Interrogator
+    );
+    assert_eq!(all.simulation_mode(), IFFSimulationMode::Interactive);
+
+    let none = ChangeOptions::default();
+    assert!(!none.initial_report_or_change() && !none.heartbeat() && !none.test_mode());
+    assert_eq!(
+        none.transponder_interrogator(),
+        TransponderInterrogatorIndicator::Transponder
+    );
+    assert_eq!(none.simulation_mode(), IFFSimulationMode::Regeneration);
+}
+
+#[test]
+fn change_options_setters_leave_other_bits_alone() {
+    use crate::common::enums::IFFSimulationMode;
+
+    let mut options = ChangeOptions::from_raw(0xFF);
+    options.set_heartbeat(false);
+    assert_eq!(options.to_raw(), 0b1111_0111);
+    options.set_simulation_mode(IFFSimulationMode::Regeneration);
+    assert_eq!(options.to_raw(), 0b1101_0111);
+    options.set_heartbeat(true);
+    assert_eq!(options.to_raw(), 0b1101_1111);
+}
+
+#[test]
+fn change_options_encodes_as_its_octet() {
+    let mut buf = Vec::new();
+    wire::write(&ChangeOptions::from_raw(0b1010_0101), &mut buf).unwrap();
+    assert_eq!(buf, [0b1010_0101]);
+    let decoded: ChangeOptions = wire::read(&mut buf.as_slice()).unwrap();
+    assert_eq!(decoded.to_raw(), 0b1010_0101);
+}
