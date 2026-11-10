@@ -790,15 +790,15 @@ lists!(
 macro_rules! datum_lists {
     ($($test:ident: $pdu:ty),* $(,)?) => {$(
         lists!($test, $pdu, |p| {
-            p.fixed_datum_records = vec![FixedDatumRecord::default(); 2];
-            p.variable_datum_records = vec![
+            p.fixed_datums = vec![FixedDatumRecord::default(); 2];
+            p.variable_datums = vec![
                 VariableDatumRecord { length_bits: 12, value: vec![0xA, 0xB], ..VariableDatumRecord::default() };
                 3
             ];
         }, |d| {
-            assert_eq!(d.number_of_fixed_datum_records, 2);
-            assert_eq!(d.number_of_variable_datum_records, 3);
-            assert_eq!(d.variable_datum_records[2].value, [0xA, 0xB]);
+            assert_eq!(d.number_of_fixed_datums, 2);
+            assert_eq!(d.number_of_variable_datums, 3);
+            assert_eq!(d.variable_datums[2].value, [0xA, 0xB]);
         });
     )*};
 }

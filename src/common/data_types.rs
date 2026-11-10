@@ -4,7 +4,10 @@
 //     Licensed under the BSD-2-Clause License
 
 use crate::common::{
-    enums::{DeadReckoningAlgorithm, GridAxisDescriptorAxisType, GriddedDataDataRepresentation},
+    enums::{
+        DeadReckoningAlgorithm, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
+        VariableRecordTypes,
+    },
     records::{
         AcousticEmitterSystem, AngularVelocityVector, Attribute, EmitterSystem, EntityIdentifier,
         EntityType, TrackJamData, Vector,
@@ -232,39 +235,6 @@ impl ApaData {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct MunitionDescriptor {
-    pub munition_type: EntityType,
-    pub warhead: u16,
-    pub fuse: u16,
-    pub quantity: u16,
-    pub rate: u16,
-}
-
-impl MunitionDescriptor {
-    #[must_use]
-    pub const fn new(
-        munition_type: EntityType,
-        warhead: u16,
-        fuse: u16,
-        quantity: u16,
-        rate: u16,
-    ) -> Self {
-        Self {
-            munition_type,
-            warhead,
-            fuse,
-            quantity,
-            rate,
-        }
-    }
-}
-
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -399,55 +369,6 @@ pub struct FundamentalParameterData {
     pub beam_elevation_center: f32,
     pub beam_elevation_sweep: f32,
     pub beam_sweep_sync: f32,
-}
-
-#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct FundamentalOperationalData {
-    pub system_status: u8,
-    pub data_field1: u8,
-    pub information_layers: u8,
-    pub data_field2: u8,
-    pub parameter1: u16,
-    pub parameter2: u16,
-    pub parameter3: u16,
-    pub parameter4: u16,
-    pub parameter5: u16,
-    pub parameter6: u16,
-}
-
-impl FundamentalOperationalData {
-    #[must_use]
-    #[allow(clippy::too_many_arguments)]
-    pub const fn new(
-        system_status: u8,
-        data_field1: u8,
-        information_layers: u8,
-        data_field2: u8,
-        parameter1: u16,
-        parameter2: u16,
-        parameter3: u16,
-        parameter4: u16,
-        parameter5: u16,
-        parameter6: u16,
-    ) -> Self {
-        Self {
-            system_status,
-            data_field1,
-            information_layers,
-            data_field2,
-            parameter1,
-            parameter2,
-            parameter3,
-            parameter4,
-            parameter5,
-            parameter6,
-        }
-    }
 }
 
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -616,4 +537,24 @@ impl AcousticBeamFundamentalParameter {
             de_beamwidth,
         }
     }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct IFFDataRecord {
+    pub record_type: VariableRecordTypes,
+    #[deku(
+        update = "crate::common::wire::padded_record_length_to(self.record_specific_fields.len(), 4)?",
+        assert = "crate::common::wire::valid_aligned_record_length(*record_length, 4)"
+    )]
+    pub record_length: u16,
+    #[deku(
+        count = "crate::common::wire::record_fields_len(*record_length)",
+        writer = "crate::common::wire::write_padded_fields_to(deku::writer, record_specific_fields, 4)"
+    )]
+    pub record_specific_fields: Vec<u8>,
 }

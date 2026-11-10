@@ -184,19 +184,29 @@ pub fn valid_record_length(record_length: u16) -> bool {
 }
 
 #[must_use]
+pub fn valid_aligned_record_length(record_length: u16, align: usize) -> bool {
+    valid_record_length(record_length) && padding_to(usize::from(record_length), align) == 0
+}
+
+#[must_use]
 pub fn record_fields_len(record_length: u16) -> usize {
     usize::from(record_length).saturating_sub(VARIABLE_RECORD_HEADER)
 }
 
-/// Get the length of a record that has been padded
+/// Get the length of a record padded to a 64-bit boundary
 ///
 /// # Errors
 ///
 /// Will return a `DekuError` if the record is too long
 pub fn padded_record_length(fields_len: usize) -> Result<usize, DekuError> {
+    padded_record_length_to(fields_len, 8)
+}
+
+pub fn padded_record_length_to(fields_len: usize, align: usize) -> Result<usize, DekuError> {
     fields_len
         .checked_add(VARIABLE_RECORD_HEADER)
         .and_then(|len| len.checked_next_multiple_of(8))
+        .and_then(|len| len.checked_next_multiple_of(align))
         .ok_or_else(|| DekuError::Assertion("record is too long".into()))
 }
 
@@ -209,7 +219,15 @@ pub fn write_padded_fields<W: no_std_io::Write + no_std_io::Seek>(
     writer: &mut Writer<W>,
     fields: &[u8],
 ) -> Result<(), DekuError> {
-    let padding = padded_record_length(fields.len())?
+    write_padded_fields_to(writer, fields, 8)
+}
+
+pub fn write_padded_fields_to<W: no_std_io::Write + no_std_io::Seek>(
+    writer: &mut Writer<W>,
+    fields: &[u8],
+    align: usize,
+) -> Result<(), DekuError> {
+    let padding = padded_record_length_to(fields.len(), align)?
         .saturating_sub(VARIABLE_RECORD_HEADER)
         .saturating_sub(fields.len());
     fields.to_writer(writer, ())?;

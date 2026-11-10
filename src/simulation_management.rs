@@ -7,6 +7,7 @@
 //! The Simulation Management (SIMAN) protocol family
 
 use crate::common::enums::{ActionResponseRequestStatus, EventType, FrozenBehavior, Reason};
+use crate::common::records::DataQueryDatumSpecification;
 use crate::common::{
     enums::{AcknowledgeFlag, AcknowledgeResponseFlag, PduType, ProtocolFamily},
     pdu_header::PduHeader,
@@ -180,20 +181,7 @@ pub struct DataQueryPdu {
     pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub time_interval: u32,
-    #[deku(
-        update = "self.fixed_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
-    )]
-    pub number_of_fixed_datum_records: u32,
-    #[deku(
-        update = "self.variable_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
-    )]
-    pub number_of_variable_datum_records: u32,
-    #[deku(count = "number_of_fixed_datum_records")]
-    pub fixed_datum_records: Vec<FixedDatumRecord>,
-    #[deku(count = "number_of_variable_datum_records")]
-    pub variable_datum_records: Vec<VariableDatumRecord>,
+    pub data_query_data_specification: DataQueryDatumSpecification,
 }
 crate::common::pdu::impl_pdu!(
     DataQueryPdu,

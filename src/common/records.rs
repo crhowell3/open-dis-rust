@@ -17,16 +17,20 @@ use deku::{
 use num_traits::FromPrimitive;
 
 use crate::common::data_types::{
-    DataRepresentationType, GridAxisType, RecordSpecificationElement, StandardVariableRecords,
+    DataRepresentationType, GridAxisType, IFFDataRecord, RecordSpecificationElement,
+    StandardVariableRecords,
 };
 use crate::common::enums::{
     AggregateStateAggregateKind, BeamStatusBeamState, ComponentDamageStatus,
-    ComponentIdentification, ComponentVisualSmokeColor, Country, EmitterName,
-    EmitterSystemFunction, EntityAssociationAssociationType, EntityKind, EntityMarkingCharacterSet,
-    EnvironmentalProcessRecordType, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
-    GriddedDataSampleType, IFFSimulationMode, IntercomControlRecordType, OtherKinds,
-    TransponderInterrogatorIndicator, UAAcousticEmitterSystemFunction, UAAcousticSystemName,
-    VariableRecordTypes,
+    ComponentIdentification, ComponentVisualSmokeColor, Country, DEPrecisionAimpointBeamSpotType,
+    EEAttributeStateIndicator, EmitterName, EmitterSystemFunction,
+    EntityAssociationAssociationType, EntityKind, EntityMarkingCharacterSet,
+    EnvironmentalProcessRecordType, ExplosiveMaterialCategories, ForceId, FuelLocation,
+    FuelMeasurementUnits, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
+    GriddedDataSampleType, IFFApplicableModes, IFFSimulationMode, IntercomControlRecordType,
+    MunitionDescriptorFuse, MunitionDescriptorWarhead, MunitionExpendableStatus, OtherKinds,
+    SupplyFuelType, TransponderInterrogatorIndicator, UAAcousticEmitterSystemFunction,
+    UAAcousticSystemName, VariableRecordTypes,
 };
 use crate::common::wire;
 
@@ -587,7 +591,7 @@ impl DirectedEnergyDamage {
     }
 }
 
-/// Implemented according to IEEE 1278.1-2012 §6.2.15
+/// Implemented according to IEEE 1278.1-2012 §6.2.16
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -749,6 +753,21 @@ impl DataFilter {
         }
     }
 
+    /// Paint Scheme (bit 10).
+    #[must_use]
+    pub const fn paint_scheme(self) -> bool {
+        self.raw & (1 << 10) != 0
+    }
+
+    /// Sets bit 10. See [`paint_scheme`](Self::paint_scheme).
+    pub const fn set_paint_scheme(&mut self, value: bool) {
+        if value {
+            self.raw |= 1 << 10;
+        } else {
+            self.raw &= !(1 << 10);
+        }
+    }
+
     /// A Data Filter record from its wire octets.
     #[must_use]
     pub const fn from_raw(raw: u32) -> Self {
@@ -760,6 +779,295 @@ impl DataFilter {
     pub const fn to_raw(self) -> u32 {
         self.raw
     }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.17
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct DataQueryDatumSpecification {
+    #[deku(
+        update = "self.fixed_datums.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datums)"
+    )]
+    pub number_of_fixed_datums: u32,
+    #[deku(
+        update = "self.variable_datums.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datums)"
+    )]
+    pub number_of_variable_datums: u32,
+    #[deku(count = "number_of_fixed_datums")]
+    pub fixed_datums: Vec<VariableRecordTypes>,
+    #[deku(count = "number_of_variable_datums")]
+    pub variable_datums: Vec<VariableRecordTypes>,
+}
+
+impl DataQueryDatumSpecification {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            number_of_fixed_datums: 0,
+            number_of_variable_datums: 0,
+            fixed_datums: Vec::new(),
+            variable_datums: Vec::new(),
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.18
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct DatumSpecification {
+    #[deku(
+        update = "self.fixed_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+    )]
+    pub number_of_fixed_datum_records: u32,
+    #[deku(
+        update = "self.variable_datum_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+    )]
+    pub number_of_variable_datum_records: u32,
+    #[deku(count = "number_of_fixed_datum_records")]
+    pub fixed_datum_records: Vec<FixedDatumRecord>,
+    #[deku(count = "number_of_variable_datum_records")]
+    pub variable_datum_records: Vec<VariableDatumRecord>,
+}
+
+impl DatumSpecification {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            number_of_fixed_datum_records: 0,
+            number_of_variable_datum_records: 0,
+            fixed_datum_records: Vec::new(),
+            variable_datum_records: Vec::new(),
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.19.2
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct MunitionDescriptor {
+    pub munition_type: EntityType,
+    pub warhead: MunitionDescriptorWarhead,
+    pub fuse: MunitionDescriptorFuse,
+    pub quantity: u16,
+    pub rate: u16,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.19.3
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ExplosionDescriptor {
+    pub exploding_object_type: EntityType,
+    pub explosive_material: ExplosiveMaterialCategories,
+    padding: u16,
+    pub explosive_force: f32,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.20.2
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct DEAreaAimpoint {
+    pub record_type: u32,
+    pub record_length: u16,
+    padding: u16,
+    pub beam_antenna_pattern_record_count: u16,
+    pub de_target_energy_deposition_record_count: u16,
+    pub beam_antenna_pattern_records: Vec<BeamAntennaPattern>,
+    pub de_target_energy_deposition_records: Vec<DETargetEnergyDeposition>,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.20.3
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct DEPrecisionAimpoint {
+    pub record_type: u32,
+    pub record_length: u16,
+    padding: u16,
+    pub target_spot_world_location: WorldCoordinates,
+    pub target_spot_entity_location: Vector,
+    pub target_spot_velocity: Vector,
+    pub target_spot_acceleration: Vector,
+    pub target_entity_id: EntityIdentifier,
+    pub target_component_identifier: u8,
+    pub beam_spot_type: DEPrecisionAimpointBeamSpotType,
+    pub beam_spot_cross_section_semi_major_axis: f32,
+    pub beam_spot_cross_section_semi_minor_axis: f32,
+    pub beam_spot_cross_section_orientation_angle: f32,
+    pub peak_irradiance: f32,
+    padding2: u32,
+}
+
+impl DEPrecisionAimpoint {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            record_type: 4000,
+            record_length: 96,
+            ..Default::default()
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.20.4
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct DETargetEnergyDeposition {
+    pub target_entity_id: EntityIdentifier,
+    padding: u16,
+    pub peak_irradiance: f32,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.21.1
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct BlankingSectorAttribute {
+    pub record_type: u32,
+    pub record_length: u16,
+    padding: u16,
+    pub emitter_number: u8,
+    pub beam_number: u8,
+    pub state_indicator: EEAttributeStateIndicator,
+    padding2: u8,
+    pub left_azimuth: f32,
+    pub right_azimuth: f32,
+    pub lower_elevation: f32,
+    pub upper_elevation: f32,
+    pub residual_power: f32,
+    padding3: u64,
+}
+
+impl BlankingSectorAttribute {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            record_type: 3500,
+            record_length: 40,
+            ..Default::default()
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.21.2
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct AngleDepositionAttribute {
+    pub record_type: u32,
+    pub record_length: u16,
+    padding: u16,
+    pub emitter_number: u8,
+    pub beam_number: u8,
+    pub state_indicator: EEAttributeStateIndicator,
+    padding2: u8,
+    pub azimuth_offset: f32,
+    pub azimuth_width: f32,
+    pub azimuth_pull_rate: f32,
+    pub azimuth_pull_acceleration: f32,
+    pub elevation_offset: f32,
+    pub elevation_width: f32,
+    pub elevation_pull_rate: f32,
+    pub elevation_pull_acceleration: f32,
+    padding3: u32,
+}
+
+impl AngleDepositionAttribute {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            record_type: 3501,
+            record_length: 48,
+            ..Default::default()
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.21.3
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct FalseTargetsAttribute {
+    pub record_type: u32,
+    pub record_length: u16,
+    padding: u16,
+    pub emitter_number: u8,
+    pub beam_number: u8,
+    pub state_indicator: EEAttributeStateIndicator,
+    padding2: u8,
+    padding3: u16,
+    pub false_target_count: u16,
+    pub walk_speed: f32,
+    pub walk_acceleration: f32,
+    pub maximum_walk_distance: f32,
+    pub keep_time: f32,
+    pub echo_spacing: f32,
+    pub first_target_offset: f32,
+}
+
+impl FalseTargetsAttribute {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            record_type: 3502,
+            record_length: 40,
+            ..Default::default()
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.22
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct EEFundamentalParameterData {
+    pub frequency: f32,
+    pub frequency_range: f32,
+    pub effective_radiated_power: f32,
+    pub pulse_repetition_frequency: f32,
+    pub pulse_width: f32,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.23
@@ -795,6 +1103,57 @@ impl EmitterSystem {
         }
     }
 }
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.24
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct EngineFuel {
+    pub fuel_quantity: u32,
+    pub fuel_measurement_units: FuelMeasurementUnits,
+    pub fuel_type: SupplyFuelType,
+    pub fuel_location: FuelLocation,
+    padding: u8,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.25
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct EngineFuelReload {
+    pub standard_quantity: u32,
+    pub maximum_quantity: u32,
+    pub standard_quantity_reload_time: u32,
+    pub maximum_quantity_reload_time: u32,
+    pub fuel_measurement_units: FuelMeasurementUnits,
+    pub fuel_type: SupplyFuelType,
+    pub fuel_location: FuelLocation,
+    padding: u8,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.26
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct EntityAppearance {}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.27
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct EntityCapabilities {}
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.28
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
@@ -995,6 +1354,46 @@ impl EventIdentifier {
     }
 }
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.34
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ExerciseIdentifier(u8);
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.35
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct Expendable {
+    pub expendable_type: EntityType,
+    pub station_launcher: u32,
+    pub quantity: u16,
+    pub expendable_status: MunitionExpendableStatus,
+    padding: u8,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.36
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ExpendableReload {
+    pub expendable_type: EntityType,
+    pub station_launcher: u32,
+    pub standard_quantity: u16,
+    pub maximum_quantity: u16,
+    pub standard_quantity_reload_time: u32,
+    pub maximum_quantity_reload_time: u32,
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.37
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -1005,6 +1404,35 @@ impl EventIdentifier {
 pub struct FixedDatumRecord {
     pub datum_id: u32,
     pub datum_value: u32,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.38
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ForceIdentification(ForceId);
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.39
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct FundamentalOperationalData {
+    pub system_status: SystemStatus,
+    pub data_field1: u8,
+    pub information_layers: InformationLayers,
+    pub data_field2: u8,
+    pub parameter1: u16,
+    pub parameter2: u16,
+    pub parameter3: u16,
+    pub parameter4: u16,
+    pub parameter5: u16,
+    pub parameter6: u16,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.40
@@ -1273,6 +1701,62 @@ fn value_count(len: usize) -> Result<u16, DekuError> {
 const fn type_1_padding(count: usize) -> usize {
     wire::padding_to(count.saturating_mul(2).saturating_add(14), 4)
 }
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.42
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct GroupIdentifier {
+    pub simulation_address: SimulationAddress,
+    pub group_number: u16,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.43
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct IFFDataSpecification {
+    #[deku(
+        update = "self.iff_data_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_iff_data_records)"
+    )]
+    pub number_of_iff_data_records: u16,
+    #[deku(count = "number_of_iff_data_records")]
+    pub iff_data_records: Vec<IFFDataRecord>,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.44
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct IFFFundamentalParameterData {
+    pub erp: f32,
+    pub frequency: f32,
+    pub pgrf: f32,
+    pub pulse_width: f32,
+    pub burst_length: f32,
+    pub applicable_modes: IFFApplicableModes,
+    #[deku(bytes = 3)]
+    pub system_specific_data: u32,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.45
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct InformationLayers {}
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.46
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
