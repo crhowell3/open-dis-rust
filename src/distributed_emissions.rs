@@ -17,16 +17,19 @@ use deku::{
 
 use crate::common::{
     data_types::{
-        AcousticEmitterSystemData, ApaData, BeamData, ElectromagneticEmissionSystemData,
-        EntityCoordinateVector, EntityId, EventId, FundamentalOperationalData,
-        IFFFundamentalParameterData, LayerHeader, LinearAcceleration, PropulsionSystemData,
-        SecondaryOperationalData, ShaftRPMs, SystemId, VectoringNozzleSystemData, WorldCoordinate,
+        AcousticEmitterSystemData, ApaData, ElectromagneticEmissionSystemData,
+        FundamentalOperationalData, IFFFundamentalParameterData, ShaftRPMs,
     },
     enums::{
         DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName, EEAttributeStateIndicator,
         PduType, ProtocolFamily, UAPassiveParameterIndex, UAStateChangeUpdateIndicator,
     },
     pdu_header::PduHeader,
+    records::{
+        BeamData, EntityIdentifier, EventIdentifier, LayerHeader, PropulsionSystemData,
+        SecondaryOperationalData, SystemIdentifier, Vector, VectoringNozzleSystemData,
+        WorldCoordinates,
+    },
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.6.2
@@ -35,8 +38,8 @@ use crate::common::{
 pub struct ElectromagneticEmissionsPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub emitting_entity_id: EntityId,
-    pub event_id: EventId,
+    pub emitting_entity_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
     pub state_update_indicator: EEAttributeStateIndicator,
     #[deku(update = "crate::common::wire::update_each(&mut self.systems)?")]
     pub number_of_systems: u8,
@@ -44,7 +47,7 @@ pub struct ElectromagneticEmissionsPdu {
     #[deku(count = "number_of_systems")]
     pub systems: Vec<ElectromagneticEmissionSystemData>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ElectromagneticEmissionsPdu,
     PduHeader,
     PduType::ElectromagneticEmissions,
@@ -57,20 +60,20 @@ crate::impl_pdu!(
 pub struct DesignatorPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub designating_entity_id: EntityId,
+    pub designating_entity_id: EntityIdentifier,
     pub code_name: DesignatorSystemName,
-    pub designated_entity_id: EntityId,
+    pub designated_entity_id: EntityIdentifier,
     pub designator_code: DesignatorCode,
     pub designator_power: f32,
     pub designator_wavelength: f32,
-    pub designator_spot_wrt_designated: EntityCoordinateVector,
-    pub designator_spot_location: WorldCoordinate,
+    pub designator_spot_wrt_designated: Vector,
+    pub designator_spot_location: WorldCoordinates,
     pub dead_reckoning_algorithm: DeadReckoningAlgorithm,
     padding: u8,
     padding2: u16,
-    pub entity_linear_acceleration: LinearAcceleration,
+    pub entity_linear_acceleration: Vector,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DesignatorPdu,
     PduHeader,
     PduType::Designator,
@@ -83,8 +86,8 @@ crate::impl_pdu!(
 pub struct UnderwaterAcousticPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub emitting_entity_id: EntityId,
-    pub event_id: EventId,
+    pub emitting_entity_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
     pub state_change_update_indicator: UAStateChangeUpdateIndicator,
     padding: u8,
     pub passive_parameter_index: UAPassiveParameterIndex,
@@ -103,7 +106,7 @@ pub struct UnderwaterAcousticPdu {
     /// Each emitter with its location and beams.
     pub emitter_systems: Vec<AcousticEmitterSystemData>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     UnderwaterAcousticPdu,
     PduHeader,
     PduType::UnderwaterAcoustic,
@@ -116,10 +119,10 @@ crate::impl_pdu!(
 pub struct IFFPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub emitting_entity_id: EntityId,
-    pub event_id: EventId,
-    pub relative_antenna_location: EntityCoordinateVector,
-    pub system_id: SystemId,
+    pub emitting_entity_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
+    pub relative_antenna_location: Vector,
+    pub system_id: SystemIdentifier,
     pub system_designator: u8,
     pub system_specific_data: u8,
     pub fundamental_operational_data: FundamentalOperationalData,
@@ -132,7 +135,7 @@ pub struct IFFPdu {
     )]
     pub layers: IffLayers,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     IFFPdu,
     PduHeader,
     PduType::IFF,
@@ -216,7 +219,7 @@ fn read_iff_layers<R: Read + Seek>(reader: &mut Reader<R>) -> Result<IffLayers, 
             other_layers: octets,
         });
     }
-    let mut rest = bytes::Bytes::from(octets);
+    let mut rest: &[u8] = &octets;
     let layer_2 = crate::common::wire::read(&mut rest)?;
     Ok(IffLayers {
         layer_2: Some(layer_2),
@@ -240,7 +243,7 @@ fn write_iff_layers<W: Write + Seek>(
 pub struct SupplementalEmissionPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
     pub infrared_signature_representation_index: u16,
     pub acoustic_signature_representation_index: u16,
     pub radar_cross_section_signature_representation_index: u16,
@@ -259,7 +262,7 @@ pub struct SupplementalEmissionPdu {
     #[deku(count = "number_of_vectoring_nozzle_systems")]
     pub vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     SupplementalEmissionPdu,
     PduHeader,
     PduType::SupplementalEmission,
@@ -270,16 +273,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

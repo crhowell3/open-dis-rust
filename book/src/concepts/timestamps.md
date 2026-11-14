@@ -19,7 +19,7 @@ date. Bits 31 to 1 hold that time in units of 3600/2³¹ seconds, which is about
 ```
 
 At the start of each hour, the count resets to 0. A receiver comparing timestamps
-must accommodate for this, as show [below](#working-with-timestamps).
+must accommodate for this, as show below.
 
 ## Absolute and relative time
 
@@ -36,78 +36,84 @@ than real time.
 
 Whichever is chosen, every participant in an exercise should agree on it.
 
-## How open-dis-rust sets timestamps
+## The `Timestamp` type
 
-`PduHeader::calculate_dis_timestamp()` returns an **absolute** timestamp for the current
-UTC time using the current system clock. `new()` calls it once when the PDU is created.
-If a PDU is kept and sent repeatedly, set the timestamp again before each send:
+The crate represents timestamps with `common::Timestamp`, which is also in the
+prelude. Header timestamps and the time inside Clock Time records both use it.
+
+**Creating timestamps:**
+
+| Call | Gives |
+| --- | --- |
+| `Timestamp::now()` | An absolute timestamp for the current UTC time, from the system clock |
+| `Timestamp::absolute(time_past_hour)` | An absolute timestamp for a given time, as a `Duration` |
+| `Timestamp::relative(time)` | A relative timestamp, for example from the time since your simulation started |
+| `Timestamp::from_raw(u32)` | A timestamp from its 32-bit wire value |
+
+`absolute` and `relative` discard whole hours, so you can pass a time since midnight,
+or since the simulation started, directly.
+
+**Reading timestamps:**
+
+| Call | Gives |
+| --- | --- |
+| `is_absolute()` | Whether bit 0 is set |
+| `time_past_hour()` | The time since the start of the hour, as a `Duration` |
+| `later.duration_since(earlier)` | The time between two timestamps, allowing for the hour wrapping around |
+| `to_raw()` | The 32-bit wire value |
+
+`Timestamp` implements `Display`, which prints the time past the hour and its kind,
+such as `35:26.232076 abs`, which is handy for logging.
+
+A timestamp's resolution is about 1.676 µs, so a value converted to a `Timestamp` and
+back can differ from the original by up to about 0.84 µs.
+
+## Setting the timestamp before sending
+
+`new()` timestamps a PDU with `Timestamp::now()` once, when the PDU is created. If you
+keep a PDU and send it repeatedly, as you normally would for Entity State heartbeats,
+set the timestamp again before each send:
 
 ```rust,ignore
-pdu.header_mut().timestamp = PduHeader::calculate_dis_timestamp();
-pdu.serialize(&mut bytes)?;
+use open_dis_rust::prelude::*;
+
+pdu.header_mut().timestamp = Timestamp::now();
+pdu.serialize(&mut buf)?;
 ```
 
-The timestamp is only as accurate as the system clock, so make sure the machine is synchronized
-as well.
+The timestamp is only as accurate as your system clock, so make sure the machine is
+synchronized.
 
-To send **relative** timestamps, compute the value from your own simulation clock and
-leave bit 0 clear:
+To send **relative** timestamps, build them from your own simulation clock:
+
+```rust,ignore
+use std::time::Instant;
+
+let started = Instant::now();
+// ...
+pdu.header_mut().timestamp = Timestamp::relative(started.elapsed());
+```
+
+## How old is a PDU?
+
+`duration_since` handles the hour boundary: a timestamp from 59:59, compared with one
+from 00:01, is 2 seconds earlier, not almost an hour.
 
 ```rust,ignore
 use std::time::Duration;
- 
-const TICKS_PER_HOUR: u128 = 1 << 31;
-const NANOS_PER_HOUR: u128 = 3_600_000_000_000;
- 
-/// Encodes time since the start of the simulation as a relative DIS timestamp.
-fn relative_timestamp(since_start: Duration) -> u32 {
-    let past_hour = since_start.as_nanos() % NANOS_PER_HOUR;
-    let ticks = past_hour * TICKS_PER_HOUR / NANOS_PER_HOUR; // always below 2³¹
-    u32::try_from(ticks).unwrap_or(0) << 1 // bit 0 clear: relative
+
+let age = Timestamp::now().duration_since(pdu.header().timestamp);
+if age < Duration::from_secs(30 * 60) {
+    // Extrapolate the entity's position forward by `age` using its dead reckoning parameters
 }
 ```
 
-## Working with timestamps
+Because timestamps repeat every hour, a timestamp slightly *ahead* of your clock, from
+a sender whose clock runs fast, comes out as an age of nearly an hour. Treat ages above
+30 minutes as being from the future, and don't extrapolate those entities backwards.
 
-The crate stores timestamps as a raw `u32`. These helpers convert them into `std::time::Duration`:
-
-```rust,ignore
-use std::time::Duration;
- 
-const TICKS_PER_HOUR: u128 = 1 << 31;
-const NANOS_PER_HOUR: u128 = 3_600_000_000_000;
- 
-fn ticks_to_duration(ticks: u32) -> Duration {
-    let nanos = u128::from(ticks) * NANOS_PER_HOUR / TICKS_PER_HOUR;
-    Duration::from_nanos(u64::try_from(nanos).unwrap_or(u64::MAX))
-}
- 
-/// Returns the time past the hour, and whether the timestamp is absolute.
-fn decode_timestamp(timestamp: u32) -> (Duration, bool) {
-    (ticks_to_duration(timestamp >> 1), timestamp & 1 == 1)
-}
- 
-/// How long before `now` a timestamp was, allowing for the hour wrapping around.
-fn age(timestamp: u32, now: u32) -> Duration {
-    let ticks = (now >> 1).wrapping_sub(timestamp >> 1) & 0x7FFF_FFFF;
-    ticks_to_duration(ticks)
-}
-```
-
-`age` handles the hour boundary correctly: a timestamp from 59:59 compared with a
-current time of 00:01 gives an age of 2 seconds.
-
-Because timestamps repeat every hour, a timestamp slightly *ahead* of your clock from
-a sender whose clock runs fast comes out as an age of nearly an hour. Treat ages above
-30 minutes as being from the future, and do not extrapolate those entities backwards.
-
-```rust,ignore
-let now = PduHeader::calculate_dis_timestamp();
-let age = age(pdu.header().timestamp, now);
-if age < Duration::from_secs(1800) {
-    // Extrapolate the entity's position forward by `age` using its dead reckoning parameters.
-}
-```
+Only compare timestamps of the same kind: absolute with absolute, or relative with
+relative from the same simulator.
 
 ## Clock Time records
 
@@ -115,17 +121,22 @@ Some PDUs need to say *which* hour, not just the time within it. Simulation Mana
 such as Start/Resume use a **Clock Time** record (`ClockTime`) for this. It has two fields:
 
 - `hour`: the number of hours since 00:00 UTC on 1 January 1970.
-- `time_past_hour`: the time within that hour, in the same format as a header timestamp.
+- `time_past_hour`: the time within that hour, as a `Timestamp`.
 
-To build one for the current time:
+To build one for the current time, use `ClockTime::now()`:
 
 ```rust,ignore
-use std::time::{SystemTime, UNIX_EPOCH};
-use open_dis_rust::common::{PduHeader, data_types::ClockTime};
- 
-fn clock_time_now() -> ClockTime {
-    let since_epoch = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default();
-    let hours = u32::try_from(since_epoch.as_secs() / 3600).unwrap_or(u32::MAX);
-    ClockTime::new(hours, PduHeader::calculate_dis_timestamp())
-}
+use open_dis_rust::common::records::ClockTime;
+
+start.real_world_time = ClockTime::now();
+```
+
+To build one yourself, pass the hour and a `Timestamp`:
+
+```rust,ignore
+use std::time::Duration;
+use open_dis_rust::common::{Timestamp, records::ClockTime};
+
+// 06:00 UTC on 1 January 2026 is 490,902 hours after the Unix epoch
+let dawn = ClockTime::new(490_902, Timestamp::absolute(Duration::ZERO));
 ```

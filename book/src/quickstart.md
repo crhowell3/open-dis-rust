@@ -27,8 +27,9 @@ A few things to notice:
   enforce this constraint. That is completely up to the consumer to ensure uniqueness.
 - **Entity types** come from the SISO-REF-010 enumerations.
 - **Locations** are geocentric (ECEF) coordinates in meters.
-- **`serialize()`** fills in the PDU type, protocol family, length, and every count
-  field before encoding. You should not have to fill out `header.length` youself.
+- **`to_bytes()`** (and `serialize()`) fills in the PDU type, protocol family, length,
+  and every count field before encoding. You should not have to fill out `header.length`
+  yourself.
 
 ## 2. Receive and decode PDUs
 

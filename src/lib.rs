@@ -15,16 +15,18 @@
 //! ## Example usage
 //!
 //! ```rust
-//! use open_dis_rust::common::Pdu;
-//! use open_dis_rust::simulation_management::AcknowledgePdu;
-//! use bytes::BytesMut;
+//! use open_dis_rust::{prelude::*, simulation_management::AcknowledgePdu};
 //!
-//! // Create new mutable byte array
-//! let mut bytes = BytesMut::new();
-//! // Create a pre-populated AcknowledgePdu
+//! # fn main() -> Result<(), DISError> {
+//! // Create a pre-populated Acknowledge PDU and encode it, ready to send over UDP
 //! let mut pdu = AcknowledgePdu::new();
-//! // Serialize the PDU into the byte array, which can then be sent over UDP
-//! pdu.serialize(&mut bytes);
+//! let bytes: Vec<u8> = pdu.to_bytes()?;
+//!
+//! // Decode it again from a byte slice
+//! let decoded = AcknowledgePdu::deserialize(&mut bytes.as_slice())?;
+//! assert_eq!(decoded.request_id, pdu.request_id);
+//! # Ok(())
+//! # }
 //! ```
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -48,12 +50,17 @@ pub fn get_version() -> String {
     VERSION.to_string()
 }
 
+/// Common traits and types for working with DIS PDUs.
+///
+/// ```
+/// use open_dis_rust::prelude::*;
+/// ```
 pub mod prelude {
     pub use crate::common::{
         DISError, GenericHeader, LiveEntityPduHeader, Pdu, PduHeader,
-        constants::MAX_PDU_SIZE_OCTETS,
-        data_types::{ClockTime, EntityId, EntityType, SimulationAddress},
+        constants::{MAX_PDU_SIZE_OCTETS, PDU_HEADER_SIZE},
         enums::{EntityKind, PduType, ProtocolFamily, ProtocolVersion},
+        records::{ClockTime, EntityIdentifier, EntityType, SimulationAddress, Timestamp},
     };
 }
 

@@ -7,10 +7,11 @@
 //! The Simulation Management (SIMAN) protocol family
 
 use crate::common::enums::{ActionResponseRequestStatus, EventType, FrozenBehavior, Reason};
+use crate::common::records::DataQueryDatumSpecification;
 use crate::common::{
-    data_types::{ClockTime, EntityId, FixedDatumRecord, VariableDatumRecord},
     enums::{AcknowledgeFlag, AcknowledgeResponseFlag, PduType, ProtocolFamily},
     pdu_header::PduHeader,
+    records::{ClockTime, EntityIdentifier, FixedDatumRecord, VariableDatumRecord},
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.5.2
@@ -19,11 +20,11 @@ use crate::common::{
 pub struct CreateEntityPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     CreateEntityPdu,
     PduHeader,
     PduType::CreateEntity,
@@ -36,11 +37,11 @@ crate::impl_pdu!(
 pub struct RemoveEntityPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     RemoveEntityPdu,
     PduHeader,
     PduType::RemoveEntity,
@@ -53,13 +54,13 @@ crate::impl_pdu!(
 pub struct StartResumePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub real_world_time: ClockTime,
     pub simulation_time: ClockTime,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     StartResumePdu,
     PduHeader,
     PduType::StartResume,
@@ -72,15 +73,15 @@ crate::impl_pdu!(
 pub struct StopFreezePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub real_world_time: ClockTime,
     pub reason: Reason,
     pub frozen_behavior: FrozenBehavior,
     padding: u16,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     StopFreezePdu,
     PduHeader,
     PduType::StopFreeze,
@@ -93,13 +94,13 @@ crate::impl_pdu!(
 pub struct AcknowledgePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub acknowledge_flag: AcknowledgeFlag,
     pub response_flag: AcknowledgeResponseFlag,
     pub request_id: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     AcknowledgePdu,
     PduHeader,
     PduType::Acknowledge,
@@ -112,8 +113,8 @@ crate::impl_pdu!(
 pub struct ActionRequestPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub action_id: u32,
     #[deku(
@@ -131,7 +132,7 @@ pub struct ActionRequestPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ActionRequestPdu,
     PduHeader,
     PduType::ActionRequest,
@@ -144,8 +145,8 @@ crate::impl_pdu!(
 pub struct ActionResponsePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub request_status: ActionResponseRequestStatus,
     #[deku(
@@ -163,7 +164,7 @@ pub struct ActionResponsePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ActionResponsePdu,
     PduHeader,
     PduType::ActionResponse,
@@ -176,26 +177,13 @@ crate::impl_pdu!(
 pub struct DataQueryPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     pub time_interval: u32,
-    #[deku(
-        update = "self.fixed_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
-    )]
-    pub number_of_fixed_datum_records: u32,
-    #[deku(
-        update = "self.variable_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
-    )]
-    pub number_of_variable_datum_records: u32,
-    #[deku(count = "number_of_fixed_datum_records")]
-    pub fixed_datum_records: Vec<FixedDatumRecord>,
-    #[deku(count = "number_of_variable_datum_records")]
-    pub variable_datum_records: Vec<VariableDatumRecord>,
+    pub data_query_data_specification: DataQueryDatumSpecification,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DataQueryPdu,
     PduHeader,
     PduType::DataQuery,
@@ -208,8 +196,8 @@ crate::impl_pdu!(
 pub struct SetDataPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     padding: u32,
     #[deku(
@@ -227,7 +215,7 @@ pub struct SetDataPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     SetDataPdu,
     PduHeader,
     PduType::SetData,
@@ -240,8 +228,8 @@ crate::impl_pdu!(
 pub struct DataPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub request_id: u32,
     padding: u32,
     #[deku(
@@ -259,7 +247,7 @@ pub struct DataPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     DataPdu,
     PduHeader,
     PduType::Data,
@@ -272,8 +260,8 @@ crate::impl_pdu!(
 pub struct EventReportPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     pub event_type: EventType,
     padding: u32,
     #[deku(
@@ -291,7 +279,7 @@ pub struct EventReportPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     EventReportPdu,
     PduHeader,
     PduType::EventReport,
@@ -304,8 +292,8 @@ crate::impl_pdu!(
 pub struct CommentPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub originating_entity_id: EntityId,
-    pub receiving_entity_id: EntityId,
+    pub originating_entity_id: EntityIdentifier,
+    pub receiving_entity_id: EntityIdentifier,
     #[deku(
         update = "self.fixed_datum_records.len()",
         assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
@@ -321,7 +309,7 @@ pub struct CommentPdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     CommentPdu,
     PduHeader,
     PduType::Comment,
@@ -332,16 +320,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

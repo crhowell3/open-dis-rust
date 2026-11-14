@@ -463,8 +463,8 @@ fn deku_matches_from_primitive_for_every_enum() {
     check_u8::<ObjectKind>(ObjectKind::from_u8);
     check_u16::<GriddedDataCoordinateSystem>(GriddedDataCoordinateSystem::from_u16);
     check_u8::<GriddedDataConstantGrid>(GriddedDataConstantGrid::from_u8);
-    check_u8::<GriddedDataSampleType>(GriddedDataSampleType::from_u8);
-    check_u8::<GriddedDataDataRepresentation>(GriddedDataDataRepresentation::from_u8);
+    check_u16::<GriddedDataSampleType>(GriddedDataSampleType::from_u16);
+    check_u16::<GriddedDataDataRepresentation>(GriddedDataDataRepresentation::from_u16);
     check_u8::<EnvironmentalProcessModelType>(EnvironmentalProcessModelType::from_u8);
     check_u32::<EnvironmentalProcessRecordType>(
         &[
@@ -826,7 +826,7 @@ fn deku_matches_from_primitive_for_every_enum() {
 fn undefined_value_is_a_wire_format_error() {
     // PduType defines 0..=72, so 200 is undefined.
     let err = decode::<PduType>(&[200]).unwrap_err();
-    let err = crate::common::DISError::from(err);
+    let err = crate::common::DISError::from_wire(err);
     assert!(matches!(err, crate::common::DISError::WireFormat(_)));
     assert!(
         err.to_string()

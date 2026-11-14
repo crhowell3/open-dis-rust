@@ -4,7 +4,9 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use crate::common::data_types::fixed_binary_16::FixedBinary16;
+use crate::common::data_types::fixed_binary::FixedBinary16;
+
+pub type LELinearVelocityComponent = FixedBinary16<0>;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -13,17 +15,17 @@ use crate::common::data_types::fixed_binary_16::FixedBinary16;
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct LELinearVelocity {
-    pub x_component: FixedBinary16,
-    pub y_component: FixedBinary16,
-    pub z_component: FixedBinary16,
+    pub x_component: LELinearVelocityComponent,
+    pub y_component: LELinearVelocityComponent,
+    pub z_component: LELinearVelocityComponent,
 }
 
 impl LELinearVelocity {
     #[must_use]
     pub const fn new(
-        x_component: FixedBinary16,
-        y_component: FixedBinary16,
-        z_component: FixedBinary16,
+        x_component: LELinearVelocityComponent,
+        y_component: LELinearVelocityComponent,
+        z_component: LELinearVelocityComponent,
     ) -> Self {
         Self {
             x_component,
@@ -32,4 +34,3 @@ impl LELinearVelocity {
         }
     }
 }
-

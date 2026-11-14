@@ -14,20 +14,18 @@ use deku::{
 };
 
 use crate::{
+    common::pdu::impl_pdu,
     common::{
         LiveEntityPduHeader,
-        data_types::{
-            EntityType, VariableParameter, entity_marking::EntityMarking,
-            fixed_binary_16::FixedBinary16, munition_descriptor::MunitionDescriptor,
-        },
+        data_types::{FixedBinary16, MunitionDescriptor},
         enums::{ForceId, PduType, ProtocolFamily, impl_deku_bitflags},
         live_entity_records::{
             LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
             LiveEntityOrientation16, LiveEventIdentifier, OrientationError, PositionError,
             RelativeWorldCoordinates,
         },
+        records::{EntityMarking, EntityType, VariableParameter},
     },
-    impl_pdu,
 };
 
 bitflags! {
@@ -70,7 +68,7 @@ pub struct TimeSpacePositionInformationPdu {
     #[deku(cond = "tspi_flag.contains(TspiFlag::DEAD_RECKONING)")]
     pub dead_reckoning_parameters: Option<LEDeadReckoningParameters>,
     #[deku(cond = "tspi_flag.contains(TspiFlag::MEASURED_SPEED)")]
-    pub measured_speed: Option<FixedBinary16>,
+    pub measured_speed: Option<FixedBinary16<0>>,
     /// Up to 255 octets. Sent as a one-octet length followed by the data.
     #[deku(
         cond = "tspi_flag.contains(TspiFlag::SYSTEM_SPECIFIC_DATA)",
@@ -410,16 +408,13 @@ impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

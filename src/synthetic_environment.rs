@@ -7,16 +7,16 @@
 //! The Synthetic Environment protocol family
 
 use crate::common::{
-    data_types::{
-        ClockTime, EntityId, EntityType, Environment, EulerAngles, GridAxisDescriptor,
-        GridDataRecord, LinearSegmentParameter, ObjectIdentifier, ObjectType, SimulationAddress,
-        WorldCoordinate,
-    },
     enums::{
         ForceId, GriddedDataConstantGrid, GriddedDataCoordinateSystem,
         ObjectStateAppearanceGeneral, PduType, ProtocolFamily,
     },
     pdu_header::PduHeader,
+    records::{
+        ClockTime, EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor,
+        GridData, LinearSegmentParameter, ObjectIdentifier, ObjectType, SimulationAddress,
+        WorldCoordinates,
+    },
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.10.2
@@ -25,7 +25,7 @@ use crate::common::{
 pub struct EnvironmentalProcessPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub environmental_process_id: EntityId,
+    pub environmental_process_id: EntityIdentifier,
     pub environment_type: EntityType,
     pub model_type: u8,
     pub environment_status: u8,
@@ -38,7 +38,7 @@ pub struct EnvironmentalProcessPdu {
     #[deku(count = "number_of_environment_records")]
     pub environment_records: Vec<Environment>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     EnvironmentalProcessPdu,
     PduHeader,
     PduType::EnvironmentalProcess,
@@ -53,7 +53,7 @@ crate::impl_pdu!(
 pub struct GriddedDataPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub environmental_simulation_id: EntityId,
+    pub environmental_simulation_id: EntityIdentifier,
     pub field_number: u16,
     pub pdu_number: u16,
     pub pdu_total: u16,
@@ -72,9 +72,9 @@ pub struct GriddedDataPdu {
     #[deku(count = "number_of_grid_axes")]
     pub grid_axis_descriptors: Vec<GridAxisDescriptor>,
     #[deku(read_all, update = "updated_grid_data(&self.grid_data_list)?")]
-    pub grid_data_list: Vec<GridDataRecord>,
+    pub grid_data_list: Vec<GridData>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     GriddedDataPdu,
     PduHeader,
     PduType::GriddedData,
@@ -82,7 +82,7 @@ crate::impl_pdu!(
 );
 
 /// The grid data records with their own update rules applied.
-fn updated_grid_data(records: &[GridDataRecord]) -> Result<Vec<GridDataRecord>, deku::DekuError> {
+fn updated_grid_data(records: &[GridData]) -> Result<Vec<GridData>, deku::DekuError> {
     let mut records = records.to_vec();
     crate::common::wire::update_each(&mut records)?;
     Ok(records)
@@ -94,13 +94,13 @@ fn updated_grid_data(records: &[GridDataRecord]) -> Result<Vec<GridDataRecord>, 
 pub struct PointObjectStatePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub object_id: EntityId,
-    pub referenced_object_id: EntityId,
+    pub object_id: EntityIdentifier,
+    pub referenced_object_id: EntityIdentifier,
     pub update_number: u16,
     pub force_id: ForceId,
     pub modifications: u8,
     pub object_type: ObjectType,
-    pub object_location: WorldCoordinate,
+    pub object_location: WorldCoordinates,
     pub object_orientation: EulerAngles,
     pub specific_object_appearance: u32,
     pub general_object_appearance: u16,
@@ -109,7 +109,7 @@ pub struct PointObjectStatePdu {
     pub receiving_id: SimulationAddress,
     padding2: u32,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     PointObjectStatePdu,
     PduHeader,
     PduType::PointObjectState,
@@ -134,7 +134,7 @@ pub struct LinearObjectStatePdu {
     #[deku(count = "number_of_segments")]
     pub linear_segment_parameters: Vec<LinearSegmentParameter>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     LinearObjectStatePdu,
     PduHeader,
     PduType::LinearObjectState,
@@ -163,9 +163,9 @@ pub struct ArealObjectStatePdu {
     pub requester_id: SimulationAddress,
     pub receiving_id: SimulationAddress,
     #[deku(count = "number_of_points")]
-    pub object_location: Vec<WorldCoordinate>,
+    pub object_location: Vec<WorldCoordinates>,
 }
-crate::impl_pdu!(
+crate::common::pdu::impl_pdu!(
     ArealObjectStatePdu,
     PduHeader,
     PduType::ArealObjectState,
@@ -176,16 +176,13 @@ crate::impl_pdu!(
 mod tests {
     use super::*;
     use crate::{
+        common::pdu::pdu_tests,
         common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
     };
-    use bytes::{Buf, Bytes, BytesMut};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

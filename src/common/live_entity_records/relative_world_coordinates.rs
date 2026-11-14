@@ -3,7 +3,9 @@
 //
 //     Licensed under the BSD-2-Clause License
 
-use crate::common::data_types::fixed_binary_16::FixedBinary16;
+use crate::common::data_types::fixed_binary::FixedBinary16;
+
+pub type RelativeWorldCoordinatesComponent = FixedBinary16<3>;
 
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -13,18 +15,18 @@ use crate::common::data_types::fixed_binary_16::FixedBinary16;
 )]
 pub struct RelativeWorldCoordinates {
     pub reference_point: u16,
-    pub delta_x: FixedBinary16,
-    pub delta_y: FixedBinary16,
-    pub delta_z: FixedBinary16,
+    pub delta_x: RelativeWorldCoordinatesComponent,
+    pub delta_y: RelativeWorldCoordinatesComponent,
+    pub delta_z: RelativeWorldCoordinatesComponent,
 }
 
 impl RelativeWorldCoordinates {
     #[must_use]
     pub const fn new(
         reference_point: u16,
-        delta_x: FixedBinary16,
-        delta_y: FixedBinary16,
-        delta_z: FixedBinary16,
+        delta_x: RelativeWorldCoordinatesComponent,
+        delta_y: RelativeWorldCoordinatesComponent,
+        delta_z: RelativeWorldCoordinatesComponent,
     ) -> Self {
         Self {
             reference_point,
