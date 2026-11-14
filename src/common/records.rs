@@ -27,10 +27,15 @@ use crate::common::enums::{
     EntityAssociationAssociationType, EntityKind, EntityMarkingCharacterSet,
     EnvironmentalProcessRecordType, ExplosiveMaterialCategories, ForceId, FuelLocation,
     FuelMeasurementUnits, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
-    GriddedDataSampleType, IFFApplicableModes, IFFSimulationMode, IntercomControlRecordType,
-    MunitionDescriptorFuse, MunitionDescriptorWarhead, MunitionExpendableStatus, OtherKinds,
-    SupplyFuelType, TransponderInterrogatorIndicator, UAAcousticEmitterSystemFunction,
-    UAAcousticSystemName, VariableRecordTypes,
+    GriddedDataSampleType, IFFApplicableModes, IFFSimulationMode, IOCommsNodeRecordCommsNodeType,
+    IOEffectsRecordIOEffect, IOEffectsRecordIOLinkType, IOEffectsRecordIOProcess,
+    IOEffectsRecordIOStatus, IntercomControlCommunicationsType, IntercomControlRecordType,
+    MinefieldSensorTypesFLIR, MinefieldSensorTypesLaser, MinefieldSensorTypesMagnetic,
+    MinefieldSensorTypesMultispectral, MinefieldSensorTypesOptical, MinefieldSensorTypesPhysical,
+    MinefieldSensorTypesRADAR, MinefieldSensorTypesSONAR, MunitionDescriptorFuse,
+    MunitionDescriptorWarhead, MunitionExpendableStatus, OtherKinds, SupplyFuelType,
+    TransponderInterrogatorIndicator, UAAcousticEmitterSystemFunction, UAAcousticSystemName,
+    VariableRecordTypes,
 };
 use crate::common::wire;
 
@@ -1749,14 +1754,31 @@ pub struct IFFFundamentalParameterData {
     pub system_specific_data: u32,
 }
 
-/// Implemented according to IEEE 1278.1-2012 §6.2.45
-#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct InformationLayers {}
+bitflags::bitflags! {
+    /// Implemented according to IEEE 1278.1-2012 §6.2.45
+    #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash)]
+    pub struct InformationLayers: u8 {
+        const LAYER_1 = 1 << 1;
+        const LAYER_2 = 1 << 2;
+        const LAYER_3 = 1 << 3;
+        const LAYER_4 = 1 << 4;
+        const LAYER_5 = 1 << 5;
+        const LAYER_6 = 1 << 6;
+        const LAYER_7 = 1 << 7;
+    }
+}
+
+crate::common::enums::impl_deku_bitflags!(InformationLayers, u8);
+
+impl InformationLayers {
+    #[must_use]
+    pub const fn layer(number: u8) -> Option<Self> {
+        match number {
+            1..=7 => Some(Self::from_bits_retain(1 << number)),
+            _ => None,
+        }
+    }
+}
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.46
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -1806,6 +1828,76 @@ impl IntercomIdentifier {
             event_number,
         }
     }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.48.2
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct IOCommunicationsNode {
+    pub record_type: u32,
+    pub record_length: u16,
+    pub communications_node_type: IOCommsNodeRecordCommsNodeType,
+    padding: u8,
+    pub communications_node_id: CommunicationsNodeID,
+}
+
+impl IOCommunicationsNode {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            record_type: 5501,
+            record_length: 16,
+            communications_node_type: IOCommsNodeRecordCommsNodeType::default(),
+            padding: 0u8,
+            communications_node_id: CommunicationsNodeID::default(),
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.48.3
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct IOEffect {
+    pub record_type: u32,
+    pub record_length: u16,
+    pub io_status: IOEffectsRecordIOStatus,
+    pub io_link_type: IOEffectsRecordIOLinkType,
+    pub io_effect: IOEffectsRecordIOEffect,
+    pub io_effect_duty_cycle: u8,
+    pub io_effect_duration: u16,
+    pub io_process: IOEffectsRecordIOProcess,
+    padding: u16,
+}
+
+impl IOEffect {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            record_type: 5500,
+            record_length: 16,
+            ..Default::default()
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.48.4
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct CommunicationsNodeID {
+    pub entity_id: EntityIdentifier,
+    pub element_id: u16,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.49
@@ -2446,6 +2538,38 @@ impl JammingTechnique {
     pub const SUPER_JAM: Self = Self::new(4, 1, 0, 0);
 }
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.50
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct LaunchedMunition {
+    pub fire_event_id: EventIdentifier,
+    padding: u16,
+    pub firing_entity_id: EntityIdentifier,
+    padding2: u16,
+    pub targeting_entity_id: EntityIdentifier,
+    padding3: u16,
+    pub target_location_in_world_coordinates: WorldCoordinates,
+}
+
+impl LaunchedMunition {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            fire_event_id: EventIdentifier::default(),
+            padding: 0u16,
+            firing_entity_id: EntityIdentifier::default(),
+            padding2: 0u16,
+            targeting_entity_id: EntityIdentifier::default(),
+            padding3: 0u16,
+            target_location_in_world_coordinates: WorldCoordinates::default(),
+        }
+    }
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.51
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -2522,6 +2646,42 @@ impl LinearSegmentParameter {
     }
 }
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.53
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct LiveEntityIdentifier {
+    pub live_simulation_address: LiveSimulationAddress,
+    pub entity_number: u16,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.54
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct LiveSimulationAddress {
+    pub live_site_number: u8,
+    pub live_application_number: u8,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.55
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct MineEntityIdentifier {
+    pub simulation_address: SimulationAddress,
+    pub mine_entity_number: u16,
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.56
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -2542,6 +2702,20 @@ impl MinefieldIdentifier {
             minefield_number,
         }
     }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.57
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum MinefieldSensorType {
+    Other(u16),
+    Optical(MinefieldSensorTypesOptical),
+    Flir(MinefieldSensorTypesFLIR),
+    Radar(MinefieldSensorTypesRADAR),
+    Magnetic(MinefieldSensorTypesMagnetic),
+    Laser(MinefieldSensorTypesLaser),
+    Sonar(MinefieldSensorTypesSONAR),
+    Physical(MinefieldSensorTypesPhysical),
+    Multispectral(MinefieldSensorTypesMultispectral),
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.58

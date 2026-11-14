@@ -10,7 +10,7 @@ use crate::common::{
     },
     records::{
         AcousticEmitterSystem, AngularVelocityVector, Attribute, EmitterSystem, EntityIdentifier,
-        EntityType, TrackJamData, Vector,
+        TrackJamData, Vector,
     },
 };
 
