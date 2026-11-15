@@ -4,17 +4,32 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use crate::common::GenericHeader;
-
-use super::{constants::PDU_HEADER_SIZE, dis_error::DISError};
-use std::any::Any;
+use super::{
+    LiveEntityPduHeader,
+    constants::PDU_HEADER_SIZE,
+    dis_error::DISError,
+    enums::{PduType, ProtocolFamily},
+    records::PduHeader,
+};
+use std::{any::Any, fmt::Debug};
 
 /// A DIS Protocol Data Unit
 ///
 /// Something that can be encoded to and decoded from the bytes of the
 /// DIS wire format
 pub trait Pdu {
-    type Header: GenericHeader + Default;
+    /// The PDU's header: [`PduHeader`] for most PDUs, or [`LiveEntityPduHeader`] for the
+    /// Live Entity Information/Interaction family. [`StandardPdu`] and [`LiveEntityPdu`]
+    /// represent the two variants.
+    type Header: Copy + Debug + Default + PartialEq + Eq;
+
+    /// The PDU's type. It is fixed for each PDU struct, and `serialize` writes it into
+    /// the header.
+    fn pdu_type(&self) -> PduType;
+
+    /// The PDU's protocol family. It is fixed for each PDU struct, and `serialize` writes
+    /// it into the header.
+    fn protocol_family(&self) -> ProtocolFamily;
 
     /// The PDU's total encoded length in octets, header included
     /// # Errors
@@ -81,6 +96,50 @@ pub trait Pdu {
     fn as_any(&self) -> &dyn Any;
 }
 
+/// A PDU with the standard 12-octet [`PduHeader`], which carries a [`PduStatus`](crate::common::records::PduStatus) record.
+/// Every PDU outside the Live Entity Information/Interaction family is one.
+///
+/// It is implemented for every `Pdu<Header = PduHeader>`, so it is a shorter way to write
+/// that bound:
+///
+/// ```
+/// use open_dis_rust::prelude::*;
+///
+/// fn set_exercise(pdu: &mut impl StandardPdu, exercise_id: ExerciseIdentifier) {
+///     pdu.header_mut().exercise_id = exercise_id;
+/// }
+/// ```
+pub trait StandardPdu: Pdu<Header = PduHeader> {}
+
+impl<T: Pdu<Header = PduHeader> + ?Sized> StandardPdu for T {}
+
+/// A PDU of the Live Entity Information/Interaction family, whose
+/// [`LiveEntityPduHeader`] has a subprotocol number where other PDUs have
+/// their PDU Status record.
+///
+/// It is implemented for every `Pdu<Header = LiveEntityPduHeader>`. A function that takes
+/// one does not accept standard PDUs:
+///
+/// ```compile_fail
+/// use open_dis_rust::{entity_information::EntityStatePdu, prelude::*};
+///
+/// fn subprotocol(pdu: &impl LiveEntityPdu) {}
+/// subprotocol(&EntityStatePdu::new());
+/// ```
+pub trait LiveEntityPdu: Pdu<Header = LiveEntityPduHeader> {}
+
+impl<T: Pdu<Header = LiveEntityPduHeader> + ?Sized> LiveEntityPdu for T {}
+
+/// The header fields that encoding sets from the PDU. Private to the crate so that
+/// those fields stay read-only for users.
+pub(crate) trait DerivedFields {
+    #[cfg(test)]
+    fn length(&self) -> u16;
+    fn set_pdu_type(&mut self, value: PduType);
+    fn set_protocol_family(&mut self, value: ProtocolFamily);
+    fn set_length(&mut self, value: u16);
+}
+
 pub(crate) fn total_length(header_len: usize, body_len: usize) -> Result<u16, DISError> {
     use crate::common::constants::MAX_PDU_SIZE_OCTETS;
     let size = header_len.saturating_add(body_len);
@@ -97,7 +156,7 @@ pub(crate) fn total_length(header_len: usize, body_len: usize) -> Result<u16, DI
 /// header with the PDU's real length. `buf` is restored if anything fails.
 pub(crate) fn write_pdu<H, B>(header: &mut H, body: &B, buf: &mut Vec<u8>) -> Result<(), DISError>
 where
-    H: crate::common::generic_header::SetDerivedFields + deku::DekuWriter<()>,
+    H: DerivedFields + deku::DekuWriter<()>,
     B: deku::DekuWriter<()>,
 {
     let start = buf.len();
@@ -109,7 +168,7 @@ where
             .saturating_sub(start)
             .saturating_sub(PDU_HEADER_SIZE);
         let length = total_length(PDU_HEADER_SIZE, body_len)?;
-        crate::common::generic_header::SetDerivedFields::set_length(header, length);
+        header.set_length(length);
 
         let mut encoded = Vec::with_capacity(PDU_HEADER_SIZE);
         crate::common::wire::write(&*header, &mut encoded).map_err(DISError::from_wire)?;
@@ -163,6 +222,14 @@ macro_rules! impl_pdu {
         impl $crate::common::pdu::Pdu for $name {
             type Header = $header;
 
+            fn pdu_type(&self) -> $crate::common::enums::PduType {
+                $pdu_type
+            }
+
+            fn protocol_family(&self) -> $crate::common::enums::ProtocolFamily {
+                $family
+            }
+
             fn calculate_length(&self) -> Result<u16, $crate::common::DISError> {
                 let body = $crate::common::wire::encoded_len(self)
                     .map_err($crate::common::DISError::from_wire)?;
@@ -182,21 +249,12 @@ macro_rules! impl_pdu {
             fn finalize(&mut self) {
                 let _ = deku::DekuUpdate::update(self);
                 let length = self.calculate_length().unwrap_or_default();
-                $crate::common::generic_header::SetDerivedFields::set_length(
-                    &mut self.header,
-                    length,
-                );
+                $crate::common::pdu::DerivedFields::set_length(&mut self.header, length);
             }
 
             fn serialize(&mut self, buf: &mut Vec<u8>) -> Result<(), $crate::common::DISError> {
-                $crate::common::generic_header::SetDerivedFields::set_pdu_type(
-                    &mut self.header,
-                    $pdu_type,
-                );
-                $crate::common::generic_header::SetDerivedFields::set_protocol_family(
-                    &mut self.header,
-                    $family,
-                );
+                $crate::common::pdu::DerivedFields::set_pdu_type(&mut self.header, $pdu_type);
+                $crate::common::pdu::DerivedFields::set_protocol_family(&mut self.header, $family);
                 deku::DekuUpdate::update(self).map_err($crate::common::DISError::from_wire)?;
                 let mut header = self.header;
                 $crate::common::pdu::write_pdu(&mut header, &*self, buf)?;
@@ -210,7 +268,7 @@ macro_rules! impl_pdu {
             {
                 let header: $header =
                     $crate::common::wire::read(buf).map_err($crate::common::DISError::from_wire)?;
-                let found = $crate::common::GenericHeader::pdu_type(&header);
+                let found = header.pdu_type();
                 if found != $pdu_type {
                     return Err($crate::common::DISError::invalid_header(
                         format!("expected PDU type {:?}, got {found:?}", $pdu_type),
@@ -227,7 +285,7 @@ macro_rules! impl_pdu {
             where
                 Self: Sized,
             {
-                let declared = $crate::common::GenericHeader::length(&header);
+                let declared = header.length();
                 let mut body = $crate::common::pdu::take_body(
                     buf,
                     declared,
@@ -250,14 +308,8 @@ macro_rules! impl_pdu {
             #[must_use]
             pub fn new() -> Self {
                 let mut pdu = Self::default();
-                $crate::common::generic_header::SetDerivedFields::set_pdu_type(
-                    &mut pdu.header,
-                    $pdu_type,
-                );
-                $crate::common::generic_header::SetDerivedFields::set_protocol_family(
-                    &mut pdu.header,
-                    $family,
-                );
+                $crate::common::pdu::DerivedFields::set_pdu_type(&mut pdu.header, $pdu_type);
+                $crate::common::pdu::DerivedFields::set_protocol_family(&mut pdu.header, $family);
                 $crate::common::pdu::Pdu::finalize(&mut pdu);
                 pdu
             }
@@ -285,10 +337,8 @@ macro_rules! pdu_tests {
             #[test]
             fn new_sets_pdu_type() {
                 let pdu = <$pdu>::new();
-                assert_eq!(
-                    $crate::common::GenericHeader::pdu_type(pdu.header()),
-                    $pdu_type
-                );
+                assert_eq!(pdu.header().pdu_type(), $pdu_type);
+                assert_eq!(pdu.pdu_type(), $pdu_type);
             }
 
             #[test]
@@ -336,10 +386,60 @@ pub(crate) use pdu_tests;
 mod tests {
     use super::*;
     use crate::{
-        common::records::VariableDatumRecord,
+        common::{
+            LiveEntityPdu, StandardPdu,
+            enums::PduType,
+            records::{ExerciseIdentifier, VariableDatumRecord},
+        },
         entity_information::EntityStatePdu,
+        live_entity_information::TimeSpacePositionInformationPdu,
         simulation_management::{AcknowledgePdu, CommentPdu},
     };
+
+    fn exercise_of(pdu: &impl StandardPdu) -> ExerciseIdentifier {
+        pdu.header().exercise_id
+    }
+
+    fn subprotocol_of(
+        pdu: &impl LiveEntityPdu,
+    ) -> crate::common::enums::DISLiveEntitySubprotocolNumber {
+        pdu.header().subprotocol_number
+    }
+
+    #[test]
+    fn pdus_are_told_apart_by_their_header() {
+        assert_eq!(
+            exercise_of(&EntityStatePdu::new()),
+            ExerciseIdentifier::new(1)
+        );
+        let tspi = TimeSpacePositionInformationPdu::new();
+        assert_eq!(subprotocol_of(&tspi), tspi.header().subprotocol_number);
+    }
+
+    #[test]
+    fn standard_pdus_can_be_trait_objects() {
+        let mut pdus: Vec<Box<dyn StandardPdu>> = vec![
+            Box::new(EntityStatePdu::new()),
+            Box::new(AcknowledgePdu::new()),
+        ];
+        let types: Vec<PduType> = pdus.iter().map(|pdu| pdu.pdu_type()).collect();
+        assert_eq!(types, [PduType::EntityState, PduType::Acknowledge]);
+        let mut buf = Vec::new();
+        for pdu in &mut pdus {
+            pdu.serialize(&mut buf).unwrap();
+        }
+        assert_eq!(buf.len(), 144 + 32);
+    }
+
+    #[test]
+    fn pdu_type_and_family_are_known_before_encoding() {
+        let pdu = TimeSpacePositionInformationPdu::default();
+        assert_eq!(pdu.pdu_type(), PduType::TimeSpacePositionInformation);
+        assert_eq!(
+            pdu.protocol_family(),
+            crate::common::enums::ProtocolFamily::LiveEntityInformationInteraction
+        );
+    }
 
     #[test]
     fn serialize_appends_to_existing_contents() {

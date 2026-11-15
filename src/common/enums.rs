@@ -7,7 +7,6 @@
 #![allow(deprecated, clippy::as_conversions)]
 
 use bitflags::bitflags;
-use modular_bitfield::Specifier;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -8699,8 +8698,7 @@ pub enum EEAttributeStateIndicator {
 impl_deku_enum!(EEAttributeStateIndicator, u8, from_u8);
 
 // SISO-REF-010-2023 DISPDUStatusTransferredEntityIndicator(TEI) [UID 301]
-#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-#[bits = 1]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum TransferredEntityIndicator {
     #[default]
     NoDifference = 0,
@@ -8708,8 +8706,7 @@ pub enum TransferredEntityIndicator {
 }
 
 // SISO-REF-010-2023 LVCIndicator [UID 302]
-#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-#[bits = 2]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum LVCIndicator {
     #[default]
     NoStatement = 0,
@@ -8719,8 +8716,7 @@ pub enum LVCIndicator {
 }
 
 // SISO-REF-010-2023 DISPDUStatusCoupledExtensionIndicator(CEI) [UID 303]
-#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-#[bits = 1]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum CoupledExtensionIndicator {
     #[default]
     NotCoupled = 0,
@@ -8728,26 +8724,15 @@ pub enum CoupledExtensionIndicator {
 }
 
 // SISO-REF-010-2023 DISPDUStatusFireTypeIndicator(FTI) [UID 304]
-#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-#[bits = 1]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum FireTypeIndicator {
     #[default]
     Munition = 0,
     Expendable = 1,
 }
 
-impl From<FireTypeIndicator> for u8 {
-    fn from(value: FireTypeIndicator) -> Self {
-        match value {
-            FireTypeIndicator::Munition => 0,
-            FireTypeIndicator::Expendable => 1,
-        }
-    }
-}
-
 // SISO-REF-010-2023 DISPDUStatusDetonationTypeIndicator(DTI) [UID 305]
-#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-#[bits = 2]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum DetonationTypeIndicator {
     #[default]
     Munition = 0,
@@ -8755,25 +8740,8 @@ pub enum DetonationTypeIndicator {
     NonMunitionExplosion = 2,
 }
 
-impl From<u8> for DetonationTypeIndicator {
-    fn from(value: u8) -> Self {
-        match value & 0b11 {
-            1 => Self::Expendable,
-            2 => Self::NonMunitionExplosion,
-            _ => Self::Munition,
-        }
-    }
-}
-
-impl From<DetonationTypeIndicator> for u8 {
-    fn from(value: DetonationTypeIndicator) -> Self {
-        value as Self
-    }
-}
-
 // SISO-REF-010-2023 RadioAttachedIndicator [UID 306]
-#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-#[bits = 2]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum RadioAttachedIndicator {
     #[default]
     NoStatement = 0,
@@ -8781,25 +8749,8 @@ pub enum RadioAttachedIndicator {
     Attached = 2,
 }
 
-impl From<u8> for RadioAttachedIndicator {
-    fn from(value: u8) -> Self {
-        match value & 0b11 {
-            1 => Self::Unattached,
-            2 => Self::Attached,
-            _ => Self::NoStatement,
-        }
-    }
-}
-
-impl From<RadioAttachedIndicator> for u8 {
-    fn from(value: RadioAttachedIndicator) -> Self {
-        value as Self
-    }
-}
-
 // SISO-REF-010-2023 IntercomAttachedIndicator(IAI) [UID 307]
-#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-#[bits = 2]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum IntercomAttachedIndicator {
     #[default]
     NoStatement = 0,
@@ -8807,38 +8758,12 @@ pub enum IntercomAttachedIndicator {
     Attached = 2,
 }
 
-impl From<u8> for IntercomAttachedIndicator {
-    fn from(value: u8) -> Self {
-        match value & 0b11 {
-            1 => Self::Unattached,
-            2 => Self::Attached,
-            _ => Self::NoStatement,
-        }
-    }
-}
-
-impl From<IntercomAttachedIndicator> for u8 {
-    fn from(value: IntercomAttachedIndicator) -> Self {
-        value as Self
-    }
-}
-
 // SISO-REF-010-2023 PduStatusIFFSimulationMode [UID 308]
-#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-#[bits = 1]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum PduStatusIFFSimulationMode {
     #[default]
     Regeneration = 0,
     Interactive = 1,
-}
-
-impl From<PduStatusIFFSimulationMode> for u8 {
-    fn from(value: PduStatusIFFSimulationMode) -> Self {
-        match value {
-            PduStatusIFFSimulationMode::Regeneration => 0,
-            PduStatusIFFSimulationMode::Interactive => 1,
-        }
-    }
 }
 
 // SISO-REF-010-2023 ExplosiveMaterialGroups [UID 309]
@@ -9246,9 +9171,9 @@ pub enum SensorOnOffStatus {
 
 impl_deku_enum!(SensorOnOffStatus, u8, from_u8);
 
-// SISO-REF-010-2023 OwnershipStatus [UID 332]
+// SISO-REF-010-2023 EntityOwnershipStatus [UID 332]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-pub enum OwnershipStatus {
+pub enum EntityOwnershipStatus {
     #[default]
     Other = 0,
     NewOwner = 1,
@@ -9259,7 +9184,7 @@ pub enum OwnershipStatus {
     LocalEntityCancelledRemoveEntityTCRReceived = 6,
 }
 
-impl_deku_enum!(OwnershipStatus, u8, from_u8);
+impl_deku_enum!(EntityOwnershipStatus, u8, from_u8);
 
 // SISO-REF-010-2023 RecordREventType [UID 333]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -9904,21 +9829,11 @@ pub enum AppearanceSubsurfaceHatch {
 impl_deku_enum!(AppearanceSubsurfaceHatch, u8, from_u8);
 
 // SISO-REF-010-2023 DISPDUStatusActiveInterrogationIndicator(AII) [UID 389]
-#[derive(Specifier, Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-#[bits = 1]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum ActiveInterrogationIndicator {
     #[default]
     NotActive = 0,
     Active = 1,
-}
-
-impl From<ActiveInterrogationIndicator> for u8 {
-    fn from(aii: ActiveInterrogationIndicator) -> Self {
-        match aii {
-            ActiveInterrogationIndicator::NotActive => 0,
-            ActiveInterrogationIndicator::Active => 1,
-        }
-    }
 }
 
 // SISO-REF-010-2023 AppearanceLifeformHealth [UID 390]

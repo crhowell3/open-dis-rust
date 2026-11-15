@@ -10,16 +10,12 @@ pub mod constants;
 pub mod data_types;
 pub mod dis_error;
 pub mod enums;
-pub mod generic_header;
 pub mod live_entity_pdu_header;
 pub mod live_entity_records;
 pub mod pdu;
-pub mod pdu_header;
 pub mod records;
 pub(crate) mod wire;
 
 pub use dis_error::{DISError, WireFormatError};
-pub use generic_header::GenericHeader;
 pub use live_entity_pdu_header::LiveEntityPduHeader;
-pub use pdu::Pdu;
-pub use pdu_header::PduHeader;
+pub use pdu::{LiveEntityPdu, Pdu, StandardPdu};

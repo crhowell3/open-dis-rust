@@ -12,9 +12,9 @@ use crate::common::{
         FrozenBehavior, PduType, ProtocolFamily, Reason, RecordQueryREventType, RecordREventType,
         RequiredReliabilityService, VariableRecordTypes,
     },
-    pdu_header::PduHeader,
     records::{
-        ClockTime, EntityIdentifier, RecordSpecification, {FixedDatumRecord, VariableDatumRecord},
+        ClockTime, EntityIdentifier, PduHeader, RecordSpecification,
+        {FixedDatumRecord, VariableDatumRecord},
     },
 };
 

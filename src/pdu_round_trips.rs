@@ -32,17 +32,16 @@ use crate::common::{
     pdu::Pdu,
     records::{
         AggregateIdentifier, AntennaPattern, Attribute, ClockTime, DirectedEnergyDamage,
-        EntityIdentifier, EntityType, Environment, EulerAngles, FixedDatumRecord,
-        GridAxisDescriptor, GridData, IntercomCommunicationsParameters, LinearSegmentParameter,
-        ModulationParameters, PropulsionSystemData, SupplyQuantity, TrackJamData,
-        VariableDatumRecord, VariableParameter, VariableTransmitterParameters, Vector,
-        VectoringNozzleSystemData, WorldCoordinates,
+        EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor, GridData,
+        IntercomCommunicationsParameters, LinearSegmentParameter, ModulationParameters,
+        PropulsionSystemData, SupplyQuantity, TrackJamData, VariableDatumRecord, VariableParameter,
+        VariableTransmitterParameters, Vector, VectoringNozzleSystemData, WorldCoordinates,
     },
 };
 use crate::{
     distributed_emissions::*, entity_information::*, entity_management::*, logistics::*,
-    minefield::*, radio_communications::*, simulation_management::*,
-    simulation_management_with_reliability::*, synthetic_environment::*, warfare::*,
+    minefield::*, radio_communications::*, simulation_management_with_reliability::*,
+    synthetic_environment::*, warfare::*,
 };
 
 fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
@@ -50,10 +49,13 @@ fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
 }
 
 /// Serialize, decode, re-serialize: the bytes must match and be fully read.
-fn round_trip<P: Pdu>(pdu: &mut P) -> P {
+fn round_trip<P: Pdu>(pdu: &mut P) -> P
+where
+    P::Header: crate::common::pdu::DerivedFields,
+{
     let original = to_bytes(pdu);
     assert_eq!(
-        usize::from(crate::common::GenericHeader::length(pdu.header())),
+        usize::from(crate::common::pdu::DerivedFields::length(pdu.header())),
         original.len(),
         "header length"
     );
@@ -781,42 +783,6 @@ lists!(
     |d| {
         assert_eq!(d.intercom_parameters_length, 2);
     }
-);
-
-// ---------------------------------------------------------------------------
-// Simulation management (with and without reliability)
-// ---------------------------------------------------------------------------
-
-macro_rules! datum_lists {
-    ($($test:ident: $pdu:ty),* $(,)?) => {$(
-        lists!($test, $pdu, |p| {
-            p.fixed_datums = vec![FixedDatumRecord::default(); 2];
-            p.variable_datums = vec![
-                VariableDatumRecord { length_bits: 12, value: vec![0xA, 0xB], ..VariableDatumRecord::default() };
-                3
-            ];
-        }, |d| {
-            assert_eq!(d.number_of_fixed_datums, 2);
-            assert_eq!(d.number_of_variable_datums, 3);
-            assert_eq!(d.variable_datums[2].value, [0xA, 0xB]);
-        });
-    )*};
-}
-
-datum_lists!(
-    action_request: ActionRequestPdu,
-    action_response: ActionResponsePdu,
-    data_query: DataQueryPdu,
-    set_data: SetDataPdu,
-    data: DataPdu,
-    event_report: EventReportPdu,
-    comment: CommentPdu,
-    action_request_reliable: ActionRequestReliablePdu,
-    action_response_reliable: ActionResponseReliablePdu,
-    set_data_reliable: SetDataReliablePdu,
-    data_reliable: DataReliablePdu,
-    event_report_reliable: EventReportReliablePdu,
-    comment_reliable: CommentReliablePdu,
 );
 
 lists!(

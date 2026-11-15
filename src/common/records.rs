@@ -21,21 +21,24 @@ use crate::common::data_types::{
     StandardVariableRecords,
 };
 use crate::common::enums::{
-    AggregateStateAggregateKind, BeamStatusBeamState, ComponentDamageStatus,
-    ComponentIdentification, ComponentVisualSmokeColor, Country, DEPrecisionAimpointBeamSpotType,
+    ActiveInterrogationIndicator, AggregateStateAggregateKind, BeamStatusBeamState,
+    ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor, Country,
+    CoupledExtensionIndicator, DEPrecisionAimpointBeamSpotType, DetonationTypeIndicator,
     EEAttributeStateIndicator, EmitterName, EmitterSystemFunction,
-    EntityAssociationAssociationType, EntityKind, EntityMarkingCharacterSet,
-    EnvironmentalProcessRecordType, ExplosiveMaterialCategories, ForceId, FuelLocation,
-    FuelMeasurementUnits, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
+    EntityAssociationAssociationType, EntityKind, EntityMarkingCharacterSet, EntityOwnershipStatus,
+    EnvironmentalProcessRecordType, ExplosiveMaterialCategories, FireTypeIndicator, ForceId,
+    FuelLocation, FuelMeasurementUnits, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
     GriddedDataSampleType, IFFApplicableModes, IFFSimulationMode, IOCommsNodeRecordCommsNodeType,
     IOEffectsRecordIOEffect, IOEffectsRecordIOLinkType, IOEffectsRecordIOProcess,
-    IOEffectsRecordIOStatus, IntercomControlCommunicationsType, IntercomControlRecordType,
-    MinefieldSensorTypesFLIR, MinefieldSensorTypesLaser, MinefieldSensorTypesMagnetic,
-    MinefieldSensorTypesMultispectral, MinefieldSensorTypesOptical, MinefieldSensorTypesPhysical,
-    MinefieldSensorTypesRADAR, MinefieldSensorTypesSONAR, MunitionDescriptorFuse,
-    MunitionDescriptorWarhead, MunitionExpendableStatus, OtherKinds, SupplyFuelType,
-    TransponderInterrogatorIndicator, UAAcousticEmitterSystemFunction, UAAcousticSystemName,
-    VariableRecordTypes,
+    IOEffectsRecordIOStatus, IntercomAttachedIndicator, IntercomControlCommunicationsType,
+    IntercomControlRecordType, LVCIndicator, MinefieldSensorTypesFLIR, MinefieldSensorTypesLaser,
+    MinefieldSensorTypesMagnetic, MinefieldSensorTypesMultispectral, MinefieldSensorTypesOptical,
+    MinefieldSensorTypesPhysical, MinefieldSensorTypesRADAR, MinefieldSensorTypesSONAR,
+    MunitionDescriptorFuse, MunitionDescriptorWarhead, MunitionExpendableStatus, OtherKinds,
+    PduStatusIFFSimulationMode, PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator,
+    SupplyFuelType, TransferredEntityIndicator, TransmitterMajorModulation,
+    TransmitterModulationTypeSystem, TransponderInterrogatorIndicator,
+    UAAcousticEmitterSystemFunction, UAAcousticSystemName, VariableRecordTypes,
 };
 use crate::common::wire;
 
@@ -1360,13 +1363,20 @@ impl EventIdentifier {
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.34
-#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct ExerciseIdentifier(u8);
+
+impl ExerciseIdentifier {
+    #[must_use]
+    pub fn new(id: u8) -> Self {
+        Self(id)
+    }
+}
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.35
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -2742,21 +2752,57 @@ impl ModulationParameters {
 )]
 pub struct ModulationType {
     pub spread_spectrum: u16,
-    pub major: u16,
-    pub detail: u16,
-    pub system: u16,
+    pub major_modulation: TransmitterMajorModulation,
+    pub detail: u16, // TODO(@crhowell3): set this type to proper enums
+    pub radio_system: TransmitterModulationTypeSystem,
 }
 
 impl ModulationType {
     #[must_use]
-    pub const fn new(spread_spectrum: u16, major: u16, detail: u16, system: u16) -> Self {
+    pub const fn new(
+        spread_spectrum: u16,
+        major_modulation: TransmitterMajorModulation,
+        detail: u16,
+        radio_system: TransmitterModulationTypeSystem,
+    ) -> Self {
         Self {
             spread_spectrum,
-            major,
+            major_modulation,
             detail,
-            system,
+            radio_system,
         }
     }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.60
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct Munition {
+    pub munition_type: EntityType,
+    pub station_launcher: u32,
+    pub quantity: u16,
+    pub munition_status: u8,
+    padding: u8,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.61
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct MunitionReload {
+    pub munition_type: EntityType,
+    pub station_launcher: u32,
+    pub standard_quantity: u16,
+    pub maximum_quantity: u16,
+    pub standard_quantity_reload_time: u32,
+    pub maximum_quantity_reload_time: u32,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.62
@@ -2826,6 +2872,372 @@ impl ObjectType {
     }
 }
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.65
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct OwnershipStatus {
+    pub entity_id: EntityIdentifier,
+    pub ownership_status: EntityOwnershipStatus,
+    padding: u8,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.66
+#[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct PduHeader {
+    /// The version of the protocol
+    pub protocol_version: ProtocolVersion,
+    /// Exercise ID
+    pub exercise_id: ExerciseIdentifier,
+    /// Type of PDU, set from the PDU when it's encoded. Read it with
+    /// [`pdu_type`](Self::pdu_type).
+    pub(crate) pdu_type: PduType,
+    /// Protocol family, set from the PDU when it's encoded. Read it with
+    /// [`protocol_family`](Self::protocol_family).
+    pub(crate) protocol_family: ProtocolFamily,
+    /// When the data in the PDU was valid. New headers use [`Timestamp::now`].
+    pub timestamp: Timestamp,
+    /// Length of the PDU in octets, header included, set when it's encoded. Read it
+    /// with [`length`](Self::length).
+    pub(crate) length: u16,
+    /// PDU status record
+    pub pdu_status: PduStatus,
+    /// Padding
+    padding: u8,
+}
+
+impl PduHeader {
+    /// A header for the given exercise, timestamped now. The PDU type, protocol
+    /// family and length are set when the PDU is encoded.
+    #[must_use]
+    pub fn new(exercise_id: ExerciseIdentifier) -> Self {
+        Self {
+            exercise_id,
+            ..Self::default()
+        }
+    }
+
+    /// The PDU type, set from the PDU when it is encoded
+    #[must_use]
+    pub const fn pdu_type(&self) -> PduType {
+        self.pdu_type
+    }
+
+    /// The protocol family, set from the PDU when it is encoded
+    #[must_use]
+    pub const fn protocol_family(&self) -> ProtocolFamily {
+        self.protocol_family
+    }
+
+    /// The PDU's length in octets, header included, set when it is encoded
+    #[must_use]
+    pub const fn length(&self) -> u16 {
+        self.length
+    }
+
+    /// Encodes the header alone and appends it to `buf`
+    pub fn serialize(&self, buf: &mut Vec<u8>) {
+        let _ = crate::common::wire::write(self, buf);
+    }
+
+    /// Decodes a header from the front of `buf`, advancing `buf` past it. Pass it to
+    /// [`Pdu::deserialize_without_header`](crate::common::Pdu::deserialize_without_header)
+    /// to decode the body of the PDU
+    ///
+    /// # Error
+    ///
+    /// Will return a `DISError` if `buf` does not start with a valid header.
+    pub fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::common::DISError> {
+        crate::common::wire::read(buf).map_err(crate::common::DISError::from_wire)
+    }
+
+    /// Looks at the PDU type from a raw byte buffer.
+    /// Only deserializes the 12-byte header.
+    #[must_use]
+    pub fn get_pdu_type(bytes: &[u8]) -> Option<PduType> {
+        let mut buf = bytes.get(..crate::common::constants::PDU_HEADER_SIZE)?;
+        Self::deserialize(&mut buf)
+            .ok()
+            .map(|header| header.pdu_type)
+    }
+}
+
+impl crate::common::pdu::DerivedFields for PduHeader {
+    #[cfg(test)]
+    fn length(&self) -> u16 {
+        self.length
+    }
+
+    fn set_pdu_type(&mut self, value: PduType) {
+        self.pdu_type = value;
+    }
+
+    fn set_protocol_family(&mut self, value: ProtocolFamily) {
+        self.protocol_family = value;
+    }
+
+    fn set_length(&mut self, value: u16) {
+        self.length = value;
+    }
+}
+
+impl Default for PduHeader {
+    fn default() -> Self {
+        Self {
+            protocol_version: ProtocolVersion::IEEE1278_1_2012,
+            exercise_id: ExerciseIdentifier::default(),
+            pdu_type: PduType::default(),
+            protocol_family: ProtocolFamily::default(),
+            timestamp: Timestamp::now(),
+            length: 0,
+            pdu_status: PduStatus::default(),
+            padding: 0,
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.67
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct PduStatus {
+    raw: u8,
+}
+
+impl PduStatus {
+    const TEI: u8 = 0b0000_0001;
+    const LVC: u8 = 0b0000_0110;
+    const CEI: u8 = 0b0000_1000;
+    const BIT_4: u8 = 0b0001_0000;
+    const BIT_5: u8 = 0b0010_0000;
+    const BITS_4_5: u8 = Self::BIT_4 | Self::BIT_5;
+
+    /// Creates a PDU Status record with every field set to zero
+    #[must_use]
+    pub const fn new() -> Self {
+        Self { raw: 0 }
+    }
+
+    /// PDU Status record from its wire octet
+    #[must_use]
+    pub const fn from_raw(raw: u8) -> Self {
+        Self { raw }
+    }
+
+    /// The wire octet itself
+    #[must_use]
+    pub const fn to_raw(self) -> u8 {
+        self.raw
+    }
+
+    /// Replaces the bits in `mask` with `value`
+    const fn set_bits(&mut self, mask: u8, value: u8) {
+        self.raw = (self.raw & !mask) | (value & mask);
+    }
+
+    /// Transferred Entity Indicator (bit 0) \[UID 301\]: whether a simulation other than
+    /// the one in the PDU's primary Entity ID owns the entity
+    #[must_use]
+    pub const fn tei(self) -> TransferredEntityIndicator {
+        if self.raw & Self::TEI == 0 {
+            TransferredEntityIndicator::NoDifference
+        } else {
+            TransferredEntityIndicator::Difference
+        }
+    }
+
+    /// Sets bit 0. See [`tei`](Self::tei).
+    pub const fn set_tei(&mut self, tei: TransferredEntityIndicator) {
+        let value = match tei {
+            TransferredEntityIndicator::NoDifference => 0,
+            TransferredEntityIndicator::Difference => Self::TEI,
+        };
+        self.set_bits(Self::TEI, value);
+    }
+
+    /// LVC Indicator (bits 1 and 2) \[UID 302\]: whether the PDU's data relates to a
+    /// live, virtual or constructive entity.
+    #[must_use]
+    pub const fn lvc(self) -> LVCIndicator {
+        match (self.raw & Self::LVC) >> 1 {
+            0 => LVCIndicator::NoStatement,
+            1 => LVCIndicator::Live,
+            2 => LVCIndicator::Virtual,
+            _ => LVCIndicator::Constructive,
+        }
+    }
+
+    /// Sets bits 1 and 2. See [`lvc`](Self::lvc).
+    pub const fn set_lvc(&mut self, lvc: LVCIndicator) {
+        let value = match lvc {
+            LVCIndicator::NoStatement => 0,
+            LVCIndicator::Live => 1,
+            LVCIndicator::Virtual => 2,
+            LVCIndicator::Constructive => 3,
+        };
+        self.set_bits(Self::LVC, value << 1);
+    }
+
+    /// Coupled Extension Indicator (bit 3) \[UID 303\]: whether the PDU is coupled with
+    /// an Attribute PDU.
+    #[must_use]
+    pub const fn cei(self) -> CoupledExtensionIndicator {
+        if self.raw & Self::CEI == 0 {
+            CoupledExtensionIndicator::NotCoupled
+        } else {
+            CoupledExtensionIndicator::Coupled
+        }
+    }
+
+    /// Sets bit 3. See [`cei`](Self::cei).
+    pub const fn set_cei(&mut self, cei: CoupledExtensionIndicator) {
+        let value = match cei {
+            CoupledExtensionIndicator::NotCoupled => 0,
+            CoupledExtensionIndicator::Coupled => Self::CEI,
+        };
+        self.set_bits(Self::CEI, value);
+    }
+
+    /// Fire Type Indicator (bit 4) \[UID 304\], for the Fire PDU: whether a munition or
+    /// an expendable was fired.
+    #[must_use]
+    pub const fn fti(self) -> FireTypeIndicator {
+        if self.raw & Self::BIT_4 == 0 {
+            FireTypeIndicator::Munition
+        } else {
+            FireTypeIndicator::Expendable
+        }
+    }
+
+    /// Sets bit 4, leaving bit 5 as it is. See [`fti`](Self::fti).
+    pub const fn set_fti(&mut self, fti: FireTypeIndicator) {
+        let value = match fti {
+            FireTypeIndicator::Munition => 0,
+            FireTypeIndicator::Expendable => Self::BIT_4,
+        };
+        self.set_bits(Self::BIT_4, value);
+    }
+
+    /// Detonation Type Indicator (bits 4 and 5) \[UID 305\], for the Detonation PDU:
+    /// what detonated. `None` if the bits hold 3, which isn't defined.
+    #[must_use]
+    pub const fn dti(self) -> Option<DetonationTypeIndicator> {
+        match (self.raw & Self::BITS_4_5) >> 4 {
+            0 => Some(DetonationTypeIndicator::Munition),
+            1 => Some(DetonationTypeIndicator::Expendable),
+            2 => Some(DetonationTypeIndicator::NonMunitionExplosion),
+            _ => None,
+        }
+    }
+
+    /// Sets bits 4 and 5. See [`dti`](Self::dti).
+    pub const fn set_dti(&mut self, dti: DetonationTypeIndicator) {
+        let value = match dti {
+            DetonationTypeIndicator::Munition => 0,
+            DetonationTypeIndicator::Expendable => 1,
+            DetonationTypeIndicator::NonMunitionExplosion => 2,
+        };
+        self.set_bits(Self::BITS_4_5, value << 4);
+    }
+
+    /// Radio Attached Indicator (bits 4 and 5) \[UID 306\], for the Transmitter, Signal
+    /// and Receiver PDUs: whether the radio is attached to an entity or object. `None` if
+    /// the bits hold 3, which isn't defined.
+    #[must_use]
+    pub const fn rai(self) -> Option<RadioAttachedIndicator> {
+        match (self.raw & Self::BITS_4_5) >> 4 {
+            0 => Some(RadioAttachedIndicator::NoStatement),
+            1 => Some(RadioAttachedIndicator::Unattached),
+            2 => Some(RadioAttachedIndicator::Attached),
+            _ => None,
+        }
+    }
+
+    /// Sets bits 4 and 5. See [`rai`](Self::rai).
+    pub const fn set_rai(&mut self, rai: RadioAttachedIndicator) {
+        let value = match rai {
+            RadioAttachedIndicator::NoStatement => 0,
+            RadioAttachedIndicator::Unattached => 1,
+            RadioAttachedIndicator::Attached => 2,
+        };
+        self.set_bits(Self::BITS_4_5, value << 4);
+    }
+
+    /// Intercom Attached Indicator (bits 4 and 5) \[UID 307\], for the Intercom Signal
+    /// and Intercom Control PDUs: whether the intercom is attached to an entity or object.
+    /// `None` if the bits hold 3, which isn't defined.
+    #[must_use]
+    pub const fn iai(self) -> Option<IntercomAttachedIndicator> {
+        match (self.raw & Self::BITS_4_5) >> 4 {
+            0 => Some(IntercomAttachedIndicator::NoStatement),
+            1 => Some(IntercomAttachedIndicator::Unattached),
+            2 => Some(IntercomAttachedIndicator::Attached),
+            _ => None,
+        }
+    }
+
+    /// Sets bits 4 and 5. See [`iai`](Self::iai).
+    pub const fn set_iai(&mut self, iai: IntercomAttachedIndicator) {
+        let value = match iai {
+            IntercomAttachedIndicator::NoStatement => 0,
+            IntercomAttachedIndicator::Unattached => 1,
+            IntercomAttachedIndicator::Attached => 2,
+        };
+        self.set_bits(Self::BITS_4_5, value << 4);
+    }
+
+    /// IFF Simulation Mode (bit 4) \[UID 308\], for the IFF PDU. It matches the
+    /// Simulation Mode in the PDU's [`ChangeOptions`] record.
+    #[must_use]
+    pub const fn ism(self) -> PduStatusIFFSimulationMode {
+        if self.raw & Self::BIT_4 == 0 {
+            PduStatusIFFSimulationMode::Regeneration
+        } else {
+            PduStatusIFFSimulationMode::Interactive
+        }
+    }
+
+    /// Sets bit 4, leaving bit 5 as it is. See [`ism`](Self::ism).
+    pub const fn set_ism(&mut self, ism: PduStatusIFFSimulationMode) {
+        let value = match ism {
+            PduStatusIFFSimulationMode::Regeneration => 0,
+            PduStatusIFFSimulationMode::Interactive => Self::BIT_4,
+        };
+        self.set_bits(Self::BIT_4, value);
+    }
+
+    /// Active Interrogation Indicator (bit 5) \[UID 389\], for the IFF PDU: whether the
+    /// PDU is an active interrogation by an interrogator in Regeneration mode.
+    #[must_use]
+    pub const fn aii(self) -> ActiveInterrogationIndicator {
+        if self.raw & Self::BIT_5 == 0 {
+            ActiveInterrogationIndicator::NotActive
+        } else {
+            ActiveInterrogationIndicator::Active
+        }
+    }
+
+    /// Sets bit 5, leaving bit 4 as it is. See [`aii`](Self::aii).
+    pub const fn set_aii(&mut self, aii: ActiveInterrogationIndicator) {
+        let value = match aii {
+            ActiveInterrogationIndicator::NotActive => 0,
+            ActiveInterrogationIndicator::Active => Self::BIT_5,
+        };
+        self.set_bits(Self::BIT_5, value);
+    }
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.68
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -2846,6 +3258,29 @@ impl PropulsionSystemData {
             engine_rpm,
         }
     }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.69
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ProtocolMode {
+    wtf: u32,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.70
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct RadioIdentifier {
+    pub radio_reference_id: SimulationIdentifier,
+    pub radio_number: u16,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.73

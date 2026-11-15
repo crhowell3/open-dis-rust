@@ -23,7 +23,6 @@ exclude = [
 [dependencies]
 bitflags = "2.5.0"
 deku = "0.20.3"
-modular-bitfield = "0.13.0"
 num-derive = "0.4.1"
 num-traits = "0.2.17"
 thiserror = "1.0.50"

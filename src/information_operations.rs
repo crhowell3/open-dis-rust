@@ -11,8 +11,7 @@ use crate::common::{
         IOActionIOActionPhase, IOActionIOActionType, IOActionIOSimulationSource,
         IOActionIOWarfareType, IOReportIOReportType, PduType, ProtocolFamily,
     },
-    pdu_header::PduHeader,
-    records::{EntityIdentifier, SimulationIdentifier, StandardVariableSpecification},
+    records::{EntityIdentifier, PduHeader, SimulationIdentifier, StandardVariableSpecification},
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.12.3

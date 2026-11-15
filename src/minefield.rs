@@ -16,12 +16,11 @@ use deku::{
 };
 
 use crate::common::{
-    PduHeader,
     data_types::point::Point,
     enums::{ForceId, MinefieldStateProtocolMode, PduType, ProtocolFamily},
     records::{
-        ClockTime, EntityIdentifier, EntityType, EulerAngles, MinefieldIdentifier, Vector,
-        WorldCoordinates,
+        ClockTime, EntityIdentifier, EntityType, EulerAngles, MinefieldIdentifier, PduHeader,
+        Vector, WorldCoordinates,
     },
     wire,
 };

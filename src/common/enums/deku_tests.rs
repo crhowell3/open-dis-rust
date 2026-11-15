@@ -549,7 +549,7 @@ fn deku_matches_from_primitive_for_every_enum() {
     check_u8::<FuelLocation>(FuelLocation::from_u8);
     check_u8::<EntityAssociationAssociationType>(EntityAssociationAssociationType::from_u8);
     check_u8::<SensorOnOffStatus>(SensorOnOffStatus::from_u8);
-    check_u8::<OwnershipStatus>(OwnershipStatus::from_u8);
+    check_u8::<EntityOwnershipStatus>(EntityOwnershipStatus::from_u8);
     check_u16::<RecordREventType>(RecordREventType::from_u16);
     check_u16::<RecordQueryREventType>(RecordQueryREventType::from_u16);
     check_u8::<UAPropulsionPlantConfigurationConfiguration>(

@@ -11,11 +11,10 @@ use crate::common::{
         ForceId, GriddedDataConstantGrid, GriddedDataCoordinateSystem,
         ObjectStateAppearanceGeneral, PduType, ProtocolFamily,
     },
-    pdu_header::PduHeader,
     records::{
         ClockTime, EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor,
-        GridData, LinearSegmentParameter, ObjectIdentifier, ObjectType, SimulationAddress,
-        WorldCoordinates,
+        GridData, LinearSegmentParameter, ObjectIdentifier, ObjectType, PduHeader,
+        SimulationAddress, WorldCoordinates,
     },
 };
 

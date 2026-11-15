@@ -57,10 +57,12 @@ pub fn get_version() -> String {
 /// ```
 pub mod prelude {
     pub use crate::common::{
-        DISError, GenericHeader, LiveEntityPduHeader, Pdu, PduHeader,
+        DISError, LiveEntityPdu, LiveEntityPduHeader, Pdu, StandardPdu,
         constants::{MAX_PDU_SIZE_OCTETS, PDU_HEADER_SIZE},
         enums::{EntityKind, PduType, ProtocolFamily, ProtocolVersion},
-        records::{ClockTime, EntityIdentifier, EntityType, SimulationAddress, Timestamp},
+        records::{
+            ClockTime, EntityIdentifier, EntityType, PduHeader, SimulationAddress, Timestamp,
+        },
     };
 }
 

@@ -10,8 +10,7 @@ use crate::common::{
         PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
         ServiceRequestServiceTypeRequested,
     },
-    pdu_header::PduHeader,
-    records::{EntityIdentifier, SupplyQuantity},
+    records::{EntityIdentifier, PduHeader, SupplyQuantity},
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.4.2

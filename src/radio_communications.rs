@@ -21,10 +21,9 @@ use crate::common::{
         TransmitterAntennaPatternType, TransmitterCryptoSystem, TransmitterInputSource,
         TransmitterTransmitState,
     },
-    pdu_header::PduHeader,
     records::{
         AntennaPattern, EntityIdentifier, IntercomCommunicationsParameters, ModulationParameters,
-        ModulationType, VariableTransmitterParameters, Vector, WorldCoordinates,
+        ModulationType, PduHeader, VariableTransmitterParameters, Vector, WorldCoordinates,
     },
 };
 

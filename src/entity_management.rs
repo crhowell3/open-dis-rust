@@ -12,11 +12,10 @@ use crate::common::{
         IsGroupOfGroupedEntityCategory, PduType, ProtocolFamily, RequiredReliabilityService,
         TransferControlTransferType,
     },
-    pdu_header::PduHeader,
     records::{
         AggregateIdentifier, AggregateMarking, EntityIdentifier, EntityType, EulerAngles,
-        NamedLocationIdentification, RecordSpecification, Relationship, SimulationIdentifier,
-        VariableDatumRecord, Vector, WorldCoordinates,
+        NamedLocationIdentification, PduHeader, RecordSpecification, Relationship,
+        SimulationIdentifier, VariableDatumRecord, Vector, WorldCoordinates,
     },
 };
 
