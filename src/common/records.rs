@@ -823,7 +823,7 @@ pub struct DataQueryDatumSpecification {
 
 impl DataQueryDatumSpecification {
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             number_of_fixed_datums: 0,
             number_of_variable_datums: 0,
@@ -859,7 +859,7 @@ pub struct DatumSpecification {
 
 impl DatumSpecification {
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             number_of_fixed_datum_records: 0,
             number_of_variable_datum_records: 0,
@@ -1391,7 +1391,7 @@ pub struct ExerciseIdentifier(u8);
 
 impl ExerciseIdentifier {
     #[must_use]
-    pub fn new(id: u8) -> Self {
+    pub const fn new(id: u8) -> Self {
         Self(id)
     }
 }
@@ -2970,7 +2970,7 @@ impl PduHeader {
     /// [`Pdu::deserialize_without_header`](crate::common::Pdu::deserialize_without_header)
     /// to decode the body of the PDU
     ///
-    /// # Error
+    /// # Errors
     ///
     /// Will return a `DISError` if `buf` does not start with a valid header.
     pub fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::common::DISError> {

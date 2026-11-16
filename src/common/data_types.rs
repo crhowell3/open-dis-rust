@@ -575,6 +575,7 @@ pub enum SimulationManagementId {
 }
 
 impl SimulationManagementId {
+    #[must_use]
     pub const fn simulation_address(self) -> SimulationAddress {
         match self {
             Self::Simulation(address) => address,
@@ -583,7 +584,7 @@ impl SimulationManagementId {
     }
 }
 
-impl<'a> DekuReader<'a, Endian> for SimulationManagementId {
+impl DekuReader<'_, Endian> for SimulationManagementId {
     fn from_reader_with_ctx<R: Read + Seek>(
         reader: &mut Reader<R>,
         endian: Endian,

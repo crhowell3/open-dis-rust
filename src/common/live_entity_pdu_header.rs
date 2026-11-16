@@ -71,7 +71,6 @@ impl LiveEntityPduHeader {
     }
 
     /// Encodes the header alone and appends it to `buf`
-    #[must_use]
     pub fn serialize(&self, buf: &mut Vec<u8>) {
         let _ = crate::common::wire::write(self, buf);
     }
@@ -83,7 +82,6 @@ impl LiveEntityPduHeader {
     /// # Errors
     ///
     /// Will return a `DekuError` if `buf` does not start with a valid header.
-    #[must_use]
     pub fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::common::DISError> {
         crate::common::wire::read(buf).map_err(crate::common::DISError::from_wire)
     }
