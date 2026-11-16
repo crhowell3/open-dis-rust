@@ -8,8 +8,8 @@
 
 use crate::common::{
     enums::{
-        ForceId, GriddedDataConstantGrid, GriddedDataCoordinateSystem,
-        ObjectStateAppearanceGeneral, PduType, ProtocolFamily,
+        ArealObjectStateModification, ForceId, GriddedDataConstantGrid,
+        GriddedDataCoordinateSystem, ObjectStateAppearanceGeneral, PduType, ProtocolFamily,
     },
     records::{
         ClockTime, EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor,
@@ -150,9 +150,12 @@ pub struct ArealObjectStatePdu {
     pub referenced_object_id: ObjectIdentifier,
     pub update_number: u16,
     pub force_id: ForceId,
-    pub modifications: u8, // TODO(@anyone) Replace with Modifications UID 242,
+    pub modifications: ArealObjectStateModification,
     pub object_type: ObjectType,
-    pub specific_object_appearance: u32, // TODO(@anyone) Implement Specific Object Appearance,
+    /// The layout here depends on the object type. If the object happens to
+    /// be a minefield, read it using [`ArealObjectMinefieldAppearance`](crate::common::records::ArealObjectStateMinefieldAppearance).
+    /// There are no other standard-defined specifications for non-minefield areal objects.
+    pub specific_object_appearance: u32,
     pub general_object_appearance: ObjectStateAppearanceGeneral,
     #[deku(
         update = "self.object_location.len()",

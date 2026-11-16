@@ -30,9 +30,10 @@ use crate::common::enums::{
     AppearanceEntityorObjectState, AppearanceEnvironmentalDensity, AppearanceHatch,
     AppearanceLauncherOperational, AppearanceLifeFormComplianceStatus, AppearanceLifeFormPosture,
     AppearanceLifeFormWeaponImplement, AppearanceLifeformHealth, AppearanceNVGMode,
-    AppearanceNavigationPositionBrightness, AppearancePaintScheme, AppearanceSubsurfaceHatch,
-    AppearanceSupplyDeployed, AppearanceTrailingEffects, ClothingIRSignature, CoverShroudStatus,
-    DamageArea, EntityKind, FlareSmokeColor, FlareSmokeStatus, Parachute, SpotChaffStatus,
+    AppearanceNavigationPositionBrightness, AppearanceObjectSpecificBreachState,
+    AppearancePaintScheme, AppearanceSubsurfaceHatch, AppearanceSupplyDeployed,
+    AppearanceTrailingEffects, ClothingIRSignature, CoverShroudStatus, DamageArea, EntityKind,
+    FlareSmokeColor, FlareSmokeStatus, Parachute, SpotChaffStatus,
 };
 
 /// The bits of `raw` from bit `lo`, `width` bits wide
@@ -2915,6 +2916,88 @@ impl EntityAppearance {
                 AppearanceView::SensorEmitter(SensorEmitterAppearance::from_raw(raw))
             }
         })
+    }
+}
+
+/// Specific appearance record according to SISO-REF-010-2023 §17.11.2.4 \[UID 239\]
+///
+/// It is the 32-bit `specific_object_appearance` of an
+/// [`ArealObjectStatePdu`](crate::synthetic_environment::ArealObjectStatePdu) whose
+/// object is a minefield, so the PDU keeps the field as a `u32`. Convert it with
+/// `From`: bits 0-1 are the breach state, bits 2-15 are unused and kept as they
+/// are, and bits 16-31 are the number of mines.
+///
+/// ```
+/// use open_dis_rust::common::{
+///     enums::AppearanceObjectSpecificBreachState,
+///     records::ArealObjectStateMinefieldAppearance,
+/// };
+///
+/// let mut appearance = ArealObjectStateMinefieldAppearance::default();
+/// appearance.set_breach_state(AppearanceObjectSpecificBreachState::Breached);
+/// appearance.set_mine_count(250);
+/// assert_eq!(u32::from(appearance), 250 << 16 | 1);
+/// ```
+#[derive(Copy, Clone, Default, PartialEq, Eq, Hash)]
+pub struct ArealObjectStateMinefieldAppearance {
+    raw: u32,
+}
+
+impl ArealObjectStateMinefieldAppearance {
+    /// A view of the given 32 bits
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self { raw }
+    }
+
+    /// The 32 bits including the unused bits 2-16
+    #[must_use]
+    pub const fn to_raw(self) -> u32 {
+        self.raw
+    }
+
+    /// The breached appearance of the minefield (bits 0-1). `None` if the
+    /// bits hold 3, which is not defined
+    #[must_use]
+    pub fn breach_state(self) -> Option<AppearanceObjectSpecificBreachState> {
+        AppearanceObjectSpecificBreachState::from_u32(field(self.raw, 0, 2))
+    }
+
+    /// Sets bits 0-1. See [`breach_state`](Self::breach_state)
+    pub const fn set_breach_state(&mut self, value: AppearanceObjectSpecificBreachState) {
+        self.raw = with_field(self.raw, 0, 2, value as u32);
+    }
+
+    /// The number of mines in the minefield (bits 16-31)
+    #[must_use]
+    pub const fn mine_count(self) -> u16 {
+        (self.raw >> 16) as u16
+    }
+
+    /// Sets bit 16-31. See [`mine_count`](Self::mine_count)
+    pub const fn set_mine_count(&mut self, count: u16) {
+        self.raw = with_field(self.raw, 16, 16, count as u32);
+    }
+}
+
+impl fmt::Debug for ArealObjectStateMinefieldAppearance {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ArealObjectStateMinefieldAppearance")
+            .field("breach_state", &self.breach_state())
+            .field("mine_count", &self.mine_count())
+            .finish()
+    }
+}
+
+impl From<u32> for ArealObjectStateMinefieldAppearance {
+    fn from(raw: u32) -> Self {
+        Self::from_raw(raw)
+    }
+}
+
+impl From<ArealObjectStateMinefieldAppearance> for u32 {
+    fn from(appearance: ArealObjectStateMinefieldAppearance) -> Self {
+        appearance.raw
     }
 }
 
