@@ -10,8 +10,9 @@ use std::net::SocketAddr;
 use std::{env, io};
 use tokio::net::UdpSocket;
 
+use open_dis_rust::prelude::*;
 use open_dis_rust::{
-    common::{enums::PduType, pdu::Pdu, pdu_header::PduHeader},
+    common::enums::PduType,
     radio_communications::{
         IntercomControlPdu, IntercomSignalPdu, ReceiverPdu, SignalPdu, TransmitterPdu,
     },

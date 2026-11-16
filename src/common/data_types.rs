@@ -3,6 +3,14 @@
 //
 //     Licensed under the BSD-2-Clause License
 
+use deku::{
+    DekuError, DekuReader, DekuWriter,
+    ctx::Endian,
+    no_std_io::{Read, Seek, Write},
+    reader::Reader,
+    writer::Writer,
+};
+
 use crate::common::{
     enums::{
         DeadReckoningAlgorithm, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
@@ -10,7 +18,7 @@ use crate::common::{
     },
     records::{
         AcousticEmitterSystem, AngularVelocityVector, Attribute, EmitterSystem, EntityIdentifier,
-        TrackJamData, Vector,
+        SimulationAddress, TrackJamData, Vector,
     },
 };
 
@@ -557,4 +565,51 @@ pub struct IFFDataRecord {
         writer = "crate::common::wire::write_padded_fields_to(deku::writer, record_specific_fields, 4)"
     )]
     pub record_specific_fields: Vec<u8>,
+}
+
+/// Originating or receiving ID of a SIMAN or SIMAN-R PDU
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum SimulationManagementId {
+    Simulation(SimulationAddress),
+    Entity(EntityIdentifier),
+}
+
+impl SimulationManagementId {
+    pub const fn simulation_address(self) -> SimulationAddress {
+        match self {
+            Self::Simulation(address) => address,
+            Self::Entity(id) => id.simulation_address,
+        }
+    }
+}
+
+impl<'a> DekuReader<'a, Endian> for SimulationManagementId {
+    fn from_reader_with_ctx<R: Read + Seek>(
+        reader: &mut Reader<R>,
+        endian: Endian,
+    ) -> Result<Self, DekuError> {
+        let id = EntityIdentifier::from_reader_with_ctx(reader, endian)?;
+        Ok(if id.entity_id == 0 {
+            Self::Simulation(id.simulation_address)
+        } else {
+            Self::Entity(id)
+        })
+    }
+}
+
+impl DekuWriter<Endian> for SimulationManagementId {
+    fn to_writer<W: Write + Seek>(
+        &self,
+        writer: &mut Writer<W>,
+        endian: Endian,
+    ) -> Result<(), DekuError> {
+        let id = match *self {
+            Self::Simulation(simulation_address) => EntityIdentifier {
+                simulation_address,
+                entity_id: 0,
+            },
+            Self::Entity(id) => id,
+        };
+        id.to_writer(writer, endian)
+    }
 }

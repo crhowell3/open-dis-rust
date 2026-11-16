@@ -4,7 +4,10 @@ use open_dis_rust::prelude::*;
 use open_dis_rust::{
     common::{
         enums::{Country, DeadReckoningAlgorithm, EntityKind, EntityMarkingCharacterSet, ForceId},
-        records::{EntityIdentifier, EntityMarking, EntityType, Vector, WorldCoordinates},
+        records::{
+            EntityIdentifier, EntityMarking, EntityType, ExerciseIdentifier, Vector,
+            WorldCoordinates,
+        },
     },
     entity_information::EntityStatePdu,
 };
@@ -16,7 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Build an Entity State PDU describing one tank.
     let mut pdu = EntityStatePdu::new();
-    pdu.header_mut().exercise_id = 1;
+    pdu.header_mut().exercise_id = ExerciseIdentifier::new(1);
     let simulation_address = SimulationAddress::new(1, 1);
     pdu.entity_id = EntityIdentifier::new(simulation_address, 1); // site 1, application 1, entity 1
     pdu.force_id = ForceId::Friendly;

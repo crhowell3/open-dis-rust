@@ -17,10 +17,10 @@ use deku::{
 
 use crate::common::{
     data_types::point::Point,
-    enums::{ForceId, MinefieldStateProtocolMode, PduType, ProtocolFamily},
+    enums::{ForceId, PduType, ProtocolFamily},
     records::{
         ClockTime, EntityIdentifier, EntityType, EulerAngles, MinefieldIdentifier, PduHeader,
-        Vector, WorldCoordinates,
+        ProtocolMode, Vector, WorldCoordinates,
     },
     wire,
 };
@@ -45,7 +45,7 @@ pub struct MinefieldStatePdu {
     pub minefield_location: WorldCoordinates,
     pub minefield_orientation: EulerAngles,
     pub appearance: u16,
-    pub protocol_mode: MinefieldStateProtocolMode,
+    pub protocol_mode: ProtocolMode,
     #[deku(count = "number_of_perimeter_points")]
     pub perimeter_points: Vec<Point>,
     #[deku(count = "number_of_mine_types")]

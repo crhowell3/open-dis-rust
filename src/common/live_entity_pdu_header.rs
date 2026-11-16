@@ -54,14 +54,6 @@ impl Default for LiveEntityPduHeader {
 
 impl LiveEntityPduHeader {
     #[must_use]
-    pub const fn new(exercise_id: ExerciseIdentifier) -> Self {
-        Self {
-            exercise_id,
-            ..Self::default()
-        }
-    }
-
-    #[must_use]
     pub const fn pdu_type(&self) -> PduType {
         self.pdu_type
     }

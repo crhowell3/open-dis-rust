@@ -28,7 +28,7 @@ mod udp {
     use tokio::net::UdpSocket;
 
     use open_dis_rust::common::enums::{AcknowledgeFlag, AcknowledgeResponseFlag};
-    use open_dis_rust::common::records::EntityIdentifier;
+    use open_dis_rust::common::records::{EntityIdentifier, ExerciseIdentifier};
     use open_dis_rust::prelude::*;
     use open_dis_rust::simulation_management::AcknowledgePdu;
 
@@ -62,7 +62,7 @@ mod udp {
         ack.request_id = 42;
 
         let header = ack.header_mut();
-        header.exercise_id = 1;
+        header.exercise_id = ExerciseIdentifier::new(1);
         header.timestamp = Timestamp::now();
 
         let mut bytes = Vec::with_capacity(MAX_PDU_SIZE_OCTETS);

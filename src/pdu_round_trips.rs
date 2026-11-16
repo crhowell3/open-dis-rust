@@ -31,8 +31,8 @@ use crate::common::{
     enums::{GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes},
     pdu::Pdu,
     records::{
-        AggregateIdentifier, AntennaPattern, Attribute, ClockTime, DirectedEnergyDamage,
-        EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor, GridData,
+        AggregateIdentifier, Attribute, ClockTime, DirectedEnergyDamage, EntityIdentifier,
+        EntityType, Environment, EulerAngles, GridAxisDescriptor, GridData,
         IntercomCommunicationsParameters, LinearSegmentParameter, ModulationParameters,
         PropulsionSystemData, SupplyQuantity, TrackJamData, VariableDatumRecord, VariableParameter,
         VariableTransmitterParameters, Vector, VectoringNozzleSystemData, WorldCoordinates,
@@ -714,9 +714,6 @@ lists!(
         p.modulation_parameters = Some(ModulationParameters {
             record_specific_fields: vec![1, 2, 3],
         });
-        p.antenna_pattern = Some(AntennaPattern {
-            record_specific_fields: vec![9; 5],
-        });
         p.variable_transmitter_parameters = vec![
             VariableTransmitterParameters {
                 record_type: VariableRecordTypes::default(),
@@ -734,7 +731,6 @@ lists!(
             d.modulation_parameters.unwrap().record_specific_fields,
             [1, 2, 3]
         );
-        assert_eq!(d.antenna_pattern.unwrap().record_specific_fields.len(), 5);
         assert_eq!(d.variable_transmitter_parameters[0].record_length, 8);
     }
 );

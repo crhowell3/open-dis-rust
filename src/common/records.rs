@@ -18,27 +18,30 @@ use num_traits::FromPrimitive;
 
 use crate::common::data_types::{
     DataRepresentationType, GridAxisType, IFFDataRecord, RecordSpecificationElement,
-    StandardVariableRecords,
+    SimulationManagementId, StandardVariableRecords,
 };
 use crate::common::enums::{
-    ActiveInterrogationIndicator, AggregateStateAggregateKind, BeamStatusBeamState,
-    ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor, Country,
-    CoupledExtensionIndicator, DEPrecisionAimpointBeamSpotType, DetonationTypeIndicator,
+    ActiveInterrogationIndicator, AggregateStateAggregateKind, ArticulatedPartsTypeClass,
+    BeamStatusBeamState, ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor,
+    Country, CoupledExtensionIndicator, DEPrecisionAimpointBeamSpotType, DetonationTypeIndicator,
     EEAttributeStateIndicator, EmitterName, EmitterSystemFunction,
     EntityAssociationAssociationType, EntityKind, EntityMarkingCharacterSet, EntityOwnershipStatus,
     EnvironmentalProcessRecordType, ExplosiveMaterialCategories, FireTypeIndicator, ForceId,
     FuelLocation, FuelMeasurementUnits, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
-    GriddedDataSampleType, IFFApplicableModes, IFFSimulationMode, IOCommsNodeRecordCommsNodeType,
-    IOEffectsRecordIOEffect, IOEffectsRecordIOLinkType, IOEffectsRecordIOProcess,
-    IOEffectsRecordIOStatus, IntercomAttachedIndicator, IntercomControlCommunicationsType,
-    IntercomControlRecordType, LVCIndicator, MinefieldSensorTypesFLIR, MinefieldSensorTypesLaser,
-    MinefieldSensorTypesMagnetic, MinefieldSensorTypesMultispectral, MinefieldSensorTypesOptical,
-    MinefieldSensorTypesPhysical, MinefieldSensorTypesRADAR, MinefieldSensorTypesSONAR,
-    MunitionDescriptorFuse, MunitionDescriptorWarhead, MunitionExpendableStatus, OtherKinds,
-    PduStatusIFFSimulationMode, PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator,
-    SupplyFuelType, TransferredEntityIndicator, TransmitterMajorModulation,
-    TransmitterModulationTypeSystem, TransponderInterrogatorIndicator,
-    UAAcousticEmitterSystemFunction, UAAcousticSystemName, VariableRecordTypes,
+    GriddedDataSampleType, IFFApplicableModes, IFFSimulationMode, IFFSystemMode, IFFSystemName,
+    IFFSystemType, IOCommsNodeRecordCommsNodeType, IOEffectsRecordIOEffect,
+    IOEffectsRecordIOLinkType, IOEffectsRecordIOProcess, IOEffectsRecordIOStatus,
+    IntercomAttachedIndicator, IntercomControlRecordType, LVCIndicator, MinefieldSensorTypesFLIR,
+    MinefieldSensorTypesLaser, MinefieldSensorTypesMagnetic, MinefieldSensorTypesMultispectral,
+    MinefieldSensorTypesOptical, MinefieldSensorTypesPhysical, MinefieldSensorTypesRADAR,
+    MinefieldSensorTypesSONAR, MinefieldStateProtocolMode, MunitionDescriptorFuse,
+    MunitionDescriptorWarhead, MunitionExpendableStatus, OtherKinds, PduStatusIFFSimulationMode,
+    PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator, SensorOnOffStatus,
+    SensorTypeSource, ServiceRequestServiceTypeRequested, SupplyFuelType,
+    TransferredEntityIndicator, TransmitterAntennaPatternReferenceSystem,
+    TransmitterMajorModulation, TransmitterModulationTypeSystem, TransponderInterrogatorIndicator,
+    UAAcousticEmitterSystemFunction, UAAcousticSystemName, UAActiveEmissionParameterIndex,
+    UAScanPattern, VariableParameterRecordType, VariableRecordTypes,
 };
 use crate::common::wire;
 
@@ -180,19 +183,24 @@ impl AngularVelocityVector {
     }
 }
 
-/// Implemented according to IEEE 1278.1-2012 §6.2.8
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct AntennaPattern {
-    pub record_specific_fields: Vec<u8>,
-}
-
-impl AntennaPattern {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {
-            record_specific_fields: Vec::new(),
-        }
-    }
+/// Implemented according to IEEE 1278.1-2012 §6.2.8.2
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct BeamAntennaPattern {
+    pub beam_direction: EulerAngles,
+    pub azimuth_beamwidth: f32,
+    pub elevation_beamwidth: f32,
+    pub reference_system: TransmitterAntennaPatternReferenceSystem,
+    padding: u8,
+    padding2: u16,
+    pub ez: f32,
+    pub ex: f32,
+    pub phase: f32,
+    padding3: u32,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.9
@@ -901,9 +909,19 @@ pub struct DEAreaAimpoint {
     pub record_type: u32,
     pub record_length: u16,
     padding: u16,
+    #[deku(
+        update = "self.beam_antenna_pattern_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*beam_antenna_pattern_record_count)"
+    )]
     pub beam_antenna_pattern_record_count: u16,
+    #[deku(
+        update = "self.de_target_energy_deposition_records.len()",
+        assert = "crate::common::wire::fits_in_pdu(*de_target_energy_deposition_record_count)"
+    )]
     pub de_target_energy_deposition_record_count: u16,
+    #[deku(count = "beam_antenna_pattern_record_count")]
     pub beam_antenna_pattern_records: Vec<BeamAntennaPattern>,
+    #[deku(count = "de_target_energy_deposition_record_count")]
     pub de_target_energy_deposition_records: Vec<DETargetEnergyDeposition>,
 }
 
@@ -1164,7 +1182,7 @@ pub struct EntityAppearance {}
 pub struct EntityCapabilities {}
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.28
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
@@ -3268,7 +3286,58 @@ impl PropulsionSystemData {
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct ProtocolMode {
-    wtf: u32,
+    raw: u16,
+}
+
+impl ProtocolMode {
+    const SHIFT: u16 = 14;
+    const MODE: u16 = 0b11 << Self::SHIFT;
+
+    /// A Protocol Mode record with the given mode and the padding bits clear.
+    #[must_use]
+    pub const fn new(mode: MinefieldStateProtocolMode) -> Self {
+        let mut record = Self { raw: 0 };
+        record.set_mode(mode);
+        record
+    }
+
+    /// The protocol mode, or `None` if bits 14 and 15 hold 2 or 3, which UID 336
+    /// does not define.
+    #[must_use]
+    pub const fn mode(self) -> Option<MinefieldStateProtocolMode> {
+        match (self.raw & Self::MODE) >> Self::SHIFT {
+            0 => Some(MinefieldStateProtocolMode::HeartbeatMode),
+            1 => Some(MinefieldStateProtocolMode::QRPMode),
+            _ => None,
+        }
+    }
+
+    /// Sets bits 14 and 15, leaving the padding bits as they are.
+    pub const fn set_mode(&mut self, mode: MinefieldStateProtocolMode) {
+        let value: u16 = match mode {
+            MinefieldStateProtocolMode::HeartbeatMode => 0,
+            MinefieldStateProtocolMode::QRPMode => 1,
+        };
+        self.raw = (self.raw & !Self::MODE) | (value << Self::SHIFT);
+    }
+
+    /// A Protocol Mode record from its 16-bit wire value. Every bit is kept.
+    #[must_use]
+    pub const fn from_raw(raw: u16) -> Self {
+        Self { raw }
+    }
+
+    /// The record's 16-bit wire value
+    #[must_use]
+    pub const fn to_raw(self) -> u16 {
+        self.raw
+    }
+}
+
+impl From<MinefieldStateProtocolMode> for ProtocolMode {
+    fn from(mode: MinefieldStateProtocolMode) -> Self {
+        Self::new(mode)
+    }
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.70
@@ -3281,6 +3350,37 @@ pub struct ProtocolMode {
 pub struct RadioIdentifier {
     pub radio_reference_id: SimulationIdentifier,
     pub radio_number: u16,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.71
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct RadioType {
+    pub entity_kind: EntityKind,
+    pub domain: u8,
+    pub country: Country,
+    pub category: u8,
+    pub subcategory: u8,
+    pub specific: u8,
+    pub extra: u8,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.72
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct RecordQuerySpecification {
+    #[deku(assert = "crate::common::wire::fits_in_pdu(*number_of_records)")]
+    pub number_of_records: u32,
+    #[deku(count = "number_of_records")]
+    pub record_ids: Vec<VariableRecordTypes>,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.73
@@ -3332,6 +3432,44 @@ impl Relationship {
     }
 }
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.75
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct RequestIdentifier(u32);
+
+impl RequestIdentifier {
+    #[must_use]
+    pub const fn new(id: u32) -> Self {
+        Self(id)
+    }
+
+    #[must_use]
+    pub const fn get(self) -> u32 {
+        self.0
+    }
+
+    #[must_use]
+    pub const fn next(self) -> Self {
+        Self(self.0.wrapping_add(1))
+    }
+}
+
+impl From<u32> for RequestIdentifier {
+    fn from(id: u32) -> Self {
+        Self(id)
+    }
+}
+
+impl From<RequestIdentifier> for u32 {
+    fn from(id: RequestIdentifier) -> Self {
+        id.0
+    }
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.76
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -3360,8 +3498,50 @@ impl SecondaryOperationalData {
     }
 }
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.77
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct Sensor {
+    pub sensor_type_source: SensorTypeSource,
+    pub sensor_on_off_status: SensorOnOffStatus,
+    pub sensor_type: u16,
+    pub station: u16,
+    pub quantity: u16,
+    padding: u16,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.78
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct Service(ServiceRequestServiceTypeRequested);
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.79
+#[derive(Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct SilentEntitySystem {
+    pub number_of_entities: u16,
+    #[deku(assert = "crate::common::wire::fits_in_pdu(*number_of_appearance_records)")]
+    pub number_of_appearance_records: u16,
+    pub entity_type: EntityType,
+    pub number_of_records: u32,
+    #[deku(count = "number_of_appearance_records")]
+    pub entity_appearances: Vec<EntityAppearance>,
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.80
-#[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
@@ -3419,6 +3599,19 @@ impl SimulationIdentifier {
     }
 }
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.82
+#[derive(Copy, Clone, Debug, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct SimulationManagementPduHeader {
+    pub pdu_header: PduHeader,
+    pub originating_id: SimulationManagementId,
+    pub receiving_id: SimulationManagementId,
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.83
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -3447,6 +3640,39 @@ impl StandardVariableSpecification {
             standard_variable_records,
         }
     }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.84
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct StorageFuel {
+    pub fuel_quantity: u32,
+    pub fuel_measurement_units: FuelMeasurementUnits,
+    pub fuel_type: SupplyFuelType,
+    pub fuel_location: FuelLocation,
+    padding: u8,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.85
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct StorageFuelReload {
+    pub standard_quantity: u32,
+    pub maximum_quantity: u32,
+    pub standard_quantity_reload_time: u32,
+    pub maximum_quantity_reload_time: u32,
+    pub fuel_measurement_units: FuelMeasurementUnits,
+    pub fuel_type: SupplyFuelType,
+    pub fuel_location: FuelLocation,
+    padding: u8,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.86
@@ -3479,19 +3705,19 @@ impl SupplyQuantity {
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct SystemIdentifier {
-    pub system_type: u16,
-    pub system_name: u16,
-    pub system_mode: u8,
-    pub change_options: u8,
+    pub system_type: IFFSystemType,
+    pub system_name: IFFSystemName,
+    pub system_mode: IFFSystemMode,
+    pub change_options: ChangeOptions,
 }
 
 impl SystemIdentifier {
     #[must_use]
     pub const fn new(
-        system_type: u16,
-        system_name: u16,
-        system_mode: u8,
-        change_options: u8,
+        system_type: IFFSystemType,
+        system_name: IFFSystemName,
+        system_mode: IFFSystemMode,
+        change_options: ChangeOptions,
     ) -> Self {
         Self {
             system_type,
@@ -3715,6 +3941,22 @@ pub struct TrackJamData {
     pub beam_number: u8,
 }
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.91
+#[derive(Copy, Clone, Default, Debug, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct UAFundamentalParameterData {
+    pub active_emission_parameter_index_filename: UAActiveEmissionParameterIndex,
+    pub scan_pattern: UAScanPattern,
+    pub beam_center_azimuth: f32,
+    pub azimuthal_beamwidth: f32,
+    pub beam_center_de: f32,
+    pub de_beamwidth: f32,
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.92
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -3809,7 +4051,7 @@ fn write_value<W: Write + Seek>(
     vec![0u8; padding_len(length_bits)].to_writer(writer, ())
 }
 
-/// Implemented according to IEEE 1278.1-2012 §6.2.94
+/// Implemented according to IEEE 1278.1-2012 §6.2.94.1
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -3817,7 +4059,7 @@ fn write_value<W: Write + Seek>(
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct VariableParameter {
-    pub record_type: u8,
+    pub record_type: VariableParameterRecordType,
     pub variable_parameter_field1: f64,
     pub variable_parameter_field2: u32,
     pub variable_parameter_field3: u16,
@@ -3827,7 +4069,7 @@ pub struct VariableParameter {
 impl VariableParameter {
     #[must_use]
     pub const fn new(
-        record_type: u8,
+        record_type: VariableParameterRecordType,
         variable_parameter_field1: f64,
         variable_parameter_field2: u32,
         variable_parameter_field3: u16,
@@ -3839,6 +4081,36 @@ impl VariableParameter {
             variable_parameter_field2,
             variable_parameter_field3,
             variable_parameter_field4,
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.94.2
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ArticulatedPartVP {
+    pub record_type: VariableParameterRecordType,
+    pub change_indicator: u8,
+    pub id_part_attached_to: u16,
+    pub parameter_type: ArticulatedPartsTypeClass,
+    pub parameter_value: f32,
+    padding: u32,
+}
+
+impl ArticulatedPartVP {
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            record_type: VariableParameterRecordType::ArticulatedPart,
+            change_indicator: 0,
+            id_part_attached_to: 0,
+            parameter_type: ArticulatedPartsTypeClass::NotSpecified,
+            parameter_value: 0.0,
+            padding: 0u32,
         }
     }
 }
@@ -3948,6 +4220,15 @@ impl WorldCoordinates {
         }
     }
 }
+
+/// Implemented according to IEEE 1278.1-2012 §B.2.52
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct SystemStatus {}
 
 #[cfg(test)]
 mod tests;

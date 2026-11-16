@@ -22,8 +22,9 @@ use crate::common::{
         TransmitterTransmitState,
     },
     records::{
-        AntennaPattern, EntityIdentifier, IntercomCommunicationsParameters, ModulationParameters,
-        ModulationType, PduHeader, VariableTransmitterParameters, Vector, WorldCoordinates,
+        BeamAntennaPattern, EntityIdentifier, IntercomCommunicationsParameters,
+        ModulationParameters, ModulationType, PduHeader, VariableTransmitterParameters, Vector,
+        WorldCoordinates,
     },
 };
 
@@ -46,8 +47,6 @@ pub struct TransmitterPdu {
     pub antenna_location: WorldCoordinates,
     pub relative_antenna_location: Vector,
     pub antenna_pattern_type: TransmitterAntennaPatternType,
-    /// Octets of `antenna_pattern`. Set by `serialize`.
-    #[deku(update = "blob_len(self.antenna_pattern.as_ref())")]
     pub antenna_pattern_length: u16,
     pub frequency: u64,
     pub transmit_frequency_bandwidth: f32,
@@ -65,11 +64,7 @@ pub struct TransmitterPdu {
         writer = "write_blob(deku::writer, modulation_parameters.as_ref().map(|m| m.record_specific_fields.as_slice()))"
     )]
     pub modulation_parameters: Option<ModulationParameters>,
-    #[deku(
-        reader = "read_blob(deku::reader, usize::from(*antenna_pattern_length)).map(|f| f.map(|record_specific_fields| AntennaPattern { record_specific_fields }))",
-        writer = "write_blob(deku::writer, antenna_pattern.as_ref().map(|a| a.record_specific_fields.as_slice()))"
-    )]
-    pub antenna_pattern: Option<AntennaPattern>,
+    pub antenna_pattern: Option<BeamAntennaPattern>,
     #[deku(count = "number_of_variable_transmitter_parameters_records")]
     pub variable_transmitter_parameters: Vec<VariableTransmitterParameters>,
 }
@@ -205,12 +200,6 @@ trait Blob {
 }
 
 impl Blob for ModulationParameters {
-    fn octets(&self) -> usize {
-        self.record_specific_fields.len()
-    }
-}
-
-impl Blob for AntennaPattern {
     fn octets(&self) -> usize {
         self.record_specific_fields.len()
     }
