@@ -1312,61 +1312,6 @@ pub enum Country {
 
 impl_deku_enum!(Country, u16, from_u16);
 
-// SISO-REF-010-2023 LandPlatformAppearance [UID 31]
-bitflags! {
-    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-    pub struct LandPlatformAppearance: u32 {
-        const PaintScheme = 1 << 0;
-        const MobilityKilled = 1 << 1;
-        const FirePowerKilled = 1 << 2;
-        const Damage = 1 << 3;
-        const IsSmokeEmanating = 1 << 5;
-        const IsEngineEmittingSmoke = 1 << 6;
-        const TrailingDustCloud = 1 << 7;
-        const PrimaryHatch = 1 << 9;
-        const HeadLightsOn = 1 << 12;
-        const TailLightsOn = 1 << 13;
-        const BrakeLightsOn = 1 << 14;
-        const IsFlaming = 1 << 15;
-        const LauncherOperational = 1 << 16;
-        const CamouflageType = 1 << 17;
-        const ConcealedPosition = 1 << 19;
-        const IsFrozen = 1 << 21;
-        const PowerPlantOn = 1 << 22;
-        const State = 1 << 23;
-        const TentExtended = 1 << 24;
-        const RampExtended = 1 << 25;
-        const BlackoutLightsOn = 1 << 26;
-        const BlackoutBrakeLightsOn = 1 << 27;
-        const SpotSearchLight1On = 1 << 28;
-        const InteriorLightsOn = 1 << 29;
-        const OccupantsSurrendered = 1 << 30;
-        const MaskedCloaked = 1 << 31;
-    }
-}
-
-impl Default for LandPlatformAppearance {
-    fn default() -> Self {
-        Self::empty()
-    }
-}
-
-impl_deku_bitflags!(LandPlatformAppearance, u32);
-
-impl LandPlatformAppearance {
-    #[must_use]
-    pub const fn as_u32(&self) -> u32 {
-        self.bits()
-    }
-
-    #[must_use]
-    pub const fn from_u32(bits: u32) -> Option<Self> {
-        Self::from_bits(bits)
-    }
-}
-
-// TODO(@anyone) Implement bitfields [UID 31 - 43]
-
 // SISO-REF-010-2023 DeadReckoningAlgorithm [UID 44]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum DeadReckoningAlgorithm {
@@ -1396,27 +1341,6 @@ pub enum EntityMarkingCharacterSet {
 }
 
 impl_deku_enum!(EntityMarkingCharacterSet, u8, from_u8);
-
-// SISO-REF-010-2023 EntityCapabilities [UID 55]
-#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
-pub enum EntityCapabilities {
-    #[default]
-    LandPlatformEntityCapabilities = 0,
-    AirPlatformEntityCapabilities = 1,
-    SurfacePlatformEntityCapabilities = 2,
-    SubsurfacePlatformEntityCapabilities = 3,
-    SpacePlatformEntityCapabilities = 4,
-    MunitionEntityCapabilities = 5,
-    LifeFormsEntityCapabilities = 6,
-    EnvironmentalEntityCapabilities = 7,
-    CulturalFeatureEntityCapabilities = 8,
-    SupplyEntityCapabilities = 9,
-    RadioEntityCapabilities = 10,
-    ExpendableEntityCapabilities = 11,
-    SensorEmitterEntityCapabilities = 12,
-}
-
-impl_deku_enum!(EntityCapabilities, u32, from_u32);
 
 // SISO-REF-010-2023 VariableParameterRecordType [UID 56]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
@@ -11371,8 +11295,6 @@ pub enum LifeFormSubsurfaceCategories {
 }
 
 impl_deku_enum!(LifeFormSubsurfaceCategories, u8, from_u8);
-
-// TODO(@anyone) Implement bitfield UID 480
 
 // SISO-REF-010-2023 LifeFormHumanSpecificSniper [UID 481]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]

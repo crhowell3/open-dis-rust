@@ -13,18 +13,19 @@ use deku::{
     writer::Writer,
 };
 
-use crate::{
-    common::pdu::impl_pdu,
-    common::{
-        LiveEntityPduHeader,
-        data_types::FixedBinary16,
-        enums::{ForceId, PduType, ProtocolFamily, impl_deku_bitflags},
-        live_entity_records::{
-            LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
-            LiveEntityOrientation16, LiveEventIdentifier, OrientationError, PositionError,
-            RelativeWorldCoordinates,
-        },
-        records::{EntityMarking, EntityType, MunitionDescriptor, VariableParameter},
+use crate::common::{
+    LiveEntityPduHeader,
+    data_types::FixedBinary16,
+    enums::{ForceId, PduType, ProtocolFamily, impl_deku_bitflags},
+    live_entity_records::{
+        LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
+        LiveEntityOrientation16, LiveEventIdentifier, OrientationError, PositionError,
+        RelativeWorldCoordinates,
+    },
+    pdu::impl_pdu,
+    records::{
+        EntityAppearance, EntityCapabilities, EntityMarking, EntityType, MunitionDescriptor,
+        VariableParameter,
     },
 };
 
@@ -175,43 +176,6 @@ bitflags! {
     }
 }
 
-/// A 32-bit entity appearance record (SISO-REF-010 UIDs 31-43).
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct EntityAppearance {
-    data: u32,
-}
-
-#[allow(dead_code)]
-impl EntityAppearance {
-    #[must_use]
-    pub const fn new(data: u32) -> Self {
-        Self { data }
-    }
-
-    #[must_use]
-    pub const fn data(&self) -> u32 {
-        self.data
-    }
-
-    pub const fn set_data(&mut self, value: u32) {
-        self.data = value;
-    }
-
-    const fn get_bits(self, shift: u8, mask: u32) -> u32 {
-        (self.data >> shift) & mask
-    }
-
-    const fn set_bits(&mut self, shift: u8, mask: u32, value: u32) {
-        self.data &= !(mask << shift);
-        self.data |= (value & mask) << shift;
-    }
-}
-
 /// Implemented according to IEEE 1278.1-2012 §9.4.3.5
 ///
 /// Set the optional fields you want to send; `serialize` sets the presence
@@ -240,7 +204,7 @@ pub struct AppearancePdu {
     /// SISO-REF-010 UID 55: a set of capability bits whose meaning depends
     /// on the entity kind and domain.
     #[deku(cond = "appearance_flags1.contains(AppearanceFlags1::CAPABILITIES_INCLUDED)")]
-    pub capabilities: Option<u32>,
+    pub capabilities: Option<EntityCapabilities>,
     #[deku(cond = "appearance_flags1.contains(AppearanceFlags1::VISUAL_INCLUDED)")]
     pub appearance_visual: Option<EntityAppearance>,
     #[deku(cond = "appearance_flags1.contains(AppearanceFlags1::IR_INCLUDED)")]

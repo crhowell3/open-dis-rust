@@ -1164,22 +1164,70 @@ pub struct EngineFuelReload {
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.26
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct EntityAppearance {}
+pub struct EntityAppearance(u32);
 
-/// Implemented according to IEEE 1278.1-2012 §6.2.27
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+impl EntityAppearance {
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self(raw)
+    }
+
+    #[must_use]
+    pub const fn to_raw(self) -> u32 {
+        self.0
+    }
+}
+
+impl From<u32> for EntityAppearance {
+    fn from(raw: u32) -> Self {
+        Self(raw)
+    }
+}
+
+impl From<EntityAppearance> for u32 {
+    fn from(record: EntityAppearance) -> Self {
+        record.0
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.27 & SISO-REF-010 v32 UID 55
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct EntityCapabilities {}
+pub struct EntityCapabilities(u32);
+
+impl EntityCapabilities {
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self(raw)
+    }
+
+    #[must_use]
+    pub const fn to_raw(self) -> u32 {
+        self.0
+    }
+}
+
+impl From<u32> for EntityCapabilities {
+    fn from(raw: u32) -> Self {
+        Self(raw)
+    }
+}
+
+impl From<EntityCapabilities> for u32 {
+    fn from(record: EntityCapabilities) -> Self {
+        record.0
+    }
+}
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.28
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
@@ -4229,6 +4277,10 @@ impl WorldCoordinates {
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct SystemStatus {}
+
+mod appearance;
+
+pub use appearance::*;
 
 #[cfg(test)]
 mod tests;

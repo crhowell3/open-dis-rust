@@ -114,10 +114,6 @@ fn deku_matches_from_primitive_for_every_enum() {
     check_u16::<Country>(Country::from_u16);
     check_u8::<DeadReckoningAlgorithm>(DeadReckoningAlgorithm::from_u8);
     check_u8::<EntityMarkingCharacterSet>(EntityMarkingCharacterSet::from_u8);
-    check_u32::<EntityCapabilities>(
-        &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-        EntityCapabilities::from_u32,
-    );
     check_u8::<VariableParameterRecordType>(VariableParameterRecordType::from_u8);
     check_u32::<AttachedParts>(
         &[

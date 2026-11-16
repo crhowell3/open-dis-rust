@@ -12,8 +12,9 @@ use crate::common::{
     data_types::{AttributeRecordSet, DeadReckoningParameters},
     enums::{DISAttributeActionCode, ForceId, PduType, ProtocolFamily},
     records::{
-        EntityIdentifier, EntityMarking, EntityType, EulerAngles, EventIdentifier, PduHeader,
-        SimulationAddress, VariableParameter, Vector, WorldCoordinates,
+        EntityAppearance, EntityCapabilities, EntityIdentifier, EntityMarking, EntityType,
+        EulerAngles, EventIdentifier, PduHeader, SimulationAddress, VariableParameter, Vector,
+        WorldCoordinates,
     },
 };
 
@@ -32,12 +33,10 @@ pub struct EntityStatePdu {
     pub entity_linear_velocity: Vector,
     pub entity_location: WorldCoordinates,
     pub entity_orientation: EulerAngles,
-    pub entity_appearance: u32,
+    pub entity_appearance: EntityAppearance,
     pub dead_reckoning_parameters: DeadReckoningParameters,
     pub entity_marking: EntityMarking,
-    // SISO-REF-010 UID 55: a set of capability bits whose meaning
-    // depends on the entity kind and domain.
-    pub entity_capabilities: u32,
+    pub entity_capabilities: EntityCapabilities,
     #[deku(count = "number_of_articulation_parameters")]
     pub articulation_parameter: Vec<VariableParameter>,
 }
@@ -112,7 +111,7 @@ pub struct EntityStateUpdatePdu {
     pub entity_linear_velocity: Vector,
     pub entity_location: WorldCoordinates,
     pub entity_orientation: EulerAngles,
-    pub entity_appearance: u32,
+    pub entity_appearance: EntityAppearance,
     #[deku(count = "number_of_variable_parameters")]
     pub variable_parameter_records: Vec<VariableParameter>,
 }
