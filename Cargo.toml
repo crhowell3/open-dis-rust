@@ -4,6 +4,7 @@ version = "1.0.0"
 authors = ["Cameron Howell <me@crhowell.com>"]
 description = "A Rust implementation of the IEEE 1278.1-2012 DIS Standard."
 edition = "2024"
+rust-version = "1.85"
 license = "BSD-2-Clause"
 readme = "README.md"
 repository = "https://github.com/crhowell3/open-dis-rust"

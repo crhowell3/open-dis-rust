@@ -38,7 +38,7 @@ Whichever is chosen, every participant in an exercise should agree on it.
 
 ## The `Timestamp` type
 
-The crate represents timestamps with `common::Timestamp`, which is also in the
+The crate represents timestamps with `common::records::Timestamp`, which is also in the
 prelude. Header timestamps and the time inside Clock Time records both use it.
 
 **Creating timestamps:**
@@ -135,7 +135,7 @@ To build one yourself, pass the hour and a `Timestamp`:
 
 ```rust,ignore
 use std::time::Duration;
-use open_dis_rust::common::{Timestamp, records::ClockTime};
+use open_dis_rust::common::records::{ClockTime, Timestamp};
 
 // 06:00 UTC on 1 January 2026 is 490,902 hours after the Unix epoch
 let dawn = ClockTime::new(490_902, Timestamp::absolute(Duration::ZERO));

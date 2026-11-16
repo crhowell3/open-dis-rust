@@ -1,11 +1,11 @@
 # Identifiers & Exercises
 
 Every PDU says which exercise it belongs to and who sent it. This page explains
-the numbers DIS uses for that and they map to types in open-dis-rust.
+the numbers DIS uses for that and how they map to types in open-dis-rust.
 
 ## Exercises
 
-An **exercise** is one chared simulated world. Several exercises and run on the
+An **exercise** is one chared simulated world. Several exercises can run on the
 same network at once, such as a training event and a test. They are kept discrete
 and disjoint via the **exercise ID** in the header of every PDU.
 
@@ -18,7 +18,9 @@ and disjoint via the **exercise ID** in the header of every PDU.
 PDUs created with `new()` use exercise ID 1 by default. Set your own before sending:
 
 ```rust,ignore
-pdu.header_mut().exercise_id = 3;
+use open_dis_rust::prelude::*;
+
+pdu.header_mut().exercise_id = ExerciseIdentifier::new(3);
 ```
 
 The exercise ID is octet 1 of every PDU, so you can filter before decoding anything:
@@ -54,9 +56,10 @@ such as a vehicle, an aircraft, a person, or a munition in flight. Its **entity 
 its simulation address plus a 16-bit entity number:
 
 ```rust,ignore
-use open_dis_rust::common::records::EntityIdentifier;
+use open_dis_rust::common::records::{EntityIdentifier, SimulationAddress};
 
-let tank = EntityIdentifier::new(1, 100, 7); // entity 7 of site 1, application 100
+let me = SimulationAddress::new(1, 100);
+let tank = EntityIdentifier::new(me, 7); // entity 7 of site 1, application 100
 ```
 
 The application that owns an entity picks its entity numbers. Use each number for only
@@ -68,7 +71,7 @@ simulation application itself, which is how simulation management PDUs address a
 whole simulator:
 
 ```rust,ignore
-let my_application = EntityIdentifier::new(1, 100, 0);
+let my_application = EntityIdentifier::new(me, 0);
 ```
 
 ## Special values
@@ -87,8 +90,9 @@ For example, to send a Start/Resume PDU to every simulator in the exercise:
 use open_dis_rust::common::constants::{ALL_APPLIC, ALL_ENTITIES, ALL_SITES};
 
 let mut start = StartResumePdu::new();
-start.originating_entity_id = EntityIdentifier::new(1, 100, 0);
-start.receiving_entity_id = EntityIdentifier::new(ALL_SITES, ALL_APPLIC, ALL_ENTITIES);
+start.originating_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 100), 0);
+start.receiving_entity_id =
+    EntityIdentifier::new(SimulationAddress::new(ALL_SITES, ALL_APPLIC), ALL_ENTITIES);
 ```
 
 Other PDUs use 0 to mean "no target". A Fire PDU for a shot with no intended target
@@ -102,9 +106,9 @@ a number that the owning application assigns.
 | Identifier | Rust type | Identifies | Used in |
 | --- | --- | --- | --- |
 | Entity ID | `EntityIdentifier` | An entity | Most PDUs |
-| Event ID | `EventId` | One event, such as a shot | Fire, Detonation, Collision, emissions PDUs |
-| Object ID | `ObjectIdentifier` | An environmental object, such as a minefield marker or a crater | Linear and Areal Object State |
-| Aggregate ID | `AggregateId` | A group of entities, such as a platoon | Aggregate State |
+| Event ID | `EventIdentifier` | One event, such as a shot | Fire, Detonation, Collision, emissions PDUs |
+| Object ID | `ObjectIdentifier` | An environmental object, such as a minefield marker or a crater | Point, Linear, and Areal Object State |
+| Aggregate ID | `AggregateIdentifier` | A group of entities, such as a platoon | Aggregate State |
 | Minefield ID | `MinefieldIdentifier` | A minefield | Minefield PDUs |
 | Simulation ID | `SimulationIdentifier` | A simulation application | Transfer Ownership, Information Operations |
 
