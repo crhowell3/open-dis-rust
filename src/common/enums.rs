@@ -3342,18 +3342,6 @@ impl Default for FrozenBehavior {
 
 impl_deku_bitflags!(FrozenBehavior, u8);
 
-impl FrozenBehavior {
-    #[must_use]
-    pub const fn as_u8(&self) -> u8 {
-        self.bits()
-    }
-
-    #[must_use]
-    pub const fn from_u8(bits: u8) -> Option<Self> {
-        Self::from_bits(bits)
-    }
-}
-
 // SISO-REF-010-2023 AcknowledgeFlag [UID 69]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
 pub enum AcknowledgeFlag {
@@ -8113,36 +8101,208 @@ pub enum ObjectKind {
 impl_deku_enum!(ObjectKind, u8, from_u8);
 
 // SISO-REF-010-2023 ObjectStateAppearanceGeneral [UID 229]
-bitflags! {
-    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-    pub struct ObjectStateAppearanceGeneral: u16 {
-        const PercentComplete = 1 << 0;
-        const Damage = 1 << 8;
-        const Predistributed = 1 << 10;
-        const State = 1 << 11;
-        const IsSmoking = 1 << 12;
-        const IsFlaming = 1 << 13;
-        const IEDPresent = 1 << 14;
-    }
+/// General Object Appearance \[UID 229\]: the 16-bit general appearance of a point,
+/// linear, or areal object.
+///
+/// | Bits | Field |
+/// | --- | --- |
+/// | 0-7 | Percent complete |
+/// | 8-9 | Damage \[UID 405\] |
+/// | 10 | Predistributed \[UID 406\] |
+/// | 11 | State \[UID 386\] |
+/// | 12 | Is Smoking |
+/// | 13 | Is Flaming |
+/// | 14–15 | IED Present \[UID 411\] |
+///
+/// Bit 0 is the least significant bit. A decoded value keeps every bit, so it encodes
+/// back to the same 16 bits.
+///
+/// ```
+/// use open_dis_rust::common::enums::{AppearanceObjectGeneralDamage, ObjectStateAppearanceGeneral};
+///
+/// let mut appearance = ObjectStateAppearanceGeneral::default();
+/// appearance.set_percent_complete(75);
+/// appearance.set_damage(AppearanceObjectGeneralDamage::Damaged);
+/// assert_eq!(appearance.to_raw(), 1 << 8 | 75);
+/// ```
+#[derive(Copy, Clone, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ObjectStateAppearanceGeneral {
+    raw: u16,
 }
-
-impl Default for ObjectStateAppearanceGeneral {
-    fn default() -> Self {
-        Self::empty()
-    }
-}
-
-impl_deku_bitflags!(ObjectStateAppearanceGeneral, u16);
 
 impl ObjectStateAppearanceGeneral {
+    const PERCENT_COMPLETE: u16 = 0x00FF;
+    const DAMAGE: u16 = 0b11 << 8;
+    const PREDISTRIBUTED: u16 = 1 << 10;
+    const STATE: u16 = 1 << 11;
+    const SMOKING: u16 = 1 << 12;
+    const FLAMING: u16 = 1 << 13;
+    const IED_PRESENT: u16 = 0b11 << 14;
+
+    /// The appearance from its 16-bit wire value
     #[must_use]
-    pub const fn as_u16(&self) -> u16 {
-        self.bits()
+    pub const fn from_raw(raw: u16) -> Self {
+        Self { raw }
     }
 
+    /// The 16-bit wire value
     #[must_use]
-    pub const fn from_u16(bits: u16) -> Option<Self> {
-        Self::from_bits(bits)
+    pub const fn to_raw(self) -> u16 {
+        self.raw
+    }
+
+    const fn set_bits(&mut self, mask: u16, value: u16) {
+        self.raw = (self.raw & !mask) | (value & mask);
+    }
+
+    /// Percent Complete (bits 0–7): how far the object's construction has got.
+    #[must_use]
+    pub const fn percent_complete(self) -> u8 {
+        let [_, percent] = self.raw.to_be_bytes();
+        percent
+    }
+
+    /// Sets bits 0–7. See [`percent_complete`](Self::percent_complete).
+    pub const fn set_percent_complete(&mut self, percent: u8) {
+        self.set_bits(Self::PERCENT_COMPLETE, u16::from_be_bytes([0, percent]));
+    }
+
+    /// Damage (bits 8–9) \[UID 405\]. `None` if the bits hold 3, which isn't defined.
+    #[must_use]
+    pub const fn damage(self) -> Option<AppearanceObjectGeneralDamage> {
+        match (self.raw & Self::DAMAGE) >> 8 {
+            0 => Some(AppearanceObjectGeneralDamage::NoDamage),
+            1 => Some(AppearanceObjectGeneralDamage::Damaged),
+            2 => Some(AppearanceObjectGeneralDamage::Destroyed),
+            _ => None,
+        }
+    }
+
+    /// Sets bits 8–9. See [`damage`](Self::damage).
+    pub const fn set_damage(&mut self, damage: AppearanceObjectGeneralDamage) {
+        let value: u16 = match damage {
+            AppearanceObjectGeneralDamage::NoDamage => 0,
+            AppearanceObjectGeneralDamage::Damaged => 1,
+            AppearanceObjectGeneralDamage::Destroyed => 2,
+        };
+        self.set_bits(Self::DAMAGE, value << 8);
+    }
+
+    /// Predistributed (bit 10) \[UID 406\]: whether the object was created before the
+    /// exercise started.
+    #[must_use]
+    pub const fn predistributed(self) -> AppearanceObjectGeneralPredistributed {
+        if self.raw & Self::PREDISTRIBUTED == 0 {
+            AppearanceObjectGeneralPredistributed::ObjectCreatedDuringtheExercise
+        } else {
+            AppearanceObjectGeneralPredistributed::ObjectPredistributedPriortoExerciseStart
+        }
+    }
+
+    /// Sets bit 10. See [`predistributed`](Self::predistributed).
+    pub const fn set_predistributed(&mut self, value: AppearanceObjectGeneralPredistributed) {
+        let bit = match value {
+            AppearanceObjectGeneralPredistributed::ObjectCreatedDuringtheExercise => 0,
+            AppearanceObjectGeneralPredistributed::ObjectPredistributedPriortoExerciseStart => {
+                Self::PREDISTRIBUTED
+            }
+        };
+        self.set_bits(Self::PREDISTRIBUTED, bit);
+    }
+
+    /// State (bit 11) \[UID 386\]: whether the object is active or deactivated.
+    #[must_use]
+    pub const fn state(self) -> AppearanceEntityorObjectState {
+        if self.raw & Self::STATE == 0 {
+            AppearanceEntityorObjectState::Active
+        } else {
+            AppearanceEntityorObjectState::Deactivated
+        }
+    }
+
+    /// Sets bit 11. See [`state`](Self::state).
+    pub const fn set_state(&mut self, state: AppearanceEntityorObjectState) {
+        let bit = match state {
+            AppearanceEntityorObjectState::Active => 0,
+            AppearanceEntityorObjectState::Deactivated => Self::STATE,
+        };
+        self.set_bits(Self::STATE, bit);
+    }
+
+    /// Is Smoking (bit 12): whether the object is smoking
+    #[must_use]
+    pub const fn is_smoking(self) -> bool {
+        self.raw & Self::SMOKING != 0
+    }
+
+    /// Sets bit 12. See [`is_smoking`](Self::is_smoking).
+    pub const fn set_smoking(&mut self, smoking: bool) {
+        self.set_bits(Self::SMOKING, if smoking { Self::SMOKING } else { 0 });
+    }
+
+    /// Is Flaming (bit 13): whether the object is burning and flames are visible.
+    #[must_use]
+    pub const fn is_flaming(self) -> bool {
+        self.raw & Self::FLAMING != 0
+    }
+
+    /// Sets bit 13. See [`is_flaming`](Self::is_flaming).
+    pub const fn set_flaming(&mut self, flaming: bool) {
+        self.set_bits(Self::FLAMING, if flaming { Self::FLAMING } else { 0 });
+    }
+
+    /// IED Present (bits 14–15) \[UID 411\]: whether an improvised explosive device is
+    /// present, and how hidden it is.
+    #[must_use]
+    pub const fn ied_present(self) -> AppearanceObjectGeneralIEDPresent {
+        match (self.raw & Self::IED_PRESENT) >> 14 {
+            0 => AppearanceObjectGeneralIEDPresent::None,
+            1 => AppearanceObjectGeneralIEDPresent::Visible,
+            2 => AppearanceObjectGeneralIEDPresent::PartiallyHidden,
+            _ => AppearanceObjectGeneralIEDPresent::CompletelyHidden,
+        }
+    }
+
+    /// Sets bits 14–15. See [`ied_present`](Self::ied_present).
+    pub const fn set_ied_present(&mut self, ied: AppearanceObjectGeneralIEDPresent) {
+        let value: u16 = match ied {
+            AppearanceObjectGeneralIEDPresent::None => 0,
+            AppearanceObjectGeneralIEDPresent::Visible => 1,
+            AppearanceObjectGeneralIEDPresent::PartiallyHidden => 2,
+            AppearanceObjectGeneralIEDPresent::CompletelyHidden => 3,
+        };
+        self.set_bits(Self::IED_PRESENT, value << 14);
+    }
+}
+
+impl fmt::Debug for ObjectStateAppearanceGeneral {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ObjectStateAppearanceGeneral")
+            .field("percent_complete", &self.percent_complete())
+            .field("damage", &self.damage())
+            .field("predistributed", &self.predistributed())
+            .field("state", &self.state())
+            .field("is_smoking", &self.is_smoking())
+            .field("is_flaming", &self.is_flaming())
+            .field("ied_present", &self.ied_present())
+            .finish()
+    }
+}
+
+impl From<u16> for ObjectStateAppearanceGeneral {
+    fn from(raw: u16) -> Self {
+        Self::from_raw(raw)
+    }
+}
+
+impl From<ObjectStateAppearanceGeneral> for u16 {
+    fn from(appearance: ObjectStateAppearanceGeneral) -> Self {
+        appearance.raw
     }
 }
 
@@ -8837,29 +8997,29 @@ pub enum ComponentVisualSmokeColor {
 
 impl_deku_enum!(ComponentVisualSmokeColor, u8, from_u8);
 
-// SISO-REF-010-2023 ComponentVisualDamageStatus [UID 317]
-// What a damage site in a [`DirectedEnergyDamage`] record looks like
-//
-// | Bits | Field |
-// | --- | --- |
-// | 0 | Is Fire Present |
-// | 1-2 | Smoke \[UID 375\] |
-// | 3-4 | Surface Damage \[UID 376\] |
-//
-// Bit 0 is the least significant bit. Bits 5-7 are unused, and a decoded record keeps
-// them as received, so it encodes back to the same octet.
-//
-// ```
-// use open_dis_rust::common::{enums::{ComponentVisualDamageStatusSmoke, ComponentVisualDamageStatusSurfaceDamage},
-//  records::ComponentVisualDamageStatus,
-// };
-//
-// let mut status = ComponentVisualDamageStatus::new();
-// status.set_fire_present(true);
-// status.set_smoke(ComponentVisualDamageStatusSmoke::HeavySmoke);
-// status.set_surface_damage(ComponentVisualDamageStatusSurfaceDamage::LightCharring);
-// assert_eq!(status.to_raw(), 0b0000_1111);
-// ```
+/// SISO-REF-010-2023 ComponentVisualDamageStatus [UID 317]
+/// What a damage site in a [`DirectedEnergyDamage`] record looks like
+///
+/// | Bits | Field |
+/// | --- | --- |
+/// | 0 | Is Fire Present |
+/// | 1-2 | Smoke \[UID 375\] |
+/// | 3-4 | Surface Damage \[UID 376\] |
+///
+/// Bit 0 is the least significant bit. Bits 5-7 are unused, and a decoded record keeps
+/// them as received, so it encodes back to the same octet.
+///
+/// ```
+/// use open_dis_rust::common::{enums::{ComponentVisualDamageStatusSmoke, ComponentVisualDamageStatusSurfaceDamage},
+///  records::ComponentVisualDamageStatus,
+/// };
+///
+/// let mut status = ComponentVisualDamageStatus::new();
+/// status.set_fire_present(true);
+/// status.set_smoke(ComponentVisualDamageStatusSmoke::HeavySmoke);
+/// status.set_surface_damage(ComponentVisualDamageStatusSurfaceDamage::LightCharring);
+/// assert_eq!(status.to_raw(), 0b0000_1111);
+/// ```
 #[derive(Copy, Clone, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -8903,7 +9063,7 @@ impl ComponentVisualDamageStatus {
         self.raw & Self::FIRE != 0
     }
 
-    /// Sets bit 0. See [`is_fire_present`](Self::is_fire_present)
+    /// Sets bit 0. See [`fire_present`](Self::fire_present)
     pub const fn set_fire_present(&mut self, present: bool) {
         self.set_bits(Self::FIRE, if present { Self::FIRE } else { 0 });
     }
@@ -8932,7 +9092,7 @@ impl ComponentVisualDamageStatus {
 
     /// Describes general surface appearance at the damage site (bits 3-4)
     #[must_use]
-    pub fn surface_damage(self) -> ComponentVisualDamageStatusSurfaceDamage {
+    pub const fn surface_damage(self) -> ComponentVisualDamageStatusSurfaceDamage {
         match (self.raw & Self::SURFACE_DAMAGE) >> 3 {
             0 => ComponentVisualDamageStatusSurfaceDamage::NormalAppearance,
             1 => ComponentVisualDamageStatusSurfaceDamage::LightCharring,

@@ -192,7 +192,7 @@ pub struct Mine {
 pub struct MinefieldResponseNackPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub minefield_id: EntityIdentifier,
+    pub minefield_id: MinefieldIdentifier,
     pub requesting_entity_id: EntityIdentifier,
     pub request_id: u8,
     #[deku(update = "self.missing_pdu_sequence_numbers.len()")]

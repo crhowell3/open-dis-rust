@@ -417,7 +417,7 @@ fn change_options_fields_are_at_specified_bits() {
         (2, |o| o.set_system_specific_2(true)),
         (3, |o| o.set_heartbeat(true)),
         (4, |o| {
-            o.set_transponder_interrogator(TransponderInterrogatorIndicator::Interrogator)
+            o.set_transponder_interrogator(TransponderInterrogatorIndicator::Interrogator);
         }),
         (5, |o| o.set_simulation_mode(IFFSimulationMode::Interactive)),
         (6, |o| o.set_interactive_capable(true)),

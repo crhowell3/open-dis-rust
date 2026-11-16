@@ -64,7 +64,7 @@ impl Server {
 
         loop {
             if let Some((size, peer)) = to_send {
-                match deserialize_pdu(&buf.get(..size).unwrap_or_default()) {
+                match deserialize_pdu(buf.get(..size).unwrap_or_default()) {
                     Some(ParsedPdu::Transmitter(p)) => {
                         println!(
                             "Transmitter from {peer}: entity={:?} freq={} state={:?}",

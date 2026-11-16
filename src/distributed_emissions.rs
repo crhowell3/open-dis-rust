@@ -17,17 +17,17 @@ use deku::{
 
 use crate::common::{
     data_types::{
-        AcousticEmitterSystemData, ApaData, ElectromagneticEmissionSystemData,
-        IFFFundamentalParameterData, ShaftRPMs,
+        AcousticEmitterSystemData, ApaData, ElectromagneticEmissionSystemData, ShaftRPMs,
     },
     enums::{
         DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName, EEAttributeStateIndicator,
         PduType, ProtocolFamily, UAPassiveParameterIndex, UAStateChangeUpdateIndicator,
     },
     records::{
-        BeamData, EntityIdentifier, EventIdentifier, FundamentalOperationalData, LayerHeader,
-        PduHeader, PropulsionSystemData, SecondaryOperationalData, SystemIdentifier, Vector,
-        VectoringNozzleSystemData, WorldCoordinates,
+        BeamData, EntityIdentifier, EventIdentifier, FundamentalOperationalData,
+        IFFFundamentalParameterData, LayerHeader, PduHeader, PropulsionSystemData,
+        SecondaryOperationalData, SystemIdentifier, Vector, VectoringNozzleSystemData,
+        WorldCoordinates,
     },
 };
 

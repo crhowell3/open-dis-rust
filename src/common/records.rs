@@ -1430,7 +1430,10 @@ impl EventIdentifier {
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.34
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+/// The exercise a PDU belongs to, from 1 to 255. Every participant in an exercise uses the same one.
+///
+/// The default is exercise 1.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
@@ -1439,9 +1442,34 @@ impl EventIdentifier {
 pub struct ExerciseIdentifier(u8);
 
 impl ExerciseIdentifier {
+    /// The exercise with the given number.
     #[must_use]
     pub const fn new(id: u8) -> Self {
         Self(id)
+    }
+
+    /// The exercise's number.
+    #[must_use]
+    pub const fn get(self) -> u8 {
+        self.0
+    }
+}
+
+impl Default for ExerciseIdentifier {
+    fn default() -> Self {
+        Self(1)
+    }
+}
+
+impl From<u8> for ExerciseIdentifier {
+    fn from(id: u8) -> Self {
+        Self(id)
+    }
+}
+
+impl From<ExerciseIdentifier> for u8 {
+    fn from(id: ExerciseIdentifier) -> Self {
+        id.0
     }
 }
 
@@ -1489,13 +1517,13 @@ pub struct FixedDatumRecord {
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.38
-#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct ForceIdentification(ForceId);
+pub struct ForceIdentification(pub ForceId);
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.39
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -1814,21 +1842,50 @@ pub struct IFFDataSpecification {
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.44
-#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct IFFFundamentalParameterData {
+    /// Effective radiated power, in dBm
     pub erp: f32,
+    /// Frequency, in hertz
     pub frequency: f32,
+    /// Pulse group repetition frequency, in hertz
     pub pgrf: f32,
+    /// Pulse width, in microseconds
     pub pulse_width: f32,
-    pub burst_length: f32,
+    /// Number of pulses in a burst
+    pub burst_length: u32,
+    /// Which modes the parameters apply to \[UID 339\]
     pub applicable_modes: IFFApplicableModes,
-    #[deku(bytes = 3)]
-    pub system_specific_data: u32,
+    /// System-specific data
+    pub system_specific_data: [u8; 3],
+}
+
+impl IFFFundamentalParameterData {
+    #[must_use]
+    pub const fn new(
+        erp: f32,
+        frequency: f32,
+        pgrf: f32,
+        pulse_width: f32,
+        burst_length: u32,
+        applicable_modes: IFFApplicableModes,
+        system_specific_data: [u8; 3],
+    ) -> Self {
+        Self {
+            erp,
+            frequency,
+            pgrf,
+            pulse_width,
+            burst_length,
+            applicable_modes,
+            system_specific_data,
+        }
+    }
 }
 
 bitflags::bitflags! {
@@ -3570,7 +3627,7 @@ pub struct Sensor {
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct Service(ServiceRequestServiceTypeRequested);
+pub struct Service(pub ServiceRequestServiceTypeRequested);
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.79
 #[derive(Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]

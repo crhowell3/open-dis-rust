@@ -93,8 +93,8 @@ fn updated_grid_data(records: &[GridData]) -> Result<Vec<GridData>, deku::DekuEr
 pub struct PointObjectStatePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub object_id: EntityIdentifier,
-    pub referenced_object_id: EntityIdentifier,
+    pub object_id: ObjectIdentifier,
+    pub referenced_object_id: ObjectIdentifier,
     pub update_number: u16,
     pub force_id: ForceId,
     pub modifications: u8,
@@ -102,7 +102,7 @@ pub struct PointObjectStatePdu {
     pub object_location: WorldCoordinates,
     pub object_orientation: EulerAngles,
     pub specific_object_appearance: u32,
-    pub general_object_appearance: u16,
+    pub general_object_appearance: ObjectStateAppearanceGeneral,
     padding: u16,
     pub requester_id: SimulationAddress,
     pub receiving_id: SimulationAddress,
@@ -153,7 +153,7 @@ pub struct ArealObjectStatePdu {
     pub modifications: ArealObjectStateModification,
     pub object_type: ObjectType,
     /// The layout here depends on the object type. If the object happens to
-    /// be a minefield, read it using [`ArealObjectMinefieldAppearance`](crate::common::records::ArealObjectStateMinefieldAppearance).
+    /// be a minefield, read it using [`ArealObjectStateMinefieldAppearance`](crate::common::records::ArealObjectStateMinefieldAppearance).
     /// There are no other standard-defined specifications for non-minefield areal objects.
     pub specific_object_appearance: u32,
     pub general_object_appearance: ObjectStateAppearanceGeneral,

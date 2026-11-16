@@ -28,6 +28,9 @@ use crate::common::{
     },
 };
 
+/// Octets in a Beam Antenna Pattern record (IEEE 1278.1-2012 §6.2.8.2).
+const BEAM_ANTENNA_PATTERN_LENGTH: u16 = 40;
+
 /// Implemented according to IEEE 1278.1-2012 §7.7.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(endian = "big")]
@@ -47,6 +50,11 @@ pub struct TransmitterPdu {
     pub antenna_location: WorldCoordinates,
     pub relative_antenna_location: Vector,
     pub antenna_pattern_type: TransmitterAntennaPatternType,
+    /// Octets of `antenna_pattern`: 40 for a beam pattern, 0 for none. Set by `serialize`.
+    #[deku(
+        update = "if self.antenna_pattern.is_some() { BEAM_ANTENNA_PATTERN_LENGTH } else { 0 }",
+        assert = "*antenna_pattern_length == 0 || *antenna_pattern_length == BEAM_ANTENNA_PATTERN_LENGTH"
+    )]
     pub antenna_pattern_length: u16,
     pub frequency: u64,
     pub transmit_frequency_bandwidth: f32,
@@ -64,6 +72,10 @@ pub struct TransmitterPdu {
         writer = "write_blob(deku::writer, modulation_parameters.as_ref().map(|m| m.record_specific_fields.as_slice()))"
     )]
     pub modulation_parameters: Option<ModulationParameters>,
+    /// The beam antenna pattern (§6.2.8.2), when there is one. Spherical harmonic
+    /// patterns aren't supported: a PDU with an antenna pattern length other than 0 or 40
+    /// fails to decode.
+    #[deku(cond = "*antenna_pattern_length != 0")]
     pub antenna_pattern: Option<BeamAntennaPattern>,
     #[deku(count = "number_of_variable_transmitter_parameters_records")]
     pub variable_transmitter_parameters: Vec<VariableTransmitterParameters>,

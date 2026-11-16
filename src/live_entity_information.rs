@@ -169,13 +169,6 @@ bitflags! {
 }
 impl_deku_bitflags!(AppearanceFlags2, u8);
 
-bitflags! {
-    #[derive(Debug, Clone, Copy)]
-    pub struct PlatformAppearance: u32 {
-        const PaintScheme = 0b0000_0000_0000_0001;
-    }
-}
-
 /// Implemented according to IEEE 1278.1-2012 §9.4.3.5
 ///
 /// Set the optional fields you want to send; `serialize` sets the presence

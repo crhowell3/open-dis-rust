@@ -6,17 +6,6 @@
 
 use thiserror::Error;
 
-use crate::common::enums::ProtocolVersion;
-
-/// Protocol version and header related states
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PduState {
-    Uninitialized,
-    HeaderValid,
-    BodyValid,
-    Complete,
-}
-
 #[derive(Error, Debug)]
 /// Enhanced error types for DIS protocol operations
 pub enum DISError {
@@ -41,30 +30,8 @@ pub enum DISError {
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
 
-    #[error("Invalid PDU state transition: {current_state:?} -> {target_state:?}")]
-    InvalidStateTransition {
-        current_state: PduState,
-        target_state: PduState,
-    },
-
-    #[error("Protocol version mismatch: expected {expected:?}, got {got:?}")]
-    ProtocolVersionMismatch {
-        expected: ProtocolVersion,
-        got: ProtocolVersion,
-    },
-
-    #[error("Invalid field value: {field} = {value}, {reason}")]
-    InvalidFieldValue {
-        field: String,
-        value: String,
-        reason: String,
-    },
-
     #[error("Buffer underflow: tried to read {attempted} bytes, but only {available} bytes remain")]
     BufferUnderflow { attempted: usize, available: usize },
-
-    #[error("Network error: {0}")]
-    NetworkError(#[from] std::io::Error),
 
     #[error("PDU size exceeds maximum allowed: {size} > {max_size}")]
     PduSizeExceeded { size: usize, max_size: usize },
@@ -128,15 +95,6 @@ impl DISError {
         Self::SerializationError {
             msg: msg.into(),
             source,
-        }
-    }
-
-    /// Create a new `InvalidFieldValue` error
-    pub fn invalid_field<S: Into<String>>(field: S, value: S, reason: S) -> Self {
-        Self::InvalidFieldValue {
-            field: field.into(),
-            value: value.into(),
-            reason: reason.into(),
         }
     }
 

@@ -22,20 +22,20 @@
 
 use crate::common::{
     DISError,
-    data_types::point::Point,
     data_types::{
         AcousticBeamData, AcousticEmitterSystemData, ApaData, AttributeRecordSet,
         DataRepresentationType, ElectromagneticEmissionBeamData, ElectromagneticEmissionSystemData,
-        GridAxisType, IFFFundamentalParameterData, ShaftRPMs,
+        GridAxisType, ShaftRPMs, point::Point,
     },
     enums::{GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes},
     pdu::Pdu,
     records::{
-        AggregateIdentifier, Attribute, ClockTime, DirectedEnergyDamage, EntityIdentifier,
-        EntityType, Environment, EulerAngles, GridAxisDescriptor, GridData,
-        IntercomCommunicationsParameters, LinearSegmentParameter, ModulationParameters,
-        PropulsionSystemData, SupplyQuantity, TrackJamData, VariableDatumRecord, VariableParameter,
-        VariableTransmitterParameters, Vector, VectoringNozzleSystemData, WorldCoordinates,
+        AggregateIdentifier, Attribute, BeamAntennaPattern, ClockTime, DirectedEnergyDamage,
+        EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor, GridData,
+        IFFFundamentalParameterData, IntercomCommunicationsParameters, LinearSegmentParameter,
+        ModulationParameters, PropulsionSystemData, SupplyQuantity, TrackJamData,
+        VariableDatumRecord, VariableParameter, VariableTransmitterParameters, Vector,
+        VectoringNozzleSystemData, WorldCoordinates,
     },
 };
 use crate::{
@@ -714,6 +714,7 @@ lists!(
         p.modulation_parameters = Some(ModulationParameters {
             record_specific_fields: vec![1, 2, 3],
         });
+        p.antenna_pattern = Some(BeamAntennaPattern::default());
         p.variable_transmitter_parameters = vec![
             VariableTransmitterParameters {
                 record_type: VariableRecordTypes::default(),
@@ -725,7 +726,8 @@ lists!(
     },
     |d| {
         assert_eq!(d.modulation_parameter_length, 3);
-        assert_eq!(d.antenna_pattern_length, 5);
+        assert_eq!(d.antenna_pattern_length, 40);
+        assert!(d.antenna_pattern.is_some());
         assert_eq!(d.number_of_variable_transmitter_parameters_records, 2);
         assert_eq!(
             d.modulation_parameters.unwrap().record_specific_fields,
