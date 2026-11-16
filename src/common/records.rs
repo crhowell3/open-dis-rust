@@ -4270,13 +4270,184 @@ impl WorldCoordinates {
 }
 
 /// Implemented according to IEEE 1278.1-2012 §B.2.52
-#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+/// The overall status of an IFF system
+///
+/// It is the first octet of the IFF PDU's [`FundamentalOperationalData`], and says
+/// whether the system is on, which of the parameters 1 to 6 it has a component for, and
+/// whether it is operational.
+///
+/// | Bit | Field | Lo | Hi |
+/// | --- | --- | --- | --- |
+/// | 0 | System On/Off Status | Off | On |
+/// | 1-6 | Parameter 1-6 Capable | Capable | Not Capable |
+/// | 7 | Operational Status | Operational | System Failed |
+///
+/// Bit 0 is the least significant bit. The accessors use `true` for On, Capable, and
+/// Operational, so the capable and operational getters are `true` when their bit is 0.
+/// The default record (which has every bit set to 0) is a system that is off,
+/// capable for all six parameters, and operational.
+///
+/// ```
+/// use open_dis_rust::common::records::SystemStatus;
+///
+/// let mut status = SystemStatus::new();
+/// status.set_system_on(true);
+/// status.set_parameter_6_capable(false);  // no component for Parameter 6
+/// assert_eq!(status.to_raw(), 0b0100_0001);
+/// assert!(status.is_operational());
+/// ```
+#[derive(Copy, Clone, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct SystemStatus {}
+pub struct SystemStatus {
+    raw: u8,
+}
+
+impl SystemStatus {
+    const SYSTEM_ON: u8 = 1 << 0;
+    const PARAMETER_1_NOT_CAPABLE: u8 = 1 << 1;
+    const PARAMETER_2_NOT_CAPABLE: u8 = 1 << 2;
+    const PARAMETER_3_NOT_CAPABLE: u8 = 1 << 3;
+    const PARAMETER_4_NOT_CAPABLE: u8 = 1 << 4;
+    const PARAMETER_5_NOT_CAPABLE: u8 = 1 << 5;
+    const PARAMETER_6_NOT_CAPABLE: u8 = 1 << 6;
+    const SYSTEM_FAILED: u8 = 1 << 7;
+
+    /// Creates a System Status record with every field set to zero
+    #[must_use]
+    pub const fn new() -> Self {
+        Self { raw: 0 }
+    }
+
+    /// System Status record from its wire octet
+    #[must_use]
+    pub const fn from_raw(raw: u8) -> Self {
+        Self { raw }
+    }
+
+    /// The wire octet itself
+    #[must_use]
+    pub const fn to_raw(self) -> u8 {
+        self.raw
+    }
+
+    const fn set_bit(&mut self, bit: u8, set: bool) {
+        self.raw = if set { self.raw | bit } else { self.raw & !bit };
+    }
+
+    /// System On/Off Status (bit 0): whether the overall system is on
+    #[must_use]
+    pub const fn system_on(self) -> bool {
+        self.raw & Self::SYSTEM_ON != 0
+    }
+
+    /// Sets bit 0. See [`system_on`](Self::system_on)
+    pub const fn set_system_on(&mut self, on: bool) {
+        self.set_bit(Self::SYSTEM_ON, on);
+    }
+
+    /// Whether a system component is defined for Parameter 1 of the Fundamental
+    /// Operational Data record (bit 1). On the wire, Capable is 0 and Not Capable is 1
+    #[must_use]
+    pub const fn parameter_1_capable(self) -> bool {
+        self.raw & Self::PARAMETER_1_NOT_CAPABLE == 0
+    }
+
+    /// Sets bit 1. See [`parameter_1_capable`](Self::parameter_1_capable)
+    pub const fn set_parameter_1_capable(&mut self, capable: bool) {
+        self.set_bit(Self::PARAMETER_1_NOT_CAPABLE, !capable);
+    }
+
+    /// Whether a system component is defined for Parameter 2 of the Fundamental
+    /// Operational Data record (bit 2). On the wire, Capable is 0 and Not Capable is 1
+    #[must_use]
+    pub const fn parameter_2_capable(self) -> bool {
+        self.raw & Self::PARAMETER_2_NOT_CAPABLE == 0
+    }
+
+    /// Sets bit 2. See [`parameter_2_capable`](Self::parameter_2_capable)
+    pub const fn set_parameter_2_capable(&mut self, capable: bool) {
+        self.set_bit(Self::PARAMETER_2_NOT_CAPABLE, !capable);
+    }
+
+    /// Whether a system component is defined for Parameter 3 of the Fundamental
+    /// Operational Data record (bit 3). On the wire, Capable is 0 and Not Capable is 1
+    #[must_use]
+    pub const fn parameter_3_capable(self) -> bool {
+        self.raw & Self::PARAMETER_3_NOT_CAPABLE == 0
+    }
+
+    /// Sets bit 3. See [`parameter_3_capable`](Self::parameter_3_capable)
+    pub const fn set_parameter_3_capable(&mut self, capable: bool) {
+        self.set_bit(Self::PARAMETER_3_NOT_CAPABLE, !capable);
+    }
+
+    /// Whether a system component is defined for Parameter 4 of the Fundamental
+    /// Operational Data record (bit 4). On the wire, Capable is 0 and Not Capable is 1
+    #[must_use]
+    pub const fn parameter_4_capable(self) -> bool {
+        self.raw & Self::PARAMETER_4_NOT_CAPABLE == 0
+    }
+
+    /// Sets bit 4. See [`parameter_4_capable`](Self::parameter_4_capable)
+    pub const fn set_parameter_4_capable(&mut self, capable: bool) {
+        self.set_bit(Self::PARAMETER_4_NOT_CAPABLE, !capable);
+    }
+
+    /// Whether a system component is defined for Parameter 5 of the Fundamental
+    /// Operational Data record (bit 5). On the wire, Capable is 0 and Not Capable is 1
+    #[must_use]
+    pub const fn parameter_5_capable(self) -> bool {
+        self.raw & Self::PARAMETER_5_NOT_CAPABLE == 0
+    }
+
+    /// Sets bit 5. See [`parameter_5_capable`](Self::parameter_5_capable)
+    pub const fn set_parameter_5_capable(&mut self, capable: bool) {
+        self.set_bit(Self::PARAMETER_5_NOT_CAPABLE, !capable);
+    }
+
+    /// Whether a system component is defined for Parameter 6 of the Fundamental
+    /// Operational Data record (bit 6). On the wire, Capable is 0 and Not Capable is 1
+    #[must_use]
+    pub const fn parameter_6_capable(self) -> bool {
+        self.raw & Self::PARAMETER_6_NOT_CAPABLE == 0
+    }
+
+    /// Sets bit 6. See [`parameter_6_capable`](Self::parameter_6_capable)
+    pub const fn set_parameter_6_capable(&mut self, capable: bool) {
+        self.set_bit(Self::PARAMETER_6_NOT_CAPABLE, !capable);
+    }
+
+    /// Operational Status (bit 7): `false` if the system has failed, which it reports when
+    /// it cannot provide data for any of parameters 1 to 6 or the Modifier record.
+    #[must_use]
+    pub const fn is_operational(self) -> bool {
+        self.raw & Self::SYSTEM_FAILED == 0
+    }
+
+    /// Sets bit 7. See [`is_operational`](Self::is_operational)
+    pub const fn set_operational(&mut self, operational: bool) {
+        self.set_bit(Self::SYSTEM_FAILED, !operational);
+    }
+}
+
+impl fmt::Debug for SystemStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SystemStatus")
+            .field("system_on", &self.system_on())
+            .field("parameter_1_capable", &self.parameter_1_capable())
+            .field("parameter_2_capable", &self.parameter_2_capable())
+            .field("parameter_3_capable", &self.parameter_3_capable())
+            .field("parameter_4_capable", &self.parameter_4_capable())
+            .field("parameter_5_capable", &self.parameter_5_capable())
+            .field("parameter_6_capable", &self.parameter_6_capable())
+            .field("is_operational", &self.is_operational())
+            .finish()
+    }
+}
 
 mod appearance;
 
