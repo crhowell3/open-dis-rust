@@ -1906,7 +1906,7 @@ bitflags::bitflags! {
     }
 }
 
-crate::siso::impl_deku_bitflags!(InformationLayers, u8);
+crate::common::wire::impl_deku_bitflags!(InformationLayers, u8);
 
 impl InformationLayers {
     #[must_use]

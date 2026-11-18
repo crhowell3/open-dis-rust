@@ -27,7 +27,8 @@ src/
 │   ├── constants.rs               special values and size limits
 │   └── dis_error.rs               DISError
 └── siso/                          SISO-REF-010-2023
-    ├── enums.rs                   the enumerations, and impl_deku_enum! and impl_deku_bitflags!
+    ├── mod.rs                     impl_deku_enum! and impl_deku_bitflags!
+    ├── enums.rs                   the generated enumerations
     ├── enums/tests.rs             encoding tests for every enumeration
     ├── appearance.rs              typed views of the appearance layouts (§17.11)
     ├── appearance/tests.rs        appearance tests
@@ -167,7 +168,7 @@ both jobs.
 
 ## Enumerations
 
-The enumerations in and bit layouts in `siso` take three forms:
+The enumerations and bit layouts in `siso` take three forms:
 
 - **Ordinary enums** derive `FromPrimitive` and get their deku code from
   `impl_deku_enum!(Name, u8, from_u8)`. The macro is hand-written rather than derived

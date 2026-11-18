@@ -14,6 +14,7 @@ use deku::{
     writer::Writer,
 };
 
+use crate::common::wire::impl_deku_bitflags;
 use crate::common::{
     live_entity_records::{
         FixedBinary16, LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
@@ -28,7 +29,6 @@ use crate::common::{
     },
 };
 use crate::siso::enums::{ForceId, PduType, ProtocolFamily};
-use crate::siso::impl_deku_bitflags;
 
 bitflags! {
     /// TSPI Flag (IEEE 1278.1-2012 §9.4.2.5): which optional TSPI fields are

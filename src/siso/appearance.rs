@@ -2948,7 +2948,7 @@ impl ArealObjectStateMinefieldAppearance {
         Self { raw }
     }
 
-    /// The 32 bits including the unused bits 2-16
+    /// The 32 bits including the unused bits 2-15
     #[must_use]
     pub const fn to_raw(self) -> u32 {
         self.raw
@@ -2972,7 +2972,7 @@ impl ArealObjectStateMinefieldAppearance {
         (self.raw >> 16) as u16
     }
 
-    /// Sets bit 16-31. See [`mine_count`](Self::mine_count)
+    /// Sets bits 16-31. See [`mine_count`](Self::mine_count)
     pub const fn set_mine_count(&mut self, count: u16) {
         self.raw = with_field(self.raw, 16, 16, count as u32);
     }

@@ -73,7 +73,7 @@ The first official release of open-dis-rust!
   - The entity appearance views, `ObjectStateAppearanceGeneral` (UID 229) and `ArealObjectStateMinefieldAppearance`
     (UID 239) are in `siso::appearance`
   - `FrozenBehavior`, `ArealObjectStateModification`, and `ComponentVisualDamageStatus` are in `siso::bit_records`
-- The Live Entity records, `LiveEntityPduHeader`, and `FixedBinary` records are all in `common::live_entity_records`.
+- The Live Entity records, `LiveEntityPduHeader`, and `FixedBinary8` and `FixedBinary16` records are all in `common::live_entity_records`.
   `common::live_entity_pdu_header` and the `live_entity_records` submodules are gone, and `LiveEntityRelativeLocation`
   and `LiveMunitionDescriptor` moved there from `live_entity_information`
 

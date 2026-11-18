@@ -133,7 +133,7 @@ impl<T: Pdu<Header = LiveEntityPduHeader> + ?Sized> LiveEntityPdu for T {}
 
 /// The header fields that encoding sets from the PDU. Private to the crate so that
 /// those fields stay read-only for users.
-pub(crate) trait DerivedFields {
+pub trait DerivedFields {
     #[cfg(test)]
     fn length(&self) -> u16;
     fn set_pdu_type(&mut self, value: PduType);
@@ -141,7 +141,7 @@ pub(crate) trait DerivedFields {
     fn set_length(&mut self, value: u16);
 }
 
-pub(crate) fn total_length(header_len: usize, body_len: usize) -> Result<u16, DISError> {
+pub fn total_length(header_len: usize, body_len: usize) -> Result<u16, DISError> {
     use crate::common::constants::MAX_PDU_SIZE_OCTETS;
     let size = header_len.saturating_add(body_len);
     u16::try_from(size)
@@ -155,7 +155,7 @@ pub(crate) fn total_length(header_len: usize, body_len: usize) -> Result<u16, DI
 
 /// Encodes `header` followed by `body` onto the end of `buf`, then rewrites the
 /// header with the PDU's real length. `buf` is restored if anything fails.
-pub(crate) fn write_pdu<H, B>(header: &mut H, body: &B, buf: &mut Vec<u8>) -> Result<(), DISError>
+pub fn write_pdu<H, B>(header: &mut H, body: &B, buf: &mut Vec<u8>) -> Result<(), DISError>
 where
     H: DerivedFields + deku::DekuWriter<()>,
     B: deku::DekuWriter<()>,
@@ -184,7 +184,7 @@ where
     result
 }
 
-pub(crate) fn take_body<'a>(
+pub fn take_body<'a>(
     buf: &mut &'a [u8],
     declared_len: u16,
     header_len: usize,
@@ -204,7 +204,7 @@ pub(crate) fn take_body<'a>(
     Ok(body)
 }
 
-pub(crate) fn check_body_used(body: &[u8], declared_len: u16) -> Result<(), DISError> {
+pub fn check_body_used(body: &[u8], declared_len: u16) -> Result<(), DISError> {
     if body.is_empty() {
         Ok(())
     } else {

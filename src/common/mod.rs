@@ -10,15 +10,15 @@ pub mod constants;
 /// Data types the standard defines or implies that are not §6.2 records.
 pub mod data_types;
 /// The crate's error type, [`DISError`].
-pub mod dis_error;
+pub(crate) mod dis_error;
 /// The compact records used by the Live Entity Information/Interaction PDUs.
 pub mod live_entity_records;
 /// The [`Pdu`] trait every PDU implements, and the traits that name the two
 /// kinds of PDU.
-pub mod pdu;
+pub(crate) mod pdu;
 /// The records of IEEE 1278.1-2012 §6.2 that PDUs are built from, in section order.
 pub mod records;
 pub(crate) mod wire;
 
-pub use dis_error::{DISError, WireFormatError};
+pub use dis_error::{DISError, DISResult, WireFormatError};
 pub use pdu::{LiveEntityPdu, Pdu, StandardPdu};
