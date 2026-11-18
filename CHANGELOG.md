@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2026-11-17
+## [1.0.0] - 2026-11-18
 
 The first official release of open-dis-rust!
 
@@ -10,7 +10,7 @@ The first official release of open-dis-rust!
   - Decoding rejects undefined enum values
   - deku is an implementation detail and is not part of the public API
 - `Pdu::to_bytes` method, which encodes a PDU into a new `Vec<u8>`
-- `common::records::Timestamp`, a type for DIS timestamps, also in the prelude. `Timestamp::now()`, `absolute()` and
+- `records::Timestamp`, a type for DIS timestamps, also in the prelude. `Timestamp::now()`, `absolute()` and
   `relative()` create one; `is_absolute()`, `time_past_hour()` and `duration_since()` read one, and
   `duration_since()` allows for the hour wrapping around
 - `ClockTime::now()`
@@ -18,7 +18,7 @@ The first official release of open-dis-rust!
 - `RecordReliablePdu` (Record-R, PDU type 63), so every PDU type in IEEE 1278.1-2012 is implemented
 - The `prelude` module for importing the most common traits and types
 - `IffLayer2` and `IffLayers` for the IFF PDU's layers after layer 1
-- Every record in §6.2 of the standard, in `common::records` in section order, including the bit records
+- Every record in §6.2 of the standard, in `records` in section order, including the bit records
   `BeamStatus`, `ChangeOptions`, `InformationLayers`, `ProtocolMode`, `SystemStatus` and `JammingTechnique`,
   and `MinefieldSensorType`. Each bit record has a getter and setter per field and keeps unused bits as received
 - `ExerciseIdentifier` for the header's exercise ID, which defaults to 1, and `RequestIdentifier`
@@ -67,18 +67,27 @@ The first official release of open-dis-rust!
 - `VariableTransmitterParameters::record_type` is `VariableRecordTypes` (UID 66)
 - `RecordREventType` is now a `u16` to match the standard
 - `EntityId` is now `EntityIdentifier`
-- Records and data types have been reorganized into a `records` and a `data_types` module instead of being lumped into one
+- The modules are organized by where their contents come from, and every public type has one path:
+  - IEEE 1278.1: the PDU family modules, and the top-level `records`, `live_entity_records` and `constants` modules,
+    which replace `common::records`, `common::live_entity_records` and `common::constants`
+  - The crate: `Pdu`, `StandardPdu`, `LiveEntityPdu`, `DISError`, `DISResult` and `WireFormatError` are at the crate
+    root, instead of in `common`, `common::pdu` and `common::dis_error`
+  - The `common` and `common::data_types` modules are gone. The records that were in `data_types` are in `records`,
+    and the parts of a single PDU are in that PDU's module: the Electromagnetic Emission and Underwater Acoustic
+    system and beam data, `ApaData` and `ShaftRPMs` in `distributed_emissions`, `AttributeRecordSet` in
+    `entity_information`, and `Point` in `minefield`
 - Everything SISO-REF-010 defines is in a new top-level `siso` module:
   - The enumerations are in `siso::enums` instead of `common::enums`
   - The entity appearance views, `ObjectStateAppearanceGeneral` (UID 229) and `ArealObjectStateMinefieldAppearance`
     (UID 239) are in `siso::appearance`
   - `FrozenBehavior`, `ArealObjectStateModification`, and `ComponentVisualDamageStatus` are in `siso::bit_records`
-- The Live Entity records, `LiveEntityPduHeader`, and `FixedBinary8` and `FixedBinary16` records are all in `common::live_entity_records`.
-  `common::live_entity_pdu_header` and the `live_entity_records` submodules are gone, and `LiveEntityRelativeLocation`
-  and `LiveMunitionDescriptor` moved there from `live_entity_information`
+- The Live Entity records, `LiveEntityPduHeader`, and `FixedBinary8` and `FixedBinary16` records are all in `live_entity_records`.
+  `LiveEntityRelativeLocation` and `LiveMunitionDescriptor` moved there from `live_entity_information`
 
 ### Removed
 
+- The constants the standard doesn't define, `BITS_PER_BYTE`, `MAX_ARTICULATION_PARAMS` and
+  `MAX_ENTITY_MARKING_LENGTH`, and the unused helpers `validate_pdu_size`, `total_pdu_size` and `validate_marking_length`
 - The `pdu_macro` module: `FieldSerialize`, `FieldDeserialize`, `FieldLen`, `FieldDeserializeWithLen`, `define_pdu!`, `impl_record_fields!`, and
   `impl_u8_flag_fields!`. PDUs are now defined internally with deku, and the macros that define and test them are
   private to the crate

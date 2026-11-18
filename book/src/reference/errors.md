@@ -4,7 +4,7 @@ Every fallible operation in open-dis-rust returns `Result<T, DISError>`. The cra
 never panics on bad input, so a malformed or unexpected PDU always comes back to you
 as an error you can handle.
 
-`DISError` implements `std::error::Error` and `Display`. The alias `common::dis_error::DISResult<T>`
+`DISError` implements `std::error::Error` and `Display`. The alias `DISResult<T>`
 can be imported as a shorthand for `Result<T, DISError>`.
 
 ## Possibly encountered errors

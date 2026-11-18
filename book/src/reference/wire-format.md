@@ -73,7 +73,7 @@ Bits 4 and 5 mean different things depending on the PDU:
 | Intercom Signal, Intercom Control | Intercom Attached Indicator | `iai` / `set_iai` |
 | IFF | IFF Simulation Mode (bit 4), Active Interrogation Indicator (bit 5) | `ism` / `set_ism`, `aii` / `set_aii` |
 
-The accessors are on `common::records::PduStatus`, which you reach through `header.pdu_status`.
+The accessors are on `records::PduStatus`, which you reach through `header.pdu_status`.
 The fields every PDU can use have accessors, too: `tei` / `set_tei`, `lvc` / `set_lvc`,
 and `cei` / `set_cei`.
 
@@ -135,7 +135,7 @@ while rest.len() >= PDU_HEADER_SIZE {
 }
 ```
 
-`PDU_HEADER_SIZE` (12 octets) is in `common::constants`, which is also re-exported in the prelude.
+`PDU_HEADER_SIZE` (12 octets) is in `constants`, which is also re-exported in the prelude.
 
 To send a bundle, serialize each PDU into the same buffer, one after another, and keep
 the total under the network's maximum datagram size.
