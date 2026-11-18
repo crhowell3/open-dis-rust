@@ -13,7 +13,7 @@
 )]
 
 use super::*;
-use crate::common::enums::Country;
+use crate::siso::enums::Country;
 
 /// The bits from `lo` to `hi`, inclusive
 const fn mask(lo: u32, hi: u32) -> u32 {

@@ -5,12 +5,10 @@
 //     Licensed under the BSD 2-Clause License
 
 use super::{
-    LiveEntityPduHeader,
-    constants::PDU_HEADER_SIZE,
-    dis_error::DISError,
-    enums::{PduType, ProtocolFamily},
+    constants::PDU_HEADER_SIZE, dis_error::DISError, live_entity_records::LiveEntityPduHeader,
     records::PduHeader,
 };
+use crate::siso::enums::{PduType, ProtocolFamily};
 use std::{any::Any, fmt::Debug};
 
 /// A DIS Protocol Data Unit
@@ -225,11 +223,11 @@ macro_rules! impl_pdu {
         impl $crate::common::pdu::Pdu for $name {
             type Header = $header;
 
-            fn pdu_type(&self) -> $crate::common::enums::PduType {
+            fn pdu_type(&self) -> $crate::siso::enums::PduType {
                 $pdu_type
             }
 
-            fn protocol_family(&self) -> $crate::common::enums::ProtocolFamily {
+            fn protocol_family(&self) -> $crate::siso::enums::ProtocolFamily {
                 $family
             }
 
@@ -391,12 +389,12 @@ mod tests {
     use crate::{
         common::{
             LiveEntityPdu, StandardPdu,
-            enums::PduType,
             records::{ExerciseIdentifier, VariableDatumRecord},
         },
         entity_information::EntityStatePdu,
         live_entity_information::TimeSpacePositionInformationPdu,
         simulation_management::{AcknowledgePdu, CommentPdu},
+        siso::enums::PduType,
     };
 
     fn exercise_of(pdu: &impl StandardPdu) -> ExerciseIdentifier {
@@ -405,7 +403,7 @@ mod tests {
 
     fn subprotocol_of(
         pdu: &impl LiveEntityPdu,
-    ) -> crate::common::enums::DISLiveEntitySubprotocolNumber {
+    ) -> crate::siso::enums::DISLiveEntitySubprotocolNumber {
         pdu.header().subprotocol_number
     }
 
@@ -440,7 +438,7 @@ mod tests {
         assert_eq!(pdu.pdu_type(), PduType::TimeSpacePositionInformation);
         assert_eq!(
             pdu.protocol_family(),
-            crate::common::enums::ProtocolFamily::LiveEntityInformationInteraction
+            crate::siso::enums::ProtocolFamily::LiveEntityInformationInteraction
         );
     }
 

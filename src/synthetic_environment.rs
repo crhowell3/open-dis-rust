@@ -6,16 +6,15 @@
 
 //! The Synthetic Environment protocol family
 
-use crate::common::{
-    enums::{
-        ArealObjectStateModification, ForceId, GriddedDataConstantGrid,
-        GriddedDataCoordinateSystem, ObjectStateAppearanceGeneral, PduType, ProtocolFamily,
-    },
-    records::{
-        ClockTime, EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor,
-        GridData, LinearSegmentParameter, ObjectIdentifier, ObjectType, PduHeader,
-        SimulationAddress, WorldCoordinates,
-    },
+use crate::common::records::{
+    ClockTime, EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor,
+    GridData, LinearSegmentParameter, ObjectIdentifier, ObjectType, PduHeader, SimulationAddress,
+    WorldCoordinates,
+};
+use crate::siso::bit_records::ArealObjectStateModification;
+use crate::siso::enums::{
+    ForceId, GriddedDataConstantGrid, GriddedDataCoordinateSystem, ObjectStateAppearanceGeneral,
+    PduType, ProtocolFamily,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.10.2

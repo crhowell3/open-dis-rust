@@ -12,23 +12,34 @@ use deku::{
     writer::Writer,
 };
 
-use crate::common::{
-    enums::{
-        DeadReckoningAlgorithm, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
-        VariableRecordTypes,
-    },
-    records::{
-        AcousticEmitterSystem, AngularVelocityVector, Attribute, EmitterSystem, EntityIdentifier,
-        SimulationAddress, TrackJamData, Vector,
-    },
+use crate::common::records::{
+    AcousticEmitterSystem, AngularVelocityVector, Attribute, EmitterSystem, EntityIdentifier,
+    SimulationAddress, TrackJamData, Vector,
+};
+use crate::siso::enums::{
+    DeadReckoningAlgorithm, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
+    VariableRecordTypes,
 };
 
-pub mod fixed_binary;
-/// The [`Point`] data type.
-pub mod point;
+/// A point on a minefield's perimeter, as x and y offsets in meters from the minefield's
+/// location.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct Point {
+    pub x: f32,
+    pub y: f32,
+}
 
-pub use fixed_binary::{FixedBinary8, FixedBinary16};
-pub use point::Point;
+impl Point {
+    #[must_use]
+    pub const fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
 
 /// One beam of an acoustic emitter system in an Underwater Acoustic PDU.
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -69,7 +80,7 @@ impl AcousticBeamData {
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct StandardVariableRecords {
+pub struct StandardVariableRecord {
     pub record_type: u32,
     #[deku(
         update = "crate::common::wire::padded_record_length(self.record_specific_fields.len())?",
@@ -86,7 +97,7 @@ pub struct StandardVariableRecords {
     pub record_specific_fields: Vec<u8>,
 }
 
-impl StandardVariableRecords {
+impl StandardVariableRecord {
     #[must_use]
     pub const fn new(
         record_type: u32,

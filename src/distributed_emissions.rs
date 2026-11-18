@@ -19,16 +19,16 @@ use crate::common::{
     data_types::{
         AcousticEmitterSystemData, ApaData, ElectromagneticEmissionSystemData, ShaftRPMs,
     },
-    enums::{
-        DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName, EEAttributeStateIndicator,
-        PduType, ProtocolFamily, UAPassiveParameterIndex, UAStateChangeUpdateIndicator,
-    },
     records::{
         BeamData, EntityIdentifier, EventIdentifier, FundamentalOperationalData,
         IFFFundamentalParameterData, LayerHeader, PduHeader, PropulsionSystemData,
         SecondaryOperationalData, SystemIdentifier, Vector, VectoringNozzleSystemData,
         WorldCoordinates,
     },
+};
+use crate::siso::enums::{
+    DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName, EEAttributeStateIndicator,
+    PduType, ProtocolFamily, UAPassiveParameterIndex, UAStateChangeUpdateIndicator,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.6.2

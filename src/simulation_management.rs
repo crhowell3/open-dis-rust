@@ -6,15 +6,14 @@
 
 //! The Simulation Management (SIMAN) protocol family
 
-use crate::common::{
-    enums::{
-        AcknowledgeFlag, AcknowledgeResponseFlag, ActionResponseRequestStatus, EventType,
-        FrozenBehavior, PduType, ProtocolFamily, Reason,
-    },
-    records::{
-        ClockTime, DataQueryDatumSpecification, EntityIdentifier, FixedDatumRecord, PduHeader,
-        VariableDatumRecord,
-    },
+use crate::common::records::{
+    ClockTime, DataQueryDatumSpecification, EntityIdentifier, FixedDatumRecord, PduHeader,
+    VariableDatumRecord,
+};
+use crate::siso::bit_records::FrozenBehavior;
+use crate::siso::enums::{
+    AcknowledgeFlag, AcknowledgeResponseFlag, ActionResponseRequestStatus, EventType, PduType,
+    ProtocolFamily, Reason,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.5.2

@@ -6,12 +6,12 @@
 
 //! The Information Operations protocol family
 
-use crate::common::{
-    enums::{
-        IOActionIOActionPhase, IOActionIOActionType, IOActionIOSimulationSource,
-        IOActionIOWarfareType, IOReportIOReportType, PduType, ProtocolFamily,
-    },
-    records::{EntityIdentifier, PduHeader, SimulationIdentifier, StandardVariableSpecification},
+use crate::common::records::{
+    EntityIdentifier, PduHeader, SimulationIdentifier, StandardVariableSpecification,
+};
+use crate::siso::enums::{
+    IOActionIOActionPhase, IOActionIOActionType, IOActionIOSimulationSource, IOActionIOWarfareType,
+    IOReportIOReportType, PduType, ProtocolFamily,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.12.3

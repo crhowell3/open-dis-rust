@@ -368,7 +368,7 @@ mod jamming_techniques {
 
 #[test]
 fn beam_status_state_is_bit_zero() {
-    use crate::common::enums::BeamStatusBeamState;
+    use crate::siso::enums::BeamStatusBeamState;
 
     assert_eq!(
         BeamStatus::default().beam_state(),
@@ -391,7 +391,7 @@ fn beam_status_state_is_bit_zero() {
 
 #[test]
 fn beam_status_keeps_padding_bits() {
-    use crate::common::enums::BeamStatusBeamState;
+    use crate::siso::enums::BeamStatusBeamState;
 
     let mut status = BeamStatus::from_raw(0b1010_0000);
     status.set_beam_state(BeamStatusBeamState::Deactivated);
@@ -408,7 +408,7 @@ fn beam_status_keeps_padding_bits() {
 
 #[test]
 fn change_options_fields_are_at_specified_bits() {
-    use crate::common::enums::{IFFSimulationMode, TransponderInterrogatorIndicator};
+    use crate::siso::enums::{IFFSimulationMode, TransponderInterrogatorIndicator};
 
     type Setter = fn(&mut ChangeOptions);
     let setters: [(u8, Setter); 8] = [
@@ -433,7 +433,7 @@ fn change_options_fields_are_at_specified_bits() {
 
 #[test]
 fn change_options_getters_read_specified_bits() {
-    use crate::common::enums::{IFFSimulationMode, TransponderInterrogatorIndicator};
+    use crate::siso::enums::{IFFSimulationMode, TransponderInterrogatorIndicator};
 
     let all = ChangeOptions::from_raw(0xFF);
     assert!(all.initial_report_or_change());
@@ -456,7 +456,7 @@ fn change_options_getters_read_specified_bits() {
 
 #[test]
 fn change_options_setters_leave_other_bits_alone() {
-    use crate::common::enums::IFFSimulationMode;
+    use crate::siso::enums::IFFSimulationMode;
 
     let mut options = ChangeOptions::from_raw(0xFF);
     options.set_heartbeat(false);

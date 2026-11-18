@@ -7,7 +7,7 @@
 use std::{error::Error, net::UdpSocket};
 
 use open_dis_rust::prelude::*;
-use open_dis_rust::{common::enums::PduType, entity_information::EntityStatePdu};
+use open_dis_rust::{entity_information::EntityStatePdu, siso::enums::PduType};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let socket = UdpSocket::bind("0.0.0.0:3000")?;

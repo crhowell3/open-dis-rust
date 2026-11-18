@@ -27,10 +27,10 @@ mod udp {
 
     use tokio::net::UdpSocket;
 
-    use open_dis_rust::common::enums::{AcknowledgeFlag, AcknowledgeResponseFlag};
     use open_dis_rust::common::records::{EntityIdentifier, ExerciseIdentifier};
     use open_dis_rust::prelude::*;
     use open_dis_rust::simulation_management::AcknowledgePdu;
+    use open_dis_rust::siso::enums::{AcknowledgeFlag, AcknowledgeResponseFlag};
 
     pub async fn connect(addr: &SocketAddr) -> Result<(), Box<dyn Error>> {
         // We'll bind our UDP socket to a local IP/port, but for now we

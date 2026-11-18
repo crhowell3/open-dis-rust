@@ -6,17 +6,14 @@
 
 //! The Entity Management protocol family
 
-use crate::common::{
-    enums::{
-        AggregateStateAggregateState, AggregateStateFormation, ForceId,
-        IsGroupOfGroupedEntityCategory, PduType, ProtocolFamily, RequiredReliabilityService,
-        TransferControlTransferType,
-    },
-    records::{
-        AggregateIdentifier, AggregateMarking, EntityIdentifier, EntityType, EulerAngles,
-        NamedLocationIdentification, PduHeader, RecordSpecification, Relationship,
-        SimulationIdentifier, VariableDatumRecord, Vector, WorldCoordinates,
-    },
+use crate::common::records::{
+    AggregateIdentifier, AggregateMarking, EntityIdentifier, EntityType, EulerAngles,
+    NamedLocationIdentification, PduHeader, RecordSpecification, Relationship,
+    SimulationIdentifier, VariableDatumRecord, Vector, WorldCoordinates,
+};
+use crate::siso::enums::{
+    AggregateStateAggregateState, AggregateStateFormation, ForceId, IsGroupOfGroupedEntityCategory,
+    PduType, ProtocolFamily, RequiredReliabilityService, TransferControlTransferType,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.8.2

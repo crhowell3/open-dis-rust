@@ -15,14 +15,14 @@ use deku::{
 };
 
 use crate::common::{
-    data_types::point::Point,
-    enums::{ForceId, PduType, ProtocolFamily},
+    data_types::Point,
     records::{
         ClockTime, EntityIdentifier, EntityType, EulerAngles, MinefieldIdentifier, PduHeader,
         ProtocolMode, Vector, WorldCoordinates,
     },
     wire,
 };
+use crate::siso::enums::{ForceId, PduType, ProtocolFamily};
 
 /// Implemented according to IEEE 1278.1-2012 §7.9.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -158,7 +158,7 @@ bitflags! {
         const PAINT_SCHEME = 1 << 10;
     }
 }
-crate::common::enums::impl_deku_bitflags!(MinefieldDataFilter, u32);
+crate::siso::enums::impl_deku_bitflags!(MinefieldDataFilter, u32);
 
 /// One mine in a Minefield Data PDU. Optional fields must be present on
 /// every mine in the PDU or on none.

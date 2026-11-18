@@ -18,33 +18,33 @@ use num_traits::FromPrimitive;
 
 use crate::common::data_types::{
     DataRepresentationType, GridAxisType, IFFDataRecord, RecordSpecificationElement,
-    SimulationManagementId, StandardVariableRecords,
+    SimulationManagementId, StandardVariableRecord,
 };
-use crate::common::enums::{
+use crate::common::wire;
+use crate::siso::bit_records::ComponentVisualDamageStatus;
+use crate::siso::enums::{
     ActiveInterrogationIndicator, AggregateStateAggregateKind, ArticulatedPartsTypeClass,
-    BeamStatusBeamState, ComponentDamageStatus, ComponentIdentification,
-    ComponentVisualDamageStatus, ComponentVisualSmokeColor, Country, CoupledExtensionIndicator,
-    DEPrecisionAimpointBeamSpotType, DetonationTypeIndicator, EEAttributeStateIndicator,
-    EmitterName, EmitterSystemFunction, EntityAssociationAssociationType, EntityKind,
-    EntityMarkingCharacterSet, EntityOwnershipStatus, EnvironmentalProcessRecordType,
-    ExplosiveMaterialCategories, FireTypeIndicator, ForceId, FuelLocation, FuelMeasurementUnits,
-    GridAxisDescriptorAxisType, GriddedDataDataRepresentation, GriddedDataSampleType,
-    IFFApplicableModes, IFFSimulationMode, IFFSystemMode, IFFSystemName, IFFSystemType,
-    IOCommsNodeRecordCommsNodeType, IOEffectsRecordIOEffect, IOEffectsRecordIOLinkType,
-    IOEffectsRecordIOProcess, IOEffectsRecordIOStatus, IntercomAttachedIndicator,
-    IntercomControlRecordType, LVCIndicator, MinefieldSensorTypesFLIR, MinefieldSensorTypesLaser,
-    MinefieldSensorTypesMagnetic, MinefieldSensorTypesMultispectral, MinefieldSensorTypesOptical,
-    MinefieldSensorTypesPhysical, MinefieldSensorTypesRADAR, MinefieldSensorTypesSONAR,
-    MinefieldStateProtocolMode, MunitionDescriptorFuse, MunitionDescriptorWarhead,
-    MunitionExpendableStatus, OtherKinds, PduStatusIFFSimulationMode, PduType, ProtocolFamily,
-    ProtocolVersion, RadioAttachedIndicator, SensorOnOffStatus, SensorTypeSource,
-    ServiceRequestServiceTypeRequested, SupplyFuelType, TransferredEntityIndicator,
-    TransmitterAntennaPatternReferenceSystem, TransmitterMajorModulation,
-    TransmitterModulationTypeSystem, TransponderInterrogatorIndicator,
+    BeamStatusBeamState, ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor,
+    Country, CoupledExtensionIndicator, DEPrecisionAimpointBeamSpotType, DetonationTypeIndicator,
+    EEAttributeStateIndicator, EmitterName, EmitterSystemFunction,
+    EntityAssociationAssociationType, EntityKind, EntityMarkingCharacterSet, EntityOwnershipStatus,
+    EnvironmentalProcessRecordType, ExplosiveMaterialCategories, FireTypeIndicator, ForceId,
+    FuelLocation, FuelMeasurementUnits, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
+    GriddedDataSampleType, IFFApplicableModes, IFFSimulationMode, IFFSystemMode, IFFSystemName,
+    IFFSystemType, IOCommsNodeRecordCommsNodeType, IOEffectsRecordIOEffect,
+    IOEffectsRecordIOLinkType, IOEffectsRecordIOProcess, IOEffectsRecordIOStatus,
+    IntercomAttachedIndicator, IntercomControlRecordType, LVCIndicator, MinefieldSensorTypesFLIR,
+    MinefieldSensorTypesLaser, MinefieldSensorTypesMagnetic, MinefieldSensorTypesMultispectral,
+    MinefieldSensorTypesOptical, MinefieldSensorTypesPhysical, MinefieldSensorTypesRADAR,
+    MinefieldSensorTypesSONAR, MinefieldStateProtocolMode, MunitionDescriptorFuse,
+    MunitionDescriptorWarhead, MunitionExpendableStatus, OtherKinds, PduStatusIFFSimulationMode,
+    PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator, SensorOnOffStatus,
+    SensorTypeSource, ServiceRequestServiceTypeRequested, SupplyFuelType,
+    TransferredEntityIndicator, TransmitterAntennaPatternReferenceSystem,
+    TransmitterMajorModulation, TransmitterModulationTypeSystem, TransponderInterrogatorIndicator,
     UAAcousticEmitterSystemFunction, UAAcousticSystemName, UAActiveEmissionParameterIndex,
     UAScanPattern, VariableParameterRecordType, VariableRecordTypes,
 };
-use crate::common::wire;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -1906,7 +1906,7 @@ bitflags::bitflags! {
     }
 }
 
-crate::common::enums::impl_deku_bitflags!(InformationLayers, u8);
+crate::siso::enums::impl_deku_bitflags!(InformationLayers, u8);
 
 impl InformationLayers {
     #[must_use]
@@ -3741,14 +3741,14 @@ pub struct StandardVariableSpecification {
     )]
     pub number_of_standard_variable_records: u16,
     #[deku(count = "number_of_standard_variable_records")]
-    pub standard_variable_records: Vec<StandardVariableRecords>,
+    pub standard_variable_records: Vec<StandardVariableRecord>,
 }
 
 impl StandardVariableSpecification {
     #[must_use]
     pub const fn new(
         number_of_standard_variable_records: u16,
-        standard_variable_records: Vec<StandardVariableRecords>,
+        standard_variable_records: Vec<StandardVariableRecord>,
     ) -> Self {
         Self {
             number_of_standard_variable_records,
@@ -4515,10 +4515,6 @@ impl fmt::Debug for SystemStatus {
             .finish()
     }
 }
-
-mod appearance;
-
-pub use appearance::*;
 
 #[cfg(test)]
 mod tests;

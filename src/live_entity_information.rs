@@ -15,12 +15,10 @@ use deku::{
 };
 
 use crate::common::{
-    LiveEntityPduHeader,
-    data_types::FixedBinary16,
-    enums::{ForceId, PduType, ProtocolFamily, impl_deku_bitflags},
     live_entity_records::{
-        LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
-        LiveEntityOrientation16, LiveEventIdentifier, OrientationError, PositionError,
+        FixedBinary16, LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
+        LiveEntityOrientation16, LiveEntityPduHeader, LiveEntityRelativeLocation,
+        LiveEventIdentifier, LiveMunitionDescriptor, OrientationError, PositionError,
         RelativeWorldCoordinates,
     },
     pdu::impl_pdu,
@@ -29,6 +27,7 @@ use crate::common::{
         VariableParameter,
     },
 };
+use crate::siso::enums::{ForceId, PduType, ProtocolFamily, impl_deku_bitflags};
 
 bitflags! {
     /// TSPI Flag (IEEE 1278.1-2012 §9.4.2.5): which optional TSPI fields are
@@ -308,35 +307,6 @@ impl_pdu!(
     PduType::LiveEntityFire,
     ProtocolFamily::LiveEntityInformationInteraction
 );
-
-/// A location relative to a reference point in the compact Live Entity form.
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct LiveEntityRelativeLocation {
-    pub x: i16,
-    pub y: i16,
-    pub z: i16,
-}
-
-/// The munition in a Live Entity Fire or Detonation PDU: its type, warhead, fuse, quantity,
-/// and rate.
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct LiveMunitionDescriptor {
-    pub munition_type: EntityType,
-    pub warhead: u16,
-    pub fuse: u16,
-    pub quantity: u16,
-    pub rate: u16,
-}
 
 /// Implemented according to IEEE 1278.1-2012 §9.4.6.8
 #[derive(Debug, Default, Clone, deku::DekuRead, deku::DekuWrite)]

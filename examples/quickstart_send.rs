@@ -8,14 +8,13 @@ use std::{error::Error, net::UdpSocket, thread, time::Duration};
 
 use open_dis_rust::prelude::*;
 use open_dis_rust::{
-    common::{
-        enums::{Country, DeadReckoningAlgorithm, EntityKind, EntityMarkingCharacterSet, ForceId},
-        records::{
-            EntityIdentifier, EntityMarking, EntityType, ExerciseIdentifier, Vector,
-            WorldCoordinates,
-        },
+    common::records::{
+        EntityIdentifier, EntityMarking, EntityType, ExerciseIdentifier, Vector, WorldCoordinates,
     },
     entity_information::EntityStatePdu,
+    siso::enums::{
+        Country, DeadReckoningAlgorithm, EntityKind, EntityMarkingCharacterSet, ForceId,
+    },
 };
 
 fn main() -> Result<(), Box<dyn Error>> {

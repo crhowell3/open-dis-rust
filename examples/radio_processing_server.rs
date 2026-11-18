@@ -12,10 +12,10 @@ use tokio::net::UdpSocket;
 
 use open_dis_rust::prelude::*;
 use open_dis_rust::{
-    common::enums::PduType,
     radio_communications::{
         IntercomControlPdu, IntercomSignalPdu, ReceiverPdu, SignalPdu, TransmitterPdu,
     },
+    siso::enums::PduType,
 };
 
 enum ParsedPdu {

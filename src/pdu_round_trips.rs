@@ -25,9 +25,8 @@ use crate::common::{
     data_types::{
         AcousticBeamData, AcousticEmitterSystemData, ApaData, AttributeRecordSet,
         DataRepresentationType, ElectromagneticEmissionBeamData, ElectromagneticEmissionSystemData,
-        GridAxisType, ShaftRPMs, point::Point,
+        GridAxisType, Point, ShaftRPMs,
     },
-    enums::{GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes},
     pdu::Pdu,
     records::{
         AggregateIdentifier, Attribute, BeamAntennaPattern, ClockTime, DirectedEnergyDamage,
@@ -37,6 +36,9 @@ use crate::common::{
         VariableDatumRecord, VariableParameter, VariableTransmitterParameters, Vector,
         VectoringNozzleSystemData, WorldCoordinates,
     },
+};
+use crate::siso::enums::{
+    GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes,
 };
 use crate::{
     distributed_emissions::*, entity_information::*, entity_management::*, logistics::*,
@@ -519,7 +521,7 @@ mod minefield_data {
 }
 
 mod gridded_data {
-    use crate::common::enums::GriddedDataSampleType;
+    use crate::siso::enums::GriddedDataSampleType;
 
     use super::*;
 

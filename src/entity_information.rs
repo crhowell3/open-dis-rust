@@ -10,13 +10,13 @@
 
 use crate::common::{
     data_types::{AttributeRecordSet, DeadReckoningParameters},
-    enums::{DISAttributeActionCode, ForceId, PduType, ProtocolFamily},
     records::{
         EntityAppearance, EntityCapabilities, EntityIdentifier, EntityMarking, EntityType,
         EulerAngles, EventIdentifier, PduHeader, SimulationAddress, VariableParameter, Vector,
         WorldCoordinates,
     },
 };
+use crate::siso::enums::{DISAttributeActionCode, ForceId, PduType, ProtocolFamily};
 
 /// Implemented according to IEEE 1278.1-2012 §7.2.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]

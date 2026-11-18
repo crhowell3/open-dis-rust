@@ -42,6 +42,7 @@ pub mod minefield;
 pub mod radio_communications;
 pub mod simulation_management;
 pub mod simulation_management_with_reliability;
+pub mod siso;
 pub mod synthetic_environment;
 pub mod warfare;
 
@@ -58,14 +59,15 @@ pub fn get_version() -> String {
 /// ```
 pub mod prelude {
     pub use crate::common::{
-        DISError, LiveEntityPdu, LiveEntityPduHeader, Pdu, StandardPdu,
+        DISError, LiveEntityPdu, Pdu, StandardPdu,
         constants::{MAX_PDU_SIZE_OCTETS, PDU_HEADER_SIZE},
-        enums::{EntityKind, PduType, ProtocolFamily, ProtocolVersion},
+        live_entity_records::LiveEntityPduHeader,
         records::{
             ClockTime, EntityIdentifier, EntityType, ExerciseIdentifier, PduHeader,
             SimulationAddress, Timestamp,
         },
     };
+    pub use crate::siso::enums::{EntityKind, PduType, ProtocolFamily, ProtocolVersion};
 }
 
 #[cfg(test)]

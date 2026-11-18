@@ -6,16 +6,17 @@
 
 //! The Simulation Management with Reliability (SIMAN-R) protocol family
 
-use crate::common::{
-    enums::{
-        AcknowledgeFlag, AcknowledgeResponseFlag, ActionResponseRequestStatus, EventType,
-        FrozenBehavior, PduType, ProtocolFamily, Reason, RecordQueryREventType, RecordREventType,
-        RequiredReliabilityService, VariableRecordTypes,
+use crate::siso::enums::{
+    AcknowledgeFlag, AcknowledgeResponseFlag, ActionResponseRequestStatus, EventType, PduType,
+    ProtocolFamily, Reason, RecordQueryREventType, RecordREventType, RequiredReliabilityService,
+    VariableRecordTypes,
+};
+use crate::{
+    common::records::{
+        ClockTime, EntityIdentifier, FixedDatumRecord, PduHeader, RecordSpecification,
+        VariableDatumRecord,
     },
-    records::{
-        ClockTime, EntityIdentifier, PduHeader, RecordSpecification,
-        {FixedDatumRecord, VariableDatumRecord},
-    },
+    siso::bit_records::FrozenBehavior,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.11.2

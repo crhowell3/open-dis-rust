@@ -6,12 +6,10 @@
 
 //! The Logistics protocol family
 
-use crate::common::{
-    enums::{
-        PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
-        ServiceRequestServiceTypeRequested,
-    },
-    records::{EntityIdentifier, PduHeader, SupplyQuantity},
+use crate::common::records::{EntityIdentifier, PduHeader, SupplyQuantity};
+use crate::siso::enums::{
+    PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
+    ServiceRequestServiceTypeRequested,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.4.2

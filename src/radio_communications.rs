@@ -15,17 +15,16 @@ use deku::{
 
 use crate::common::{
     data_types::RadioEntityType,
-    enums::{
-        IntercomControlCommand, IntercomControlControlType, IntercomControlTransmitLineState,
-        PduType, ProtocolFamily, ReceiverReceiverState, SignalTDLType,
-        TransmitterAntennaPatternType, TransmitterCryptoSystem, TransmitterInputSource,
-        TransmitterTransmitState,
-    },
     records::{
         BeamAntennaPattern, EntityIdentifier, IntercomCommunicationsParameters,
         ModulationParameters, ModulationType, PduHeader, VariableTransmitterParameters, Vector,
         WorldCoordinates,
     },
+};
+use crate::siso::enums::{
+    IntercomControlCommand, IntercomControlControlType, IntercomControlTransmitLineState, PduType,
+    ProtocolFamily, ReceiverReceiverState, SignalTDLType, TransmitterAntennaPatternType,
+    TransmitterCryptoSystem, TransmitterInputSource, TransmitterTransmitState,
 };
 
 /// Octets in a Beam Antenna Pattern record (IEEE 1278.1-2012 §6.2.8.2).

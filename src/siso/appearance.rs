@@ -23,8 +23,8 @@ use std::fmt;
 
 use num_traits::FromPrimitive;
 
-use super::{EntityAppearance, EntityType};
-use crate::common::enums::{
+use crate::common::records::{EntityAppearance, EntityType};
+use crate::siso::enums::{
     AppearanceAntiCollisionDayNight, AppearanceCamouflageType, AppearanceCanopy,
     AppearanceConcealedMovement, AppearanceConcealedPosition, AppearanceDamage,
     AppearanceEntityorObjectState, AppearanceEnvironmentalDensity, AppearanceHatch,
