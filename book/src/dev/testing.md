@@ -62,10 +62,8 @@ a comment, so a reviewer can check it against the standard line by line:
 #![allow(clippy::unwrap_used, reason = "test helpers")]
 
 use open_dis_rust::{
-    common::{
-        Pdu,
-        records::{EntityIdentifier, SimulationAddress, Timestamp},
-    },
+    Pdu,
+    records::{EntityIdentifier, SimulationAddress, Timestamp},
     simulation_management::AcknowledgePdu,
     siso::enums::{AcknowledgeFlag, AcknowledgeResponseFlag},
 };
@@ -153,7 +151,7 @@ checks that encoding the result reproduces the input:
 ```rust,ignore
 #![no_main]
 use libfuzzer_sys::fuzz_target;
-use open_dis_rust::{common::Pdu, entity_information::EntityStatePdu};
+use open_dis_rust::{Pdu, entity_information::EntityStatePdu};
 
 fuzz_target!(|data: &[u8]| {
     let mut input = data;

@@ -44,7 +44,7 @@ advance rather than assigned by the protocol. In open-dis-rust, they are stored 
 `SimulationAddress`:
 
 ```rust,ignore
-use open_dis_rust::common::records::SimulationAddress;
+use open_dis_rust::records::SimulationAddress;
 
 let me = SimulationAddress::new(1, 100); // site 1, application 100
 ```
@@ -56,7 +56,7 @@ such as a vehicle, an aircraft, a person, or a munition in flight. Its **entity 
 its simulation address plus a 16-bit entity number:
 
 ```rust,ignore
-use open_dis_rust::common::records::{EntityIdentifier, SimulationAddress};
+use open_dis_rust::records::{EntityIdentifier, SimulationAddress};
 
 let me = SimulationAddress::new(1, 100);
 let tank = EntityIdentifier::new(me, 7); // entity 7 of site 1, application 100
@@ -76,7 +76,7 @@ let my_application = EntityIdentifier::new(me, 0);
 
 ## Special values
 
-These constants in `common::constants` have fixed meanings:
+These constants in `constants` have fixed meanings:
 
 | Constant | Value | Meaning |
 | --- | --- | --- |
@@ -87,7 +87,7 @@ These constants in `common::constants` have fixed meanings:
 For example, to send a Start/Resume PDU to every simulator in the exercise:
 
 ```rust,ignore
-use open_dis_rust::common::constants::{ALL_APPLIC, ALL_ENTITIES, ALL_SITES};
+use open_dis_rust::constants::{ALL_APPLIC, ALL_ENTITIES, ALL_SITES};
 
 let mut start = StartResumePdu::new();
 start.originating_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 100), 0);

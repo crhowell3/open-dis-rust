@@ -8,37 +8,54 @@ changes to the crate.
 
 ```text
 src/
-├── lib.rs                         one module per protocol family
+├── lib.rs                         the crate root: the modules below, the prelude, and the
+│                                  Pdu traits and DISError re-exported
+│
+│   IEEE 1278.1-2012
 ├── entity_information.rs          ┐
 ├── warfare.rs                     │
-├── logistics.rs                   │  the PDUs, grouped by family
+├── logistics.rs                   │  the PDUs, one module per protocol family
 ├── ...                            │
 ├── information_operations.rs      ┘
-├── common/                        IEEE 1278.1 itself
-│   ├── pdu.rs                     the Pdu, StandardPdu and LiveEntityPdu traits, and the
-│   │                              impl_pdu! and pdu_tests! macros
-│   ├── wire.rs                    bridges byte slices and vectors to deku, plus encoding helpers
-│   ├── records.rs                 the §6.2 records PDUs are built from, in section order,
-│   │                              including PduHeader and PduStatus
-│   ├── records/tests.rs           record tests
-│   ├── live_entity_records.rs     LiveEntityPduHeader, FixedBinary8/16 and the compact
-│   │                              records used by Live Entity PDUs
-│   ├── data_types.rs              other data types defined or implied in the standard
-│   ├── constants.rs               special values and size limits
-│   └── dis_error.rs               DISError
-└── siso/                          SISO-REF-010-2023
-    ├── mod.rs                     impl_deku_enum! and impl_deku_bitflags!
-    ├── enums.rs                   the generated enumerations
-    ├── enums/tests.rs             encoding tests for every enumeration
-    ├── appearance.rs              typed views of the appearance layouts (§17.11)
-    ├── appearance/tests.rs        appearance tests
-    └── bit_records.rs             the other SISO bit layouts
+├── records.rs                     the §6.2 and Annex B records PDUs are built from, in
+│                                  section order, including PduHeader and PduStatus
+├── records/tests.rs               record tests
+├── live_entity_records.rs         LiveEntityPduHeader, FixedBinary8/16 and the compact
+│                                  records used by Live Entity PDUs
+├── constants.rs                   the standard's symbolic values and size limits
+│
+│   SISO-REF-010-2023
+├── siso/
+│   ├── mod.rs                     impl_deku_enum! and impl_deku_bitflags!
+│   ├── enums.rs                   the generated enumerations
+│   ├── enums/tests.rs             encoding tests for every enumeration
+│   ├── appearance.rs              typed views of the appearance layouts (§17.11)
+│   ├── appearance/tests.rs        appearance tests
+│   └── bit_records.rs             the other SISO bit layouts
+│
+│   the crate's own code, private and re-exported from the root
+├── pdu.rs                         the Pdu, StandardPdu and LiveEntityPdu traits, and the
+│                                  impl_pdu! and pdu_tests! macros
+├── dis_error.rs                   DISError, DISResult and WireFormatError
+└── wire.rs                        bridges byte slices and vectors to deku, plus encoding helpers
 ```
 
-PDUs live in the module for their family. The records they share live in
-`common/records.rs` in the order of §6.2 of the standard. Anything whose layout or
-values SISO-REF-010 defines lives in `siso`. A record that IEEE 1278.1 defines stays
-in `common::records` even when its fields use SISO enumerations, as `PduStatus` does.
+Every public module has one source:
+
+- **IEEE 1278.1-2012.** PDUs live in the module for their family. The records they
+  share live in `records.rs` in the order of §6.2 of the standard. A part that only one
+  PDU uses, such as `Mine` or `ShaftRPMs`, lives next to that PDU.
+- **SISO-REF-010-2023.** Anything whose layout or values SISO-REF-010 defines lives in
+  `siso`. A record that IEEE 1278.1 defines stays in `records` even when its fields use
+  SISO enumerations, as `PduStatus` does.
+- **The crate.** The `Pdu` traits, `DISError` and the prelude are the crate's own API.
+  Their modules are private, and the crate root re-exports them, so each has one path.
+
+Conveniences stay with the type they serve rather than in a utilities module:
+`Timestamp::now()`, `EntityAppearance::view()` and every `from_raw`/`to_raw` are
+methods on their types. The same goes for types the crate adds to give a standard
+concept a Rust shape, such as `AppearanceView` or `SimulationManagementId`. Their docs say
+that they're conveniences.
 
 ## Deku
 
@@ -96,7 +113,7 @@ decode.
 `impl_pdu!` turns a deku struct into a PDU. One line per PDU:
 
 ```rust,ignore
-crate::common::pdu::impl_pdu!(ServiceRequestPdu, PduHeader, PduType::ServiceRequest, ProtocolFamily::Logistics);
+crate::pdu::impl_pdu!(ServiceRequestPdu, PduHeader, PduType::ServiceRequest, ProtocolFamily::Logistics);
 ```
 
 It implements the `Pdu` trait and adds a `new()` constructor. The generated methods
@@ -148,7 +165,7 @@ When a record inside a list has its own derived fields, the list's count field r
 the record's update rules too, using `wire::update_each`:
 
 ```rust,ignore
-#[deku(update = "crate::common::wire::update_each(&mut self.systems)?")]
+#[deku(update = "crate::wire::update_each(&mut self.systems)?")]
 pub number_of_systems: u8,
 ```
 
@@ -161,7 +178,7 @@ both jobs.
 | --- | --- | --- |
 | Padding | A private field named `padding`, `padding2` and so on, with the width the standard gives | `CollisionPdu` |
 | Optional field controlled by a flag | `Option<T>` with `#[deku(cond = "…")]`, plus an `update` rule that sets the flag | `TimeSpacePositionInformationPdu` |
-| A 16- or 32-bit count read from the wire | Add `assert = "crate::common::wire::fits_in_pdu(*count)"` | `AggregateStatePdu` |
+| A 16- or 32-bit count read from the wire | Add `assert = "crate::wire::fits_in_pdu(*count)"` | `AggregateStatePdu` |
 | Variable-length record with a length field | Use the `wire` helpers `padded_record_length`, `record_fields_len` and `write_padded_fields` | `Attribute` |
 | A layout attributes can't describe | Custom `reader` and `writer` functions on the field | `MinefieldDataPdu`, `IFFPdu` |
 | A record that needs a fully hand-written codec | Implement `DekuReader`, `DekuWriter` and `DekuUpdate` yourself, then call `impl_deku_default_endian!` | `GridAxisDescriptor` |
@@ -185,11 +202,11 @@ The enumerations and bit layouts in `siso` take three forms:
 
 ## What is public and what is not
 
-The public API is the PDU and record structs, the enumerations, the `Pdu`,
-`StandardPdu` and `LiveEntityPdu` traits, and `DISError`. Everything that names a `deku` type is
-internal: the `wire` module, `impl_pdu!`, `pdu_tests!` and `impl_deku_default_endian!`
-are all private to the crate, and `DISError::WireFormat` wraps deku's error in the
-opaque `WireFormatError` variant.
+The public API is the PDU and record structs, the constants, the `siso` enumerations
+and bit layouts, the `Pdu`, `StandardPdu`, and `LiveEntityPdu` traits, and `DISError`.
+Everything that namesa `deku` type is internal: the `wire` module, `impl_pdu!`,
+`pdu_tests!` and `impl_deku_default_endian!` are all private to the crate, and
+`DISError::WireFormat` wraps deku's error in the opaque `WireFormatError` variant.
 
 This keeps deku, which hasn't reached 1.0, out of the crate's stable API, so the crate
 can upgrade deku without a breaking release. Keep it that way:
