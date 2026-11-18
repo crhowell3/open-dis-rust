@@ -9010,8 +9010,8 @@ impl_deku_enum!(ComponentVisualSmokeColor, u8, from_u8);
 /// them as received, so it encodes back to the same octet.
 ///
 /// ```
-/// use open_dis_rust::common::{enums::{ComponentVisualDamageStatusSmoke, ComponentVisualDamageStatusSurfaceDamage},
-///  records::ComponentVisualDamageStatus,
+/// use open_dis_rust::common::enums::{
+///     ComponentVisualDamageStatus, ComponentVisualDamageStatusSmoke, ComponentVisualDamageStatusSurfaceDamage
 /// };
 ///
 /// let mut status = ComponentVisualDamageStatus::new();
