@@ -8099,7 +8099,7 @@ impl_deku_enum!(ObjectKind, u8, from_u8);
 /// back to the same 16 bits.
 ///
 /// ```
-/// use open_dis_rust::common::enums::{AppearanceObjectGeneralDamage, ObjectStateAppearanceGeneral};
+/// use open_dis_rust::siso::enums::{AppearanceObjectGeneralDamage, ObjectStateAppearanceGeneral};
 ///
 /// let mut appearance = ObjectStateAppearanceGeneral::default();
 /// appearance.set_percent_complete(75);

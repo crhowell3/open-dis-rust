@@ -2863,10 +2863,9 @@ impl EntityAppearance {
     /// `None` for an entity of kind Other, or a platform in a domain with no layout.
     ///
     /// ```
-    /// use open_dis_rust::common::{
-    ///     enums::{AppearanceDamage, EntityKind},
-    ///     records::{AppearanceView, EntityAppearance, EntityType},
-    /// };
+    /// use open_dis_rust::common::records::{EntityAppearance, EntityType};
+    /// use open_dis_rust::siso::appearance::AppearanceView;
+    /// use open_dis_rust::siso::enums::{AppearanceDamage, EntityKind};
     ///
     /// let mut tank = EntityType::default();
     /// tank.kind = EntityKind::Platform;
@@ -2928,10 +2927,8 @@ impl EntityAppearance {
 /// are, and bits 16-31 are the number of mines.
 ///
 /// ```
-/// use open_dis_rust::common::{
-///     enums::AppearanceObjectSpecificBreachState,
-///     records::ArealObjectStateMinefieldAppearance,
-/// };
+/// use open_dis_rust::siso::appearance::ArealObjectStateMinefieldAppearance;
+/// use open_dis_rust::siso::enums::AppearanceObjectSpecificBreachState;
 ///
 /// let mut appearance = ArealObjectStateMinefieldAppearance::default();
 /// appearance.set_breach_state(AppearanceObjectSpecificBreachState::Breached);

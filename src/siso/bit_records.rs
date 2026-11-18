@@ -54,9 +54,8 @@ impl_deku_bitflags!(ArealObjectStateModification, u8);
 /// them as received, so it encodes back to the same octet.
 ///
 /// ```
-/// use open_dis_rust::common::enums::{
-///     ComponentVisualDamageStatus, ComponentVisualDamageStatusSmoke, ComponentVisualDamageStatusSurfaceDamage
-/// };
+/// use open_dis_rust::siso::enums::{ComponentVisualDamageStatusSmoke, ComponentVisualDamageStatusSurfaceDamage};
+/// use open_dis_rust::siso::bit_records::ComponentVisualDamageStatus;
 ///
 /// let mut status = ComponentVisualDamageStatus::new();
 /// status.set_fire_present(true);
