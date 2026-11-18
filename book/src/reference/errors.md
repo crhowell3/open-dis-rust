@@ -27,7 +27,7 @@ The bytes do not form a valid PDU. This is the most common decoding error. It ha
   PDU wire format error: Parse error: 99 is not a defined ProtocolVersion value
   PDU wire format error: Parse error: 32513 is not a defined AcknowledgeFlag value
 ```
- 
+
 - **A record's fields are inconsistent**, for example a count or length field that
   doesn't match the data. This also happens when *encoding* a record you built
   yourself:

@@ -107,5 +107,5 @@ every PDU uses `Pdu`, which has the components that both types share such as `pd
 and `serialize()`.
 
 Before a datagram is decoded, its protocol family (octet 3, the same place in both
-headers) says which kind it is. `ProtocolFamily::LiveEntityInformationInteraction` for
+headers) says which kind it is: `ProtocolFamily::LiveEntityInformationInteraction` for
 a Live Entity PDU.

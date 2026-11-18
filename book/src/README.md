@@ -8,7 +8,7 @@ the code to turn those structs into bytes on the wire and back again.
 
 ```rust,ignore
 let mut pdu = EntityStatePdu::new();
-pdu.entity_id = EntityIdentifier::new(1, 1, 1);
+pdu.entity_id = EntityIdentifier::new(SimulationAddress::new(1, 1), 1);
 pdu.force_id = ForceId::Friendly;
 
 let bytes: Vec<u8> = pdu.to_bytes()?; // ready to send over UDP
@@ -16,7 +16,7 @@ let bytes: Vec<u8> = pdu.to_bytes()?; // ready to send over UDP
 
 ## What is DIS?
 
-DIS is an IEEE standard that enables independently constructed simulations share
+DIS is an IEEE standard that enables independently constructed simulations to share
 one virtual world in real time. Flight simulators, ground vehicle trainers,
 constructive wargames, radio simulators, and live range instrumentation can all
 join the same exercise. Each one broadcasts PDUs that describe its own entities

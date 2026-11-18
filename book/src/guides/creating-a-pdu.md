@@ -1,6 +1,6 @@
 # Creating a PDU
 
-IEEE-1278.1-2012 defines 72 PDUs, and open-dis-rust implements all of them.
+IEEE 1278.1-2012 defines 72 PDUs, and open-dis-rust implements all of them.
 
 ## Importing PDUs
 
@@ -43,7 +43,7 @@ Every other field is public. Simple fields take a plain value:
 ack.request_id = 14;
 ```
 
-Fields that are records, such as identifiers, take a `record`. Build it with its `new`
+Fields that are records, such as identifiers, take a record. Build it with its `new`
 function, or change its fields one at a time:
 
 ```rust,ignore

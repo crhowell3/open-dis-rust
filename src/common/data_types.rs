@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -101,7 +101,7 @@ impl StandardVariableRecords {
     }
 }
 
-/// One record set in a [`RecordSpecification`](crate::common::records::RecordSpecifications): its record ID,
+/// One record set in a [`RecordSpecification`](crate::common::records::RecordSpecification): its record ID,
 /// serial number, and `record_count` values of `record_length` octets each.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(

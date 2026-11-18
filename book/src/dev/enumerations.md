@@ -26,7 +26,7 @@ pub enum RepairResponseRepairResult {
     RepairInterrupted = 3,
     ServiceCanceledByTheSupplier = 4,
 }
- 
+
 impl_deku_enum!(RepairResponseRepairResult, u8, from_u8);
 ```
 
@@ -57,7 +57,7 @@ bitflags! {
         const ProcessUpdates = 1 << 2;
     }
 }
- 
+
 impl_deku_bitflags!(FrozenBehavior, u8);
 ```
 
@@ -113,18 +113,18 @@ For each changed table:
 - **New tables:** add a new enum following the conventions above.
 
 ### 4. Update the tests
- 
+
 `src/common/enums/deku_tests.rs` has one line per enum in
 `deku_matches_from_primitive_for_every_enum`. Add a line for every new enum:
- 
+
 ```rust,ignore
 check_u8::<RepairResponseRepairResult>(RepairResponseRepairResult::from_u8);
 ```
- 
+
 `check_u8` and `check_u16` test every possible value. `check_u32` can't, so it takes a
 list of the defined values, which you must update whenever you add values to a 32-bit
 enum:
- 
+
 ```rust,ignore
 check_u32::<EntityCapabilities>(
     &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],

@@ -5,7 +5,7 @@ the numbers DIS uses for that and how they map to types in open-dis-rust.
 
 ## Exercises
 
-An **exercise** is one chared simulated world. Several exercises can run on the
+An **exercise** is one shared simulated world. Several exercises can run on the
 same network at once, such as a training event and a test. They are kept discrete
 and disjoint via the **exercise ID** in the header of every PDU.
 

@@ -74,7 +74,7 @@ Bits 4 and 5 mean different things depending on the PDU:
 | IFF | IFF Simulation Mode (bit 4), Active Interrogation Indicator (bit 5) | `ism` / `set_ism`, `aii` / `set_aii` |
 
 The accessors are on `common::records::PduStatus`, which you reach through `header.pdu_status`.
-The fields every PDU can use have accessors, too: `tei` \ `set_tei`, `lvc` / `set_lvc`,
+The fields every PDU can use have accessors, too: `tei` / `set_tei`, `lvc` / `set_lvc`,
 and `cei` / `set_cei`.
 
 The two-bit fields can hold `3`, which none of the enumerations define, so `dti`, `rai`, and `iai`

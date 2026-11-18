@@ -153,7 +153,7 @@ read and write their bits yourself, using the SISO-REF-010 enumerations.
   minefield, `ArealObjectStateMinefieldAppearance` reads it, and the general object
   appearance has its own type, `ObjectStateAppearanceGeneral`.
 - Object modifications in the Point Object State PDU and Linear Segment Parameter
-  records (UDIs 240 and 241). The Areal Object State PDU's is typed.
+  records (UIDs 240 and 241). The Areal Object State PDU's is typed.
 
 The Damage Description record defaults to a record type and length of 0. Set them to
 4500 and 40 when you build one yourself.

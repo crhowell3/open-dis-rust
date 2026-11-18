@@ -1437,7 +1437,7 @@ impl EventIdentifier {
 /// The exercise a PDU belongs to, from 1 to 255. Every participant in an exercise uses the same one.
 ///
 /// The default is exercise 1.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
@@ -3645,10 +3645,12 @@ pub struct Service(pub ServiceRequestServiceTypeRequested);
 )]
 pub struct SilentEntitySystem {
     pub number_of_entities: u16,
-    #[deku(assert = "crate::common::wire::fits_in_pdu(*number_of_appearance_records)")]
+    #[deku(
+        update = "self.entity_appearances.len()",
+        assert = "crate::common::wire::fits_in_pdu(*number_of_appearance_records)"
+    )]
     pub number_of_appearance_records: u16,
     pub entity_type: EntityType,
-    pub number_of_records: u32,
     #[deku(count = "number_of_appearance_records")]
     pub entity_appearances: Vec<EntityAppearance>,
 }

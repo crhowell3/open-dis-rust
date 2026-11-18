@@ -8997,8 +8997,8 @@ pub enum ComponentVisualSmokeColor {
 
 impl_deku_enum!(ComponentVisualSmokeColor, u8, from_u8);
 
-/// SISO-REF-010-2023 ComponentVisualDamageStatus [UID 317]
-/// What a damage site in a [`DirectedEnergyDamage`] record looks like
+/// SISO-REF-010-2023 ComponentVisualDamageStatus [UID 317]: What a damage site in a
+/// [`DirectedEnergyDamage`](crate::common::records::DirectedEnergyDamage) record looks like
 ///
 /// | Bits | Field |
 /// | --- | --- |

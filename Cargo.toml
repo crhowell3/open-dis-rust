@@ -9,7 +9,7 @@ license = "BSD-2-Clause"
 readme = "README.md"
 repository = "https://github.com/crhowell3/open-dis-rust"
 keywords = ["DIS", "IEEE", "Simulation"]
-categories = ["simulation", "protocol"]
+categories = ["simulation", "network-programming", "encoding"]
 exclude = [
     ".github/",
     ".gitignore",

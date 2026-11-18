@@ -109,7 +109,7 @@ work like this:
    back to its original length so callers never see a partial PDU.
 
 **Decoding (`deserialize`):**
- 
+
 1. Read the 12-octet header.
 2. Check that its PDU type matches the struct being decoded.
 3. Take exactly the number of octets the Length field gives. Fail if the buffer is

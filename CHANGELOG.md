@@ -77,7 +77,7 @@ The first official release of open-dis-rust!
 - The `bytes` and `chrono` dependencies
 - `PduHeader::calculate_dis_timestamp` and `LiveEntityPduHeader::calculate_dis_timestamp`: use `Timestamp::now()` instead
 - The `SerializedLength` trait. Every PDU header is 12 octets: use `constants::PDU_HEADER_SIZE` which is also in the prelude
-- The `GenericHeader` trai. `PduHeader` and `LiveEntityHeader` have `pdu_type()`, `protocol_family()`,
+- The `GenericHeader` trait. `PduHeader` and `LiveEntityPduHeader` have `pdu_type()`, `protocol_family()`,
   `length()`, `serialize()`, and `deserialize()` as their own methods, and `Pdu::pdu_type()` and `Pdu::protocol_family()`
   cover generic code
 - The `modular-bitfield` dependency, and the `From` conversions between `u8` and the PDU Status enums
@@ -86,9 +86,9 @@ The first official release of open-dis-rust!
 - `live_entity_information::PlatformAppearance`, `FrozenBehavior::as_u8` and `from_u8`, and the `as_u16` and
   `from_u16` of `ObjectStateAppearanceGeneral`
 - `PduState` and the `DISError` variants the crate never returned: `InvalidStateTransition`,
-  `ProtocolVersionMismatch`, `InvalidFieldValue` (with `DISError::invalid_field`) and `NetworkError`  
+  `ProtocolVersionMismatch`, `InvalidFieldValue` (with `DISError::invalid_field`) and `NetworkError`
 - The `deserialize` methods on enums, which turned undefined values into defaults
-- The unused `PduBody` trait 
+- The unused `PduBody` trait
 - `Vector3Double` and `VelocityVector` in favor of the `Vector` record described in the standard
 
 ### Fixed

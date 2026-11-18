@@ -45,7 +45,7 @@ pub mod simulation_management_with_reliability;
 pub mod synthetic_environment;
 pub mod warfare;
 
-/// The crate's version, such as `"1.0.0`.
+/// The crate's version, such as `"1.0.0"`.
 #[must_use]
 pub fn get_version() -> String {
     VERSION.to_string()

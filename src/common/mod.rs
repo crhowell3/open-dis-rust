@@ -7,7 +7,7 @@
 //! All commonly used non-PDU data types
 
 pub mod constants;
-/// Data types the standard defines or implements that are not §6.2 records.
+/// Data types the standard defines or implies that are not §6.2 records.
 pub mod data_types;
 /// The crate's error type, [`DISError`].
 pub mod dis_error;
