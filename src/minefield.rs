@@ -158,7 +158,7 @@ bitflags! {
         const PAINT_SCHEME = 1 << 10;
     }
 }
-crate::siso::enums::impl_deku_bitflags!(MinefieldDataFilter, u32);
+crate::siso::impl_deku_bitflags!(MinefieldDataFilter, u32);
 
 /// One mine in a Minefield Data PDU. Optional fields must be present on
 /// every mine in the PDU or on none.

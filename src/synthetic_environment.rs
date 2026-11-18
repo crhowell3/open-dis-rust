@@ -11,10 +11,10 @@ use crate::common::records::{
     GridData, LinearSegmentParameter, ObjectIdentifier, ObjectType, PduHeader, SimulationAddress,
     WorldCoordinates,
 };
+use crate::siso::appearance::ObjectStateAppearanceGeneral;
 use crate::siso::bit_records::ArealObjectStateModification;
 use crate::siso::enums::{
-    ForceId, GriddedDataConstantGrid, GriddedDataCoordinateSystem, ObjectStateAppearanceGeneral,
-    PduType, ProtocolFamily,
+    ForceId, GriddedDataConstantGrid, GriddedDataCoordinateSystem, PduType, ProtocolFamily,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.10.2
@@ -152,7 +152,7 @@ pub struct ArealObjectStatePdu {
     pub modifications: ArealObjectStateModification,
     pub object_type: ObjectType,
     /// The layout here depends on the object type. If the object happens to
-    /// be a minefield, read it using [`ArealObjectStateMinefieldAppearance`](crate::common::records::ArealObjectStateMinefieldAppearance).
+    /// be a minefield, read it using [`ArealObjectStateMinefieldAppearance`](crate::siso::appearance::ArealObjectStateMinefieldAppearance).
     /// There are no other standard-defined specifications for non-minefield areal objects.
     pub specific_object_appearance: u32,
     pub general_object_appearance: ObjectStateAppearanceGeneral,

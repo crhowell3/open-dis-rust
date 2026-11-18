@@ -52,7 +52,7 @@ correct for most traffic.
 You reach the flags through `header.pdu_status`:
 
 ```rust,ignore
-use open_dis_rust::common::enums::LVCIndicator;
+use open_dis_rust::siso::enums::LVCIndicator;
 
 pdu.header_mut().pdu_status.set_lvc(LVCIndicator::Virtual);
 ```
@@ -95,7 +95,7 @@ apart. Generic code names the kind of PDU it works with by its header: the prelu
 `LiveEntityPduHeader`.
 
 ```rust,ignore
-use open_dis_rust::{common::enums::LVCIndicator, prelude::*};
+use open_dis_rust::{prelude::*, siso::enums::LVCIndicator};
 
 fn mark_virtual(pdu: &mut impl StandardPdu) {
     pdu.header_mut().pdu_status.set_lvc(LVCIndicator::Virtual);

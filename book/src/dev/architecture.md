@@ -12,28 +12,32 @@ src/
 ├── entity_information.rs          ┐
 ├── warfare.rs                     │
 ├── logistics.rs                   │  the PDUs, grouped by family
-├── …                              │
+├── ...                            │
 ├── information_operations.rs      ┘
-└── common/
-    ├── pdu.rs                     the Pdu, StandardPdu and LiveEntityPdu traits, and the
-    │                              impl_pdu! and pdu_tests! macros
-    ├── live_entity_pdu_header.rs  LiveEntityPduHeader
-    ├── wire.rs                    bridges byte slices and vectors to deku, plus encoding helpers
-    ├── records.rs                 the §6.2 records PDUs are built from, in section order,
-    │                              including PduHeader and PduStatus
-    ├── records/appearance.rs      typed views of the SISO-REF-010 appearance layouts
-    ├── records/tests.rs           record tests
-    ├── data_types.rs              other data types defined or implied in the standard
-    ├── data_types/                FixedBinary8/16 and Point
-    ├── live_entity_records/       the compact records used by Live Entity PDUs
-    ├── enums.rs                   SISO-REF-010 enumerations and bit records
-    ├── enums/deku_tests.rs        encoding tests for every enumeration
-    ├── constants.rs               special values and size limits
-    └── dis_error.rs               DISError
+├── common/                        IEEE 1278.1 itself
+│   ├── pdu.rs                     the Pdu, StandardPdu and LiveEntityPdu traits, and the
+│   │                              impl_pdu! and pdu_tests! macros
+│   ├── wire.rs                    bridges byte slices and vectors to deku, plus encoding helpers
+│   ├── records.rs                 the §6.2 records PDUs are built from, in section order,
+│   │                              including PduHeader and PduStatus
+│   ├── records/tests.rs           record tests
+│   ├── live_entity_records.rs     LiveEntityPduHeader, FixedBinary8/16 and the compact
+│   │                              records used by Live Entity PDUs
+│   ├── data_types.rs              other data types defined or implied in the standard
+│   ├── constants.rs               special values and size limits
+│   └── dis_error.rs               DISError
+└── siso/                          SISO-REF-010-2023
+    ├── enums.rs                   the enumerations, and impl_deku_enum! and impl_deku_bitflags!
+    ├── enums/tests.rs             encoding tests for every enumeration
+    ├── appearance.rs              typed views of the appearance layouts (§17.11)
+    ├── appearance/tests.rs        appearance tests
+    └── bit_records.rs             the other SISO bit layouts
 ```
 
 PDUs live in the module for their family. The records they share live in
-`common/records.rs` in the order of §6.2 of the standard.
+`common/records.rs` in the order of §6.2 of the standard. Anything whose layout or
+values SISO-REF-010 defines lives in `siso`. A record that IEEE 1278.1 defines stays
+in `common::records` even when its fields use SISO enumerations, as `PduStatus` does.
 
 ## Deku
 
@@ -77,7 +81,7 @@ pub struct ServiceRequestPdu {
     #[deku(skip)]
     header: PduHeader,
     pub receiving_entity_id: EntityIdentifier,
-    …
+    ...
 }
 ```
 
@@ -163,7 +167,7 @@ both jobs.
 
 ## Enumerations
 
-The enumerations in `enums.rs` take three forms:
+The enumerations in and bit layouts in `siso` take three forms:
 
 - **Ordinary enums** derive `FromPrimitive` and get their deku code from
   `impl_deku_enum!(Name, u8, from_u8)`. The macro is hand-written rather than derived
@@ -172,7 +176,7 @@ The enumerations in `enums.rs` take three forms:
 - **Bit flags** use the `bitflags!` macro, with `impl_deku_bitflags!` for encoding.
   Unknown bits are kept, so flags from newer revisions round-trip unchanged.
 - **Bit records** with enumerated or multi-bit fields, such as
-  `ComponentVisualDamageStatus`, keep the wire value in a private `raw` field with a
+  `siso::bit_records::ComponentVisualDamageStatus`, keep the wire value in a private `raw` field with a
   getter and setter for each field. Bit 0 is the least significant bit, and unused bits
   are kept as received. `PduStatus` and the appearance views work the same way.
 

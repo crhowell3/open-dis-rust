@@ -29,7 +29,7 @@ standard by hand.
 
 ### Enumeration tests
 
-`common/enums/deku_tests.rs` checks that every enumeration encodes to the right number
+`siso/enums/tests.rs` checks that every enumeration encodes to the right number
 and that undefined numbers are rejected. 8- and 16-bit enums are tested with every
 possible value. 32-bit enums are tested at every defined value, the values next to
 them, and a few far-off ones.
@@ -64,10 +64,10 @@ a comment, so a reviewer can check it against the standard line by line:
 use open_dis_rust::{
     common::{
         Pdu,
-        enums::{AcknowledgeFlag, AcknowledgeResponseFlag},
         records::{EntityIdentifier, SimulationAddress, Timestamp},
     },
     simulation_management::AcknowledgePdu,
+    siso::enums::{AcknowledgeFlag, AcknowledgeResponseFlag},
 };
 
 const ACKNOWLEDGE: &str = "

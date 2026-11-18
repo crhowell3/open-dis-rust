@@ -4,13 +4,22 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+//! SISO-REF-010-2023 bit layouts that are not appearances: Frozen Behavior (UID 68), Areal
+//! Object State Modification (UID 242), and Component Visual Damage Status (UID 317).
+//!
+//! Bit layouts that IEEE 1278.1 itself defines, such as [`PduStatus`], are in
+//! [`common::records`](crate::common::records).
+//!
+//! [`PduStatus`]: crate::common::records::PduStatus
+
 use std::fmt;
 
 use bitflags::bitflags;
 
 use crate::siso::enums::{
-    ComponentVisualDamageStatusSmoke, ComponentVisualDamageStatusSurfaceDamage, impl_deku_bitflags,
+    ComponentVisualDamageStatusSmoke, ComponentVisualDamageStatusSurfaceDamage,
 };
+use crate::siso::impl_deku_bitflags;
 
 bitflags! {
     /// SISO-REF-010-2023 FrozenBehavior \[UID 68\]

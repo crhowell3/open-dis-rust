@@ -1,6 +1,6 @@
 # Updating Enumerations
 
-The enumerations in `src/common/enums.rs` come from **SISO-REF-010** which SISO
+The enumerations in `src/siso/enums.rs` come from **SISO-REF-010** which SISO
 revises regularly. The crate currently follows **SISO-REF-010-2023**. This page
 covers the conventions for enumerations and how to move the crate to a new revision.
 
@@ -45,7 +45,10 @@ impl_deku_enum!(RepairResponseRepairResult, u8, from_u8);
 
 ### Bit flags
 
-Tables whose values are bits that can be combined use `bitflags!` instead:
+Tables whose values are bits that can be combined use `bitflags!` instead. These, and
+the hand-written bit layouts with multi-bit fields, live in `src/siso/bit_records.rs`
+and `src/siso/appearance.rs`, not in `enums.rs`, so regenerating `enums.rs` will not
+overwrite them:
 
 ```rust,ignore
 // SISO-REF-010-2023 FrozenBehavior [UID 68]
@@ -114,7 +117,7 @@ For each changed table:
 
 ### 4. Update the tests
 
-`src/common/enums/deku_tests.rs` has one line per enum in
+`src/siso/enums/tests.rs` has one line per enum in
 `deku_matches_from_primitive_for_every_enum`. Add a line for every new enum:
 
 ```rust,ignore
