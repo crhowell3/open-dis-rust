@@ -1,17 +1,15 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2026 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 //! The Logistics protocol family
 
-use crate::common::{
-    data_types::{EntityId, SupplyQuantity},
-    enums::{
-        PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
-        ServiceRequestServiceTypeRequested,
-    },
-    pdu_header::PduHeader,
+use crate::records::{EntityIdentifier, PduHeader, SupplyQuantity};
+use crate::siso::enums::{
+    PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
+    ServiceRequestServiceTypeRequested,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.4.2
@@ -20,8 +18,8 @@ use crate::common::{
 pub struct ServiceRequestPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub servicing_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub servicing_entity_id: EntityIdentifier,
     pub service_type_requested: ServiceRequestServiceTypeRequested,
     #[deku(update = "self.supplies.len()")]
     pub number_of_supply_types: u8,
@@ -29,7 +27,7 @@ pub struct ServiceRequestPdu {
     #[deku(count = "number_of_supply_types")]
     pub supplies: Vec<SupplyQuantity>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     ServiceRequestPdu,
     PduHeader,
     PduType::ServiceRequest,
@@ -42,8 +40,8 @@ crate::impl_pdu!(
 pub struct ResupplyOfferPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub supplying_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub supplying_entity_id: EntityIdentifier,
     #[deku(update = "self.supplies.len()")]
     pub number_of_supply_types: u8,
     padding: u8,
@@ -51,7 +49,7 @@ pub struct ResupplyOfferPdu {
     #[deku(count = "number_of_supply_types")]
     pub supplies: Vec<SupplyQuantity>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     ResupplyOfferPdu,
     PduHeader,
     PduType::ResupplyOffer,
@@ -64,8 +62,8 @@ crate::impl_pdu!(
 pub struct ResupplyReceivedPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub supplying_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub supplying_entity_id: EntityIdentifier,
     #[deku(update = "self.supplies.len()")]
     pub number_of_supply_types: u8,
     padding: u8,
@@ -73,7 +71,7 @@ pub struct ResupplyReceivedPdu {
     #[deku(count = "number_of_supply_types")]
     pub supplies: Vec<SupplyQuantity>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     ResupplyReceivedPdu,
     PduHeader,
     PduType::ResupplyReceived,
@@ -86,10 +84,10 @@ crate::impl_pdu!(
 pub struct ResupplyCancelPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub supplying_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub supplying_entity_id: EntityIdentifier,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     ResupplyCancelPdu,
     PduHeader,
     PduType::ResupplyCancel,
@@ -102,12 +100,12 @@ crate::impl_pdu!(
 pub struct RepairCompletePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub repairing_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub repairing_entity_id: EntityIdentifier,
     pub repair: RepairCompleteRepair,
     padding: u16,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     RepairCompletePdu,
     PduHeader,
     PduType::RepairComplete,
@@ -120,13 +118,13 @@ crate::impl_pdu!(
 pub struct RepairResponsePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    pub repairing_entity_id: EntityId,
+    pub receiving_entity_id: EntityIdentifier,
+    pub repairing_entity_id: EntityIdentifier,
     pub repair_result: RepairResponseRepairResult,
     padding: u8,
     padding2: u16,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     RepairResponsePdu,
     PduHeader,
     PduType::RepairResponse,
@@ -136,17 +134,11 @@ crate::impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
-    };
-    use bytes::{Buf, Bytes, BytesMut};
+    use crate::pdu::{Pdu, pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

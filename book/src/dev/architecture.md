@@ -8,33 +8,59 @@ changes to the crate.
 
 ```text
 src/
-├── lib.rs                         one module per protocol family
+├── lib.rs                         the crate root: the modules below, the prelude, and the
+│                                  Pdu traits and DISError re-exported
+│
+│   IEEE 1278.1-2012
 ├── entity_information.rs          ┐
 ├── warfare.rs                     │
-├── logistics.rs                   │  the PDUs, grouped by family
-├── …                              │
+├── logistics.rs                   │  the PDUs, one module per protocol family
+├── ...                            │
 ├── information_operations.rs      ┘
-└── common/
-    ├── pdu.rs                     the Pdu trait and the impl_pdu! and pdu_tests! macros
-    ├── pdu_header.rs              PduHeader and PduStatusRecord
-    ├── live_entity_pdu_header.rs  LiveEntityPduHeader
-    ├── generic_header.rs          the GenericHeader trait both headers implement
-    ├── wire.rs                    bridges bytes buffers to deku, plus encoding helpers
-    ├── data_types/                the records PDUs are built from, one per file
-    ├── live_entity_records/       the compact records used by Live Entity PDUs
-    ├── enums.rs                   SISO-REF-010 enumerations
-    ├── enums/deku_tests.rs        encoding tests for every enumeration
-    ├── constants.rs               special values and size limits
-    └── dis_error.rs               DISError
+├── records.rs                     the §6.2 and Annex B records PDUs are built from, in
+│                                  section order, including PduHeader and PduStatus
+├── records/tests.rs               record tests
+├── live_entity_records.rs         LiveEntityPduHeader, FixedBinary8/16 and the compact
+│                                  records used by Live Entity PDUs
+├── constants.rs                   the standard's symbolic values and size limits
+│
+│   SISO-REF-010-2023
+├── siso/
+│   ├── mod.rs                     impl_deku_enum! and impl_deku_bitflags!
+│   ├── enums.rs                   the generated enumerations
+│   ├── enums/tests.rs             encoding tests for every enumeration
+│   ├── appearance.rs              typed views of the appearance layouts (§17.11)
+│   ├── appearance/tests.rs        appearance tests
+│   └── bit_records.rs             the other SISO bit layouts
+│
+│   the crate's own code, private and re-exported from the root
+├── pdu.rs                         the Pdu, StandardPdu and LiveEntityPdu traits, and the
+│                                  impl_pdu! and pdu_tests! macros
+├── dis_error.rs                   DISError, DISResult and WireFormatError
+└── wire.rs                        bridges byte slices and vectors to deku, plus encoding helpers
 ```
 
-PDUs live in the module for their family. Records shared between PDUs live in `common/data_types/`,
-each in its own file and re-exported from `data_types/mod.rs`.
+Every public module has one source:
+
+- **IEEE 1278.1-2012.** PDUs live in the module for their family. The records they
+  share live in `records.rs` in the order of §6.2 of the standard. A part that only one
+  PDU uses, such as `Mine` or `ShaftRPMs`, lives next to that PDU.
+- **SISO-REF-010-2023.** Anything whose layout or values SISO-REF-010 defines lives in
+  `siso`. A record that IEEE 1278.1 defines stays in `records` even when its fields use
+  SISO enumerations, as `PduStatus` does.
+- **The crate.** The `Pdu` traits, `DISError` and the prelude are the crate's own API.
+  Their modules are private, and the crate root re-exports them, so each has one path.
+
+Conveniences stay with the type they serve rather than in a utilities module:
+`Timestamp::now()`, `EntityAppearance::view()` and every `from_raw`/`to_raw` are
+methods on their types. The same goes for types the crate adds to give a standard
+concept a Rust shape, such as `AppearanceView` or `SimulationManagementId`. Their docs say
+that they're conveniences.
 
 ## Deku
 
 This crate leverages `deku` for most of its data encoding. PDUs and records are plain structs
-that derive [deku](https://docs.rs/deku)'s `DekuRead` and `DekuWrite`, and deku generates the 
+that derive [deku](https://docs.rs/deku)'s `DekuRead` and `DekuWrite`, and deku generates the
 code to read and write their fields in order. Attributes on each field describe anything that
 is not a fixed-size value: counts, lengths, optional fields, and padding.
 
@@ -50,7 +76,7 @@ pub struct ServiceRequestPdu { … }
 
 **Records** take their byte order from whatever contains them, and default to
 big-endian when used on their own:
- 
+
 ```rust,ignore
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -58,7 +84,7 @@ big-endian when used on their own:
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct EntityId {
+pub struct EntityIdentifier {
     pub simulation_address: SimulationAddress,
     pub entity_id: u16,
 }
@@ -67,51 +93,53 @@ pub struct EntityId {
 ## Header and body
 
 Every PDU struct starts with its header, marked `#[deku(skip)]`:
- 
+
 ```rust,ignore
 pub struct ServiceRequestPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub receiving_entity_id: EntityId,
-    …
+    pub receiving_entity_id: EntityIdentifier,
+    ...
 }
 ```
- 
+
 deku only handles the **body**. The header is read and written separately by the code
 that `impl_pdu!` generates, because its length field depends on the size of the body,
 and because receivers need to read the header before they know which PDU type to
 decode.
 
 ## `impl_pdu!`
- 
+
 `impl_pdu!` turns a deku struct into a PDU. One line per PDU:
- 
+
 ```rust,ignore
-crate::impl_pdu!(ServiceRequestPdu, PduHeader, PduType::ServiceRequest, ProtocolFamily::Logistics);
+crate::pdu::impl_pdu!(ServiceRequestPdu, PduHeader, PduType::ServiceRequest, ProtocolFamily::Logistics);
 ```
 
 It implements the `Pdu` trait and adds a `new()` constructor. The generated methods
 work like this:
- 
+
 **Encoding (`serialize`):**
- 
+
 1. Set the header's PDU type and protocol family.
 2. Run deku's update rules (`DekuUpdate::update`), which recompute derived fields such
    as counts, lengths and flags from the data. See
    [Derived fields](#derived-fields-and-update-rules).
-3. Encode the body into a temporary buffer.
+3. Append the header and then the body to the caller's `Vec<u8>`.
 4. Compute the total length, header plus body, and fail if it's over 8192 octets.
-5. Write the header with that length, then the body.
+5. Rewrite the header in place with the real length. If any step fails, the vector is truncated
+   back to its original length so callers never see a partial PDU.
 
 **Decoding (`deserialize`):**
- 
+
 1. Read the 12-octet header.
 2. Check that its PDU type matches the struct being decoded.
 3. Take exactly the number of octets the Length field gives. Fail if the buffer is
    shorter.
 4. Decode the body from those octets only, so a bad PDU can't read into the next one.
 5. Fail if any of those octets weren't used.
-6. Attach the header to the decoded body.
+6. Attach the header to the decoded body and advance the caller's slice past the PDU.
+
 `new()` is `Default::default()` plus the PDU type, family and length, so a new PDU is
 always valid to send.
 
@@ -137,7 +165,7 @@ When a record inside a list has its own derived fields, the list's count field r
 the record's update rules too, using `wire::update_each`:
 
 ```rust,ignore
-#[deku(update = "crate::common::wire::update_each(&mut self.systems)?")]
+#[deku(update = "crate::wire::update_each(&mut self.systems)?")]
 pub number_of_systems: u8,
 ```
 
@@ -150,25 +178,47 @@ both jobs.
 | --- | --- | --- |
 | Padding | A private field named `padding`, `padding2` and so on, with the width the standard gives | `CollisionPdu` |
 | Optional field controlled by a flag | `Option<T>` with `#[deku(cond = "…")]`, plus an `update` rule that sets the flag | `TimeSpacePositionInformationPdu` |
-| A 16- or 32-bit count read from the wire | Add `assert = "crate::common::wire::fits_in_pdu(*count)"` | `AggregateStatePdu` |
-| Variable-length record with a length field | Use the `wire` helpers `padded_record_length`, `record_fields_len` and `write_padded_fields` | `AttributeRecord` |
+| A 16- or 32-bit count read from the wire | Add `assert = "crate::wire::fits_in_pdu(*count)"` | `AggregateStatePdu` |
+| Variable-length record with a length field | Use the `wire` helpers `padded_record_length`, `record_fields_len` and `write_padded_fields` | `Attribute` |
 | A layout attributes can't describe | Custom `reader` and `writer` functions on the field | `MinefieldDataPdu`, `IFFPdu` |
 | A record that needs a fully hand-written codec | Implement `DekuReader`, `DekuWriter` and `DekuUpdate` yourself, then call `impl_deku_default_endian!` | `GridAxisDescriptor` |
 
 ## Enumerations
 
-The enumerations in `enums.rs` take three forms:
- 
+The enumerations and bit layouts in `siso` take three forms:
+
 - **Ordinary enums** derive `FromPrimitive` and get their deku code from
   `impl_deku_enum!(Name, u8, from_u8)`. The macro is hand-written rather than derived
   because deku's derived reader for the largest enums, which have thousands of
   variants, needs megabytes of stack in debug builds.
 - **Bit flags** use the `bitflags!` macro, with `impl_deku_bitflags!` for encoding.
   Unknown bits are kept, so flags from newer revisions round-trip unchanged.
-- **PDU Status bits** derive modular-bitfield's `Specifier` so they can be packed into
-  `PduStatusRecord`.
+- **Bit records** with enumerated or multi-bit fields, such as
+  `siso::bit_records::ComponentVisualDamageStatus`, keep the wire value in a private `raw` field with a
+  getter and setter for each field. Bit 0 is the least significant bit, and unused bits
+  are kept as received. `PduStatus` and the appearance views work the same way.
 
 [Updating Enumerations](enumerations.md) covers how to change them.
+
+## What is public and what is not
+
+The public API is the PDU and record structs, the constants, the `siso` enumerations
+and bit layouts, the `Pdu`, `StandardPdu`, and `LiveEntityPdu` traits, and `DISError`.
+Everything that names a `deku` type is internal: the `wire` module, `impl_pdu!`,
+`pdu_tests!` and `impl_deku_default_endian!` are all private to the crate, and
+`DISError::WireFormat` wraps deku's error in the opaque `WireFormatError` variant.
+
+This keeps deku, which hasn't reached 1.0, out of the crate's stable API, so the crate
+can upgrade deku without a breaking release. Keep it that way:
+
+- Don't add a public function, trait method, or `From` impl that takes or returns a
+  deku type. Convert deku errors with `DISError::from_wire`, which is `pub(crate)`.
+- Public encoding and decoding go through `Vec<u8>` and `&[u8]`, not through deku's
+  readers and writers or another crate's buffer types.
+
+The structs still implement deku's `DekuRead` and `DekuWrite` because they're
+derived. Those impls are visible in the API documentation, but they aren't part of the
+stable API, and users shouldn't call them.
 
 ## Rules the code follows
 

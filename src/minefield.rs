@@ -1,9 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//                     (DIS) application protocol
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
-
 //! The Minefield protocol family
 
 use bitflags::bitflags;
@@ -15,15 +14,34 @@ use deku::{
     writer::Writer,
 };
 
-use crate::common::{
-    PduHeader,
-    data_types::{
-        ClockTime, EntityCoordinateVector, EntityId, EntityType, EulerAngles, MinefieldIdentifier,
-        Point, WorldCoordinate,
+use crate::siso::enums::{ForceId, PduType, ProtocolFamily};
+use crate::{
+    records::{
+        ClockTime, EntityIdentifier, EntityType, EulerAngles, MinefieldIdentifier, PduHeader,
+        ProtocolMode, Vector, WorldCoordinates,
     },
-    enums::{ForceId, MinefieldStateProtocolMode, PduType, ProtocolFamily},
     wire,
 };
+
+/// A point on a minefield's perimeter, as x and y offsets in meters from the minefield's
+/// location.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct Point {
+    pub x: f32,
+    pub y: f32,
+}
+
+impl Point {
+    #[must_use]
+    pub const fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
 
 /// Implemented according to IEEE 1278.1-2012 §7.9.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -39,19 +57,19 @@ pub struct MinefieldStatePdu {
     pub minefield_type: EntityType,
     #[deku(
         update = "self.mine_type.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_mine_types)"
+        assert = "crate::wire::fits_in_pdu(*number_of_mine_types)"
     )]
     pub number_of_mine_types: u16,
-    pub minefield_location: WorldCoordinate,
+    pub minefield_location: WorldCoordinates,
     pub minefield_orientation: EulerAngles,
     pub appearance: u16,
-    pub protocol_mode: MinefieldStateProtocolMode,
+    pub protocol_mode: ProtocolMode,
     #[deku(count = "number_of_perimeter_points")]
     pub perimeter_points: Vec<Point>,
     #[deku(count = "number_of_mine_types")]
     pub mine_type: Vec<EntityType>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     MinefieldStatePdu,
     PduHeader,
     PduType::MinefieldState,
@@ -65,7 +83,7 @@ pub struct MinefieldQueryPdu {
     #[deku(skip)]
     header: PduHeader,
     pub minefield_id: MinefieldIdentifier,
-    pub requesting_entity_id: EntityId,
+    pub requesting_entity_id: EntityIdentifier,
     pub request_id: u8,
     #[deku(update = "self.requested_perimeter_points.len()")]
     pub number_of_perimeter_points: u8,
@@ -84,7 +102,7 @@ pub struct MinefieldQueryPdu {
     )]
     pub sensor_types: Vec<u16>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     MinefieldQueryPdu,
     PduHeader,
     PduType::MinefieldQuery,
@@ -104,7 +122,7 @@ pub struct MinefieldDataPdu {
     #[deku(skip)]
     header: PduHeader,
     pub minefield_id: MinefieldIdentifier,
-    pub requesting_entity_id: EntityId,
+    pub requesting_entity_id: EntityIdentifier,
     pub minefield_sequence_number: u16,
     pub request_id: u8,
     pub pdu_sequence_number: u8,
@@ -133,7 +151,7 @@ pub struct MinefieldDataPdu {
     )]
     pub mines: Vec<Mine>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     MinefieldDataPdu,
     PduHeader,
     PduType::MinefieldData,
@@ -159,13 +177,13 @@ bitflags! {
         const PAINT_SCHEME = 1 << 10;
     }
 }
-crate::common::enums::impl_deku_bitflags!(MinefieldDataFilter, u32);
+crate::wire::impl_deku_bitflags!(MinefieldDataFilter, u32);
 
 /// One mine in a Minefield Data PDU. Optional fields must be present on
 /// every mine in the PDU or on none.
 #[derive(Debug, Default, Clone)]
 pub struct Mine {
-    pub location: EntityCoordinateVector,
+    pub location: Vector,
     /// Required when the water or snow burial depth offset is sent.
     pub ground_burial_depth_offset: Option<f32>,
     pub water_burial_depth_offset: Option<f32>,
@@ -183,7 +201,7 @@ pub struct Mine {
     /// SISO-REF-010 UID 202, an 8-bit record.
     pub paint_scheme: Option<u8>,
     /// Each trip/detonation wire's vertices, in order.
-    pub trip_wires: Option<Vec<Vec<EntityCoordinateVector>>>,
+    pub trip_wires: Option<Vec<Vec<Vector>>>,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §7.9.5
@@ -192,15 +210,15 @@ pub struct Mine {
 pub struct MinefieldResponseNackPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub minefield_id: EntityId,
-    pub requesting_entity_id: EntityId,
+    pub minefield_id: MinefieldIdentifier,
+    pub requesting_entity_id: EntityIdentifier,
     pub request_id: u8,
     #[deku(update = "self.missing_pdu_sequence_numbers.len()")]
     pub number_of_missing_pdus: u8,
     #[deku(count = "number_of_missing_pdus")]
     pub missing_pdu_sequence_numbers: Vec<u64>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     MinefieldResponseNackPdu,
     PduHeader,
     PduType::MinefieldResponseNack,
@@ -388,7 +406,7 @@ fn read_mines<R: Read + Seek>(
     filter: MinefieldDataFilter,
 ) -> Result<Vec<Mine>, DekuError> {
     use MinefieldDataFilter as F;
-    let mut mines: Vec<Mine> = wire::read_n::<EntityCoordinateVector, _>(reader, n, Endian::Big)?
+    let mut mines: Vec<Mine> = wire::read_n::<Vector, _>(reader, n, Endian::Big)?
         .into_iter()
         .map(|location| Mine {
             location,
@@ -635,17 +653,11 @@ fn write_trip_wires<W: Write + Seek>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
-    };
-    use bytes::{Buf, Bytes, BytesMut};
+    use crate::pdu::{Pdu, pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

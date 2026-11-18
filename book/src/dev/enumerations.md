@@ -1,6 +1,6 @@
 # Updating Enumerations
 
-The enumerations in `src/common/enums.rs` come from **SISO-REF-010** which SISO
+The enumerations in `src/siso/enums.rs` come from **SISO-REF-010** which SISO
 revises regularly. The crate currently follows **SISO-REF-010-2023**. This page
 covers the conventions for enumerations and how to move the crate to a new revision.
 
@@ -26,7 +26,7 @@ pub enum RepairResponseRepairResult {
     RepairInterrupted = 3,
     ServiceCanceledByTheSupplier = 4,
 }
- 
+
 impl_deku_enum!(RepairResponseRepairResult, u8, from_u8);
 ```
 
@@ -45,7 +45,10 @@ impl_deku_enum!(RepairResponseRepairResult, u8, from_u8);
 
 ### Bit flags
 
-Tables whose values are bits that can be combined use `bitflags!` instead:
+Tables whose values are bits that can be combined use `bitflags!` instead. These, and
+the hand-written bit layouts with multi-bit fields, live in `src/siso/bit_records.rs`
+and `src/siso/appearance.rs`, not in `enums.rs`, so regenerating `enums.rs` will not
+overwrite them:
 
 ```rust,ignore
 // SISO-REF-010-2023 FrozenBehavior [UID 68]
@@ -57,15 +60,15 @@ bitflags! {
         const ProcessUpdates = 1 << 2;
     }
 }
- 
+
 impl_deku_bitflags!(FrozenBehavior, u8);
 ```
 
 ### PDU Status fields
 
-The enums for the PDU Status record's bit fields, such as `LVCIndicator`, also derive
-modular-bitfield's `Specifier` and give their width with `#[bits = N]` so that they
-can be packed into `PduStatusRecord`.
+The enums for the PDU Status record's bit fields, such as `LVCIndicator`, are packed
+into `PduStatus` by its accessors, which match on every variant. Adding a variant to
+one of them is a compile error until the matching accessor handles it.
 
 ### Deprecated values
 
@@ -113,18 +116,18 @@ For each changed table:
 - **New tables:** add a new enum following the conventions above.
 
 ### 4. Update the tests
- 
-`src/common/enums/deku_tests.rs` has one line per enum in
+
+`src/siso/enums/tests.rs` has one line per enum in
 `deku_matches_from_primitive_for_every_enum`. Add a line for every new enum:
- 
+
 ```rust,ignore
 check_u8::<RepairResponseRepairResult>(RepairResponseRepairResult::from_u8);
 ```
- 
+
 `check_u8` and `check_u16` test every possible value. `check_u32` can't, so it takes a
 list of the defined values, which you must update whenever you add values to a 32-bit
 enum:
- 
+
 ```rust,ignore
 check_u32::<EntityCapabilities>(
     &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],

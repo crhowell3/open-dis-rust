@@ -14,18 +14,18 @@ including Linux, macOS, and Windows.
 From your project's directory, run:
 
 ```shell
-cargo add open-dis-rust bytes
+cargo add open-dis-rust
 ```
 
-Or add the dependencies to `Cargo.toml` yourself:
+Or add the dependency to `Cargo.toml` yourself:
 
 ```toml
 [dependencies]
 open-dis-rust = "1"
-bytes = "1"
 ```
 
-The `bytes` because serialization writes into a `bytes::BytesMut` buffer.
+PDUs are encoded into a standard `Vec<u8>` and decoded from a `&[u8]`, so you do not need
+third-party crates to use them.
 
 The package name uses hyphens, but in Rust code, the crate is referred to with underscores:
 
@@ -50,14 +50,17 @@ needed to follow along.
 To quickly test the crate, place the following code in your application's `src/main.rs`:
 
 ```rust,ignore
-use bytes::BytesMut;
-use open_dis_rust::{common::Pdu, simulation_management::AcknowledgePdu};
+use open_dis_rust::prelude::*;
+use open_dis_rust::simulation_management::AcknowledgePdu;
 
 fn main() {
     let mut pdu = AcknowledgePdu::new();
-    let mut bytes = BytesMut::new();
-    pdu.serialize(&mut bytes).expect("serialize failed");
-    println!("open-dis-rust {} encoded the following {}-byte PDU: {:?}" open_dis_rust::get_version(), bytes.len(), pdu);
+    let bytes = pdu.to_bytes().expect("serialize failed");
+    println!("open-dis-rust {} encoded the following {}-byte PDU: {:?}",
+        open_dis_rust::get_version(),
+        bytes.len(),
+        pdu
+    );
 }
 ```
 

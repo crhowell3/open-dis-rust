@@ -29,7 +29,7 @@ Family 0 means "other", and family 12 is reserved for the Non Real-Time service.
 
 Most applications need only a few families:
 
-- **Every participant** should send and receive **Entity Information** and responds to
+- **Every participant** should send and receive **Entity Information** and respond to
   **Simulation Management**.
 - **Combat simulations** may use **Warfare**.
 - **Radio and voice simulations** may use **Radio Communications**.
@@ -46,15 +46,15 @@ entities across simulators.
 ## PDU Status
 
 Octet 10 of the PDU header holds the **PDU Status** record. It has a few one- and two-bit flags
-taht tell a receiver how to treat the PDU. A new PDU has all of these flags cleared, which is
+that tell a receiver how to treat the PDU. A new PDU has all of these flags cleared, which is
 correct for most traffic.
 
-You reach the flags through `header.status_record`:
+You reach the flags through `header.pdu_status`:
 
 ```rust,ignore
-use open_dis_rust::common::enums::LVCIndicator;
+use open_dis_rust::siso::enums::LVCIndicator;
 
-pdu.header_mut().status_record.set_lvc(LVCIndicator::Virtual);
+pdu.header_mut().pdu_status.set_lvc(LVCIndicator::Virtual);
 ```
 
 ### Status flags
@@ -64,27 +64,48 @@ range), a **virtual** one (a person within a simulator) or a **constructive** on
 (a computer-controlled simulation, such as a wargame). Many exercises mix all three,
 and receivers sometimes treat them differently such as by hiding constructive entities
 from a live display. Setting it is optional; the default is `NoStatement`.
- 
+
 **Transferred Entity Indicator (TEI).** Set when the entity a PDU describes is now
 owned by a different simulation from the one that created it. That happens after
 the Transfer Ownership PDU moves an entity from one simulator to another. Receivers
 use it to know that the entity is still the same one, even though a different
 application is now sending its updates.
- 
+
 **Coupled Extension Indicator (CEI).** Set when the PDU has an Attribute PDU
 **coupled** to it, carrying extra data that extends this PDU. Receivers that see this
 flag should wait for the matching Attribute PDU before acting on the data.
- 
+
 **PDU-specific bits.** Bits 4 and 5 mean different things for different PDUs. For
 example, in a Fire PDU, bit 4 says whether a munition or an expendable, such as
 chaff, was fired. In radio PDUs, bits 4 and 5 say whether the radio is attached to an
 entity.
- 
+
 [Wire Format Conventions](../reference/wire-format.md#pdu-status) lists the exact bit
 positions and the method for reading and writing each flag.
 
 ### Live Entity PDUs
- 
+
 The five Live Entity PDUs don't have a PDU Status record. Their header,
 `LiveEntityPduHeader`, uses the same octet for a **subprotocol number** instead, which
 says how the rest of the PDU is encoded.
+
+Every PDU's `header()` returns its own header type, so the compiler keeps the two
+apart. Generic code names the kind of PDU it works with by its header: the prelude's
+`StandardPdu` is any PDU with a `PduHeader`, and `LiveEntityPdu` is any PDU with a
+`LiveEntityPduHeader`.
+
+```rust,ignore
+use open_dis_rust::{prelude::*, siso::enums::LVCIndicator};
+
+fn mark_virtual(pdu: &mut impl StandardPdu) {
+    pdu.header_mut().pdu_status.set_lvc(LVCIndicator::Virtual);
+}
+```
+
+Passing a Live Entity PDU to `mark_virtual` is a compile error. Code that works with
+every PDU uses `Pdu`, which has the components that both types share such as `pdu_type()`
+and `serialize()`.
+
+Before a datagram is decoded, its protocol family (octet 3, the same place in both
+headers) says which kind it is: `ProtocolFamily::LiveEntityInformationInteraction` for
+a Live Entity PDU.

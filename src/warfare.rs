@@ -1,18 +1,16 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2026 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 //! The Warfare protocol family
 
-use crate::common::{
-    data_types::{
-        ClockTime, DirectedEnergyDamage, EntityCoordinateVector, EntityId, EntityType, EventId,
-        LinearVelocity, MunitionDescriptor, VariableParameter, WorldCoordinate,
-    },
-    enums::{DEFirePulseShape, DetonationResult, PduType, ProtocolFamily},
-    pdu_header::PduHeader,
+use crate::records::{
+    ClockTime, DirectedEnergyDamage, EntityIdentifier, EntityType, EventIdentifier,
+    MunitionDescriptor, PduHeader, VariableParameter, Vector, WorldCoordinates,
 };
+use crate::siso::enums::{DEFirePulseShape, DetonationResult, PduType, ProtocolFamily};
 
 /// Implemented according to IEEE 1278.1-2012 §7.3.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -20,17 +18,17 @@ use crate::common::{
 pub struct FirePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub firing_entity_id: EntityId,
-    pub target_entity_id: EntityId,
-    pub munition_expendable_id: EntityId,
-    pub event_id: EventId,
+    pub firing_entity_id: EntityIdentifier,
+    pub target_entity_id: EntityIdentifier,
+    pub munition_expendable_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
     pub fire_mission_index: u32,
-    pub location_in_world_coordinates: WorldCoordinate,
+    pub location_in_world_coordinates: WorldCoordinates,
     pub descriptor: MunitionDescriptor,
-    pub velocity: LinearVelocity,
+    pub velocity: Vector,
     pub range: f32,
 }
-crate::impl_pdu!(FirePdu, PduHeader, PduType::Fire, ProtocolFamily::Warfare);
+crate::pdu::impl_pdu!(FirePdu, PduHeader, PduType::Fire, ProtocolFamily::Warfare);
 
 /// Implemented according to IEEE 1278.1-2012 §7.3.3
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -38,14 +36,14 @@ crate::impl_pdu!(FirePdu, PduHeader, PduType::Fire, ProtocolFamily::Warfare);
 pub struct DetonationPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub firing_entity_id: EntityId,
-    pub target_entity_id: EntityId,
-    pub exploding_entity_id: EntityId,
-    pub event_id: EventId,
-    pub velocity: LinearVelocity,
-    pub location_in_world_coordinates: WorldCoordinate,
+    pub firing_entity_id: EntityIdentifier,
+    pub target_entity_id: EntityIdentifier,
+    pub exploding_entity_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
+    pub velocity: Vector,
+    pub location_in_world_coordinates: WorldCoordinates,
     pub descriptor: MunitionDescriptor,
-    pub location_in_entitys_coordinates: EntityCoordinateVector,
+    pub location_in_entitys_coordinates: Vector,
     pub detonation_result: DetonationResult,
     #[deku(update = "self.variable_parameters.len()")]
     pub number_of_variable_parameters: u8,
@@ -53,7 +51,7 @@ pub struct DetonationPdu {
     #[deku(count = "number_of_variable_parameters")]
     pub variable_parameters: Vec<VariableParameter>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     DetonationPdu,
     PduHeader,
     PduType::Detonation,
@@ -66,12 +64,12 @@ crate::impl_pdu!(
 pub struct DirectedEnergyFirePdu {
     #[deku(skip)]
     header: PduHeader,
-    pub firing_entity_id: EntityId,
-    pub event_id: EventId,
+    pub firing_entity_id: EntityIdentifier,
+    pub event_id: EventIdentifier,
     pub munition_type: EntityType,
     pub shot_start_time: ClockTime,
     pub cumulative_shot_time: f32,
-    pub aperture_emitter_location: EntityCoordinateVector,
+    pub aperture_emitter_location: Vector,
     pub aperture_diameter: f32,
     pub wavelength: f32,
     padding: u32,
@@ -84,13 +82,13 @@ pub struct DirectedEnergyFirePdu {
     padding4: u16,
     #[deku(
         update = "self.damage_descriptions.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_de_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_de_records)"
     )]
     pub number_of_de_records: u16,
     #[deku(count = "number_of_de_records")]
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     DirectedEnergyFirePdu,
     PduHeader,
     PduType::DirectedEnergyFire,
@@ -103,18 +101,18 @@ crate::impl_pdu!(
 pub struct EntityDamageStatusPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub damaged_entity_id: EntityId,
+    pub damaged_entity_id: EntityIdentifier,
     padding: u16,
     padding2: u16,
     #[deku(
         update = "self.damage_descriptions.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_damage_descriptions)"
+        assert = "crate::wire::fits_in_pdu(*number_of_damage_descriptions)"
     )]
     pub number_of_damage_descriptions: u16,
     #[deku(count = "number_of_damage_descriptions")]
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     EntityDamageStatusPdu,
     PduHeader,
     PduType::EntityDamageStatus,
@@ -124,17 +122,11 @@ crate::impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
-    };
-    use bytes::{Buf, Bytes, BytesMut};
+    use crate::pdu::{Pdu, pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

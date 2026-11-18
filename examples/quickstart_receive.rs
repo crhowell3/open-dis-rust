@@ -1,7 +1,13 @@
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2026 Cameron Howell
+//
+//     Licensed under the BSD 2-Clause License
+
 use std::{error::Error, net::UdpSocket};
 
 use open_dis_rust::prelude::*;
-use open_dis_rust::{common::enums::PduType, entity_information::EntityStatePdu};
+use open_dis_rust::{entity_information::EntityStatePdu, siso::enums::PduType};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let socket = UdpSocket::bind("0.0.0.0:3000")?;
@@ -25,9 +31,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                         pdu.entity_id.simulation_address.application_id,
                         pdu.entity_id.entity_id,
                         pdu.entity_marking.entity_marking_string,
-                        pdu.entity_location.x,
-                        pdu.entity_location.y,
-                        pdu.entity_location.z,
+                        pdu.entity_location.x_coordinate,
+                        pdu.entity_location.y_coordinate,
+                        pdu.entity_location.z_coordinate,
                     ),
                     Err(e) => eprintln!("{from}: bad Entity State PDU: {e}"),
                 }

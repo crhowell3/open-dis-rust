@@ -17,9 +17,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 mod udp {
-    use bytes::BytesMut;
     use open_dis_rust::{
-        common::Pdu,
+        Pdu,
         radio_communications::{
             IntercomControlPdu, IntercomSignalPdu, ReceiverPdu, SignalPdu, TransmitterPdu,
         },
@@ -43,9 +42,10 @@ mod udp {
     }
 
     async fn send_pdu(writer: &UdpSocket, pdu: &mut impl Pdu) -> Result<(), io::Error> {
-        let mut bytes = BytesMut::new();
-        let _ = pdu.serialize(&mut bytes).map_err(|_| io::ErrorKind::InvalidData);
-        writer.send(&bytes[..]).await?;
+        let bytes = pdu
+            .to_bytes()
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        writer.send(&bytes).await?;
         Ok(())
     }
 

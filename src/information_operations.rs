@@ -6,13 +6,12 @@
 
 //! The Information Operations protocol family
 
-use crate::common::{
-    data_types::{EntityId, SimulationIdentifier, StandardVariableSpecification},
-    enums::{
-        IOActionIOActionPhase, IOActionIOActionType, IOActionIOSimulationSource,
-        IOActionIOWarfareType, IOReportIOReportType, PduType, ProtocolFamily,
-    },
-    pdu_header::PduHeader,
+use crate::records::{
+    EntityIdentifier, PduHeader, SimulationIdentifier, StandardVariableSpecification,
+};
+use crate::siso::enums::{
+    IOActionIOActionPhase, IOActionIOActionType, IOActionIOSimulationSource, IOActionIOWarfareType,
+    IOReportIOReportType, PduType, ProtocolFamily,
 };
 
 /// Implemented according to IEEE 1278.1-2012 §7.12.3
@@ -25,13 +24,13 @@ pub struct InformationOperationsReportPdu {
     pub io_simulation_source: IOActionIOSimulationSource,
     pub io_report_type: IOReportIOReportType,
     padding: u8,
-    pub io_attacker_entity_id: EntityId,
-    pub primary_target_entity_id: EntityId,
+    pub io_attacker_entity_id: EntityIdentifier,
+    pub primary_target_entity_id: EntityIdentifier,
     padding2: u16,
     padding3: u16,
     pub io_records: StandardVariableSpecification,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     InformationOperationsReportPdu,
     PduHeader,
     PduType::InformationOperationsReport,
@@ -52,12 +51,12 @@ pub struct InformationOperationsActionPdu {
     pub io_action_type: IOActionIOActionType,
     pub io_action_phase: IOActionIOActionPhase,
     padding: u32,
-    pub io_attacker_entity_id: EntityId,
-    pub io_primary_target_entity_id: EntityId,
+    pub io_attacker_entity_id: EntityIdentifier,
+    pub io_primary_target_entity_id: EntityIdentifier,
     padding2: u16,
     pub io_records: StandardVariableSpecification,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     InformationOperationsActionPdu,
     PduHeader,
     PduType::InformationOperationsAction,
@@ -67,17 +66,11 @@ crate::impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
-    };
-    use bytes::{Buf, Bytes, BytesMut};
+    use crate::{pdu::Pdu, pdu::pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2026 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 //! The Live Entity (LE) Information/Interaction protocol family
 
@@ -13,21 +14,20 @@ use deku::{
     writer::Writer,
 };
 
+use crate::siso::enums::{ForceId, PduType, ProtocolFamily};
+use crate::wire::impl_deku_bitflags;
 use crate::{
-    common::{
-        LiveEntityPduHeader,
-        data_types::{
-            EntityType, VariableParameter, entity_marking::EntityMarking,
-            fixed_binary_16::FixedBinary16, munition_descriptor::MunitionDescriptor,
-        },
-        enums::{ForceId, PduType, ProtocolFamily, impl_deku_bitflags},
-        live_entity_records::{
-            LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
-            LiveEntityOrientation16, LiveEventIdentifier, OrientationError, PositionError,
-            RelativeWorldCoordinates,
-        },
+    live_entity_records::{
+        FixedBinary16, LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
+        LiveEntityOrientation16, LiveEntityPduHeader, LiveEntityRelativeLocation,
+        LiveEventIdentifier, LiveMunitionDescriptor, OrientationError, PositionError,
+        RelativeWorldCoordinates,
     },
-    impl_pdu,
+    pdu::impl_pdu,
+    records::{
+        EntityAppearance, EntityCapabilities, EntityMarking, EntityType, MunitionDescriptor,
+        VariableParameter,
+    },
 };
 
 bitflags! {
@@ -70,7 +70,7 @@ pub struct TimeSpacePositionInformationPdu {
     #[deku(cond = "tspi_flag.contains(TspiFlag::DEAD_RECKONING)")]
     pub dead_reckoning_parameters: Option<LEDeadReckoningParameters>,
     #[deku(cond = "tspi_flag.contains(TspiFlag::MEASURED_SPEED)")]
-    pub measured_speed: Option<FixedBinary16>,
+    pub measured_speed: Option<FixedBinary16<0>>,
     /// Up to 255 octets. Sent as a one-octet length followed by the data.
     #[deku(
         cond = "tspi_flag.contains(TspiFlag::SYSTEM_SPECIFIC_DATA)",
@@ -170,50 +170,6 @@ bitflags! {
 }
 impl_deku_bitflags!(AppearanceFlags2, u8);
 
-bitflags! {
-    #[derive(Debug, Clone, Copy)]
-    pub struct PlatformAppearance: u32 {
-        const PaintScheme = 0b0000_0000_0000_0001;
-    }
-}
-
-/// A 32-bit entity appearance record (SISO-REF-010 UIDs 31-43).
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct EntityAppearance {
-    data: u32,
-}
-
-#[allow(dead_code)]
-impl EntityAppearance {
-    #[must_use]
-    pub const fn new(data: u32) -> Self {
-        Self { data }
-    }
-
-    #[must_use]
-    pub const fn data(&self) -> u32 {
-        self.data
-    }
-
-    pub const fn set_data(&mut self, value: u32) {
-        self.data = value;
-    }
-
-    const fn get_bits(self, shift: u8, mask: u32) -> u32 {
-        (self.data >> shift) & mask
-    }
-
-    const fn set_bits(&mut self, shift: u8, mask: u32, value: u32) {
-        self.data &= !(mask << shift);
-        self.data |= (value & mask) << shift;
-    }
-}
-
 /// Implemented according to IEEE 1278.1-2012 §9.4.3.5
 ///
 /// Set the optional fields you want to send; `serialize` sets the presence
@@ -242,7 +198,7 @@ pub struct AppearancePdu {
     /// SISO-REF-010 UID 55: a set of capability bits whose meaning depends
     /// on the entity kind and domain.
     #[deku(cond = "appearance_flags1.contains(AppearanceFlags1::CAPABILITIES_INCLUDED)")]
-    pub capabilities: Option<u32>,
+    pub capabilities: Option<EntityCapabilities>,
     #[deku(cond = "appearance_flags1.contains(AppearanceFlags1::VISUAL_INCLUDED)")]
     pub appearance_visual: Option<EntityAppearance>,
     #[deku(cond = "appearance_flags1.contains(AppearanceFlags1::IR_INCLUDED)")]
@@ -353,32 +309,6 @@ impl_pdu!(
     ProtocolFamily::LiveEntityInformationInteraction
 );
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct LiveEntityRelativeLocation {
-    pub x: i16,
-    pub y: i16,
-    pub z: i16,
-}
-
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
-#[deku(
-    endian = "endian",
-    ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
-)]
-pub struct LiveMunitionDescriptor {
-    pub munition_type: EntityType,
-    pub warhead: u16,
-    pub fuse: u16,
-    pub quantity: u16,
-    pub rate: u16,
-}
-
 /// Implemented according to IEEE 1278.1-2012 §9.4.6.8
 #[derive(Debug, Default, Clone, deku::DekuRead, deku::DekuWrite)]
 #[deku(endian = "big")]
@@ -409,17 +339,11 @@ impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
-    };
-    use bytes::{Buf, Bytes, BytesMut};
+    use crate::{pdu::Pdu, pdu::pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(

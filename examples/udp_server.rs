@@ -1,6 +1,6 @@
 //     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
-//     Copyright (C) 2025 Cameron Howell
+//     Copyright (C) 2026 Cameron Howell
 //
 //     Licensed under the BSD 2-Clause License
 
@@ -27,7 +27,9 @@ impl Server {
 
         loop {
             if let Some((size, peer)) = to_send {
-                let amt = socket.send_to(&buf[..size], &peer).await?;
+                let amt = socket
+                    .send_to(buf.get(..size).unwrap_or_default(), &peer)
+                    .await?;
 
                 println!("Echoed {amt}/{size} bytes to {peer}");
             }

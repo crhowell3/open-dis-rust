@@ -12,7 +12,6 @@ other users can find the answer later.
 | Suggest a new feature or API change | [Feature request](https://github.com/crhowell3/open-dis-rust/issues/new?template=3-feature-request.yml) |
 | Report a mistake in this book or the API docs | [Documentation issue](https://github.com/crhowell3/open-dis-rust/issues/new?template=4-docs-issue.yml) |
 | Report a security vulnerability | [Private security advisory](https://github.com/crhowell3/open-dis-rust/security/advisories/new). **Please don't open a public issue for security vulnerabilities.** |
-| Contribute code | [Tips for Contributing](guides/contributing.md) |
 
 ## Before you open an issue
 

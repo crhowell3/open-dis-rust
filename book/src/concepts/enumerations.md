@@ -11,14 +11,14 @@ This crate specifically leverages the enumerations defined in **SISO-REF-010-202
 
 ## How enumerations appear in the crate
 
-All enumerations are in `common::enums`. Each comes from one table in SISO-REF-010, which
+All enumerations are in `siso::enums`. Each comes from one table in SISO-REF-010, which
 identifies its tables by a **UID** number. They take three forms:
 
 - **Rust enums** for fields with a fixed list of possible values. Most enumerated fields in a PDU
   use these types directly.
 
 ```rust,ignore
-  use open_dis_rust::common::enums::ForceId;
+  use open_dis_rust::siso::enums::ForceId;
 
   pdu.force_id = ForceId::Friendly;
 ```
@@ -27,7 +27,7 @@ identifies its tables by a **UID** number. They take three forms:
   [`bitflags`](https://docs.rs/bitflags) crate, so you combine them with `|`.
 
 ```rust,ignore
-  use open_dis_rust::common::enums::FrozenBehavior;
+  use open_dis_rust::siso::bit_records::FrozenBehavior;
 
   // Keep the simulation clock running and keep sending updates while frozen.
   stop.frozen_behavior = FrozenBehavior::RunSimulationClock | FrozenBehavior::TransmitUpdates;
@@ -37,16 +37,20 @@ identifies its tables by a **UID** number. They take three forms:
   for example, means one thing for a land vehicle and another for an aircraft. The crate has an enum
   for each of those tables, but the field itself is a plain old data type, such as a `u8`.
 
+SISO-REF-010 also defines bit layouts: fields whose bits are split into smaller fields, such as
+an entity's appearance. Those are in `siso::appearance` and `siso::bit_records`, with a getter
+and setter for each field.
+
 ## Finding a value
 
 Variant names follow the names in SISO-REF-010, with spaces and punctuation removed. For example,
-"United States of America" bcomes `UnitedStatesofAmerica`, and "Able to Comply" becomes `AbleToComply`.
-Search the [API documentation](https://docs.rs/open-dis-rust) for the name, or search `enums.rs`
+"United States of America" becomes `UnitedStatesofAmerica`, and "Able to Comply" becomes `AbleToComply`.
+Search the [API documentation](https://docs.rs/open-dis-rust) for the name, or search `src/siso/enums.rs`
 for the table name or its UID number.
 
 ## Values unknown to the crate
 
-When decoding, a value that is not in the crate's table is an error. The whole PDU faisl with
+When decoding, a value that is not in the crate's table is an error. The whole PDU fails with
 `DISError::WireFormat`. This usually happens when another simulator uses a newer version of
 SISO-REF-010. See [Conformance Notes](../reference/conformance.md#decoding-behavior) for details.
 
@@ -60,5 +64,5 @@ read, but it should not be used in new PDUs. The crate marks these variants `#[d
 so the compiler warns you if you use one:
 
 ```text
-warning: use of deprecated unit variant `open_dis_rust::common::enums::LandDomainCategories::CivilianVehicle`: Deprecated in SISO-REF-010-2023
+warning: use of deprecated unit variant `open_dis_rust::siso::enums::LandDomainCategories::CivilianVehicle`: Deprecated in SISO-REF-010-2023
 ```

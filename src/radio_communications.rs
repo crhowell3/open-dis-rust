@@ -13,20 +13,18 @@ use deku::{
     writer::Writer,
 };
 
-use crate::common::{
-    data_types::{
-        AntennaPattern, EntityCoordinateVector, EntityId, IntercomCommunicationsParameters,
-        ModulationParameters, ModulationType, RadioEntityType, VariableTransmitterParameters,
-        WorldCoordinate,
-    },
-    enums::{
-        IntercomControlCommand, IntercomControlControlType, IntercomControlTransmitLineState,
-        PduType, ProtocolFamily, ReceiverReceiverState, SignalTDLType,
-        TransmitterAntennaPatternType, TransmitterCryptoSystem, TransmitterInputSource,
-        TransmitterTransmitState,
-    },
-    pdu_header::PduHeader,
+use crate::records::{
+    BeamAntennaPattern, EntityIdentifier, IntercomCommunicationsParameters, ModulationParameters,
+    ModulationType, PduHeader, RadioType, VariableTransmitterParameters, Vector, WorldCoordinates,
 };
+use crate::siso::enums::{
+    IntercomControlCommand, IntercomControlControlType, IntercomControlTransmitLineState, PduType,
+    ProtocolFamily, ReceiverReceiverState, SignalTDLType, TransmitterAntennaPatternType,
+    TransmitterCryptoSystem, TransmitterInputSource, TransmitterTransmitState,
+};
+
+/// Octets in a Beam Antenna Pattern record (IEEE 1278.1-2012 §6.2.8.2).
+const BEAM_ANTENNA_PATTERN_LENGTH: u16 = 40;
 
 /// Implemented according to IEEE 1278.1-2012 §7.7.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -34,21 +32,24 @@ use crate::common::{
 pub struct TransmitterPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub entity_id: EntityId,
+    pub entity_id: EntityIdentifier,
     pub radio_id: u16,
-    pub radio_entity_type: RadioEntityType,
+    pub radio_type: RadioType,
     pub transmit_state: TransmitterTransmitState,
     pub input_source: TransmitterInputSource,
     #[deku(
-        update = "crate::common::wire::update_each(&mut self.variable_transmitter_parameters)?",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_transmitter_parameters_records)"
+        update = "crate::wire::update_each(&mut self.variable_transmitter_parameters)?",
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_transmitter_parameters_records)"
     )]
     pub number_of_variable_transmitter_parameters_records: u16,
-    pub antenna_location: WorldCoordinate,
-    pub relative_antenna_location: EntityCoordinateVector,
+    pub antenna_location: WorldCoordinates,
+    pub relative_antenna_location: Vector,
     pub antenna_pattern_type: TransmitterAntennaPatternType,
-    /// Octets of `antenna_pattern`. Set by `serialize`.
-    #[deku(update = "blob_len(self.antenna_pattern.as_ref())")]
+    /// Octets of `antenna_pattern`: 40 for a beam pattern, 0 for none. Set by `serialize`.
+    #[deku(
+        update = "if self.antenna_pattern.is_some() { BEAM_ANTENNA_PATTERN_LENGTH } else { 0 }",
+        assert = "*antenna_pattern_length == 0 || *antenna_pattern_length == BEAM_ANTENNA_PATTERN_LENGTH"
+    )]
     pub antenna_pattern_length: u16,
     pub frequency: u64,
     pub transmit_frequency_bandwidth: f32,
@@ -66,15 +67,15 @@ pub struct TransmitterPdu {
         writer = "write_blob(deku::writer, modulation_parameters.as_ref().map(|m| m.record_specific_fields.as_slice()))"
     )]
     pub modulation_parameters: Option<ModulationParameters>,
-    #[deku(
-        reader = "read_blob(deku::reader, usize::from(*antenna_pattern_length)).map(|f| f.map(|record_specific_fields| AntennaPattern { record_specific_fields }))",
-        writer = "write_blob(deku::writer, antenna_pattern.as_ref().map(|a| a.record_specific_fields.as_slice()))"
-    )]
-    pub antenna_pattern: Option<AntennaPattern>,
+    /// The beam antenna pattern (§6.2.8.2), when there is one. Spherical harmonic
+    /// patterns aren't supported: a PDU with an antenna pattern length other than 0 or 40
+    /// fails to decode.
+    #[deku(cond = "*antenna_pattern_length != 0")]
+    pub antenna_pattern: Option<BeamAntennaPattern>,
     #[deku(count = "number_of_variable_transmitter_parameters_records")]
     pub variable_transmitter_parameters: Vec<VariableTransmitterParameters>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     TransmitterPdu,
     PduHeader,
     PduType::Transmitter,
@@ -87,7 +88,7 @@ crate::impl_pdu!(
 pub struct SignalPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub entity_id: EntityId,
+    pub entity_id: EntityIdentifier,
     pub radio_id: u16,
     pub encoding_scheme: u16,
     pub tdl_type: SignalTDLType,
@@ -105,7 +106,7 @@ pub struct SignalPdu {
     )]
     pub data: Vec<u8>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     SignalPdu,
     PduHeader,
     PduType::Signal,
@@ -118,15 +119,15 @@ crate::impl_pdu!(
 pub struct ReceiverPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub entity_id: EntityId,
+    pub entity_id: EntityIdentifier,
     pub radio_id: u16,
     pub receiver_state: ReceiverReceiverState,
     padding: u16,
     pub received_power: f32,
-    pub transmitter_radio_reference_id: EntityId,
+    pub transmitter_radio_reference_id: EntityIdentifier,
     pub transmitter_radio_id: u16,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     ReceiverPdu,
     PduHeader,
     PduType::Receiver,
@@ -139,7 +140,7 @@ crate::impl_pdu!(
 pub struct IntercomSignalPdu {
     #[deku(skip)]
     header: PduHeader,
-    pub intercom_reference_id: EntityId,
+    pub intercom_reference_id: EntityIdentifier,
     pub intercom_number: u16,
     pub encoding_scheme: u16,
     pub tdl_type: SignalTDLType,
@@ -157,7 +158,7 @@ pub struct IntercomSignalPdu {
     )]
     pub data: Vec<u8>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     IntercomSignalPdu,
     PduHeader,
     PduType::IntercomSignal,
@@ -172,24 +173,24 @@ pub struct IntercomControlPdu {
     header: PduHeader,
     pub control_type: IntercomControlControlType,
     pub communications_channel_type: u8,
-    pub source_intercom_reference_id: EntityId,
+    pub source_intercom_reference_id: EntityIdentifier,
     pub source_intercom_number: u16,
     pub source_line_id: u8,
     pub transmit_priority: u8,
     pub transmit_line_state: IntercomControlTransmitLineState,
     pub command: IntercomControlCommand,
-    pub master_intercom_reference_id: EntityId,
+    pub master_intercom_reference_id: EntityIdentifier,
     pub master_intercom_number: u16,
     pub master_channel_id: u16,
     #[deku(
         update = "self.intercom_parameters.len()",
-        assert = "crate::common::wire::fits_in_pdu(*intercom_parameters_length)"
+        assert = "crate::wire::fits_in_pdu(*intercom_parameters_length)"
     )]
     pub intercom_parameters_length: u32,
     #[deku(count = "intercom_parameters_length")]
     pub intercom_parameters: Vec<IntercomCommunicationsParameters>,
 }
-crate::impl_pdu!(
+crate::pdu::impl_pdu!(
     IntercomControlPdu,
     PduHeader,
     PduType::IntercomControl,
@@ -206,12 +207,6 @@ trait Blob {
 }
 
 impl Blob for ModulationParameters {
-    fn octets(&self) -> usize {
-        self.record_specific_fields.len()
-    }
-}
-
-impl Blob for AntennaPattern {
     fn octets(&self) -> usize {
         self.record_specific_fields.len()
     }
@@ -283,23 +278,17 @@ fn write_signal_data<W: Write + Seek>(
     data: &[u8],
 ) -> Result<(), DekuError> {
     data.to_writer(writer, ())?;
-    crate::common::wire::write_zeros(writer, signal_padding(data.len()))
+    crate::wire::write_zeros(writer, signal_padding(data.len()))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-        pdu_tests,
-    };
-    use bytes::{Buf, Bytes, BytesMut};
+    use crate::pdu::{Pdu, pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
-    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Bytes {
-        let mut buf = BytesMut::new();
-        pdu.serialize(&mut buf).expect("serialize failed");
-        buf.freeze()
+    pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
+        pdu.to_bytes().expect("serialize failed")
     }
 
     pdu_tests!(
