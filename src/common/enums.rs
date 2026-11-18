@@ -3324,8 +3324,8 @@ pub enum Reason {
 
 impl_deku_enum!(Reason, u8, from_u8);
 
-// SISO-REF-010-2023 FrozenBehavior [UID 68]
 bitflags! {
+    // SISO-REF-010-2023 FrozenBehavior [UID 68]
     #[derive(Copy, Clone, Debug, PartialEq, Eq)]
     pub struct FrozenBehavior: u8 {
         const RunSimulationClock = 1 << 0;
@@ -8306,8 +8306,8 @@ impl From<ObjectStateAppearanceGeneral> for u16 {
     }
 }
 
-// SISO-REF-010-2023 ArealObjectStateModification [UID 242]
 bitflags! {
+    // SISO-REF-010-2023 ArealObjectStateModification [UID 242]
     #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash)]
     pub struct ArealObjectStateModification: u8 {
         /// Whether any of the object's locations have changed since the last update

@@ -37,7 +37,9 @@ pub trait Pdu {
     /// Will return `DISError` if the calculated PDU length is greater than the maximum allowed size
     fn calculate_length(&self) -> Result<u16, DISError>;
 
+    /// The PDU's header.
     fn header(&self) -> &Self::Header;
+    /// A mutable reference to the PDU's header to change its exercise ID, timestamp, or status.
     fn header_mut(&mut self) -> &mut Self::Header;
 
     /// Runs the PDU's update rules and sets the header's length without encoding it.
@@ -93,6 +95,7 @@ pub trait Pdu {
     where
         Self: Sized;
 
+    /// The PDU as [`Any`] to downcast a `dyn Pdu` to its concrete type.
     fn as_any(&self) -> &dyn Any;
 }
 

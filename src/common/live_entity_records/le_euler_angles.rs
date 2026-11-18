@@ -6,15 +6,16 @@
 
 use crate::common::data_types::fixed_binary::FixedBinary8;
 
+/// One angle of [`LEEulerAngles`].
 pub type LEEulerAnglesComponent = FixedBinary8<0>;
 
+/// Implemented according to IEEE 1278.1-2012 §6.2.32
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-/// Implemented according to IEEE 1278.1-2012 §6.2.32
 pub struct LEEulerAngles {
     /// Angle of rotation about the Z-axis
     pub psi: LEEulerAnglesComponent,

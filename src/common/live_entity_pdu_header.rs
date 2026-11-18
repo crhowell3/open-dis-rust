@@ -9,6 +9,8 @@ use crate::common::{
     records::{ExerciseIdentifier, Timestamp},
 };
 
+/// The 12-octet header of a Live Entity Information/Interaction PDU. It has a
+/// subprotocol number in octet 10, where other PDUs have their PDU status record.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -53,6 +55,7 @@ impl Default for LiveEntityPduHeader {
 }
 
 impl LiveEntityPduHeader {
+    /// The PDU type, set from the PDU when it is encoded.
     #[must_use]
     pub const fn pdu_type(&self) -> PduType {
         self.pdu_type

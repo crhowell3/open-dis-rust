@@ -63,9 +63,9 @@ impl_deku_bitflags!(FrozenBehavior, u8);
 
 ### PDU Status fields
 
-The enums for the PDU Status record's bit fields, such as `LVCIndicator`, also derive
-modular-bitfield's `Specifier` and give their width with `#[bits = N]` so that they
-can be packed into `PduStatusRecord`.
+The enums for the PDU Status record's bit fields, such as `LVCIndicator`, are packed
+into `PduStatus` by its accessors, which match on every variant. Adding a variant to
+one of them is a compile error until the matching accessor handles it.
 
 ### Deprecated values
 

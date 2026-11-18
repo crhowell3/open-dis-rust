@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2026 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 //! The Live Entity (LE) Information/Interaction protocol family
 
@@ -308,6 +309,7 @@ impl_pdu!(
     ProtocolFamily::LiveEntityInformationInteraction
 );
 
+/// A location relative to a reference point in the compact Live Entity form.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -320,6 +322,8 @@ pub struct LiveEntityRelativeLocation {
     pub z: i16,
 }
 
+/// The munition in a Live Entity Fire or Detonation PDU: its type, warhead, fuse, quantity,
+/// and rate.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",

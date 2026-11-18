@@ -4,7 +4,7 @@ Every fallible operation in open-dis-rust returns `Result<T, DISError>`. The cra
 never panics on bad input, so a malformed or unexpected PDU always comes back to you
 as an error you can handle.
 
-`DISError` inplements `std::error::Error` and `Display`. The alias `common::dis_error::DISResult<T>`
+`DISError` implements `std::error::Error` and `Display`. The alias `common::dis_error::DISResult<T>`
 can be imported as a shorthand for `Result<T, DISError>`.
 
 ## Possibly encountered errors
@@ -20,7 +20,7 @@ The bytes do not form a valid PDU. This is the most common decoding error. It ha
 ```text
   PDU wire format error: Not enough data, need 16 bits (or 2 bytes)
 ```
- 
+
 - **An enumerated field holds a value the crate doesn't define.** This includes the
   protocol version in the header:
 ```text
@@ -75,7 +75,7 @@ is missing a field. See [Conformance Notes](conformance.md).
 
 ### `PduSizeExceeded`
 
-Encoding would produce a PDU larger than the 8192-octet limit, usually because of too 
+Encoding would produce a PDU larger than the 8192-octet limit, usually because of too
 many records or a very large datum value.
 
 ```text
@@ -86,10 +86,9 @@ Split the data across several PDUs.
 
 ## Reserved variants
 
-`SerializationError`, `InvalidFieldValue`, `ProtocolVersionMismatch`, and `InvalidStateTransition`
-exist but are not returned by the crate at this time. Keep a catch-all arm in your `match` so
-new variants do not break your code. It is possible that variants are added, modified, or removed
-in future releases.
+`SerializationError` exists for internal failures while encoding, which should not happen
+in practice. Keep a catch-all arm in your `match` so that variants added in future
+releases do not break your code.
 
 ## Errors that are not reported
 

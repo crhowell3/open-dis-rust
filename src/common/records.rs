@@ -1174,11 +1174,13 @@ pub struct EngineFuelReload {
 pub struct EntityAppearance(u32);
 
 impl EntityAppearance {
+    /// The record from its 32-bit wire value.
     #[must_use]
     pub const fn from_raw(raw: u32) -> Self {
         Self(raw)
     }
 
+    /// The record's 32-bit wire value.
     #[must_use]
     pub const fn to_raw(self) -> u32 {
         self.0
@@ -1207,11 +1209,13 @@ impl From<EntityAppearance> for u32 {
 pub struct EntityCapabilities(u32);
 
 impl EntityCapabilities {
+    /// The record from its 32-bit wire value.
     #[must_use]
     pub const fn from_raw(raw: u32) -> Self {
         Self(raw)
     }
 
+    /// The record's 32-bit wire value.
     #[must_use]
     pub const fn to_raw(self) -> u32 {
         self.0
@@ -3548,16 +3552,19 @@ impl Relationship {
 pub struct RequestIdentifier(u32);
 
 impl RequestIdentifier {
+    /// The request ID with the given value.
     #[must_use]
     pub const fn new(id: u32) -> Self {
         Self(id)
     }
 
+    /// The request ID's value.
     #[must_use]
     pub const fn get(self) -> u32 {
         self.0
     }
 
+    /// The ID for the next request. Wraps to 0 after `u32::MAX`.
     #[must_use]
     pub const fn next(self) -> Self {
         Self(self.0.wrapping_add(1))

@@ -1,7 +1,8 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
-//     Copyright (C) 2026 Cameron Howell
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2025 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use deku::{
     DekuError, DekuReader, DekuWriter,
@@ -23,11 +24,13 @@ use crate::common::{
 };
 
 pub mod fixed_binary;
+/// The [`Point`] data type.
 pub mod point;
 
 pub use fixed_binary::{FixedBinary8, FixedBinary16};
 pub use point::Point;
 
+/// One beam of an acoustic emitter system in an Underwater Acoustic PDU.
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -58,14 +61,14 @@ impl AcousticBeamData {
     }
 }
 
+/// Standard Variable record. `record_length` is the whole record in octets,
+/// a multiple of 8.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-/// Standard Variable record. `record_length` is the whole record in octets,
-/// a multiple of 8.
 pub struct StandardVariableRecords {
     pub record_type: u32,
     #[deku(
@@ -98,6 +101,8 @@ impl StandardVariableRecords {
     }
 }
 
+/// One record set in a [`RecordSpecification`](crate::common::records::RecordSpecifications): its record ID,
+/// serial number, and `record_count` values of `record_length` octets each.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -243,6 +248,8 @@ impl ApaData {
     }
 }
 
+/// The type of radio in a Transmitter PDU: its kind, domain, country, category, and
+/// nomenclature.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -307,6 +314,8 @@ impl ShaftRPMs {
     }
 }
 
+/// The fundamental parameters of an Electromagnetic Emission beam: its frequency, ERP,
+/// pulse rate, pulse width, and scan.
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -326,6 +335,7 @@ pub struct FundamentalParameterData {
     pub beam_sweep_sync: f32,
 }
 
+/// One beam of an emitter system in an Electromagnetic Emission PDU.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -347,6 +357,7 @@ pub struct ElectromagneticEmissionBeamData {
     pub track_jam_targets: Vec<TrackJamData>,
 }
 
+/// One emitter system in an Electromagnetic Emission PDU, with its beams.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -364,6 +375,8 @@ pub struct ElectromagneticEmissionSystemData {
     pub beam_data_records: Vec<ElectromagneticEmissionBeamData>,
 }
 
+/// How receivers should extrapolate an entity's position and orientation between
+/// Entity State PDUs.
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -393,6 +406,7 @@ impl DeadReckoningParameters {
     }
 }
 
+/// The attribute records an Attribute PDU carries for one entity or object.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -421,6 +435,7 @@ impl AttributeRecordSet {
     }
 }
 
+/// One acoustic emitter system in an Underwater Acoustic PDU with its beams.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -458,6 +473,7 @@ impl AcousticEmitterSystemData {
     }
 }
 
+/// The fundamental parameters of an acoustic beam.
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -494,6 +510,8 @@ impl AcousticBeamFundamentalParameter {
     }
 }
 
+/// IFF Data record: a variable-length record in an IFF PDU layer, padded to a 32-bit
+/// boundary. Its record-specific fields include the padding as received.
 #[derive(Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -522,6 +540,7 @@ pub enum SimulationManagementId {
 }
 
 impl SimulationManagementId {
+    /// The simulation address, whichever kind of identifier this is.
     #[must_use]
     pub const fn simulation_address(self) -> SimulationAddress {
         match self {

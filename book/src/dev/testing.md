@@ -60,16 +60,16 @@ a comment, so a reviewer can check it against the standard line by line:
 
 ```rust,ignore
 #![allow(clippy::unwrap_used, reason = "test helpers")]
- 
+
 use open_dis_rust::{
     common::{
         Pdu,
-        data_types::EntityIdentifier,
         enums::{AcknowledgeFlag, AcknowledgeResponseFlag},
+        records::{EntityIdentifier, SimulationAddress, Timestamp},
     },
     simulation_management::AcknowledgePdu,
 };
- 
+
 const ACKNOWLEDGE: &str = "
     07 01 0F 05   00 00 00 00   00 20 00 00   # header: v7, exercise 1, type 15, family 5, timestamp 0, length 32
     00 01 00 01 00 00                         # originating entity 1:1:0
@@ -91,25 +91,28 @@ fn fixture(s: &str) -> Vec<u8> {
         .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).unwrap(), 16).unwrap())
         .collect()
 }
- 
+
 #[test]
 fn acknowledge_encodes_to_golden_bytes() {
     let mut pdu = AcknowledgePdu::new();
     pdu.header_mut().timestamp = Timestamp::from_raw(0); // fixed, so the bytes are repeatable
-    pdu.originating_entity_id = EntityIdentifier::new(1, 1, 0);
-    pdu.receiving_entity_id = EntityIdentifier::new(1, 2, 0);
+    pdu.originating_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 1), 0);
+    pdu.receiving_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 2), 0);
     pdu.acknowledge_flag = AcknowledgeFlag::CreateEntity;
     pdu.response_flag = AcknowledgeResponseFlag::AbleToComply;
     pdu.request_id = 42;
- 
+
     assert_eq!(pdu.to_bytes().unwrap(), fixture(ACKNOWLEDGE));
 }
- 
+
 #[test]
 fn acknowledge_decodes_from_golden_bytes() {
     let bytes = fixture(ACKNOWLEDGE);
     let pdu = AcknowledgePdu::deserialize(&mut bytes.as_slice()).unwrap();
-    assert_eq!(pdu.receiving_entity_id, EntityIdentifier::new(1, 2, 0));
+    assert_eq!(
+        pdu.receiving_entity_id,
+        EntityIdentifier::new(SimulationAddress::new(1, 2), 0)
+    );
     assert_eq!(pdu.response_flag, AcknowledgeResponseFlag::AbleToComply);
     assert_eq!(pdu.request_id, 42);
 }
@@ -151,12 +154,13 @@ checks that encoding the result reproduces the input:
 #![no_main]
 use libfuzzer_sys::fuzz_target;
 use open_dis_rust::{common::Pdu, entity_information::EntityStatePdu};
- 
+
 fuzz_target!(|data: &[u8]| {
     let mut input = data;
     if let Ok(mut pdu) = EntityStatePdu::deserialize(&mut input) {
-        let mut out = bytes::BytesMut::new();
-        pdu.to_bytes().expect("a decoded PDU must re-encode");
+        let used = data.len() - input.len();
+        let bytes = pdu.to_bytes().expect("a decoded PDU must re-encode");
+        assert_eq!(bytes, data[..used], "re-encoding must reproduce the input");
     }
 });
 ```
@@ -171,13 +175,13 @@ malformed. This catches layout errors in PDUs that don't have golden-byte tests 
 ## Continuous integration
 
 CI runs on every pull request and push to `main`. It currently:
- 
+
 - runs `cargo test` on nightly Rust
 - builds on stable and beta
 - runs clippy and uploads the results to GitHub code scanning
 
 Before you push, run the same checks locally:
- 
+
 ```shell
 cargo fmt --check
 cargo clippy --all-targets
@@ -185,9 +189,9 @@ cargo test
 cargo build --examples
 mdbook build book
 ```
- 
+
 Improvements the CI would benefit from:
- 
+
 - **Run the tests on stable**, the toolchain users build with, as well as nightly.
 - **Fail the build on clippy warnings.** The clippy step currently has
   `continue-on-error: true`, so the strict lints in `Cargo.toml` aren't enforced.

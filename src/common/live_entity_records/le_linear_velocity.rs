@@ -6,8 +6,10 @@
 
 use crate::common::data_types::fixed_binary::FixedBinary16;
 
+/// One component of [`LELinearVelocity`].
 pub type LELinearVelocityComponent = FixedBinary16<0>;
 
+/// An entity's linear velocity in the compact Live Entity form.
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",

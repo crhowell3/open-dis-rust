@@ -67,13 +67,19 @@ Bits 4 and 5 mean different things depending on the PDU:
 
 | PDU | Bits 4-5 | Accessor |
 | --- | --- | --- |
-| Fire | Fire Type Indicator (bit 4) | `get_fti` / `set_fti` |
-| Detonation | Detonation Type Indicator | `get_dti` / `set_dti` |
-| Transmitter, Signal, Receiver | Radio Attached Indicator | `get_rai` / `set_rai` |
-| Intercom Signal, Intercom Control | Intercom Attached Indicator | `get_iai` / `set_iai` |
-| IFF | IFF Simulation Mode (bit 4), Active Interrogation Indicator (bit 5) | `get_ism` / `set_ism`, `get_aii` / `set_aii` |
+| Fire | Fire Type Indicator (bit 4) | `fti` / `set_fti` |
+| Detonation | Detonation Type Indicator | `dti` / `set_dti` |
+| Transmitter, Signal, Receiver | Radio Attached Indicator | `rai` / `set_rai` |
+| Intercom Signal, Intercom Control | Intercom Attached Indicator | `iai` / `set_iai` |
+| IFF | IFF Simulation Mode (bit 4), Active Interrogation Indicator (bit 5) | `ism` / `set_ism`, `aii` / `set_aii` |
 
-The accessors are on `PduStatusRecord`, which you reach through `header.status_record`.
+The accessors are on `common::records::PduStatus`, which you reach through `header.pdu_status`.
+The fields every PDU can use have accessors, too: `tei` \ `set_tei`, `lvc` / `set_lvc`,
+and `cei` / `set_cei`.
+
+The two-bit fields can hold `3`, which none of the enumerations define, so `dti`, `rai`, and `iai`
+return an `Option`. A decoded record keeps every bit as received, including bits 6 and 7,
+and `to_raw` and `from_raw` give the whole octet.
 
 ## What encoding fills in for you
 
@@ -92,12 +98,13 @@ You set the **exercise ID**, the **timestamp**, and the **PDU Status** bits. The
 version defaults to `7`, which represents `IEEE 1278.1-2012`.
 
 `new()` also runs these updates, so a freshly created PDU already has the right length in
-its header. Read the header's PDU type, protocol family, and length with the `GenericHeader`
-methods `pdu_type()`, `protocol_family()`, and `length()`.
+its header. Read the header's PDU type, protocol family, and length with its
+`pdu_type()`, `protocol_family()`, and `length()` methods. The PDU's own `pdu_type()` and
+`protocol_family()` methods give the same values and work even before the header is set.
 
 ## Strings
 
-**Entity Marking** is one character-set octect followed by exactly 11 character octets.
+**Entity Marking** is one character-set octet followed by exactly 11 character octets.
 Shorter strings are padded when encoded. Longer ones are cut to 11 octets, so keep markings
 short.
 

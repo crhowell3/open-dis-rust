@@ -5,9 +5,9 @@ page lists every type with its number, protocol family, Rust type, and status.
 
 | Status | Count | Meaning |
 | --- | --- | --- |
-| Complete | 55 | Implemented, with no known differences from the standard. |
+| Complete | 56 | Implemented, with no known differences from the standard. |
 | Partial | 5 | Implemented, but some variable-length records are kept as raw values or are simplified. |
-| Known Issues | 7 | Implemented, but at least one field is encoded differently from the standard. | 
+| Known Issues | 6 | Implemented, but at least one field is encoded differently from the standard. | 
 | To Verify | 5 | Implemented, but at least one field may differ from the standard and still needs to be verified. |
 | Not Implemented | 0 | Not available yet. |
 
@@ -35,7 +35,7 @@ Each status other than `Complete` links to the details on the [Conformance Notes
 | 15 | Acknowledge | Simulation Mgmt | [`AcknowledgePdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.AcknowledgePdu.html) | Complete |
 | 16 | Action Request | Simulation Mgmt | [`ActionRequestPdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.ActionRequestPdu.html) | Complete |
 | 17 | Action Response | Simulation Mgmt | [`ActionResponsePdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.ActionResponsePdu.html) | Complete |
-| 18 | Data Query | Simulation Mgmt | [`DataQueryPdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.DataQueryPdu.html) | [Known issues](conformance.md#data-query-pdu) |
+| 18 | Data Query | Simulation Mgmt | [`DataQueryPdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.DataQueryPdu.html) | Complete |
 | 19 | Set Data | Simulation Mgmt | [`SetDataPdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.SetDataPdu.html) | Complete |
 | 20 | Data | Simulation Mgmt | [`DataPdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.DataPdu.html) | Complete |
 | 21 | Event Report | Simulation Mgmt | [`EventReportPdu`](https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.EventReportPdu.html) | Complete |

@@ -4,6 +4,8 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+/// An event identifier in the compact Live Entity form: 8-bit site and application
+/// numbers and a 16-bit event number.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",

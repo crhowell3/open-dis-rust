@@ -12,6 +12,7 @@ use crate::common::{
     },
 };
 
+/// Dead reckoning parameters in the compact Live Entity form.
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",

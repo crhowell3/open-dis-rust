@@ -4,6 +4,7 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+/// An entity's orientation as three 16-bit angles in the compact Live Entity form.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",

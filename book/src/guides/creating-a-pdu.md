@@ -1,77 +1,62 @@
 # Creating a PDU
 
-The IEEE 1278.1-2012 standard defines 72 PDUs, all of which have been
-implemented in this crate. While the topics and contents of the PDUs
-differ, each PDU can be easily instantiated.
+IEEE-1278.1-2012 defines 72 PDUs, and open-dis-rust implements all of them.
 
-### Importing Modules
+## Importing PDUs
 
-The PDUs are divided into separate protocol families, which are groups
-of PDUs that serve a similar purpose. To begin creating a PDU, first
-import the PDU's module, or, if using multiple PDUs from the same family,
-import the entire protocol family module.
+Each protocol family is a module, and each PDU is a struct in its family's module.
+[Protocol Families](../concepts/families.md) lists them. Import the PDU you need along
+with the prelude for the common types and traits:
 
-```rust
-// Imports just the Acknowledge PDU module
-use open_dis_rust::simulation_management::AcknowledgePdu;
-
-// Imports the entire SIMAN protocol family, including the associated data types
-use open_dis_rust::simulation_management::*;
+```rust,ignore
+use open_dis_rust::{prelude::*, simulation_management::AcknowledgePdu};
 ```
 
-### Creating a PDU
+## Constructing PDUs
 
-To instantiate a PDU, use the PDU's `new` method to pre-populate all its
-fields with data.
+`new()` gives a PDU that is ready to send: its header has the correct PDU type, protocol
+family, and length, exercise ID 1, and the current time. Every other field has a sensible
+default value.
 
-```rust
-let mut acknowledge_pdu = AcknowledgePdu::new();
+```rust,ignore
+let mut ack = AcknowledgePdu::new();
 ```
 
-It is advised to use the `mut` keyword so that the default values within the
-PDU's fields can be manipulated before sending it over UDP.
+## Set the header
 
-### Editing the PDU Fields
+Read the header with `header()` and change it with `header_mut()`. Set the exercise ID
+and, for a PDU you send more than once, the timestamp:
 
-Each PDU has different fields; no two PDUs have the exact same fields. Every
-PDU is guaranteed to have a `pdu_header` field that is of type `PduHeader`.
-See the crate documentation for more information on this type. It is generally
-advised that this field and its subfields should not be directly edited because
-it contains the header information that a receiver would need to correctly
-parse and interpret the data. Upon calling `new`, this field is pre-populated
-with the correct metadata for the PDU, and it should not be edited afterwards.
-
-All other fields within a PDU can be safely edited so long as the data being
-assigned to them is of the correct type and length. For most fields, editing
-the value is just a simple assignment, especially with primitive data types.
-However, there are other types that require a little more work to construct
-before assigning. Type information can be found within the crate documentation.
-
-The following is an example for editing a PDU field that is a primitive type.
-
-```rust
-// Instantiate a new Acknowledge PDU
-let mut acknowledge_pdu = AcknowledgePdu::new();
-
-// Valid assignment of the request_id field
-acknowledge_pdu.request_id = 14;
+```rust,ignore
+ack.header_mut().exercise_id = ExerciseIdentifier::new(3);
+ack.header_mut().timestamp = Timestamp::now();
 ```
 
-The following is an example for editing a PDU field that is of a special type.
+The PDU type, protocol family, and length are read-only. Encoding fills them in from the
+PDU, so they cannot disagree with its contents.
 
-```rust
-// Instantiate a new Acknowledge PDU
-let mut acknowledge_pdu = AcknowledgePdu::new();
+## Set the fields
 
-// Assignment occurring field-wise for the originating_entity_id field
-acknowledge_pdu.originating_entity_id.simulation_address.application_id = 1;
-acknowledge_pdu.originating_entity_id.simulation_address.site_id = 3;
-acknowledge_pdu.originating_entity_id.entity_id = 12;
+Every other field is public. Simple fields take a plain value:
 
-// Assignment can also occur by creating an EntityIdentifier and assigning
-let mut origin_id = EntityIdentifier::new();
-origin_id.simulation_address.application_id = 1;
-origin_id.simulation_address.site_id = 4;
-origin_id.entity_id = 15;
-acknowledge_pdu.originating_entity_id = origin_id;
+```rust,ignore
+ack.request_id = 14;
 ```
+
+Fields that are records, such as identifiers, take a `record`. Build it with its `new`
+function, or change its fields one at a time:
+
+```rust,ignore
+let me = SimulationAddress::new(1, 100);
+ack.originating_entity_id = EntityIdentifier::new(me, 0);
+ack.receiving_entity_id.entity_id = 12;
+```
+
+Counts and lengths that depend on other fields, such as the number of records in a
+list, are set when the PDU is encoded, so you only fill in the list itself.
+[Wire Format Conventions](../reference/wire-format.md#what-encoding-fills-in-for-you)
+lists them.
+
+## Send it
+
+[Sending PDUs](sending-pdus.md) shows how to encode the PDU and send it over UDP.

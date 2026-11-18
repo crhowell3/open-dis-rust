@@ -1,12 +1,15 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2026 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use crate::common::data_types::fixed_binary::FixedBinary16;
 
+/// One component of [`RelativeWorldCoordinates`].
 pub type RelativeWorldCoordinatesComponent = FixedBinary16<3>;
 
+/// A live entity's location relative to a reference point.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",

@@ -1,12 +1,15 @@
-//     open-dis-rust - Rust implementation of the IEEE-1278.1 Distributed Interactive Simulation
+//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
 //     Copyright (C) 2026 Cameron Howell
 //
-//     Licensed under the BSD-2-Clause License
+//     Licensed under the BSD 2-Clause License
 
 use crate::common::data_types::fixed_binary::FixedBinary8;
 
+/// One component of [`LEEntityLinearAcceleration`].
 pub type LELinearAccelerationComponent = FixedBinary8<0>;
 
+/// An entity's linear acceleration in the compact Live Entity form.
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",

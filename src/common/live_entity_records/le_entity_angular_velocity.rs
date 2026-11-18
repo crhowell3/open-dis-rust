@@ -6,6 +6,7 @@
 
 use crate::common::data_types::fixed_binary::FixedBinary8;
 
+/// One component of [`LEEntityAngularVelocity`].
 pub type LEAngularVelocityComponent = FixedBinary8<0>;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]

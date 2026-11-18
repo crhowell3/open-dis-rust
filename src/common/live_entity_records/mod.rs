@@ -4,16 +4,27 @@
 //
 //     Licensed under the BSD 2-Clause License
 
+/// [`LEDeadReckoningParameters`]
 pub mod le_dead_reckoning_parameters;
+/// [`LEEntityAngularVelocity`]
 pub mod le_entity_angular_velocity;
+/// [`LEEntityId`]
 pub mod le_entity_id;
+/// [`LEEntityLinearAcceleration`]
 pub mod le_entity_linear_acceleration;
+/// [`LEEulerAngles`]
 pub mod le_euler_angles;
+/// [`LiveEventIdentifier`]
 pub mod le_event_identifier;
+/// [`LELinearVelocity`]
 pub mod le_linear_velocity;
+/// [`LiveEntityOrientation16`]
 pub mod le_orientation16;
+/// [`OrientationError`]
 pub mod orientation_error;
+/// [`PositionError`]
 pub mod position_error;
+/// [`RelativeWorldCoordinates`]
 pub mod relative_world_coordinates;
 
 pub use le_dead_reckoning_parameters::LEDeadReckoningParameters;
