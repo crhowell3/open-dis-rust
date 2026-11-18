@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2026-11-08
+## [1.0.0] - 2026-11-17
 
 The first official release of open-dis-rust!
 
@@ -17,14 +17,25 @@ The first official release of open-dis-rust!
 - `DISError::WireFormat` and `WireFormatError` for truncated or malformed input
 - `RecordReliablePdu` (Record-R, PDU type 63), so every PDU type in IEEE 1278.1-2012 is implemented
 - The `prelude` module for importing the most common traits and types
-- `IFFLayer2` and `IFFLayers` for the IFF PDU's layers after `IFFLayer1`
+- `IffLayer2` and `IffLayers` for the IFF PDU's layers after layer 1
+- Every record in §6.2 of the standard, in `common::records` in section order, including the bit records
+  `BeamStatus`, `ChangeOptions`, `InformationLayers`, `ProtocolMode`, `SystemStatus` and `JammingTechnique`,
+  and `MinefieldSensorType`. Each bit record has a getter and setter per field and keeps unused bits as received
+- `ExerciseIdentifier` for the header's exercise ID, which defaults to 1, and `RequestIdentifier`
+- `EntityAppearance` and `EntityCapabilities`, 32-bit records kept as received, and typed views of entity appearance
+  for each SISO-REF-010-2023 layout (UIDs 31-43 and 480), such as `LandPlatformAppearance` and `HumanLifeFormAppearance`.
+  `EntityAppearance::view` picks the layout from an `EntityType`
+- `ArealObjectStateMinefieldAppearance` (UID 239), `ArealObjectStateModification` (UID 242), and `ComponentVisualDamageStatus` (UID 317)
+- `StandardPdu` and `LiveEntityPdu`, implemented for every PDU with a `PduHeader` and a `LiveEntityPduHeader`
+  respectively, to tell the two kinds of PDU apart in generic code. Both are in the prelude
+- `Pdu::pdu_type()` and `Pdu::protocol_family()`, which give the PDU's type and family without reading its header
 
 ### Changed
 
 - The public API uses standard library types instead of the `bytes` crate, and `bytes` is no longer a direct dependency
   - `Pdu::serialize` appends to a `&mut Vec<u8>` instead of a `&mut BytesMut`; on error, the buffer is left unchanged
   - `Pdu::deserialize` and `Pdu::deserialize_without_header` read from a `&mut &[u8]` instead of any `B: Buf`
-  - `GenericHeader::serialize` and `GenericHeader::deserialize` change the same way
+  - `PduHeader::serialize` and `PduHeader::deserialize`, and the same on `LiveEntityPduHeader`, change the same way
   - `Vec<u8>`, `&[u8]`, `bytes::Bytes` and `bytes::BytesMut` all work: pass `&mut &buf[..]` to decode from any of them
 - `TimeSpacePositionInformationPdu`: the fields after the location are optional as indicated by the TSPI flag. They are `Option`s,
   and `serialize` sets the flag (now `tspi_flag: TspiFlag`, formerly `tspi_flag: u8`) from the fields that are present. A default TSPI PDU
@@ -33,15 +44,26 @@ The first official release of open-dis-rust!
 - Header timestamps and `ClockTime::time_past_hour` are `Timestamp`s instead of `u32`s. Use `Timestamp::now()`
   where you used `PduHeader::calculate_dis_timestamp()`, and `Timestamp::from_raw()` and `to_raw()` for the wire value
 - Fields that encoding derives are read-only, so they can no longer be set and then overwritten:
-  - The header's PDU type, protocol family and length. Read them with `GenericHeader::pdu_type()`,
-    `protocol_family()` and `length()`
-  - Record and blob lengths, such as `AttributeRecord::record_length` and `TransmitterPdu::antenna_pattern_length`
+  - The header's PDU type, protocol family and length. Read them with the header's `pdu_type()`,
+    `protocol_family()` and `length()` methods
+  - Record and blob lengths, such as `Attribute::record_length` and `TransmitterPdu::antenna_pattern_length`
   - The Signal and Intercom Signal PDUs' `data_length` stays writable, because it's in bits
-- `GenericHeader` no longer has `set_pdu_type`, `set_protocol_family` or `set_length`, and `Pdu::finalize` has no
-  default implementation
+- `Pdu::finalize` has no default implementation
 - `PduHeader::new` and `LiveEntityPduHeader::new` take only an exercise ID
 - `AppearancePdu`: optional fields are read when their flags are set, and `serialize` sets the flags from the fields that are present
-- `AppearancePdu::capabilities` and `EntityStatePdu::entity_capabilities` are raw `u32` capability bits instead of `EntityCapabilities`
+- `AppearancePdu::capabilities` and `EntityStatePdu::entity_capabilities` are `records::EntityCapabilities`, and entity
+  appearances are `records::EntityAppearance`, instead of `u32`s
+- The PDU Status record is `records::PduStatus`, in the header's `pdu_status` field (formerly `status_record`), encoded
+  with deku. Its accessors drop the `get_` prefix (`dti()`,
+  `rai()`, ...), `dti()`, `rai()` and `iai()` return `None` for the undefined value 3, and `new`, `from_raw` and `to_raw`
+  replace `new_zero`, `from_u8` and `to_u8`
+- `ObjectStateAppearanceGeneral` (UID 229) has a getter and setter for each field, such as `percent_complete()` and
+  `damage()`, instead of one flag per field. `PointObjectStatePdu::general_object_appearance` uses it instead of `u16`
+- `PointObjectStatePdu`'s object IDs are `ObjectIdentifier`s and `MinefieldResponseNackPdu::minefield_id` is a
+  `MinefieldIdentifier`, matching the other object state and minefield PDUs
+- `TransmitterPdu::antenna_pattern` is a `BeamAntennaPattern`, read when `antenna_pattern_length` is 40 and set by
+  `serialize`
+- `IFFFundamentalParameterData::applicable_modes` is `IFFApplicableModes` (UID 339)
 - `VariableTransmitterParameters::record_type` is `VariableRecordTypes` (UID 66)
 - `RecordREventType` is now a `u16` to match the standard
 - `EntityId` is now `EntityIdentifier`
@@ -55,6 +77,16 @@ The first official release of open-dis-rust!
 - The `bytes` and `chrono` dependencies
 - `PduHeader::calculate_dis_timestamp` and `LiveEntityPduHeader::calculate_dis_timestamp`: use `Timestamp::now()` instead
 - The `SerializedLength` trait. Every PDU header is 12 octets: use `constants::PDU_HEADER_SIZE` which is also in the prelude
+- The `GenericHeader` trai. `PduHeader` and `LiveEntityHeader` have `pdu_type()`, `protocol_family()`,
+  `length()`, `serialize()`, and `deserialize()` as their own methods, and `Pdu::pdu_type()` and `Pdu::protocol_family()`
+  cover generic code
+- The `modular-bitfield` dependency, and the `From` conversions between `u8` and the PDU Status enums
+- `enums::EntityCapabilities` (UID 55 lists the capability layouts; its values are not sent on the wire) and the
+  `bitflags` `enums::LandPlatformAppearance`, which could not hold its multi-bit fields
+- `live_entity_information::PlatformAppearance`, `FrozenBehavior::as_u8` and `from_u8`, and the `as_u16` and
+  `from_u16` of `ObjectStateAppearanceGeneral`
+- `PduState` and the `DISError` variants the crate never returned: `InvalidStateTransition`,
+  `ProtocolVersionMismatch`, `InvalidFieldValue` (with `DISError::invalid_field`) and `NetworkError`  
 - The `deserialize` methods on enums, which turned undefined values into defaults
 - The unused `PduBody` trait 
 - `Vector3Double` and `VelocityVector` in favor of the `Vector` record described in the standard
@@ -70,6 +102,9 @@ The first official release of open-dis-rust!
 - Decoding a truncated or malformed record no longer panics
 - Lists and optional fields in every PDU now decode instead of coming back empty
 - `AggregateStatePdu` pads its ID lists to a 32-bit boundary according to how many IDs they hold
+- `DataQueryPdu` carries 32-bit datum IDs instead of full datum records
+- `GridData` records' sample type and data representation are 16 bits
+- `IFFFundamentalParameterData::burst_length` is a 32-bit integer
 
 ## [0.4.3] - 2026-07-03
 
