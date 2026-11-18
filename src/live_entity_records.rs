@@ -4,7 +4,7 @@
 //
 //     Licensed under the BSD 2-Clause License
 
-use crate::common::records::{EntityType, ExerciseIdentifier, Timestamp};
+use crate::records::{EntityType, ExerciseIdentifier, Timestamp};
 use crate::siso::enums::{
     DISLiveEntitySubprotocolNumber, DeadReckoningAlgorithm, PduType, ProtocolFamily,
     ProtocolVersion,
@@ -163,22 +163,22 @@ impl LiveEntityPduHeader {
 
     /// Encodes the header alone and appends it to `buf`
     pub fn serialize(&self, buf: &mut Vec<u8>) {
-        let _ = crate::common::wire::write(self, buf);
+        let _ = crate::wire::write(self, buf);
     }
 
     /// Decodes a header from the front of `buf`, advancing `buf` past it. Pass it to
-    /// [`Pdu::deserialize_without_header`](crate::common::Pdu::deserialize_without_header)
+    /// [`Pdu::deserialize_without_header`](crate::Pdu::deserialize_without_header)
     /// to decode the rest of the PDU.
     ///
     /// # Errors
     ///
     /// Will return a `DekuError` if `buf` does not start with a valid header.
-    pub fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::common::DISError> {
-        crate::common::wire::read(buf).map_err(crate::common::DISError::from_wire)
+    pub fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::DISError> {
+        crate::wire::read(buf).map_err(crate::DISError::from_wire)
     }
 }
 
-impl crate::common::pdu::DerivedFields for LiveEntityPduHeader {
+impl crate::pdu::DerivedFields for LiveEntityPduHeader {
     #[cfg(test)]
     fn length(&self) -> u16 {
         self.length
@@ -548,48 +548,48 @@ pub struct LiveMunitionDescriptor {
 mod tests {
     use super::*;
 
-    type Metres = FixedBinary16<3>;
+    type Meters = FixedBinary16<3>;
     type Fine = FixedBinary8<5>;
 
     #[test]
     fn converts_with_the_binary_point_from_the_type() {
-        assert_eq!(Metres::new(1.25).unwrap().to_raw(), 10);
-        assert_eq!(Metres::from_raw(10).to_f64(), 1.25);
+        assert_eq!(Meters::new(1.25).unwrap().to_raw(), 10);
+        assert_eq!(Meters::from_raw(10).to_f64(), 1.25);
         assert_eq!(Fine::new(1.25).unwrap().to_raw(), 40);
         assert_eq!(Fine::RESOLUTION, 1.0 / 32.0);
     }
 
     #[test]
     fn rounds_to_the_nearest_step() {
-        assert_eq!(Metres::new(1.3).unwrap().to_f64(), 1.25);
-        assert_eq!(Metres::new(1.32).unwrap().to_f64(), 1.375);
-        assert_eq!(Metres::new(-0.0625).unwrap().to_f64(), -0.125); // ties round away from zero
+        assert_eq!(Meters::new(1.3).unwrap().to_f64(), 1.25);
+        assert_eq!(Meters::new(1.32).unwrap().to_f64(), 1.375);
+        assert_eq!(Meters::new(-0.0625).unwrap().to_f64(), -0.125); // ties round away from zero
     }
 
     #[test]
     fn range_matches_the_integer_range() {
-        assert_eq!(Metres::MAX, 4095.875);
-        assert_eq!(Metres::MIN, -4096.0);
+        assert_eq!(Meters::MAX, 4095.875);
+        assert_eq!(Meters::MIN, -4096.0);
         assert_eq!(Fine::MAX, 127.0 / 32.0);
-        assert!(Metres::new(Metres::MAX).is_some());
-        assert!(Metres::new(4096.0).is_none());
-        assert!(Metres::new(f64::NAN).is_none());
-        assert!(Metres::new(f64::INFINITY).is_none());
+        assert!(Meters::new(Meters::MAX).is_some());
+        assert!(Meters::new(4096.0).is_none());
+        assert!(Meters::new(f64::NAN).is_none());
+        assert!(Meters::new(f64::INFINITY).is_none());
     }
 
     #[test]
     fn saturating_clamps_and_maps_nan_to_zero() {
-        assert_eq!(Metres::saturating(1e9).to_f64(), Metres::MAX);
-        assert_eq!(Metres::saturating(-1e9).to_f64(), Metres::MIN);
-        assert_eq!(Metres::saturating(f64::NAN).to_raw(), 0);
+        assert_eq!(Meters::saturating(1e9).to_f64(), Meters::MAX);
+        assert_eq!(Meters::saturating(-1e9).to_f64(), Meters::MIN);
+        assert_eq!(Meters::saturating(f64::NAN).to_raw(), 0);
     }
 
     #[test]
     fn encodes_as_the_big_endian_integer() {
         let mut buf = Vec::new();
-        crate::common::wire::write(&Metres::from_raw(-2), &mut buf).unwrap();
+        crate::wire::write(&Meters::from_raw(-2), &mut buf).unwrap();
         assert_eq!(buf, [0xFF, 0xFE]);
-        let back: Metres = crate::common::wire::read(&mut buf.as_slice()).unwrap();
+        let back: Meters = crate::wire::read(&mut buf.as_slice()).unwrap();
         assert_eq!(back.to_f64(), -0.25);
     }
 }

@@ -6,7 +6,7 @@
 
 //! The Logistics protocol family
 
-use crate::common::records::{EntityIdentifier, PduHeader, SupplyQuantity};
+use crate::records::{EntityIdentifier, PduHeader, SupplyQuantity};
 use crate::siso::enums::{
     PduType, ProtocolFamily, RepairCompleteRepair, RepairResponseRepairResult,
     ServiceRequestServiceTypeRequested,
@@ -27,7 +27,7 @@ pub struct ServiceRequestPdu {
     #[deku(count = "number_of_supply_types")]
     pub supplies: Vec<SupplyQuantity>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     ServiceRequestPdu,
     PduHeader,
     PduType::ServiceRequest,
@@ -49,7 +49,7 @@ pub struct ResupplyOfferPdu {
     #[deku(count = "number_of_supply_types")]
     pub supplies: Vec<SupplyQuantity>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     ResupplyOfferPdu,
     PduHeader,
     PduType::ResupplyOffer,
@@ -71,7 +71,7 @@ pub struct ResupplyReceivedPdu {
     #[deku(count = "number_of_supply_types")]
     pub supplies: Vec<SupplyQuantity>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     ResupplyReceivedPdu,
     PduHeader,
     PduType::ResupplyReceived,
@@ -87,7 +87,7 @@ pub struct ResupplyCancelPdu {
     pub receiving_entity_id: EntityIdentifier,
     pub supplying_entity_id: EntityIdentifier,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     ResupplyCancelPdu,
     PduHeader,
     PduType::ResupplyCancel,
@@ -105,7 +105,7 @@ pub struct RepairCompletePdu {
     pub repair: RepairCompleteRepair,
     padding: u16,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     RepairCompletePdu,
     PduHeader,
     PduType::RepairComplete,
@@ -124,7 +124,7 @@ pub struct RepairResponsePdu {
     padding: u8,
     padding2: u16,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     RepairResponsePdu,
     PduHeader,
     PduType::RepairResponse,
@@ -134,10 +134,7 @@ crate::common::pdu::impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::pdu::pdu_tests,
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-    };
+    use crate::pdu::{Pdu, pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
     pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {

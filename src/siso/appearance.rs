@@ -23,7 +23,7 @@ use std::fmt;
 
 use num_traits::FromPrimitive;
 
-use crate::common::records::{EntityAppearance, EntityType};
+use crate::records::{EntityAppearance, EntityType};
 use crate::siso::enums::{
     AppearanceAntiCollisionDayNight, AppearanceCamouflageType, AppearanceCanopy,
     AppearanceConcealedMovement, AppearanceConcealedPosition, AppearanceDamage,
@@ -2864,7 +2864,7 @@ impl EntityAppearance {
     /// `None` for an entity of kind Other, or a platform in a domain with no layout.
     ///
     /// ```
-    /// use open_dis_rust::common::records::{EntityAppearance, EntityType};
+    /// use open_dis_rust::records::{EntityAppearance, EntityType};
     /// use open_dis_rust::siso::appearance::AppearanceView;
     /// use open_dis_rust::siso::enums::{AppearanceDamage, EntityKind};
     ///

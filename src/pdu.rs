@@ -97,7 +97,7 @@ pub trait Pdu {
     fn as_any(&self) -> &dyn Any;
 }
 
-/// A PDU with the standard 12-octet [`PduHeader`], which carries a [`PduStatus`](crate::common::records::PduStatus) record.
+/// A PDU with the standard 12-octet [`PduHeader`], which carries a [`PduStatus`](crate::records::PduStatus) record.
 /// Every PDU outside the Live Entity Information/Interaction family is one.
 ///
 /// It is implemented for every `Pdu<Header = PduHeader>`, so it is a shorter way to write
@@ -142,7 +142,7 @@ pub trait DerivedFields {
 }
 
 pub fn total_length(header_len: usize, body_len: usize) -> Result<u16, DISError> {
-    use crate::common::constants::MAX_PDU_SIZE_OCTETS;
+    use crate::constants::MAX_PDU_SIZE_OCTETS;
     let size = header_len.saturating_add(body_len);
     u16::try_from(size)
         .ok()
@@ -162,8 +162,8 @@ where
 {
     let start = buf.len();
     let result = (|| {
-        crate::common::wire::write(&*header, buf).map_err(DISError::from_wire)?;
-        crate::common::wire::write(body, buf).map_err(DISError::from_wire)?;
+        crate::wire::write(&*header, buf).map_err(DISError::from_wire)?;
+        crate::wire::write(body, buf).map_err(DISError::from_wire)?;
         let body_len = buf
             .len()
             .saturating_sub(start)
@@ -172,7 +172,7 @@ where
         header.set_length(length);
 
         let mut encoded = Vec::with_capacity(PDU_HEADER_SIZE);
-        crate::common::wire::write(&*header, &mut encoded).map_err(DISError::from_wire)?;
+        crate::wire::write(&*header, &mut encoded).map_err(DISError::from_wire)?;
         buf.get_mut(start..start.saturating_add(encoded.len()))
             .ok_or_else(|| DISError::serialization_error("PDU header was not written", None))?
             .copy_from_slice(&encoded);
@@ -220,7 +220,7 @@ pub fn check_body_used(body: &[u8], declared_len: u16) -> Result<(), DISError> {
 
 macro_rules! impl_pdu {
     ($name:ty, $header:ty, $pdu_type:expr, $family:expr $(,)?) => {
-        impl $crate::common::pdu::Pdu for $name {
+        impl $crate::pdu::Pdu for $name {
             type Header = $header;
 
             fn pdu_type(&self) -> $crate::siso::enums::PduType {
@@ -231,10 +231,9 @@ macro_rules! impl_pdu {
                 $family
             }
 
-            fn calculate_length(&self) -> Result<u16, $crate::common::DISError> {
-                let body = $crate::common::wire::encoded_len(self)
-                    .map_err($crate::common::DISError::from_wire)?;
-                $crate::common::pdu::total_length($crate::common::constants::PDU_HEADER_SIZE, body)
+            fn calculate_length(&self) -> Result<u16, $crate::DISError> {
+                let body = $crate::wire::encoded_len(self).map_err($crate::DISError::from_wire)?;
+                $crate::pdu::total_length($crate::constants::PDU_HEADER_SIZE, body)
             }
 
             fn header(&self) -> &Self::Header {
@@ -250,28 +249,28 @@ macro_rules! impl_pdu {
             fn finalize(&mut self) {
                 let _ = deku::DekuUpdate::update(self);
                 let length = self.calculate_length().unwrap_or_default();
-                $crate::common::pdu::DerivedFields::set_length(&mut self.header, length);
+                $crate::pdu::DerivedFields::set_length(&mut self.header, length);
             }
 
-            fn serialize(&mut self, buf: &mut Vec<u8>) -> Result<(), $crate::common::DISError> {
-                $crate::common::pdu::DerivedFields::set_pdu_type(&mut self.header, $pdu_type);
-                $crate::common::pdu::DerivedFields::set_protocol_family(&mut self.header, $family);
-                deku::DekuUpdate::update(self).map_err($crate::common::DISError::from_wire)?;
+            fn serialize(&mut self, buf: &mut Vec<u8>) -> Result<(), $crate::DISError> {
+                $crate::pdu::DerivedFields::set_pdu_type(&mut self.header, $pdu_type);
+                $crate::pdu::DerivedFields::set_protocol_family(&mut self.header, $family);
+                deku::DekuUpdate::update(self).map_err($crate::DISError::from_wire)?;
                 let mut header = self.header;
-                $crate::common::pdu::write_pdu(&mut header, &*self, buf)?;
+                $crate::pdu::write_pdu(&mut header, &*self, buf)?;
                 self.header = header;
                 Ok(())
             }
 
-            fn deserialize(buf: &mut &[u8]) -> Result<Self, $crate::common::DISError>
+            fn deserialize(buf: &mut &[u8]) -> Result<Self, $crate::DISError>
             where
                 Self: Sized,
             {
                 let header: $header =
-                    $crate::common::wire::read(buf).map_err($crate::common::DISError::from_wire)?;
+                    $crate::wire::read(buf).map_err($crate::DISError::from_wire)?;
                 let found = header.pdu_type();
                 if found != $pdu_type {
-                    return Err($crate::common::DISError::invalid_header(
+                    return Err($crate::DISError::invalid_header(
                         format!("expected PDU type {:?}, got {found:?}", $pdu_type),
                         None,
                     ));
@@ -282,19 +281,16 @@ macro_rules! impl_pdu {
             fn deserialize_without_header(
                 buf: &mut &[u8],
                 header: Self::Header,
-            ) -> Result<Self, $crate::common::DISError>
+            ) -> Result<Self, $crate::DISError>
             where
                 Self: Sized,
             {
                 let declared = header.length();
-                let mut body = $crate::common::pdu::take_body(
-                    buf,
-                    declared,
-                    $crate::common::constants::PDU_HEADER_SIZE,
-                )?;
-                let mut pdu: Self = $crate::common::wire::read(&mut body)
-                    .map_err($crate::common::DISError::from_wire)?;
-                $crate::common::pdu::check_body_used(body, declared)?;
+                let mut body =
+                    $crate::pdu::take_body(buf, declared, $crate::constants::PDU_HEADER_SIZE)?;
+                let mut pdu: Self =
+                    $crate::wire::read(&mut body).map_err($crate::DISError::from_wire)?;
+                $crate::pdu::check_body_used(body, declared)?;
                 pdu.header = header;
                 Ok(pdu)
             }
@@ -309,9 +305,9 @@ macro_rules! impl_pdu {
             #[must_use]
             pub fn new() -> Self {
                 let mut pdu = Self::default();
-                $crate::common::pdu::DerivedFields::set_pdu_type(&mut pdu.header, $pdu_type);
-                $crate::common::pdu::DerivedFields::set_protocol_family(&mut pdu.header, $family);
-                $crate::common::pdu::Pdu::finalize(&mut pdu);
+                $crate::pdu::DerivedFields::set_pdu_type(&mut pdu.header, $pdu_type);
+                $crate::pdu::DerivedFields::set_protocol_family(&mut pdu.header, $family);
+                $crate::pdu::Pdu::finalize(&mut pdu);
                 pdu
             }
         }
@@ -344,7 +340,7 @@ macro_rules! pdu_tests {
 
             #[test]
             fn new_sets_default_length() {
-                const DEFAULT_LENGTH: u16 = $default_bits / BITS_PER_BYTE;
+                const DEFAULT_LENGTH: u16 = $default_bits / $crate::wire::BITS_PER_BYTE;
                 let pdu = <$pdu>::new();
                 assert_eq!(pdu.header().length, DEFAULT_LENGTH);
             }
@@ -387,12 +383,10 @@ pub(crate) use pdu_tests;
 mod tests {
     use super::*;
     use crate::{
-        common::{
-            LiveEntityPdu, StandardPdu,
-            records::{ExerciseIdentifier, VariableDatumRecord},
-        },
+        LiveEntityPdu, StandardPdu,
         entity_information::EntityStatePdu,
         live_entity_information::TimeSpacePositionInformationPdu,
+        records::{ExerciseIdentifier, VariableDatumRecord},
         simulation_management::{AcknowledgePdu, CommentPdu},
         siso::enums::PduType,
     };

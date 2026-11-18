@@ -14,8 +14,9 @@ use deku::{
     writer::Writer,
 };
 
-use crate::common::wire::impl_deku_bitflags;
-use crate::common::{
+use crate::siso::enums::{ForceId, PduType, ProtocolFamily};
+use crate::wire::impl_deku_bitflags;
+use crate::{
     live_entity_records::{
         FixedBinary16, LEDeadReckoningParameters, LEEntityId, LEEulerAngles, LELinearVelocity,
         LiveEntityOrientation16, LiveEntityPduHeader, LiveEntityRelativeLocation,
@@ -28,7 +29,6 @@ use crate::common::{
         VariableParameter,
     },
 };
-use crate::siso::enums::{ForceId, PduType, ProtocolFamily};
 
 bitflags! {
     /// TSPI Flag (IEEE 1278.1-2012 §9.4.2.5): which optional TSPI fields are
@@ -339,10 +339,7 @@ impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::pdu::pdu_tests,
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-    };
+    use crate::{pdu::Pdu, pdu::pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
     pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {

@@ -6,7 +6,7 @@
 
 //! The Entity Management protocol family
 
-use crate::common::records::{
+use crate::records::{
     AggregateIdentifier, AggregateMarking, EntityIdentifier, EntityType, EulerAngles,
     NamedLocationIdentification, PduHeader, RecordSpecification, Relationship,
     SimulationIdentifier, VariableDatumRecord, Vector, WorldCoordinates,
@@ -34,22 +34,22 @@ pub struct AggregateStatePdu {
     pub velocity: Vector,
     #[deku(
         update = "self.aggregate_id_list.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_dis_aggregates)"
+        assert = "crate::wire::fits_in_pdu(*number_of_dis_aggregates)"
     )]
     pub number_of_dis_aggregates: u16,
     #[deku(
         update = "self.entity_id_list.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_dis_entities)"
+        assert = "crate::wire::fits_in_pdu(*number_of_dis_entities)"
     )]
     pub number_of_dis_entities: u16,
     #[deku(
         update = "self.silent_aggregate_system_list.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_silent_aggregate_types)"
+        assert = "crate::wire::fits_in_pdu(*number_of_silent_aggregate_types)"
     )]
     pub number_of_silent_aggregate_types: u16,
     #[deku(
         update = "self.silent_entity_system_list.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_silent_entity_types)"
+        assert = "crate::wire::fits_in_pdu(*number_of_silent_entity_types)"
     )]
     pub number_of_silent_entity_types: u16,
     #[deku(count = "number_of_dis_aggregates")]
@@ -59,7 +59,7 @@ pub struct AggregateStatePdu {
     /// Zero octets that bring the two ID lists to a 32-bit boundary.
     #[deku(
         count = "id_list_padding(usize::from(*number_of_dis_aggregates), usize::from(*number_of_dis_entities))",
-        writer = "crate::common::wire::write_zeros(deku::writer, id_list_padding(aggregate_id_list.len(), entity_id_list.len()))"
+        writer = "crate::wire::write_zeros(deku::writer, id_list_padding(aggregate_id_list.len(), entity_id_list.len()))"
     )]
     padding: Vec<u8>,
     #[deku(count = "number_of_silent_aggregate_types")]
@@ -68,13 +68,13 @@ pub struct AggregateStatePdu {
     pub silent_entity_system_list: Vec<EntityType>,
     #[deku(
         update = "self.variable_datum_list.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
     )]
     pub number_of_variable_datum_records: u32,
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_list: Vec<VariableDatumRecord>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     AggregateStatePdu,
     PduHeader,
     PduType::AggregateState,
@@ -97,7 +97,7 @@ pub struct IsGroupOfPdu {
     #[deku(count = "number_of_grouped_entities")]
     pub grouped_entity_descriptions: Vec<u64>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     IsGroupOfPdu,
     PduHeader,
     PduType::IsGroupOf,
@@ -118,7 +118,7 @@ pub struct TransferOwnershipPdu {
     pub transfer_entity_id: EntityIdentifier,
     pub record_information: RecordSpecification,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     TransferOwnershipPdu,
     PduHeader,
     PduType::TransferOwnership,
@@ -138,7 +138,7 @@ pub struct IsPartOfPdu {
     pub named_location_id: NamedLocationIdentification,
     pub part_entity_type: EntityType,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     IsPartOfPdu,
     PduHeader,
     PduType::IsPartOf,
@@ -160,10 +160,7 @@ const fn id_list_padding(aggregates: usize, entities: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::pdu::pdu_tests,
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-    };
+    use crate::{pdu::Pdu, pdu::pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
     pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {

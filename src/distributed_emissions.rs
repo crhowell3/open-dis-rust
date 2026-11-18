@@ -15,21 +15,77 @@ use deku::{
     writer::Writer,
 };
 
-use crate::common::{
-    data_types::{
-        AcousticEmitterSystemData, ApaData, ElectromagneticEmissionSystemData, ShaftRPMs,
-    },
-    records::{
-        BeamData, EntityIdentifier, EventIdentifier, FundamentalOperationalData,
-        IFFFundamentalParameterData, LayerHeader, PduHeader, PropulsionSystemData,
-        SecondaryOperationalData, SystemIdentifier, Vector, VectoringNozzleSystemData,
-        WorldCoordinates,
-    },
+use crate::records::{
+    AcousticEmitterSystem, BeamData, EmitterSystem, EntityIdentifier, EventIdentifier,
+    FundamentalOperationalData, IFFFundamentalParameterData, LayerHeader, PduHeader,
+    PropulsionSystemData, SecondaryOperationalData, SystemIdentifier, TrackJamData, Vector,
+    VectoringNozzleSystemData, WorldCoordinates,
 };
 use crate::siso::enums::{
     DeadReckoningAlgorithm, DesignatorCode, DesignatorSystemName, EEAttributeStateIndicator,
     PduType, ProtocolFamily, UAPassiveParameterIndex, UAStateChangeUpdateIndicator,
 };
+
+/// The fundamental parameters of an Electromagnetic Emission beam: its frequency, ERP,
+/// pulse rate, pulse width, and scan.
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct FundamentalParameterData {
+    pub frequency: f32,
+    pub frequency_range: f32,
+    pub effective_radiated_power: f32,
+    pub pulse_repetition_frequency: f32,
+    pub pulse_width: f32,
+    pub beam_azimuth_center: f32,
+    pub beam_azimuth_sweep: f32,
+    pub beam_elevation_center: f32,
+    pub beam_elevation_sweep: f32,
+    pub beam_sweep_sync: f32,
+}
+
+/// One beam of an emitter system in an Electromagnetic Emission PDU.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ElectromagneticEmissionBeamData {
+    pub beam_data_length: u8,
+    pub beam_id_number: u8,
+    pub beam_parameter_index: u16,
+    pub fundamental_parameter_data: FundamentalParameterData,
+    pub beam_function: u8,
+    #[deku(update = "self.track_jam_targets.len()")]
+    pub number_of_track_jam_targets: u8,
+    pub high_density_track_jam: u8,
+    pub pad4: u8,
+    pub jamming_mode_sequence: u32,
+    #[deku(count = "number_of_track_jam_targets")]
+    pub track_jam_targets: Vec<TrackJamData>,
+}
+
+/// One emitter system in an Electromagnetic Emission PDU, with its beams.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct ElectromagneticEmissionSystemData {
+    pub system_data_length: u8,
+    #[deku(update = "crate::wire::update_each(&mut self.beam_data_records)?")]
+    pub number_of_beams: u8,
+    pub emissionspadding2: u16,
+    pub emitter_system: EmitterSystem,
+    pub location: Vector,
+    #[deku(count = "number_of_beams")]
+    pub beam_data_records: Vec<ElectromagneticEmissionBeamData>,
+}
 
 /// Implemented according to IEEE 1278.1-2012 §7.6.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -40,13 +96,13 @@ pub struct ElectromagneticEmissionsPdu {
     pub emitting_entity_id: EntityIdentifier,
     pub event_id: EventIdentifier,
     pub state_update_indicator: EEAttributeStateIndicator,
-    #[deku(update = "crate::common::wire::update_each(&mut self.systems)?")]
+    #[deku(update = "crate::wire::update_each(&mut self.systems)?")]
     pub number_of_systems: u8,
     padding: u16,
     #[deku(count = "number_of_systems")]
     pub systems: Vec<ElectromagneticEmissionSystemData>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     ElectromagneticEmissionsPdu,
     PduHeader,
     PduType::ElectromagneticEmissions,
@@ -72,12 +128,168 @@ pub struct DesignatorPdu {
     padding2: u16,
     pub entity_linear_acceleration: Vector,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     DesignatorPdu,
     PduHeader,
     PduType::Designator,
     ProtocolFamily::DistributedEmissionRegeneration
 );
+
+/// The fundamental parameters of an acoustic beam.
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct AcousticBeamFundamentalParameter {
+    pub active_emission_parameter_index: u16,
+    pub scan_pattern: u16,
+    pub beam_center_azimuth: f32,
+    pub azimuthal_beamwidth: f32,
+    pub beam_center_de: f32,
+    pub de_beamwidth: f32,
+}
+
+impl AcousticBeamFundamentalParameter {
+    #[must_use]
+    pub const fn new(
+        active_emission_parameter_index: u16,
+        scan_pattern: u16,
+        beam_center_azimuth: f32,
+        azimuthal_beamwidth: f32,
+        beam_center_de: f32,
+        de_beamwidth: f32,
+    ) -> Self {
+        Self {
+            active_emission_parameter_index,
+            scan_pattern,
+            beam_center_azimuth,
+            azimuthal_beamwidth,
+            beam_center_de,
+            de_beamwidth,
+        }
+    }
+}
+
+/// One beam of an acoustic emitter system in an Underwater Acoustic PDU.
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct AcousticBeamData {
+    pub beam_data_length: u8,
+    pub beam_id_number: u8,
+    pub pad2: u16,
+    pub fundamental_data_parameters: AcousticBeamFundamentalParameter,
+}
+
+impl AcousticBeamData {
+    #[must_use]
+    pub const fn new(
+        beam_data_length: u8,
+        beam_id_number: u8,
+        pad2: u16,
+        fundamental_data_parameters: AcousticBeamFundamentalParameter,
+    ) -> Self {
+        Self {
+            beam_data_length,
+            beam_id_number,
+            pad2,
+            fundamental_data_parameters,
+        }
+    }
+}
+
+/// One acoustic emitter system in an Underwater Acoustic PDU with its beams.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct AcousticEmitterSystemData {
+    pub emitter_system_data_length: u8,
+    #[deku(update = "self.beam_records.len()")]
+    pub number_of_beams: u8,
+    pub pad2: u16,
+    pub acoustic_emitter_system: AcousticEmitterSystem,
+    pub emitter_location: Vector,
+    #[deku(count = "number_of_beams")]
+    pub beam_records: Vec<AcousticBeamData>,
+}
+
+impl AcousticEmitterSystemData {
+    #[must_use]
+    pub const fn new(
+        emitter_system_data_length: u8,
+        pad2: u16,
+        acoustic_emitter_system: AcousticEmitterSystem,
+        emitter_location: Vector,
+        beam_records: Vec<AcousticBeamData>,
+    ) -> Self {
+        Self {
+            emitter_system_data_length,
+            number_of_beams: 0,
+            pad2,
+            acoustic_emitter_system,
+            emitter_location,
+            beam_records,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+/// Implemented according to IEEE 1278.1-2012 §7.6.4 Table 163
+pub struct ApaData {
+    pub parameter_index: u16,
+    pub parameter_value: i16,
+}
+
+impl ApaData {
+    #[must_use]
+    pub const fn new(parameter_index: u16, parameter_value: i16) -> Self {
+        Self {
+            parameter_index,
+            parameter_value,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+/// Implemented according to IEEE 1278.1-2012 §7.6.4(j-l)
+pub struct ShaftRPMs {
+    pub current_shaft_rpms: i16,
+    pub ordered_shaft_rpms: i16,
+    pub shaft_rpm_rate_of_change: i32,
+}
+
+impl ShaftRPMs {
+    #[must_use]
+    pub const fn new(
+        current_shaft_rpms: i16,
+        ordered_shaft_rpms: i16,
+        shaft_rpm_rate_of_change: i32,
+    ) -> Self {
+        Self {
+            current_shaft_rpms,
+            ordered_shaft_rpms,
+            shaft_rpm_rate_of_change,
+        }
+    }
+}
 
 /// Implemented according to IEEE 1278.1-2012 §7.6.4
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -95,7 +307,7 @@ pub struct UnderwaterAcousticPdu {
     pub number_of_shafts: u8,
     #[deku(update = "self.apa_data.len()")]
     pub number_of_apas: u8,
-    #[deku(update = "crate::common::wire::update_each(&mut self.emitter_systems)?")]
+    #[deku(update = "crate::wire::update_each(&mut self.emitter_systems)?")]
     pub number_of_ua_emitter_systems: u8,
     #[deku(count = "number_of_shafts")]
     pub shaft_rpms: Vec<ShaftRPMs>,
@@ -105,7 +317,7 @@ pub struct UnderwaterAcousticPdu {
     /// Each emitter with its location and beams.
     pub emitter_systems: Vec<AcousticEmitterSystemData>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     UnderwaterAcousticPdu,
     PduHeader,
     PduType::UnderwaterAcoustic,
@@ -134,7 +346,7 @@ pub struct IFFPdu {
     )]
     pub layers: IffLayers,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     IFFPdu,
     PduHeader,
     PduType::IFF,
@@ -157,7 +369,7 @@ pub struct IffLayer2 {
     /// `serialize` sets the record count from `iff_parameters`.
     #[deku(
         update = "self.derived_secondary_operational_data()?",
-        assert = "crate::common::wire::fits_in_pdu(secondary_operational_data.number_of_iff_fundamental_parameter_records)"
+        assert = "crate::wire::fits_in_pdu(secondary_operational_data.number_of_iff_fundamental_parameter_records)"
     )]
     pub secondary_operational_data: SecondaryOperationalData,
     #[deku(count = "secondary_operational_data.number_of_iff_fundamental_parameter_records")]
@@ -166,7 +378,7 @@ pub struct IffLayer2 {
 
 impl IffLayer2 {
     fn derived_layer_header(&self) -> Result<LayerHeader, DekuError> {
-        let length = u16::try_from(crate::common::wire::encoded_len(self)?)
+        let length = u16::try_from(crate::wire::encoded_len(self)?)
             .map_err(|_| DekuError::Assertion("IFF layer 2 is too long".into()))?;
         Ok(LayerHeader {
             layer_number: 2,
@@ -219,7 +431,7 @@ fn read_iff_layers<R: Read + Seek>(reader: &mut Reader<R>) -> Result<IffLayers, 
         });
     }
     let mut rest: &[u8] = &octets;
-    let layer_2 = crate::common::wire::read(&mut rest)?;
+    let layer_2 = crate::wire::read(&mut rest)?;
     Ok(IffLayers {
         layer_2: Some(layer_2),
         other_layers: rest.to_vec(),
@@ -248,12 +460,12 @@ pub struct SupplementalEmissionPdu {
     pub radar_cross_section_signature_representation_index: u16,
     #[deku(
         update = "self.propulsion_system_data.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_propulsion_systems)"
+        assert = "crate::wire::fits_in_pdu(*number_of_propulsion_systems)"
     )]
     pub number_of_propulsion_systems: u16,
     #[deku(
         update = "self.vectoring_nozzle_system_data.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_vectoring_nozzle_systems)"
+        assert = "crate::wire::fits_in_pdu(*number_of_vectoring_nozzle_systems)"
     )]
     pub number_of_vectoring_nozzle_systems: u16,
     #[deku(count = "number_of_propulsion_systems")]
@@ -261,7 +473,7 @@ pub struct SupplementalEmissionPdu {
     #[deku(count = "number_of_vectoring_nozzle_systems")]
     pub vectoring_nozzle_system_data: Vec<VectoringNozzleSystemData>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     SupplementalEmissionPdu,
     PduHeader,
     PduType::SupplementalEmission,
@@ -271,10 +483,7 @@ crate::common::pdu::impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::pdu::pdu_tests,
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-    };
+    use crate::{pdu::Pdu, pdu::pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
     pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {

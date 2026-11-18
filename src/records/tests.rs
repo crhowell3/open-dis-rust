@@ -92,7 +92,7 @@ fn display_shows_minutes_seconds_and_kind() {
 #[test]
 fn encodes_as_its_raw_value() {
     let mut buf = Vec::new();
-    crate::common::wire::write(&Timestamp::from_raw(0x0102_0304), &mut buf).unwrap();
+    crate::wire::write(&Timestamp::from_raw(0x0102_0304), &mut buf).unwrap();
     assert_eq!(buf, [1, 2, 3, 4]);
 }
 
@@ -359,9 +359,9 @@ mod jamming_techniques {
     #[test]
     fn encodes_as_four_octets_in_order() {
         let mut buf = Vec::new();
-        crate::common::wire::write(&JammingTechnique::DRFM_LEVEL_E, &mut buf).unwrap();
+        crate::wire::write(&JammingTechnique::DRFM_LEVEL_E, &mut buf).unwrap();
         assert_eq!(buf, [2, 130, 30, 5]);
-        let decoded: JammingTechnique = crate::common::wire::read(&mut buf.as_slice()).unwrap();
+        let decoded: JammingTechnique = crate::wire::read(&mut buf.as_slice()).unwrap();
         assert_eq!(decoded, JammingTechnique::DRFM_LEVEL_E);
     }
 }

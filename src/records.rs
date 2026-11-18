@@ -16,11 +16,6 @@ use deku::{
 };
 use num_traits::FromPrimitive;
 
-use crate::common::data_types::{
-    DataRepresentationType, GridAxisType, IFFDataRecord, RecordSpecificationElement,
-    SimulationManagementId, StandardVariableRecord,
-};
-use crate::common::wire;
 use crate::siso::bit_records::ComponentVisualDamageStatus;
 use crate::siso::enums::{
     ActiveInterrogationIndicator, AggregateStateAggregateKind, ArticulatedPartsTypeClass,
@@ -45,6 +40,7 @@ use crate::siso::enums::{
     UAAcousticEmitterSystemFunction, UAAcousticSystemName, UAActiveEmissionParameterIndex,
     UAScanPattern, VariableParameterRecordType, VariableRecordTypes,
 };
+use crate::wire;
 
 #[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -240,16 +236,16 @@ impl Association {
 pub struct Attribute {
     pub record_type: u32,
     #[deku(
-        update = "crate::common::wire::padded_record_length(self.record_specific_fields.len())?",
-        assert = "crate::common::wire::valid_record_length(*record_length)"
+        update = "crate::wire::padded_record_length(self.record_specific_fields.len())?",
+        assert = "crate::wire::valid_record_length(*record_length)"
     )]
     pub record_length: u16,
     /// Everything after the record length. When decoded, this includes the
     /// padding to the 64-bit boundary; when encoded, padding is added to
     /// reach it.
     #[deku(
-        count = "crate::common::wire::record_fields_len(*record_length)",
-        writer = "crate::common::wire::write_padded_fields(deku::writer, record_specific_fields)"
+        count = "crate::wire::record_fields_len(*record_length)",
+        writer = "crate::wire::write_padded_fields(deku::writer, record_specific_fields)"
     )]
     pub record_specific_fields: Vec<u8>,
 }
@@ -808,12 +804,12 @@ impl DataFilter {
 pub struct DataQueryDatumSpecification {
     #[deku(
         update = "self.fixed_datums.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datums)"
+        assert = "crate::wire::fits_in_pdu(*number_of_fixed_datums)"
     )]
     pub number_of_fixed_datums: u32,
     #[deku(
         update = "self.variable_datums.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datums)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datums)"
     )]
     pub number_of_variable_datums: u32,
     #[deku(count = "number_of_fixed_datums")]
@@ -844,12 +840,12 @@ impl DataQueryDatumSpecification {
 pub struct DatumSpecification {
     #[deku(
         update = "self.fixed_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_fixed_datum_records)"
     )]
     pub number_of_fixed_datum_records: u32,
     #[deku(
         update = "self.variable_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
     )]
     pub number_of_variable_datum_records: u32,
     #[deku(count = "number_of_fixed_datum_records")]
@@ -912,12 +908,12 @@ pub struct DEAreaAimpoint {
     padding: u16,
     #[deku(
         update = "self.beam_antenna_pattern_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*beam_antenna_pattern_record_count)"
+        assert = "crate::wire::fits_in_pdu(*beam_antenna_pattern_record_count)"
     )]
     pub beam_antenna_pattern_record_count: u16,
     #[deku(
         update = "self.de_target_energy_deposition_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*de_target_energy_deposition_record_count)"
+        assert = "crate::wire::fits_in_pdu(*de_target_energy_deposition_record_count)"
     )]
     pub de_target_energy_deposition_record_count: u16,
     #[deku(count = "beam_antenna_pattern_record_count")]
@@ -1549,6 +1545,46 @@ pub struct FundamentalOperationalData {
     pub parameter6: u16,
 }
 
+/// The spacing of a grid axis, which decides the rest of the Grid Axis
+/// Descriptor record.
+#[derive(Clone, Debug, PartialEq)]
+pub enum GridAxisType {
+    /// Regular (fixed spacing) axis data (IEEE 1278.1-2012 Table 66).
+    FixedSpacing {
+        number_of_points_on_x_axis: u16,
+        initial_index: u16,
+    },
+    /// Irregular (variable spacing) axis data (IEEE 1278.1-2012 Table 67).
+    /// The number of points is `x_values.len()`; the record is padded to a
+    /// 64-bit boundary on the wire.
+    VariableSpacing {
+        initial_index: u16,
+        coordinate_scale_x: f64,
+        coordinate_offset_x: f64,
+        x_values: Vec<u16>,
+    },
+}
+
+impl Default for GridAxisType {
+    fn default() -> Self {
+        Self::FixedSpacing {
+            number_of_points_on_x_axis: 0,
+            initial_index: 0,
+        }
+    }
+}
+
+impl GridAxisType {
+    /// The axis type this spacing is sent as.
+    #[must_use]
+    pub const fn axis_type(&self) -> GridAxisDescriptorAxisType {
+        match self {
+            Self::FixedSpacing { .. } => GridAxisDescriptorAxisType::RegularAxis,
+            Self::VariableSpacing { .. } => GridAxisDescriptorAxisType::IrregularAxis,
+        }
+    }
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.40
 ///
 /// `axis_type` follows `data`: it is set from `data` when decoding and by
@@ -1671,12 +1707,50 @@ impl DekuUpdate for GridAxisDescriptor {
     }
 }
 
-crate::common::wire::impl_deku_default_endian!(GridAxisDescriptor);
+crate::wire::impl_deku_default_endian!(GridAxisDescriptor);
 
 /// Padding after `points` 16-bit x values, to a 64-bit boundary. The rest of
 /// the irregular-axis record is 40 octets, already a multiple of 8.
 const fn x_values_padding(points: usize) -> usize {
     wire::padding_to(points.saturating_mul(2), 8)
+}
+
+/// The values of a Grid Data record, by data representation. The number of
+/// values is `data_values.len()`.
+#[derive(Clone, Debug, PartialEq)]
+pub enum DataRepresentationType {
+    /// Representation type 0 (IEEE 1278.1-2012 Table 68): octets, padded to
+    /// a 16-bit boundary on the wire.
+    Type0 { data_values: Vec<u8> },
+    /// Representation type 1 (Table 69): scaled 16-bit values, padded to a
+    /// 32-bit boundary on the wire.
+    Type1 {
+        field_scale: f32,
+        field_offset: f32,
+        data_values: Vec<u16>,
+    },
+    /// Representation type 2 (Table 70): 32-bit floating point values.
+    Type2 { data_values: Vec<f32> },
+}
+
+impl Default for DataRepresentationType {
+    fn default() -> Self {
+        Self::Type0 {
+            data_values: Vec::new(),
+        }
+    }
+}
+
+impl DataRepresentationType {
+    /// The data representation these values are sent as.
+    #[must_use]
+    pub const fn data_representation(&self) -> GriddedDataDataRepresentation {
+        match self {
+            Self::Type0 { .. } => GriddedDataDataRepresentation::Type0,
+            Self::Type1 { .. } => GriddedDataDataRepresentation::Type1,
+            Self::Type2 { .. } => GriddedDataDataRepresentation::Type2,
+        }
+    }
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.41
@@ -1803,7 +1877,7 @@ impl DekuUpdate for GridData {
     }
 }
 
-crate::common::wire::impl_deku_default_endian!(GridData);
+crate::wire::impl_deku_default_endian!(GridData);
 
 fn value_count(len: usize) -> Result<u16, DekuError> {
     u16::try_from(len)
@@ -1828,6 +1902,28 @@ pub struct GroupIdentifier {
     pub group_number: u16,
 }
 
+/// IFF Data record: a variable-length record in an IFF PDU layer, padded to a 32-bit
+/// boundary. Its record-specific fields include the padding as received.
+#[derive(Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct IFFDataRecord {
+    pub record_type: VariableRecordTypes,
+    #[deku(
+        update = "crate::wire::padded_record_length_to(self.record_specific_fields.len(), 4)?",
+        assert = "crate::wire::valid_aligned_record_length(*record_length, 4)"
+    )]
+    pub record_length: u16,
+    #[deku(
+        count = "crate::wire::record_fields_len(*record_length)",
+        writer = "crate::wire::write_padded_fields_to(deku::writer, record_specific_fields, 4)"
+    )]
+    pub record_specific_fields: Vec<u8>,
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.43
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -1838,7 +1934,7 @@ pub struct GroupIdentifier {
 pub struct IFFDataSpecification {
     #[deku(
         update = "self.iff_data_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_iff_data_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_iff_data_records)"
     )]
     pub number_of_iff_data_records: u16,
     #[deku(count = "number_of_iff_data_records")]
@@ -1906,7 +2002,7 @@ bitflags::bitflags! {
     }
 }
 
-crate::common::wire::impl_deku_bitflags!(InformationLayers, u8);
+crate::wire::impl_deku_bitflags!(InformationLayers, u8);
 
 impl InformationLayers {
     #[must_use]
@@ -3073,32 +3169,32 @@ impl PduHeader {
 
     /// Encodes the header alone and appends it to `buf`
     pub fn serialize(&self, buf: &mut Vec<u8>) {
-        let _ = crate::common::wire::write(self, buf);
+        let _ = crate::wire::write(self, buf);
     }
 
     /// Decodes a header from the front of `buf`, advancing `buf` past it. Pass it to
-    /// [`Pdu::deserialize_without_header`](crate::common::Pdu::deserialize_without_header)
+    /// [`Pdu::deserialize_without_header`](crate::Pdu::deserialize_without_header)
     /// to decode the body of the PDU
     ///
     /// # Errors
     ///
     /// Will return a `DISError` if `buf` does not start with a valid header.
-    pub fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::common::DISError> {
-        crate::common::wire::read(buf).map_err(crate::common::DISError::from_wire)
+    pub fn deserialize(buf: &mut &[u8]) -> Result<Self, crate::DISError> {
+        crate::wire::read(buf).map_err(crate::DISError::from_wire)
     }
 
     /// Looks at the PDU type from a raw byte buffer.
     /// Only deserializes the 12-byte header.
     #[must_use]
     pub fn get_pdu_type(bytes: &[u8]) -> Option<PduType> {
-        let mut buf = bytes.get(..crate::common::constants::PDU_HEADER_SIZE)?;
+        let mut buf = bytes.get(..crate::constants::PDU_HEADER_SIZE)?;
         Self::deserialize(&mut buf)
             .ok()
             .map(|header| header.pdu_type)
     }
 }
 
-impl crate::common::pdu::DerivedFields for PduHeader {
+impl crate::pdu::DerivedFields for PduHeader {
     #[cfg(test)]
     fn length(&self) -> u16 {
         self.length
@@ -3487,10 +3583,57 @@ pub struct RadioType {
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct RecordQuerySpecification {
-    #[deku(assert = "crate::common::wire::fits_in_pdu(*number_of_records)")]
+    #[deku(assert = "crate::wire::fits_in_pdu(*number_of_records)")]
     pub number_of_records: u32,
     #[deku(count = "number_of_records")]
     pub record_ids: Vec<VariableRecordTypes>,
+}
+
+/// One record set in a [`RecordSpecification`](crate::common::records::RecordSpecification): its record ID,
+/// serial number, and `record_count` values of `record_length` octets each.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct RecordSpecificationElement {
+    pub record_id: u32,
+    pub record_set_serial_number: u32,
+    pub record_length: u16,
+    #[deku(assert = "crate::wire::fits_in_pdu(values_len(*record_length, *record_count))")]
+    pub record_count: u16,
+    /// Exactly `record_length * record_count` octets; encoding fails otherwise.
+    #[deku(
+        count = "values_len(*record_length, *record_count)",
+        assert = "record_values.len() == values_len(*record_length, *record_count)"
+    )]
+    pub record_values: Vec<u8>,
+}
+
+impl RecordSpecificationElement {
+    #[must_use]
+    pub const fn new(
+        record_id: u32,
+        record_set_serial_number: u32,
+        record_length: u16,
+        record_count: u16,
+        record_values: Vec<u8>,
+    ) -> Self {
+        Self {
+            record_id,
+            record_set_serial_number,
+            record_length,
+            record_count,
+            record_values,
+        }
+    }
+}
+
+/// The number of octets in `record_values`: `record_length * record_count`.
+/// Cannot overflow: two 16-bit values multiply to at most 32 bits.
+fn values_len(record_length: u16, record_count: u16) -> usize {
+    usize::from(record_length).saturating_mul(usize::from(record_count))
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.73
@@ -3502,8 +3645,8 @@ pub struct RecordQuerySpecification {
 )]
 pub struct RecordSpecification {
     #[deku(
-        update = "crate::common::wire::update_each(&mut self.record_sets)?",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_record_sets)"
+        update = "crate::wire::update_each(&mut self.record_sets)?",
+        assert = "crate::wire::fits_in_pdu(*number_of_record_sets)"
     )]
     pub number_of_record_sets: u32,
     #[deku(count = "number_of_record_sets")]
@@ -3647,7 +3790,7 @@ pub struct SilentEntitySystem {
     pub number_of_entities: u16,
     #[deku(
         update = "self.entity_appearances.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_appearance_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_appearance_records)"
     )]
     pub number_of_appearance_records: u16,
     pub entity_type: EntityType,
@@ -3714,6 +3857,55 @@ impl SimulationIdentifier {
     }
 }
 
+/// Originating or receiving ID of a SIMAN or SIMAN-R PDU
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum SimulationManagementId {
+    Simulation(SimulationAddress),
+    Entity(EntityIdentifier),
+}
+
+impl SimulationManagementId {
+    /// The simulation address, whichever kind of identifier this is.
+    #[must_use]
+    pub const fn simulation_address(self) -> SimulationAddress {
+        match self {
+            Self::Simulation(address) => address,
+            Self::Entity(id) => id.simulation_address,
+        }
+    }
+}
+
+impl DekuReader<'_, Endian> for SimulationManagementId {
+    fn from_reader_with_ctx<R: Read + Seek>(
+        reader: &mut Reader<R>,
+        endian: Endian,
+    ) -> Result<Self, DekuError> {
+        let id = EntityIdentifier::from_reader_with_ctx(reader, endian)?;
+        Ok(if id.entity_id == 0 {
+            Self::Simulation(id.simulation_address)
+        } else {
+            Self::Entity(id)
+        })
+    }
+}
+
+impl DekuWriter<Endian> for SimulationManagementId {
+    fn to_writer<W: Write + Seek>(
+        &self,
+        writer: &mut Writer<W>,
+        endian: Endian,
+    ) -> Result<(), DekuError> {
+        let id = match *self {
+            Self::Simulation(simulation_address) => EntityIdentifier {
+                simulation_address,
+                entity_id: 0,
+            },
+            Self::Entity(id) => id,
+        };
+        id.to_writer(writer, endian)
+    }
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.82
 #[derive(Copy, Clone, Debug, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -3727,6 +3919,46 @@ pub struct SimulationManagementPduHeader {
     pub receiving_id: SimulationManagementId,
 }
 
+/// Standard Variable record. `record_length` is the whole record in octets,
+/// a multiple of 8.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct StandardVariableRecord {
+    pub record_type: u32,
+    #[deku(
+        update = "crate::wire::padded_record_length(self.record_specific_fields.len())?",
+        assert = "crate::wire::valid_record_length(*record_length)"
+    )]
+    pub record_length: u16,
+    /// Everything after the record length. When decoded, this includes the
+    /// padding to the 64-bit boundary; when encoded, padding is added to
+    /// reach it.
+    #[deku(
+        count = "crate::wire::record_fields_len(*record_length)",
+        writer = "crate::wire::write_padded_fields(deku::writer, record_specific_fields)"
+    )]
+    pub record_specific_fields: Vec<u8>,
+}
+
+impl StandardVariableRecord {
+    #[must_use]
+    pub const fn new(
+        record_type: u32,
+        record_length: u16,
+        record_specific_fields: Vec<u8>,
+    ) -> Self {
+        Self {
+            record_type,
+            record_length,
+            record_specific_fields,
+        }
+    }
+}
+
 /// Implemented according to IEEE 1278.1-2012 §6.2.83
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
@@ -3736,8 +3968,8 @@ pub struct SimulationManagementPduHeader {
 )]
 pub struct StandardVariableSpecification {
     #[deku(
-        update = "crate::common::wire::update_each(&mut self.standard_variable_records)?",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_standard_variable_records)"
+        update = "crate::wire::update_each(&mut self.standard_variable_records)?",
+        assert = "crate::wire::fits_in_pdu(*number_of_standard_variable_records)"
     )]
     pub number_of_standard_variable_records: u16,
     #[deku(count = "number_of_standard_variable_records")]
@@ -3861,7 +4093,7 @@ const ABSOLUTE_BIT: u32 = 1;
 ///
 /// ```
 /// use std::time::Duration;
-/// use open_dis_rust::common::records::Timestamp;
+/// use open_dis_rust::records::Timestamp;
 ///
 /// let start = Timestamp::absolute(Duration::from_secs(3599)); // 59:59
 /// let later = Timestamp::absolute(Duration::from_secs(1));    // 00:01, in the next hour
@@ -3870,7 +4102,7 @@ const ABSOLUTE_BIT: u32 = 1;
 /// assert!(later.is_absolute());
 /// ```
 ///
-/// [`ClockTime`]: crate::common::records::ClockTime
+/// [`ClockTime`]: crate::records::ClockTime
 #[derive(Copy, Clone, Default, PartialEq, Eq, Hash, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -4242,16 +4474,16 @@ pub struct VariableTransmitterParameters {
     /// SISO-REF-010 UID 66.
     pub record_type: VariableRecordTypes,
     #[deku(
-        update = "crate::common::wire::padded_record_length(self.record_specific_fields.len())?",
-        assert = "crate::common::wire::valid_record_length(*record_length)"
+        update = "crate::wire::padded_record_length(self.record_specific_fields.len())?",
+        assert = "crate::wire::valid_record_length(*record_length)"
     )]
     pub record_length: u16,
     /// Everything after the record length. When decoded, this includes the
     /// padding to the 64-bit boundary; when encoded, padding is added to
     /// reach it.
     #[deku(
-        count = "crate::common::wire::record_fields_len(*record_length)",
-        writer = "crate::common::wire::write_padded_fields(deku::writer, record_specific_fields)"
+        count = "crate::wire::record_fields_len(*record_length)",
+        writer = "crate::wire::write_padded_fields(deku::writer, record_specific_fields)"
     )]
     pub record_specific_fields: Vec<u8>,
 }
@@ -4355,7 +4587,7 @@ impl WorldCoordinates {
 /// capable for all six parameters, and operational.
 ///
 /// ```
-/// use open_dis_rust::common::records::SystemStatus;
+/// use open_dis_rust::records::SystemStatus;
 ///
 /// let mut status = SystemStatus::new();
 /// status.set_system_on(true);

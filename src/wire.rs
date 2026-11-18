@@ -24,7 +24,11 @@ use deku::{
     writer::Writer,
 };
 
-use crate::common::constants::MAX_PDU_SIZE_OCTETS;
+use crate::constants::MAX_PDU_SIZE_OCTETS;
+
+/// Bits in an octet. The PDU tests give default lengths in bits.
+#[cfg(test)]
+pub const BITS_PER_BYTE: u16 = 8;
 
 fn unsupported_seek() -> no_std_io::Error {
     no_std_io::Error::new(ErrorKind::Unsupported, "only forward seeks are supported")

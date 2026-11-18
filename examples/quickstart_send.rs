@@ -8,10 +8,10 @@ use std::{error::Error, net::UdpSocket, thread, time::Duration};
 
 use open_dis_rust::prelude::*;
 use open_dis_rust::{
-    common::records::{
+    entity_information::EntityStatePdu,
+    records::{
         EntityIdentifier, EntityMarking, EntityType, ExerciseIdentifier, Vector, WorldCoordinates,
     },
-    entity_information::EntityStatePdu,
     siso::enums::{
         Country, DeadReckoningAlgorithm, EntityKind, EntityMarkingCharacterSet, ForceId,
     },

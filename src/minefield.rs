@@ -14,15 +14,34 @@ use deku::{
     writer::Writer,
 };
 
-use crate::common::{
-    data_types::Point,
+use crate::siso::enums::{ForceId, PduType, ProtocolFamily};
+use crate::{
     records::{
         ClockTime, EntityIdentifier, EntityType, EulerAngles, MinefieldIdentifier, PduHeader,
         ProtocolMode, Vector, WorldCoordinates,
     },
     wire,
 };
-use crate::siso::enums::{ForceId, PduType, ProtocolFamily};
+
+/// A point on a minefield's perimeter, as x and y offsets in meters from the minefield's
+/// location.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct Point {
+    pub x: f32,
+    pub y: f32,
+}
+
+impl Point {
+    #[must_use]
+    pub const fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
 
 /// Implemented according to IEEE 1278.1-2012 §7.9.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -38,7 +57,7 @@ pub struct MinefieldStatePdu {
     pub minefield_type: EntityType,
     #[deku(
         update = "self.mine_type.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_mine_types)"
+        assert = "crate::wire::fits_in_pdu(*number_of_mine_types)"
     )]
     pub number_of_mine_types: u16,
     pub minefield_location: WorldCoordinates,
@@ -50,7 +69,7 @@ pub struct MinefieldStatePdu {
     #[deku(count = "number_of_mine_types")]
     pub mine_type: Vec<EntityType>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     MinefieldStatePdu,
     PduHeader,
     PduType::MinefieldState,
@@ -83,7 +102,7 @@ pub struct MinefieldQueryPdu {
     )]
     pub sensor_types: Vec<u16>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     MinefieldQueryPdu,
     PduHeader,
     PduType::MinefieldQuery,
@@ -132,7 +151,7 @@ pub struct MinefieldDataPdu {
     )]
     pub mines: Vec<Mine>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     MinefieldDataPdu,
     PduHeader,
     PduType::MinefieldData,
@@ -158,7 +177,7 @@ bitflags! {
         const PAINT_SCHEME = 1 << 10;
     }
 }
-crate::common::wire::impl_deku_bitflags!(MinefieldDataFilter, u32);
+crate::wire::impl_deku_bitflags!(MinefieldDataFilter, u32);
 
 /// One mine in a Minefield Data PDU. Optional fields must be present on
 /// every mine in the PDU or on none.
@@ -199,7 +218,7 @@ pub struct MinefieldResponseNackPdu {
     #[deku(count = "number_of_missing_pdus")]
     pub missing_pdu_sequence_numbers: Vec<u64>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     MinefieldResponseNackPdu,
     PduHeader,
     PduType::MinefieldResponseNack,
@@ -634,10 +653,7 @@ fn write_trip_wires<W: Write + Seek>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::pdu::pdu_tests,
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-    };
+    use crate::pdu::{Pdu, pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
     pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {

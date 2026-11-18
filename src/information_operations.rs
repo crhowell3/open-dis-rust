@@ -6,7 +6,7 @@
 
 //! The Information Operations protocol family
 
-use crate::common::records::{
+use crate::records::{
     EntityIdentifier, PduHeader, SimulationIdentifier, StandardVariableSpecification,
 };
 use crate::siso::enums::{
@@ -30,7 +30,7 @@ pub struct InformationOperationsReportPdu {
     padding3: u16,
     pub io_records: StandardVariableSpecification,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     InformationOperationsReportPdu,
     PduHeader,
     PduType::InformationOperationsReport,
@@ -56,7 +56,7 @@ pub struct InformationOperationsActionPdu {
     padding2: u16,
     pub io_records: StandardVariableSpecification,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     InformationOperationsActionPdu,
     PduHeader,
     PduType::InformationOperationsAction,
@@ -66,10 +66,7 @@ crate::common::pdu::impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::pdu::pdu_tests,
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-    };
+    use crate::{pdu::Pdu, pdu::pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
     pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {

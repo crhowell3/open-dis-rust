@@ -6,7 +6,7 @@
 
 //! The Warfare protocol family
 
-use crate::common::records::{
+use crate::records::{
     ClockTime, DirectedEnergyDamage, EntityIdentifier, EntityType, EventIdentifier,
     MunitionDescriptor, PduHeader, VariableParameter, Vector, WorldCoordinates,
 };
@@ -28,7 +28,7 @@ pub struct FirePdu {
     pub velocity: Vector,
     pub range: f32,
 }
-crate::common::pdu::impl_pdu!(FirePdu, PduHeader, PduType::Fire, ProtocolFamily::Warfare);
+crate::pdu::impl_pdu!(FirePdu, PduHeader, PduType::Fire, ProtocolFamily::Warfare);
 
 /// Implemented according to IEEE 1278.1-2012 §7.3.3
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -51,7 +51,7 @@ pub struct DetonationPdu {
     #[deku(count = "number_of_variable_parameters")]
     pub variable_parameters: Vec<VariableParameter>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     DetonationPdu,
     PduHeader,
     PduType::Detonation,
@@ -82,13 +82,13 @@ pub struct DirectedEnergyFirePdu {
     padding4: u16,
     #[deku(
         update = "self.damage_descriptions.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_de_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_de_records)"
     )]
     pub number_of_de_records: u16,
     #[deku(count = "number_of_de_records")]
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     DirectedEnergyFirePdu,
     PduHeader,
     PduType::DirectedEnergyFire,
@@ -106,13 +106,13 @@ pub struct EntityDamageStatusPdu {
     padding2: u16,
     #[deku(
         update = "self.damage_descriptions.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_damage_descriptions)"
+        assert = "crate::wire::fits_in_pdu(*number_of_damage_descriptions)"
     )]
     pub number_of_damage_descriptions: u16,
     #[deku(count = "number_of_damage_descriptions")]
     pub damage_descriptions: Vec<DirectedEnergyDamage>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     EntityDamageStatusPdu,
     PduHeader,
     PduType::EntityDamageStatus,
@@ -122,10 +122,7 @@ crate::common::pdu::impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::pdu::pdu_tests,
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-    };
+    use crate::pdu::{Pdu, pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
     pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {

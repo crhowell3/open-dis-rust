@@ -16,10 +16,10 @@ use std::fmt;
 
 use bitflags::bitflags;
 
-use crate::common::wire::impl_deku_bitflags;
 use crate::siso::enums::{
     ComponentVisualDamageStatusSmoke, ComponentVisualDamageStatusSurfaceDamage,
 };
+use crate::wire::impl_deku_bitflags;
 
 bitflags! {
     /// SISO-REF-010-2023 FrozenBehavior \[UID 68\]

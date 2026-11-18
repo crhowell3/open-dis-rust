@@ -27,8 +27,8 @@ mod udp {
 
     use tokio::net::UdpSocket;
 
-    use open_dis_rust::common::records::{EntityIdentifier, ExerciseIdentifier};
     use open_dis_rust::prelude::*;
+    use open_dis_rust::records::{EntityIdentifier, ExerciseIdentifier};
     use open_dis_rust::simulation_management::AcknowledgePdu;
     use open_dis_rust::siso::enums::{AcknowledgeFlag, AcknowledgeResponseFlag};
 

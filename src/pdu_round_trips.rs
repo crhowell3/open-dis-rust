@@ -20,13 +20,11 @@
     clippy::float_cmp
 )]
 
-use crate::common::{
+use crate::siso::enums::{
+    GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes,
+};
+use crate::{
     DISError,
-    data_types::{
-        AcousticBeamData, AcousticEmitterSystemData, ApaData, AttributeRecordSet,
-        DataRepresentationType, ElectromagneticEmissionBeamData, ElectromagneticEmissionSystemData,
-        GridAxisType, Point, ShaftRPMs,
-    },
     pdu::Pdu,
     records::{
         AggregateIdentifier, Attribute, BeamAntennaPattern, ClockTime, DirectedEnergyDamage,
@@ -36,9 +34,6 @@ use crate::common::{
         VariableDatumRecord, VariableParameter, VariableTransmitterParameters, Vector,
         VectoringNozzleSystemData, WorldCoordinates,
     },
-};
-use crate::siso::enums::{
-    GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes,
 };
 use crate::{
     distributed_emissions::*, entity_information::*, entity_management::*, logistics::*,
@@ -53,11 +48,11 @@ fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {
 /// Serialize, decode, re-serialize: the bytes must match and be fully read.
 fn round_trip<P: Pdu>(pdu: &mut P) -> P
 where
-    P::Header: crate::common::pdu::DerivedFields,
+    P::Header: crate::pdu::DerivedFields,
 {
     let original = to_bytes(pdu);
     assert_eq!(
-        usize::from(crate::common::pdu::DerivedFields::length(pdu.header())),
+        usize::from(crate::pdu::DerivedFields::length(pdu.header())),
         original.len(),
         "header length"
     );
@@ -521,7 +516,10 @@ mod minefield_data {
 }
 
 mod gridded_data {
-    use crate::siso::enums::GriddedDataSampleType;
+    use crate::{
+        records::{DataRepresentationType, GridAxisType},
+        siso::enums::GriddedDataSampleType,
+    };
 
     use super::*;
 

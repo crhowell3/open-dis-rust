@@ -8,15 +8,74 @@
 
 #![allow(deprecated)]
 
-use crate::common::{
-    data_types::{AttributeRecordSet, DeadReckoningParameters},
-    records::{
-        EntityAppearance, EntityCapabilities, EntityIdentifier, EntityMarking, EntityType,
-        EulerAngles, EventIdentifier, PduHeader, SimulationAddress, VariableParameter, Vector,
-        WorldCoordinates,
-    },
+use crate::records::{
+    AngularVelocityVector, Attribute, EntityAppearance, EntityCapabilities, EntityIdentifier,
+    EntityMarking, EntityType, EulerAngles, EventIdentifier, PduHeader, SimulationAddress,
+    VariableParameter, Vector, WorldCoordinates,
 };
-use crate::siso::enums::{DISAttributeActionCode, ForceId, PduType, ProtocolFamily};
+use crate::siso::enums::{
+    DISAttributeActionCode, DeadReckoningAlgorithm, ForceId, PduType, ProtocolFamily,
+};
+
+/// How receivers should extrapolate an entity's position and orientation between
+/// Entity State PDUs.
+#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct DeadReckoningParameters {
+    pub dead_reckoning_algorithm: DeadReckoningAlgorithm,
+    pub dead_reckoning_other_parameters: [u8; 15],
+    pub entity_linear_acceleration: Vector,
+    pub entity_angular_velocity: AngularVelocityVector,
+}
+
+impl DeadReckoningParameters {
+    #[must_use]
+    pub const fn new(
+        dead_reckoning_algorithm: DeadReckoningAlgorithm,
+        entity_linear_acceleration: Vector,
+        entity_angular_velocity: AngularVelocityVector,
+    ) -> Self {
+        Self {
+            dead_reckoning_algorithm,
+            dead_reckoning_other_parameters: [0u8; 15],
+            entity_linear_acceleration,
+            entity_angular_velocity,
+        }
+    }
+}
+
+/// The attribute records an Attribute PDU carries for one entity or object.
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct AttributeRecordSet {
+    pub entity_id: EntityIdentifier,
+    #[deku(
+        update = "crate::wire::update_each(&mut self.attribute_records)?",
+        assert = "crate::wire::fits_in_pdu(*number_of_attribute_records)"
+    )]
+    pub number_of_attribute_records: u16,
+    #[deku(count = "number_of_attribute_records")]
+    pub attribute_records: Vec<Attribute>,
+}
+
+impl AttributeRecordSet {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            entity_id: EntityIdentifier::default(),
+            number_of_attribute_records: 0u16,
+            attribute_records: vec![],
+        }
+    }
+}
 
 /// Implemented according to IEEE 1278.1-2012 §7.2.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -40,7 +99,7 @@ pub struct EntityStatePdu {
     #[deku(count = "number_of_articulation_parameters")]
     pub articulation_parameter: Vec<VariableParameter>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     EntityStatePdu,
     PduHeader,
     PduType::EntityState,
@@ -62,7 +121,7 @@ pub struct CollisionPdu {
     pub mass: f32,
     pub location_wrt_entity: Vector,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     CollisionPdu,
     PduHeader,
     PduType::Collision,
@@ -91,7 +150,7 @@ pub struct CollisionElasticPdu {
     pub unit_surface_normal: Vector,
     pub coefficient_of_restitution: f32,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     CollisionElasticPdu,
     PduHeader,
     PduType::CollisionElastic,
@@ -115,7 +174,7 @@ pub struct EntityStateUpdatePdu {
     #[deku(count = "number_of_variable_parameters")]
     pub variable_parameter_records: Vec<VariableParameter>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     EntityStateUpdatePdu,
     PduHeader,
     PduType::EntityStateUpdate,
@@ -137,14 +196,14 @@ pub struct AttributePdu {
     pub action_code: DISAttributeActionCode,
     padding3: u8,
     #[deku(
-        update = "crate::common::wire::update_each(&mut self.attribute_record_sets)?",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_attribute_record_sets)"
+        update = "crate::wire::update_each(&mut self.attribute_record_sets)?",
+        assert = "crate::wire::fits_in_pdu(*number_of_attribute_record_sets)"
     )]
     pub number_of_attribute_record_sets: u16,
     #[deku(count = "number_of_attribute_record_sets")]
     pub attribute_record_sets: Vec<AttributeRecordSet>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     AttributePdu,
     PduHeader,
     PduType::Attribute,
@@ -154,10 +213,7 @@ crate::common::pdu::impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::pdu::pdu_tests,
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-    };
+    use crate::{pdu::Pdu, pdu::pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
     pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {

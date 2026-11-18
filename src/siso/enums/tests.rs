@@ -822,8 +822,8 @@ fn deku_matches_from_primitive_for_every_enum() {
 fn undefined_value_is_a_wire_format_error() {
     // PduType defines 0..=72, so 200 is undefined.
     let err = decode::<PduType>(&[200]).unwrap_err();
-    let err = crate::common::DISError::from_wire(err);
-    assert!(matches!(err, crate::common::DISError::WireFormat(_)));
+    let err = crate::DISError::from_wire(err);
+    assert!(matches!(err, crate::DISError::WireFormat(_)));
     assert!(
         err.to_string()
             .contains("200 is not a defined PduType value"),

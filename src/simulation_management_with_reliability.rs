@@ -12,7 +12,7 @@ use crate::siso::enums::{
     VariableRecordTypes,
 };
 use crate::{
-    common::records::{
+    records::{
         ClockTime, EntityIdentifier, FixedDatumRecord, PduHeader, RecordSpecification,
         VariableDatumRecord,
     },
@@ -32,7 +32,7 @@ pub struct CreateEntityReliablePdu {
     padding2: u16,
     pub request_id: u32,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     CreateEntityReliablePdu,
     PduHeader,
     PduType::CreateEntityReliable,
@@ -52,7 +52,7 @@ pub struct RemoveEntityReliablePdu {
     padding2: u16,
     pub request_id: u32,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     RemoveEntityReliablePdu,
     PduHeader,
     PduType::RemoveEntityReliable,
@@ -74,7 +74,7 @@ pub struct StartResumeReliablePdu {
     padding2: u16,
     pub request_id: u32,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     StartResumeReliablePdu,
     PduHeader,
     PduType::StartResumeReliable,
@@ -96,7 +96,7 @@ pub struct StopFreezeReliablePdu {
     padding: u8,
     pub request_id: u32,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     StopFreezeReliablePdu,
     PduHeader,
     PduType::StopFreezeReliable,
@@ -115,7 +115,7 @@ pub struct AcknowledgeReliablePdu {
     pub response_flag: AcknowledgeResponseFlag,
     pub request_id: u32,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     AcknowledgeReliablePdu,
     PduHeader,
     PduType::AcknowledgeReliable,
@@ -138,12 +138,12 @@ pub struct ActionRequestReliablePdu {
     padding3: u32,
     #[deku(
         update = "self.fixed_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_fixed_datum_records)"
     )]
     pub number_of_fixed_datum_records: u32,
     #[deku(
         update = "self.variable_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
     )]
     pub number_of_variable_datum_records: u32,
     #[deku(count = "number_of_fixed_datum_records")]
@@ -151,7 +151,7 @@ pub struct ActionRequestReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     ActionRequestReliablePdu,
     PduHeader,
     PduType::ActionRequestReliable,
@@ -170,12 +170,12 @@ pub struct ActionResponseReliablePdu {
     pub request_status: ActionResponseRequestStatus,
     #[deku(
         update = "self.fixed_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_fixed_datum_records)"
     )]
     pub number_of_fixed_datum_records: u32,
     #[deku(
         update = "self.variable_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
     )]
     pub number_of_variable_datum_records: u32,
     #[deku(count = "number_of_fixed_datum_records")]
@@ -183,7 +183,7 @@ pub struct ActionResponseReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     ActionResponseReliablePdu,
     PduHeader,
     PduType::ActionResponseReliable,
@@ -205,12 +205,12 @@ pub struct DataQueryReliablePdu {
     pub time_interval: u32,
     #[deku(
         update = "self.fixed_datum_ids.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_fixed_datum_records)"
     )]
     pub number_of_fixed_datum_records: u32,
     #[deku(
         update = "self.variable_datum_ids.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
     )]
     pub number_of_variable_datum_records: u32,
     #[deku(count = "number_of_fixed_datum_records")]
@@ -218,7 +218,7 @@ pub struct DataQueryReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_ids: Vec<VariableRecordTypes>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     DataQueryReliablePdu,
     PduHeader,
     PduType::DataQueryReliable,
@@ -239,12 +239,12 @@ pub struct SetDataReliablePdu {
     pub request_id: u32,
     #[deku(
         update = "self.fixed_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_fixed_datum_records)"
     )]
     pub number_of_fixed_datum_records: u32,
     #[deku(
         update = "self.variable_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
     )]
     pub number_of_variable_datum_records: u32,
     #[deku(count = "number_of_fixed_datum_records")]
@@ -252,7 +252,7 @@ pub struct SetDataReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     SetDataReliablePdu,
     PduHeader,
     PduType::SetDataReliable,
@@ -273,12 +273,12 @@ pub struct DataReliablePdu {
     padding2: u16,
     #[deku(
         update = "self.fixed_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_fixed_datum_records)"
     )]
     pub number_of_fixed_datum_records: u32,
     #[deku(
         update = "self.variable_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
     )]
     pub number_of_variable_datum_records: u32,
     #[deku(count = "number_of_fixed_datum_records")]
@@ -286,7 +286,7 @@ pub struct DataReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     DataReliablePdu,
     PduHeader,
     PduType::DataReliable,
@@ -305,12 +305,12 @@ pub struct EventReportReliablePdu {
     padding: u32,
     #[deku(
         update = "self.fixed_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_fixed_datum_records)"
     )]
     pub number_of_fixed_datum_records: u32,
     #[deku(
         update = "self.variable_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
     )]
     pub number_of_variable_datum_records: u32,
     #[deku(count = "number_of_fixed_datum_records")]
@@ -318,7 +318,7 @@ pub struct EventReportReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     EventReportReliablePdu,
     PduHeader,
     PduType::EventReportReliable,
@@ -335,12 +335,12 @@ pub struct CommentReliablePdu {
     pub receiving_entity_id: EntityIdentifier,
     #[deku(
         update = "self.fixed_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_fixed_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_fixed_datum_records)"
     )]
     pub number_of_fixed_datum_records: u32,
     #[deku(
         update = "self.variable_datum_records.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_variable_datum_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
     )]
     pub number_of_variable_datum_records: u32,
     #[deku(count = "number_of_fixed_datum_records")]
@@ -348,7 +348,7 @@ pub struct CommentReliablePdu {
     #[deku(count = "number_of_variable_datum_records")]
     pub variable_datum_records: Vec<VariableDatumRecord>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     CommentReliablePdu,
     PduHeader,
     PduType::CommentReliable,
@@ -370,13 +370,13 @@ pub struct RecordQueryReliablePdu {
     pub time: u32,
     #[deku(
         update = "self.record_ids.len()",
-        assert = "crate::common::wire::fits_in_pdu(*number_of_records)"
+        assert = "crate::wire::fits_in_pdu(*number_of_records)"
     )]
     pub number_of_records: u32,
     #[deku(count = "number_of_records")]
     pub record_ids: Vec<u32>,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     RecordQueryReliablePdu,
     PduHeader,
     PduType::RecordQueryReliable,
@@ -398,7 +398,7 @@ pub struct SetRecordReliablePdu {
     padding3: u32,
     pub record_sets: RecordSpecification,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     SetRecordReliablePdu,
     PduHeader,
     PduType::SetRecordReliable,
@@ -420,7 +420,7 @@ pub struct RecordReliablePdu {
     pub response_serial_number: u32,
     pub record_sets: RecordSpecification,
 }
-crate::common::pdu::impl_pdu!(
+crate::pdu::impl_pdu!(
     RecordReliablePdu,
     PduHeader,
     PduType::RecordReliable,
@@ -430,10 +430,7 @@ crate::common::pdu::impl_pdu!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        common::pdu::pdu_tests,
-        common::{constants::BITS_PER_BYTE, pdu::Pdu},
-    };
+    use crate::pdu::{Pdu, pdu_tests};
 
     /// Serialize a PDU, failing the test if serialization returns an error.
     pub fn to_bytes<P: Pdu>(pdu: &mut P) -> Vec<u8> {

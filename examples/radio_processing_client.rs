@@ -18,7 +18,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 mod udp {
     use open_dis_rust::{
-        common::Pdu,
+        Pdu,
         radio_communications::{
             IntercomControlPdu, IntercomSignalPdu, ReceiverPdu, SignalPdu, TransmitterPdu,
         },
