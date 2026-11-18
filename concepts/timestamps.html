@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-a25af2d5.js";
+            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -195,7 +195,7 @@ date. Bits 31 to 1 hold that time in units of 3600/2³¹ seconds, which is about
                                                   A = 1: absolute, 0: relative
 </code></pre>
 <p>At the start of each hour, the count resets to 0. A receiver comparing timestamps
-must accommodate for this, as show <a href="#working-with-timestamps">below</a>.</p>
+must accommodate for this, as show below.</p>
 <h2 id="absolute-and-relative-time"><a class="header" href="#absolute-and-relative-time">Absolute and relative time</a></h2>
 <p><strong>Absolute</strong> timestamps (bit 0 set) are measured against real-world UTC. They only
 work if every participant’s clock is synchronized, usually with RTP or, for tighter
@@ -207,75 +207,90 @@ so they can only be compared with other timestamps from the same simulator. This
 useful when clocks cannot be synchronized or when a simulation runs faster or slower
 than real time.</p>
 <p>Whichever is chosen, every participant in an exercise should agree on it.</p>
-<h2 id="how-open-dis-rust-sets-timestamps"><a class="header" href="#how-open-dis-rust-sets-timestamps">How open-dis-rust sets timestamps</a></h2>
-<p><code>PduHeader::calculate_dis_timestamp()</code> returns an <strong>absolute</strong> timestamp for the current
-UTC time using the current system clock. <code>new()</code> calls it once when the PDU is created.
-If a PDU is kept and sent repeatedly, set the timestamp again before each send:</p>
-<pre><code class="language-rust ignore">pdu.header_mut().timestamp = PduHeader::calculate_dis_timestamp();
-pdu.serialize(&amp;mut bytes)?;</code></pre>
-<p>The timestamp is only as accurate as the system clock, so make sure the machine is synchronized
-as well.</p>
-<p>To send <strong>relative</strong> timestamps, compute the value from your own simulation clock and
-leave bit 0 clear:</p>
+<h2 id="the-timestamp-type"><a class="header" href="#the-timestamp-type">The <code>Timestamp</code> type</a></h2>
+<p>The crate represents timestamps with <code>records::Timestamp</code>, which is also in the
+prelude. Header timestamps and the time inside Clock Time records both use it.</p>
+<p><strong>Creating timestamps:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Call</th><th>Gives</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Timestamp::now()</code></td><td>An absolute timestamp for the current UTC time, from the system clock</td></tr>
+<tr><td><code>Timestamp::absolute(time_past_hour)</code></td><td>An absolute timestamp for a given time, as a <code>Duration</code></td></tr>
+<tr><td><code>Timestamp::relative(time)</code></td><td>A relative timestamp, for example from the time since your simulation started</td></tr>
+<tr><td><code>Timestamp::from_raw(u32)</code></td><td>A timestamp from its 32-bit wire value</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>absolute</code> and <code>relative</code> discard whole hours, so you can pass a time since midnight,
+or since the simulation started, directly.</p>
+<p><strong>Reading timestamps:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Call</th><th>Gives</th></tr>
+</thead>
+<tbody>
+<tr><td><code>is_absolute()</code></td><td>Whether bit 0 is set</td></tr>
+<tr><td><code>time_past_hour()</code></td><td>The time since the start of the hour, as a <code>Duration</code></td></tr>
+<tr><td><code>later.duration_since(earlier)</code></td><td>The time between two timestamps, allowing for the hour wrapping around</td></tr>
+<tr><td><code>to_raw()</code></td><td>The 32-bit wire value</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>Timestamp</code> implements <code>Display</code>, which prints the time past the hour and its kind,
+such as <code>35:26.232076 abs</code>, which is handy for logging.</p>
+<p>A timestamp’s resolution is about 1.676 µs, so a value converted to a <code>Timestamp</code> and
+back can differ from the original by up to about 0.84 µs.</p>
+<h2 id="setting-the-timestamp-before-sending"><a class="header" href="#setting-the-timestamp-before-sending">Setting the timestamp before sending</a></h2>
+<p><code>new()</code> timestamps a PDU with <code>Timestamp::now()</code> once, when the PDU is created. If you
+keep a PDU and send it repeatedly, as you normally would for Entity State heartbeats,
+set the timestamp again before each send:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::prelude::*;
+
+pdu.header_mut().timestamp = Timestamp::now();
+pdu.serialize(&amp;mut buf)?;</code></pre>
+<p>The timestamp is only as accurate as your system clock, so make sure the machine is
+synchronized.</p>
+<p>To send <strong>relative</strong> timestamps, build them from your own simulation clock:</p>
+<pre><code class="language-rust ignore">use std::time::Instant;
+
+let started = Instant::now();
+// ...
+pdu.header_mut().timestamp = Timestamp::relative(started.elapsed());</code></pre>
+<h2 id="how-old-is-a-pdu"><a class="header" href="#how-old-is-a-pdu">How old is a PDU?</a></h2>
+<p><code>duration_since</code> handles the hour boundary: a timestamp from 59:59, compared with one
+from 00:01, is 2 seconds earlier, not almost an hour.</p>
 <pre><code class="language-rust ignore">use std::time::Duration;
- 
-const TICKS_PER_HOUR: u128 = 1 &lt;&lt; 31;
-const NANOS_PER_HOUR: u128 = 3_600_000_000_000;
- 
-/// Encodes time since the start of the simulation as a relative DIS timestamp.
-fn relative_timestamp(since_start: Duration) -&gt; u32 {
-    let past_hour = since_start.as_nanos() % NANOS_PER_HOUR;
-    let ticks = past_hour * TICKS_PER_HOUR / NANOS_PER_HOUR; // always below 2³¹
-    u32::try_from(ticks).unwrap_or(0) &lt;&lt; 1 // bit 0 clear: relative
+
+let age = Timestamp::now().duration_since(pdu.header().timestamp);
+if age &lt; Duration::from_secs(30 * 60) {
+    // Extrapolate the entity's position forward by `age` using its dead reckoning parameters
 }</code></pre>
-<h2 id="working-with-timestamps"><a class="header" href="#working-with-timestamps">Working with timestamps</a></h2>
-<p>The crate stores timestamps as a raw <code>u32</code>. These helpers convert them into <code>std::time::Duration</code>:</p>
-<pre><code class="language-rust ignore">use std::time::Duration;
- 
-const TICKS_PER_HOUR: u128 = 1 &lt;&lt; 31;
-const NANOS_PER_HOUR: u128 = 3_600_000_000_000;
- 
-fn ticks_to_duration(ticks: u32) -&gt; Duration {
-    let nanos = u128::from(ticks) * NANOS_PER_HOUR / TICKS_PER_HOUR;
-    Duration::from_nanos(u64::try_from(nanos).unwrap_or(u64::MAX))
-}
- 
-/// Returns the time past the hour, and whether the timestamp is absolute.
-fn decode_timestamp(timestamp: u32) -&gt; (Duration, bool) {
-    (ticks_to_duration(timestamp &gt;&gt; 1), timestamp &amp; 1 == 1)
-}
- 
-/// How long before `now` a timestamp was, allowing for the hour wrapping around.
-fn age(timestamp: u32, now: u32) -&gt; Duration {
-    let ticks = (now &gt;&gt; 1).wrapping_sub(timestamp &gt;&gt; 1) &amp; 0x7FFF_FFFF;
-    ticks_to_duration(ticks)
-}</code></pre>
-<p><code>age</code> handles the hour boundary correctly: a timestamp from 59:59 compared with a
-current time of 00:01 gives an age of 2 seconds.</p>
-<p>Because timestamps repeat every hour, a timestamp slightly <em>ahead</em> of your clock from
-a sender whose clock runs fast comes out as an age of nearly an hour. Treat ages above
-30 minutes as being from the future, and do not extrapolate those entities backwards.</p>
-<pre><code class="language-rust ignore">let now = PduHeader::calculate_dis_timestamp();
-let age = age(pdu.header().timestamp, now);
-if age &lt; Duration::from_secs(1800) {
-    // Extrapolate the entity's position forward by `age` using its dead reckoning parameters.
-}</code></pre>
+<p>Because timestamps repeat every hour, a timestamp slightly <em>ahead</em> of your clock, from
+a sender whose clock runs fast, comes out as an age of nearly an hour. Treat ages above
+30 minutes as being from the future, and don’t extrapolate those entities backwards.</p>
+<p>Only compare timestamps of the same kind: absolute with absolute, or relative with
+relative from the same simulator.</p>
 <h2 id="clock-time-records"><a class="header" href="#clock-time-records">Clock Time records</a></h2>
 <p>Some PDUs need to say <em>which</em> hour, not just the time within it. Simulation Management PDUs
 such as Start/Resume use a <strong>Clock Time</strong> record (<code>ClockTime</code>) for this. It has two fields:</p>
 <ul>
 <li><code>hour</code>: the number of hours since 00:00 UTC on 1 January 1970.</li>
-<li><code>time_past_hour</code>: the time within that hour, in the same format as a header timestamp.</li>
+<li><code>time_past_hour</code>: the time within that hour, as a <code>Timestamp</code>.</li>
 </ul>
-<p>To build one for the current time:</p>
-<pre><code class="language-rust ignore">use std::time::{SystemTime, UNIX_EPOCH};
-use open_dis_rust::common::{PduHeader, data_types::ClockTime};
- 
-fn clock_time_now() -&gt; ClockTime {
-    let since_epoch = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default();
-    let hours = u32::try_from(since_epoch.as_secs() / 3600).unwrap_or(u32::MAX);
-    ClockTime::new(hours, PduHeader::calculate_dis_timestamp())
-}</code></pre>
+<p>To build one for the current time, use <code>ClockTime::now()</code>:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::records::ClockTime;
+
+start.real_world_time = ClockTime::now();</code></pre>
+<p>To build one yourself, pass the hour and a <code>Timestamp</code>:</p>
+<pre><code class="language-rust ignore">use std::time::Duration;
+use open_dis_rust::records::{ClockTime, Timestamp};
+
+// 06:00 UTC on 1 January 2026 is 490,902 hours after the Unix epoch
+let dawn = ClockTime::new(490_902, Timestamp::absolute(Duration::ZERO));</code></pre>
 
                     </main>
 

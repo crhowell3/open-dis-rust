@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "searchindex-a25af2d5.js";
+            window.path_to_searchindex_js = "searchindex-34dfaea9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a540a839.js"></script>
@@ -187,13 +187,12 @@ strongly typed Rust structures for each Protocol Data Unit (PDU) along with the
 records and SISO-REF-010 enumerations associated with them. It also gives you
 the code to turn those structs into bytes on the wire and back again.</p>
 <pre><code class="language-rust ignore">let mut pdu = EntityStatePdu::new();
-pdu.entity_id = EntityId::new(1, 1, 1);
+pdu.entity_id = EntityIdentifier::new(SimulationAddress::new(1, 1), 1);
 pdu.force_id = ForceId::Friendly;
 
-let mut bytes = BytesMut::new();
-pdu.serialize(&amp;mut bytes)?;</code></pre>
+let bytes: Vec&lt;u8&gt; = pdu.to_bytes()?; // ready to send over UDP</code></pre>
 <h2 id="what-is-dis"><a class="header" href="#what-is-dis">What is DIS?</a></h2>
-<p>DIS is an IEEE standard that enables independently constructed simulations share
+<p>DIS is an IEEE standard that enables independently constructed simulations to share
 one virtual world in real time. Flight simulators, ground vehicle trainers,
 constructive wargames, radio simulators, and live range instrumentation can all
 join the same exercise. Each one broadcasts PDUs that describe its own entities

@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-a25af2d5.js";
+            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -181,44 +181,64 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="receiving-pdus"><a class="header" href="#receiving-pdus">Receiving PDUs</a></h1>
-<p>The same dependencies are required as listed in the previous section.</p>
-<h2 id="receiving-and-parsing-a-pdu"><a class="header" href="#receiving-and-parsing-a-pdu">Receiving and Parsing a PDU</a></h2>
-<p>Using the same UDP socket that we created in the previous section, we
-can receive a PDU and deserialize it from the byte array.</p>
-<pre class="playground"><code class="language-rust">use bytes::BytesMut;
-use std::net::SocketAddr;
-use std::io;
+<p>This guide receives and decodes PDUs using <code>tokio</code> for networking. The same dependencies
+are used as in <a href="sending-pdus.html">Sending PDUs</a>.</p>
+<h2 id="decode-a-pdu"><a class="header" href="#decode-a-pdu">Decode a PDU</a></h2>
+<p><code>deserialize</code> decodes one PDU from the front of a byte slice. It takes the slice by
+mutable reference and advances it past the PDU it read:</p>
+<pre><code class="language-rust ignore">let mut datagram: &amp;[u8] = &amp;buf[..n];
+let ack = AcknowledgePdu::deserialize(&amp;mut datagram)?;</code></pre>
+<p>If the bytes are not a valid Acknowledge PDU, it returns a <code>DISError</code> instead.
+<a href="../reference/errors.html">Errors</a> describes each type of error.</p>
+<h2 id="receive-and-decode"><a class="header" href="#receive-and-decode">Receive and decode</a></h2>
+<p>A receiver usually handles several PDU types and ignores the rest.
+<code>PduHeader::get_pdu_type</code> reads just the 12-octet header, so you can decide what to do
+with a datagram before decoding it:</p>
+<pre><code class="language-rust ignore">use std::io;
 use tokio::net::UdpSocket;
 
-use open_dis_rust::simulation_management::AcknowledgePdu;
+use open_dis_rust::{
+    entity_information::EntityStatePdu, prelude::*, simulation_management::AcknowledgePdu,
+};
 
 #[tokio::main]
 async fn main() -&gt; io::Result&lt;()&gt; {
     let socket = UdpSocket::bind("0.0.0.0:3000").await?;
-    let remote_addr = "127.0.0.1:3000";
+    let mut buf = vec![0u8; MAX_PDU_SIZE_OCTETS];
 
-    socket.connect(remote_addr).await?;
-
-    let mut buf = vec![0; 1024];
-    let n = socket.recv(&amp;mut buf[..]).await?;
     loop {
-        if n &gt; 0 {
-          dbg!(
-              AcknowledgePdu::deserialize(BytesMut::from(buf.as_slice())).unwrap_or_default()
-          );
-          break;
+        let (n, from) = socket.recv_from(&amp;mut buf).await?;
+        let mut datagram = buf.get(..n).unwrap_or_default();
+
+        match PduHeader::get_pdu_type(datagram) {
+            Some(PduType::Acknowledge) =&gt; match AcknowledgePdu::deserialize(&amp;mut datagram) {
+                Ok(ack) =&gt; println!("{from}: acknowledged request {}", ack.request_id),
+                Err(e) =&gt; eprintln!("{from}: bad Acknowledge PDU: {e}"),
+            },
+            Some(PduType::EntityState) =&gt; match EntityStatePdu::deserialize(&amp;mut datagram) {
+                Ok(pdu) =&gt; println!("{from}: entity {:?}", pdu.entity_id),
+                Err(e) =&gt; eprintln!("{from}: bad Entity State PDU: {e}"),
+            },
+            Some(other) =&gt; println!("{from}: ignoring {other:?} PDU"),
+            None =&gt; eprintln!("{from}: {n} bytes is too short to be a DIS PDU"),
         }
     }
-    Ok(())
 }</code></pre>
-<p>In most cases, the receiver is going to be listening for a particular PDU or range of
-PDUs. Using the above code as an example, if the data received is not able to be
-deserialized into an AcknowledgePdu, an error will be returned. This can be further
-handled by the user.</p>
-<p>There are other ways to determine what type of PDU the data represents, such as reading
-the raw byte array and finding the byte that represents the <code>pdu_type</code> field in the header.
-Then, the user could set up a match tree to attempt to parse the PDU, if they are expected
-to handle it, of course.</p>
+<p>A few things to note:</p>
+<ul>
+<li><strong>Size the buffer for the largest PDU.</strong> <code>MAX_PDU_SIZE_OCTETS</code> is 8192. A smaller
+buffer could truncate larger PDUs, and attempting to decode a truncated PDU results
+in <code>DISError::BufferUnderflow</code>.</li>
+<li><strong>Decode only the bytes you received.</strong> <code>buf.get(..n)</code> limits the slice to the
+datagram, so leftover bytes from an earlier, longer datagram cannot be read.</li>
+<li><strong>Expect errors.</strong> On a shared network or distributed simulation environment, some
+traffic could naturally fail to decode. Log it and keep receiving rather than hard
+stopping your program.</li>
+</ul>
+<h2 id="several-pdus-in-a-single-datagram"><a class="header" href="#several-pdus-in-a-single-datagram">Several PDUs in a single datagram</a></h2>
+<p>Because <code>deserialize</code> advances the slice, you can decode a datagram that holds more than
+one PDU by calling it in a loop until the slice is empty.
+<a href="../reference/wire-format.html#several-pdus-in-one-datagram">Wire Format Conventions</a> shows how.</p>
 
                     </main>
 

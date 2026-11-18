@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "searchindex-a25af2d5.js";
+            window.path_to_searchindex_js = "searchindex-34dfaea9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a540a839.js"></script>
@@ -191,14 +191,14 @@ Rust 1.85. Check the installed version with <code>rustc --version</code> and upd
 including Linux, macOS, and Windows.</p>
 <h2 id="add-the-crate-to-your-project"><a class="header" href="#add-the-crate-to-your-project">Add the crate to your project</a></h2>
 <p>From your project’s directory, run:</p>
-<pre><code class="language-shell">cargo add open-dis-rust bytes
+<pre><code class="language-shell">cargo add open-dis-rust
 </code></pre>
-<p>Or add the dependencies to <code>Cargo.toml</code> yourself:</p>
+<p>Or add the dependency to <code>Cargo.toml</code> yourself:</p>
 <pre><code class="language-toml">[dependencies]
 open-dis-rust = "1"
-bytes = "1"
 </code></pre>
-<p>The <code>bytes</code> because serialization writes into a <code>bytes::BytesMut</code> buffer.</p>
+<p>PDUs are encoded into a standard <code>Vec&lt;u8&gt;</code> and decoded from a <code>&amp;[u8]</code>, so you do not need
+third-party crates to use them.</p>
 <p>The package name uses hyphens, but in Rust code, the crate is referred to with underscores:</p>
 <pre><code class="language-rust ignore">use open_dis_rust::entity_information::EntityStatePdu;</code></pre>
 <h3 id="async-networking-optional"><a class="header" href="#async-networking-optional">Async networking (optional)</a></h3>
@@ -210,14 +210,17 @@ the gold standards of Rust networking and async I/O.</p>
 needed to follow along.</p>
 <h2 id="validate"><a class="header" href="#validate">Validate</a></h2>
 <p>To quickly test the crate, place the following code in your application’s <code>src/main.rs</code>:</p>
-<pre><code class="language-rust ignore">use bytes::BytesMut;
-use open_dis_rust::{common::Pdu, simulation_management::AcknowledgePdu};
+<pre><code class="language-rust ignore">use open_dis_rust::prelude::*;
+use open_dis_rust::simulation_management::AcknowledgePdu;
 
 fn main() {
     let mut pdu = AcknowledgePdu::new();
-    let mut bytes = BytesMut::new();
-    pdu.serialize(&amp;mut bytes).expect("serialize failed");
-    println!("open-dis-rust {} encoded the following {}-byte PDU: {:?}" open_dis_rust::get_version(), bytes.len(), pdu);
+    let bytes = pdu.to_bytes().expect("serialize failed");
+    println!("open-dis-rust {} encoded the following {}-byte PDU: {:?}",
+        open_dis_rust::get_version(),
+        bytes.len(),
+        pdu
+    );
 }</code></pre>
 <p>Then, execute <code>cargo run</code> to see a printout of the crate version and a view into the PDU.</p>
 <h2 id="build-from-source"><a class="header" href="#build-from-source">Build from source</a></h2>

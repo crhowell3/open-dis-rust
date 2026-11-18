@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-a25af2d5.js";
+            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -209,7 +209,7 @@ tests:</p>
 and only for an empty PDU. Its expected size should be worked out from the
 standard by hand.</p>
 <h3 id="enumeration-tests"><a class="header" href="#enumeration-tests">Enumeration tests</a></h3>
-<p><code>common/enums/deku_tests.rs</code> checks that every enumeration encodes to the right number
+<p><code>siso/enums/tests.rs</code> checks that every enumeration encodes to the right number
 and that undefined numbers are rejected. 8- and 16-bit enums are tested with every
 possible value. 32-bit enums are tested at every defined value, the values next to
 them, and a few far-off ones.</p>
@@ -230,17 +230,14 @@ from another DIS implementation.</p>
 <p>Put them in <code>tests/golden.rs</code>. Write each fixture as hex, laid out one field per line with
 a comment, so a reviewer can check it against the standard line by line:</p>
 <pre><code class="language-rust ignore">#![allow(clippy::unwrap_used, reason = "test helpers")]
- 
-use bytes::BytesMut;
+
 use open_dis_rust::{
-    common::{
-        Pdu,
-        data_types::EntityId,
-        enums::{AcknowledgeFlag, AcknowledgeResponseFlag},
-    },
+    Pdu,
+    records::{EntityIdentifier, SimulationAddress, Timestamp},
     simulation_management::AcknowledgePdu,
+    siso::enums::{AcknowledgeFlag, AcknowledgeResponseFlag},
 };
- 
+
 const ACKNOWLEDGE: &amp;str = "
     07 01 0F 05   00 00 00 00   00 20 00 00   # header: v7, exercise 1, type 15, family 5, timestamp 0, length 32
     00 01 00 01 00 00                         # originating entity 1:1:0
@@ -262,27 +259,28 @@ fn fixture(s: &amp;str) -&gt; Vec&lt;u8&gt; {
         .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).unwrap(), 16).unwrap())
         .collect()
 }
- 
+
 #[test]
 fn acknowledge_encodes_to_golden_bytes() {
     let mut pdu = AcknowledgePdu::new();
-    pdu.header_mut().timestamp = 0; // fixed, so the bytes are repeatable
-    pdu.originating_entity_id = EntityId::new(1, 1, 0);
-    pdu.receiving_entity_id = EntityId::new(1, 2, 0);
+    pdu.header_mut().timestamp = Timestamp::from_raw(0); // fixed, so the bytes are repeatable
+    pdu.originating_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 1), 0);
+    pdu.receiving_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 2), 0);
     pdu.acknowledge_flag = AcknowledgeFlag::CreateEntity;
     pdu.response_flag = AcknowledgeResponseFlag::AbleToComply;
     pdu.request_id = 42;
- 
-    let mut bytes = BytesMut::new();
-    pdu.serialize(&amp;mut bytes).unwrap();
-    assert_eq!(bytes.as_ref(), fixture(ACKNOWLEDGE).as_slice());
+
+    assert_eq!(pdu.to_bytes().unwrap(), fixture(ACKNOWLEDGE));
 }
- 
+
 #[test]
 fn acknowledge_decodes_from_golden_bytes() {
     let bytes = fixture(ACKNOWLEDGE);
     let pdu = AcknowledgePdu::deserialize(&amp;mut bytes.as_slice()).unwrap();
-    assert_eq!(pdu.receiving_entity_id, EntityId::new(1, 2, 0));
+    assert_eq!(
+        pdu.receiving_entity_id,
+        EntityIdentifier::new(SimulationAddress::new(1, 2), 0)
+    );
     assert_eq!(pdu.response_flag, AcknowledgeResponseFlag::AbleToComply);
     assert_eq!(pdu.request_id, 42);
 }</code></pre>
@@ -314,13 +312,14 @@ useful target decodes arbitrary bytes as each PDU type and, when decoding succee
 checks that encoding the result reproduces the input:</p>
 <pre><code class="language-rust ignore">#![no_main]
 use libfuzzer_sys::fuzz_target;
-use open_dis_rust::{common::Pdu, entity_information::EntityStatePdu};
- 
+use open_dis_rust::{Pdu, entity_information::EntityStatePdu};
+
 fuzz_target!(|data: &amp;[u8]| {
     let mut input = data;
     if let Ok(mut pdu) = EntityStatePdu::deserialize(&amp;mut input) {
-        let mut out = bytes::BytesMut::new();
-        pdu.serialize(&amp;mut out).expect("a decoded PDU must re-encode");
+        let used = data.len() - input.len();
+        let bytes = pdu.to_bytes().expect("a decoded PDU must re-encode");
+        assert_eq!(bytes, data[..used], "re-encoding must reproduce the input");
     }
 });</code></pre>
 <h2 id="checking-against-wireshark"><a class="header" href="#checking-against-wireshark">Checking against Wireshark</a></h2>

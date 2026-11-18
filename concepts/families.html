@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-a25af2d5.js";
+            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -211,7 +211,7 @@ family is in octet 3 of every PDU header next to the PDU type. You never set it 
 <h3 id="which-families-you-need"><a class="header" href="#which-families-you-need">Which families you need</a></h3>
 <p>Most applications need only a few families:</p>
 <ul>
-<li><strong>Every participant</strong> should send and receive <strong>Entity Information</strong> and responds to
+<li><strong>Every participant</strong> should send and receive <strong>Entity Information</strong> and respond to
 <strong>Simulation Management</strong>.</li>
 <li><strong>Combat simulations</strong> may use <strong>Warfare</strong>.</li>
 <li><strong>Radio and voice simulations</strong> may use <strong>Radio Communications</strong>.</li>
@@ -225,12 +225,12 @@ family 10 when a lost message would cause real problems, i.e., when creating or 
 entities across simulators.</p>
 <h2 id="pdu-status"><a class="header" href="#pdu-status">PDU Status</a></h2>
 <p>Octet 10 of the PDU header holds the <strong>PDU Status</strong> record. It has a few one- and two-bit flags
-taht tell a receiver how to treat the PDU. A new PDU has all of these flags cleared, which is
+that tell a receiver how to treat the PDU. A new PDU has all of these flags cleared, which is
 correct for most traffic.</p>
-<p>You reach the flags through <code>header.status_record</code>:</p>
-<pre><code class="language-rust ignore">use open_dis_rust::common::enums::LVCIndicator;
+<p>You reach the flags through <code>header.pdu_status</code>:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::siso::enums::LVCIndicator;
 
-pdu.header_mut().status_record.set_lvc(LVCIndicator::Virtual);</code></pre>
+pdu.header_mut().pdu_status.set_lvc(LVCIndicator::Virtual);</code></pre>
 <h3 id="status-flags"><a class="header" href="#status-flags">Status flags</a></h3>
 <p><strong>LVC Indicator.</strong> Whether the PDU comes from a <strong>live</strong> system (real equipment on a
 range), a <strong>virtual</strong> one (a person within a simulator) or a <strong>constructive</strong> one
@@ -255,6 +255,21 @@ positions and the method for reading and writing each flag.</p>
 <p>The five Live Entity PDUs don’t have a PDU Status record. Their header,
 <code>LiveEntityPduHeader</code>, uses the same octet for a <strong>subprotocol number</strong> instead, which
 says how the rest of the PDU is encoded.</p>
+<p>Every PDU’s <code>header()</code> returns its own header type, so the compiler keeps the two
+apart. Generic code names the kind of PDU it works with by its header: the prelude’s
+<code>StandardPdu</code> is any PDU with a <code>PduHeader</code>, and <code>LiveEntityPdu</code> is any PDU with a
+<code>LiveEntityPduHeader</code>.</p>
+<pre><code class="language-rust ignore">use open_dis_rust::{prelude::*, siso::enums::LVCIndicator};
+
+fn mark_virtual(pdu: &amp;mut impl StandardPdu) {
+    pdu.header_mut().pdu_status.set_lvc(LVCIndicator::Virtual);
+}</code></pre>
+<p>Passing a Live Entity PDU to <code>mark_virtual</code> is a compile error. Code that works with
+every PDU uses <code>Pdu</code>, which has the components that both types share such as <code>pdu_type()</code>
+and <code>serialize()</code>.</p>
+<p>Before a datagram is decoded, its protocol family (octet 3, the same place in both
+headers) says which kind it is: <code>ProtocolFamily::LiveEntityInformationInteraction</code> for
+a Live Entity PDU.</p>
 
                     </main>
 

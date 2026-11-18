@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-a25af2d5.js";
+            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -227,6 +227,85 @@ to identical bytes. PDUs you build yourself always send zero padding.</li>
 <h2 id="known-differences"><a class="header" href="#known-differences">Known differences</a></h2>
 <p>Each of these produces bytes that differ from the standard in some way. The eventual goal
 is to have this list be completely empty; that is, all known differences have been addressed.</p>
+<h3 id="underwater-acoustic-pdu"><a class="header" href="#underwater-acoustic-pdu">Underwater Acoustic PDU</a></h3>
+<ul>
+<li>The emitter system data length and beam data length fields aren’t computed, so
+they’re always sent as 0.</li>
+<li><strong>To verify:</strong> Shaft RPM Rate of Change is encoded as a 32-bit integer; it may need
+to be a 32-bit float.</li>
+</ul>
+<h3 id="electromagnetic-emission-pdu"><a class="header" href="#electromagnetic-emission-pdu">Electromagnetic Emission PDU</a></h3>
+<p>The system data length and beam data length fields aren’t computed, so they’re
+always sent as 0. Receivers that use these lengths to step through the records can’t
+parse the PDU.</p>
+<h3 id="linear-object-state-pdu"><a class="header" href="#linear-object-state-pdu">Linear Object State PDU</a></h3>
+<p>The general segment appearance in each Linear Segment Parameter record is 32 bits
+instead of 16, which makes each segment 66 octets instead of 64.</p>
+<h3 id="gridded-data-pdu"><a class="header" href="#gridded-data-pdu">Gridded Data PDU</a></h3>
+<p>Grid data records that use representation type 0 are padded to a 16-bit boundary
+instead of a 32-bit one. Types 1 and 2 are padded correctly.</p>
+<h3 id="minefield-response-nack-pdu"><a class="header" href="#minefield-response-nack-pdu">Minefield Response NACK PDU</a></h3>
+<p>Missing PDU sequence numbers are encoded as 64-bit values with no padding. The
+standard calls for 8-bit values padded to a 32-bit boundary.</p>
+<h3 id="directed-energy-fire-pdu"><a class="header" href="#directed-energy-fire-pdu">Directed Energy Fire PDU</a></h3>
+<ul>
+<li>The PDU carries Damage Description records (record type 4500). It should carry DE
+Precision Aimpoint (4000) or DE Area Aimpoint (4001) records.</li>
+<li><strong>To verify:</strong> the 32-bit field after Wavelength is treated as padding; it may be
+Peak Irradiance, a 32-bit float.</li>
+</ul>
+<h2 id="simplified-records"><a class="header" href="#simplified-records">Simplified records</a></h2>
+<p>These PDUs encode correctly when the affected records are empty, but the records
+are modeled more simply than the standard defines them.</p>
+<h3 id="aggregate-state-pdu"><a class="header" href="#aggregate-state-pdu">Aggregate State PDU</a></h3>
+<p>The silent aggregate and silent entity lists are encoded as plain entity types.
+The standard defines Silent Aggregate System records (12 octets each) and Silent
+Entity System records (variable length, with appearance records).</p>
+<h3 id="is-group-of-pdu"><a class="header" href="#is-group-of-pdu">Is Group Of PDU</a></h3>
+<p>Grouped entity descriptions are encoded as 64-bit values. In the standard, their
+size and contents depend on the grouped entity category.</p>
+<h3 id="environmental-process-pdu"><a class="header" href="#environmental-process-pdu">Environmental Process PDU</a></h3>
+<p>Environment records include only their 8-octet header. The geometry and state data
+that follows the header isn’t represented.</p>
+<h3 id="intercom-control-pdu"><a class="header" href="#intercom-control-pdu">Intercom Control PDU</a></h3>
+<p>Intercom communications parameter records have a fixed 32-bit body, although the
+standard allows them to be any length given by their record length field.</p>
+<h3 id="iff-pdu"><a class="header" href="#iff-pdu">IFF PDU</a></h3>
+<p>Layer 1 and layer 2 are decoded into fields. Any further layers, such as Mode 5 and
+Mode S data, are kept as raw octets in <code>IffLayers::other_layers</code>.</p>
+<h2 id="still-to-verify"><a class="header" href="#still-to-verify">Still to verify</a></h2>
+<p>These may differ from the standard. They need checking against the text of
+IEEE 1278.1-2012 or against captures.</p>
+<h3 id="record-specification-record"><a class="header" href="#record-specification-record">Record Specification record</a></h3>
+<p>Used by the Transfer Ownership and Set Record-R PDUs. The crate treats the record
+length as a number of octets and doesn’t pad the record values. The standard may
+define the length in bits, require a 32-bit padding field after the record set
+serial number, and pad the values to a 64-bit boundary.</p>
+<h3 id="live-entity-fire-and-detonation-pdus"><a class="header" href="#live-entity-fire-and-detonation-pdus">Live Entity Fire and Detonation PDUs</a></h3>
+<p>The flag fields are kept as plain integers, and every optional field is always
+encoded. The standard may use the flags to mark some fields as present or absent.</p>
+<h2 id="fields-kept-as-raw-values"><a class="header" href="#fields-kept-as-raw-values">Fields kept as raw values</a></h2>
+<p>These fields encode correctly, but the crate doesn’t interpret them for you. You
+read and write their bits yourself, using the SISO-REF-010 enumerations.</p>
+<ul>
+<li>Entity capabilities, in the Entity State and Appearance PDUs. <code>EntityCapabilities</code> holds
+the 32 bits, whose layout depends on the entity’s kind and domain. Entity appearance
+has typed views instead: <code>EntityAppearance::view</code> reads it with the layout for an
+<code>EntityType</code>.</li>
+<li>Variable parameter records. These are kept as four generic fields rather than as
+typed articulated or attached part records.</li>
+<li>Modulation parameters in the Transmitter PDU. Beam antenna patterns are decoded;
+spherical harmonic patterns are not supported yet, and a Transmitter PDU with one
+fails to decode.</li>
+<li>Signal and Intercom Signal data.</li>
+<li>Specific object appearance in the Point and Linear Object State PDUs. For an areal
+minefield, <code>ArealObjectStateMinefieldAppearance</code> reads it, and the general object
+appearance has its own type, <code>ObjectStateAppearanceGeneral</code>.</li>
+<li>Object modifications in the Point Object State PDU and Linear Segment Parameter
+records (UIDs 240 and 241). The Areal Object State PDU’s is typed.</li>
+</ul>
+<p>The Damage Description record defaults to a record type and length of 0. Set them to
+4500 and 40 when you build one yourself.</p>
 
                     </main>
 

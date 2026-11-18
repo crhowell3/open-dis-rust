@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-a25af2d5.js";
+            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -188,20 +188,20 @@ and is free to download. It is revised regularly to add new countries, platforms
 it changes from year to year.</p>
 <p>This crate specifically leverages the enumerations defined in <strong>SISO-REF-010-2023</strong>.</p>
 <h2 id="how-enumerations-appear-in-the-crate"><a class="header" href="#how-enumerations-appear-in-the-crate">How enumerations appear in the crate</a></h2>
-<p>All enumerations are in <code>common::enums</code>. Each comes from one table in SISO-REF-010, which
+<p>All enumerations are in <code>siso::enums</code>. Each comes from one table in SISO-REF-010, which
 identifies its tables by a <strong>UID</strong> number. They take three forms:</p>
 <ul>
 <li><strong>Rust enums</strong> for fields with a fixed list of possible values. Most enumerated fields in a PDU
 use these types directly.</li>
 </ul>
-<pre><code class="language-rust ignore">  use open_dis_rust::common::enums::ForceId;
+<pre><code class="language-rust ignore">  use open_dis_rust::siso::enums::ForceId;
 
   pdu.force_id = ForceId::Friendly;</code></pre>
 <ul>
 <li><strong>Bit flags</strong> for fields where several options can be set at once. These use the
 <a href="https://docs.rs/bitflags"><code>bitflags</code></a> crate, so you combine them with <code>|</code>.</li>
 </ul>
-<pre><code class="language-rust ignore">  use open_dis_rust::common::enums::FrozenBehavior;
+<pre><code class="language-rust ignore">  use open_dis_rust::siso::bit_records::FrozenBehavior;
 
   // Keep the simulation clock running and keep sending updates while frozen.
   stop.frozen_behavior = FrozenBehavior::RunSimulationClock | FrozenBehavior::TransmitUpdates;</code></pre>
@@ -210,13 +210,16 @@ use these types directly.</li>
 for example, means one thing for a land vehicle and another for an aircraft. The crate has an enum
 for each of those tables, but the field itself is a plain old data type, such as a <code>u8</code>.</li>
 </ul>
+<p>SISO-REF-010 also defines bit layouts: fields whose bits are split into smaller fields, such as
+an entity’s appearance. Those are in <code>siso::appearance</code> and <code>siso::bit_records</code>, with a getter
+and setter for each field.</p>
 <h2 id="finding-a-value"><a class="header" href="#finding-a-value">Finding a value</a></h2>
 <p>Variant names follow the names in SISO-REF-010, with spaces and punctuation removed. For example,
-“United States of America” bcomes <code>UnitedStatesofAmerica</code>, and “Able to Comply” becomes <code>AbleToComply</code>.
-Search the <a href="https://docs.rs/open-dis-rust">API documentation</a> for the name, or search <code>enums.rs</code>
+“United States of America” becomes <code>UnitedStatesofAmerica</code>, and “Able to Comply” becomes <code>AbleToComply</code>.
+Search the <a href="https://docs.rs/open-dis-rust">API documentation</a> for the name, or search <code>src/siso/enums.rs</code>
 for the table name or its UID number.</p>
 <h2 id="values-unknown-to-the-crate"><a class="header" href="#values-unknown-to-the-crate">Values unknown to the crate</a></h2>
-<p>When decoding, a value that is not in the crate’s table is an error. The whole PDU faisl with
+<p>When decoding, a value that is not in the crate’s table is an error. The whole PDU fails with
 <code>DISError::WireFormat</code>. This usually happens when another simulator uses a newer version of
 SISO-REF-010. See <a href="../reference/conformance.html#decoding-behavior">Conformance Notes</a> for details.</p>
 <p>If you encounter an issue like this, please <a href="../get-in-touch.html#encoding-and-interoperability-problems">report it</a>
@@ -225,7 +228,7 @@ with the value and the PDU type.</p>
 <p>When SISO retires a value, it stays in the tables so that old traffic can still be
 read, but it should not be used in new PDUs. The crate marks these variants <code>#[deprecated]</code>,
 so the compiler warns you if you use one:</p>
-<pre><code class="language-text">warning: use of deprecated unit variant `open_dis_rust::common::enums::LandDomainCategories::CivilianVehicle`: Deprecated in SISO-REF-010-2023
+<pre><code class="language-text">warning: use of deprecated unit variant `open_dis_rust::siso::enums::LandDomainCategories::CivilianVehicle`: Deprecated in SISO-REF-010-2023
 </code></pre>
 
                     </main>

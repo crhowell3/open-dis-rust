@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-a25af2d5.js";
+            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -182,9 +182,9 @@
                     <main>
                         <h1 id="identifiers--exercises"><a class="header" href="#identifiers--exercises">Identifiers &amp; Exercises</a></h1>
 <p>Every PDU says which exercise it belongs to and who sent it. This page explains
-the numbers DIS uses for that and they map to types in open-dis-rust.</p>
+the numbers DIS uses for that and how they map to types in open-dis-rust.</p>
 <h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
-<p>An <strong>exercise</strong> is one chared simulated world. Several exercises and run on the
+<p>An <strong>exercise</strong> is one shared simulated world. Several exercises can run on the
 same network at once, such as a training event and a test. They are kept discrete
 and disjoint via the <strong>exercise ID</strong> in the header of every PDU.</p>
 <ul>
@@ -195,7 +195,9 @@ usually assigns it.</li>
 so your application(s) must handle this on their own.</li>
 </ul>
 <p>PDUs created with <code>new()</code> use exercise ID 1 by default. Set your own before sending:</p>
-<pre><code class="language-rust ignore">pdu.header_mut().exercise_id = 3;</code></pre>
+<pre><code class="language-rust ignore">use open_dis_rust::prelude::*;
+
+pdu.header_mut().exercise_id = ExerciseIdentifier::new(3);</code></pre>
 <p>The exercise ID is octet 1 of every PDU, so you can filter before decoding anything:</p>
 <pre><code class="language-rust ignore">fn is_same_exercise(datagram: &amp;[u8], exercise_id: u8) -&gt; bool {
     datagram.get(1) == Some(&amp;exercise_id)
@@ -210,25 +212,26 @@ so your application(s) must handle this on their own.</li>
 <p>Together they must be unique in the exercise. Like the exercise ID, they are agreed in
 advance rather than assigned by the protocol. In open-dis-rust, they are stored in
 <code>SimulationAddress</code>:</p>
-<pre><code class="language-rust ignore">use open_dis_rust::common::data_types::SimulationAddress;
+<pre><code class="language-rust ignore">use open_dis_rust::records::SimulationAddress;
 
 let me = SimulationAddress::new(1, 100); // site 1, application 100</code></pre>
 <h2 id="entities"><a class="header" href="#entities">Entities</a></h2>
 <p>An <strong>entity</strong> is anything in the simulated world that a simulation owns and reports on,
 such as a vehicle, an aircraft, a person, or a munition in flight. Its <strong>entity ID</strong> is
 its simulation address plus a 16-bit entity number:</p>
-<pre><code class="language-rust ignore">use open_dis_rust::common::data_types::EntityId;
+<pre><code class="language-rust ignore">use open_dis_rust::records::{EntityIdentifier, SimulationAddress};
 
-let tank = EntityId::new(1, 100, 7); // entity 7 of site 1, application 100</code></pre>
+let me = SimulationAddress::new(1, 100);
+let tank = EntityIdentifier::new(me, 7); // entity 7 of site 1, application 100</code></pre>
 <p>The application that owns an entity picks its entity numbers. Use each number for only
 one entity during an exercise. If you reuse a number after an entity is destroyed, other
 simulators may confuse the new entity with the old one.</p>
 <p>Entity number 0 means “no entity”. An entity ID with entity number 0 refers to the
 simulation application itself, which is how simulation management PDUs address a
 whole simulator:</p>
-<pre><code class="language-rust ignore">let my_application = EntityId::new(1, 100, 0);</code></pre>
+<pre><code class="language-rust ignore">let my_application = EntityIdentifier::new(me, 0);</code></pre>
 <h2 id="special-values"><a class="header" href="#special-values">Special values</a></h2>
-<p>These constants in <code>common::constants</code> have fixed meanings:</p>
+<p>These constants in <code>constants</code> have fixed meanings:</p>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -242,11 +245,12 @@ whole simulator:</p>
 </table>
 </div>
 <p>For example, to send a Start/Resume PDU to every simulator in the exercise:</p>
-<pre><code class="language-rust ignore">use open_dis_rust::common::constants::{ALL_APPLIC, ALL_ENTITIES, ALL_SITES};
+<pre><code class="language-rust ignore">use open_dis_rust::constants::{ALL_APPLIC, ALL_ENTITIES, ALL_SITES};
 
 let mut start = StartResumePdu::new();
-start.originating_entity_id = EntityId::new(1, 100, 0);
-start.receiving_entity_id = EntityId::new(ALL_SITES, ALL_APPLIC, ALL_ENTITIES);</code></pre>
+start.originating_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 100), 0);
+start.receiving_entity_id =
+    EntityIdentifier::new(SimulationAddress::new(ALL_SITES, ALL_APPLIC), ALL_ENTITIES);</code></pre>
 <p>Other PDUs use 0 to mean “no target”. A Fire PDU for a shot with no intended target
 sets the target entity ID to all zeros.</p>
 <h2 id="other-identifiers"><a class="header" href="#other-identifiers">Other identifiers</a></h2>
@@ -258,10 +262,10 @@ a number that the owning application assigns.</p>
 <tr><th>Identifier</th><th>Rust type</th><th>Identifies</th><th>Used in</th></tr>
 </thead>
 <tbody>
-<tr><td>Entity ID</td><td><code>EntityId</code></td><td>An entity</td><td>Most PDUs</td></tr>
-<tr><td>Event ID</td><td><code>EventId</code></td><td>One event, such as a shot</td><td>Fire, Detonation, Collision, emissions PDUs</td></tr>
-<tr><td>Object ID</td><td><code>ObjectIdentifier</code></td><td>An environmental object, such as a minefield marker or a crater</td><td>Linear and Areal Object State</td></tr>
-<tr><td>Aggregate ID</td><td><code>AggregateId</code></td><td>A group of entities, such as a platoon</td><td>Aggregate State</td></tr>
+<tr><td>Entity ID</td><td><code>EntityIdentifier</code></td><td>An entity</td><td>Most PDUs</td></tr>
+<tr><td>Event ID</td><td><code>EventIdentifier</code></td><td>One event, such as a shot</td><td>Fire, Detonation, Collision, emissions PDUs</td></tr>
+<tr><td>Object ID</td><td><code>ObjectIdentifier</code></td><td>An environmental object, such as a minefield marker or a crater</td><td>Point, Linear, and Areal Object State</td></tr>
+<tr><td>Aggregate ID</td><td><code>AggregateIdentifier</code></td><td>A group of entities, such as a platoon</td><td>Aggregate State</td></tr>
 <tr><td>Minefield ID</td><td><code>MinefieldIdentifier</code></td><td>A minefield</td><td>Minefield PDUs</td></tr>
 <tr><td>Simulation ID</td><td><code>SimulationIdentifier</code></td><td>A simulation application</td><td>Transfer Ownership, Information Operations</td></tr>
 </tbody>
