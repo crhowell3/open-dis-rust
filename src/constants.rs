@@ -16,7 +16,7 @@ pub const ALL_SITES: u16 = 0xFFFF;
 
 /// An entity number representing no entity, or not applicable
 pub const NO_ENTITY: u16 = 0x0000;
-/// An application number repesenting no application, or not applicable
+/// An application number representing no application, or not applicable
 pub const NO_APPLIC: u16 = 0x0000;
 /// A site number representing no site, or not applicable
 pub const NO_SITE: u16 = 0x0000;
@@ -28,9 +28,6 @@ pub const MAX_PDU_SIZE_BITS: usize = 65_536;
 
 /// The size of the PDU header, in octets. The Live Entity PDU header is the same size
 pub const PDU_HEADER_SIZE: usize = 12;
-
-/// Maximum number of articulation parameters
-pub const MAX_ARTICULATION_PARAMS: usize = 64;
 
 /// An aggregate number that means every aggregate
 pub const ALL_AGGS: u16 = 0xFFFF;
@@ -67,7 +64,7 @@ pub const NO_REF_NUMBER: u16 = 0x0000;
 pub const NO_SPECIFIC: u16 = 0x0000;
 /// A subcategory that means no subcategory
 pub const NO_SUBCAT: u16 = 0x0000;
-/// A value number that means none
+/// A value that means none
 pub const NO_VALUE: u16 = 0x0000;
 
 /// Engine power, in percent, for an engine that is off

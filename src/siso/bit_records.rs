@@ -8,9 +8,9 @@
 //! Object State Modification (UID 242), and Component Visual Damage Status (UID 317).
 //!
 //! Bit layouts that IEEE 1278.1 itself defines, such as [`PduStatus`], are in
-//! [`common::records`](crate::common::records).
+//! [`records`](crate::records).
 //!
-//! [`PduStatus`]: crate::common::records::PduStatus
+//! [`PduStatus`]: crate::records::PduStatus
 
 use std::fmt;
 
@@ -51,7 +51,7 @@ bitflags! {
 impl_deku_bitflags!(ArealObjectStateModification, u8);
 
 /// SISO-REF-010-2023 `ComponentVisualDamageStatus` [UID 317]: What a damage site in a
-/// [`DirectedEnergyDamage`](crate::common::records::DirectedEnergyDamage) record looks like
+/// [`DirectedEnergyDamage`](crate::records::DirectedEnergyDamage) record looks like
 ///
 /// | Bits | Field |
 /// | --- | --- |

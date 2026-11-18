@@ -204,7 +204,7 @@ The enumerations and bit layouts in `siso` take three forms:
 
 The public API is the PDU and record structs, the constants, the `siso` enumerations
 and bit layouts, the `Pdu`, `StandardPdu`, and `LiveEntityPdu` traits, and `DISError`.
-Everything that namesa `deku` type is internal: the `wire` module, `impl_pdu!`,
+Everything that names a `deku` type is internal: the `wire` module, `impl_pdu!`,
 `pdu_tests!` and `impl_deku_default_endian!` are all private to the crate, and
 `DISError::WireFormat` wraps deku's error in the opaque `WireFormatError` variant.
 
