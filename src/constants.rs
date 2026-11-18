@@ -49,7 +49,7 @@ pub const EP_NO_SEQUENCE: u16 = 0xFFFF;
 pub const NO_AGG: u16 = 0x0000;
 /// A beam number that means no beam
 pub const NO_BEAM: u16 = 0x0000;
-//// A category that means no category
+/// A category that means no category
 pub const NO_CATEGORY: u16 = 0x0000;
 /// An emitter number that means no emitter
 pub const NO_EMITTER: u16 = 0x0000;
