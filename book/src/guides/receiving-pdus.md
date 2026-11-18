@@ -18,17 +18,15 @@ If the bytes are not a valid Acknowledge PDU, it returns a `DISError` instead.
 
 ## Receive and decode
 
-A receiver usually handles several PDU types and ignores the rest.
-`PduHeader::get_pdu_type` reads just the 12-octet header, so you can decide what to do
-with a datagram before decoding it:
+A receiver usually handles several PDU types and ignores the rest. `AnyPdu::deserialize`
+reads the PDU type from the header and decodes the PDU as that type. `AnyPdu` has one
+variant per PDU type, named after its `PduType`, so you `match` on the ones you handle:
 
 ```rust,ignore
 use std::io;
 use tokio::net::UdpSocket;
 
-use open_dis_rust::{
-    entity_information::EntityStatePdu, prelude::*, simulation_management::AcknowledgePdu,
-};
+use open_dis_rust::prelude::*;
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -39,17 +37,13 @@ async fn main() -> io::Result<()> {
         let (n, from) = socket.recv_from(&mut buf).await?;
         let mut datagram = buf.get(..n).unwrap_or_default();
 
-        match PduHeader::get_pdu_type(datagram) {
-            Some(PduType::Acknowledge) => match AcknowledgePdu::deserialize(&mut datagram) {
-                Ok(ack) => println!("{from}: acknowledged request {}", ack.request_id),
-                Err(e) => eprintln!("{from}: bad Acknowledge PDU: {e}"),
-            },
-            Some(PduType::EntityState) => match EntityStatePdu::deserialize(&mut datagram) {
-                Ok(pdu) => println!("{from}: entity {:?}", pdu.entity_id),
-                Err(e) => eprintln!("{from}: bad Entity State PDU: {e}"),
-            },
-            Some(other) => println!("{from}: ignoring {other:?} PDU"),
-            None => eprintln!("{from}: {n} bytes is too short to be a DIS PDU"),
+        match AnyPdu::deserialize(&mut datagram) {
+            Ok(AnyPdu::Acknowledge(ack)) => {
+                println!("{from}: acknowledged request {}", ack.request_id);
+            }
+            Ok(AnyPdu::EntityState(pdu)) => println!("{from}: entity {:?}"), pdu.entity_id),
+            Ok(other) => println!("{from}: ignoring {:?} PDU", other.pdu_type()),
+            Err(e) => eprintln!("{from}: undecodable datagram: {e}"),
         }
     }
 }
@@ -66,8 +60,12 @@ A few things to note:
   traffic could naturally fail to decode. Log it and keep receiving rather than hard
   stopping your program.
 
+If you only handle one or two PDU types, you can skip decoding the rest:
+`PduHeader::get_pdu_type` reads just the 12-octet header, and then you can call
+`deserialize` on the concrete type, such as `EntityStatePdu::deserialize`.
+
 ## Several PDUs in a single datagram
 
-Because `deserialize` advances the slice, you can decode a datagram that holds more than
-one PDU by calling it in a loop until the slice is empty.
-[Wire Format Conventions](../reference/wire-format.md#several-pdus-in-one-datagram) shows how.
+A datagram can hold more than one PDU. `AnyPdu::deserialize_all` decodes each of them in
+turn. [Wire Format Conventions](../reference/wire-format.md#several-pdus-in-one-datagram)
+shows how.

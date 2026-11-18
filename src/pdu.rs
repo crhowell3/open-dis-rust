@@ -9,7 +9,7 @@ use super::{
     records::PduHeader,
 };
 use crate::siso::enums::{PduType, ProtocolFamily};
-use std::{any::Any, fmt::Debug};
+use std::fmt::Debug;
 
 /// A DIS Protocol Data Unit
 ///
@@ -92,9 +92,6 @@ pub trait Pdu {
     ) -> Result<Self, DISError>
     where
         Self: Sized;
-
-    /// The PDU as [`Any`] to downcast a `dyn Pdu` to its concrete type.
-    fn as_any(&self) -> &dyn Any;
 }
 
 /// A PDU with the standard 12-octet [`PduHeader`], which carries a [`PduStatus`](crate::records::PduStatus) record.
@@ -294,10 +291,6 @@ macro_rules! impl_pdu {
                 pdu.header = header;
                 Ok(pdu)
             }
-
-            fn as_any(&self) -> &dyn std::any::Any {
-                self
-            }
         }
 
         impl $name {
@@ -326,9 +319,15 @@ macro_rules! pdu_tests {
             use super::*;
 
             #[test]
-            fn cast_to_any() {
-                let pdu = <$pdu>::new();
-                assert!(pdu.as_any().is::<$pdu>());
+            fn decodes_as_any_pdu() {
+                let mut pdu = <$pdu>::new();
+                let original = to_bytes(&mut pdu);
+
+                let mut decoded = $crate::AnyPdu::deserialize(&mut original.as_slice())
+                    .expect("deserialize failed");
+
+                assert_eq!(decoded.pdu_type(), $pdu_type);
+                assert_eq!(decoded.to_bytes().expect("serialize failed"), original);
             }
 
             #[test]

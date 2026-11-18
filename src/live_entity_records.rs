@@ -111,15 +111,15 @@ pub struct LiveEntityPduHeader {
     /// Exercise ID
     pub exercise_id: ExerciseIdentifier,
     /// Type of PDU set from the PDU when it is encoded. Read it with
-    /// [`pdu_type`](Sef::pdu_type).
+    /// [`pdu_type`](Self::pdu_type).
     pub(crate) pdu_type: PduType,
     /// Protocol family set from the PDU when it is encoded. Read it with
-    /// [`protocol_family`](Sef::protocol_family).
+    /// [`protocol_family`](Self::protocol_family).
     pub(crate) protocol_family: ProtocolFamily,
     /// When the data in the PDU was valid. New headers use [`Timestamp::now`].
     pub timestamp: Timestamp,
     /// Length of the PDU in octets, including the header. This value is set
-    /// upon encoding. Read it with [`length`](Sef::length).
+    /// upon encoding. Read it with [`length`](Self::length).
     pub(crate) length: u16,
     /// The subprotocol to be used to decode the PDU
     pub subprotocol_number: DISLiveEntitySubprotocolNumber,
