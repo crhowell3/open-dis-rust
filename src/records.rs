@@ -3589,7 +3589,7 @@ pub struct RecordQuerySpecification {
     pub record_ids: Vec<VariableRecordTypes>,
 }
 
-/// One record set in a [`RecordSpecification`](crate::records::RecordSpecification): its record ID,
+/// One record set in a [`RecordSpecification`]: its record ID,
 /// serial number, and `record_count` values of `record_length` octets each.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(

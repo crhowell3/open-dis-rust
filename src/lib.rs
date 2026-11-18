@@ -57,11 +57,11 @@ pub mod warfare;
 
 // IEEE 1278.1-2012: what the PDUs are built from
 pub mod constants;
-// The compact records used by the Live Entity Information/Interaction PDUs (IEEE
-// 1278.1-2012 §9) and their header
+/// The compact records used by the Live Entity Information/Interaction PDUs (IEEE
+/// 1278.1-2012 §9) and their header
 pub mod live_entity_records;
-// The records of IEEE 1278.1-2012 §6.2 and Annex B that PDUs are built from, in section
-// order, including the PDU header
+/// The records of IEEE 1278.1-2012 §6.2 and Annex B that PDUs are built from, in section
+/// order, including the PDU header
 pub mod records;
 
 // SISO-REF-010-2023
