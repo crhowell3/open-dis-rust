@@ -34,17 +34,17 @@ A few things to notice:
 ## 2. Receive and decode PDUs
 
 The receiver binds to UDP port 3000, which is traditionally the port used for DIS
-traffic per the standard. For each datagram, it reads the header to see what kind of
-PDU arrived, then it attempts to decode it.
+traffic per the standard. It decodes each datagram with `AnyPdu`, which reads the
+header to determine what kind of PDU arrived and decodes it as that type.
 
 ```rust,ignore
 {{#include ../../examples/quickstart_receive.rs}}
 ```
 
-`PduHeader::get_pdu_type` reads only the 12-octet header, so it is a cheap way to skip
-PDUs you aren't accounting for before fully decoding them. `deserialize` returns an error
-instead of panicking when a datagram is truncated or malformed. A receiver on a shared
-network might expect to receive some bad PDUs at times.
+`AnyPdu` has one variant per PDU type, named after its `PduType`, so you `match` on the
+ones you wish to explicitly handle. `deserialize` returns an error instead of panicking when
+a datagram is truncated or malformed. A receiver on a shared network might expect to receive
+some bad PDUs at times.
 
 ## 3. Run the examples
 

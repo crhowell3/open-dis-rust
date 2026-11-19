@@ -16,7 +16,7 @@ tests:
 
 | Test | Checks |
 | --- | --- |
-| `cast_to_any` | `as_any()` returns the right type. |
+| `decodes_as_any_pdu` | `AnyPdu::deserialize` decodes the PDU as its own type and encodes it to the same bytes. |
 | `new_sets_pdu_type` | `new()` sets the PDU type in the header. |
 | `new_sets_default_length` | `new()` sets the header length to the expected default size. |
 | `serialized_length_matches_header` | The encoded size equals the header's Length field. |

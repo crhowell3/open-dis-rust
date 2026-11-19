@@ -112,30 +112,23 @@ short.
 
 The standard allows more than one PDU in a single datagram. `deserialize` reads exactly
 the number of octets given by the PDU's `length` field and leaves the rest in the
-buffer, so you can decode a bundle in a loop:
+buffer. `AnyPdu::deserialize_all` uses this to decode every PDU in a datagram:
 
 ```rust,ignore
-let mut rest: &[u8] = datagram;
-
-while rest.len() >= PDU_HEADER_SIZE {
-    match PduHeader::get_pdu_type(rest) {
-        Some(PduType::EntityState) => {
-            let pdu = EntityStatePdu::deserialize(&mut rest)?;
+for pdu in AnyPdu::deserialize_all(datagram) {
+    match pdu {
+        Ok(AnyPdu::EntityState(pdu)) => {
             // ...
         }
-        _ => {
-            // Skip a PDU we do not want to handle, using the length field (octets 8-9)
-            let len = rest.get(8..10).map_or(0, |b| usize::from(u16::from_be_bytes([b[0], b[1]])));
-            if len < PDU_HEADER_SIZE || len > rest.len() {
-                break; // malformed: drop the rest of the datagram
-            }
-            rest = rest.get(len..).unwrap_or_default();
-        }
+        Ok(_) => {} // a PDU we do not care to handle
+        Err(e) => eprintln!("dropping a PDU: {e}"),
     }
 }
 ```
 
-`PDU_HEADER_SIZE` (12 octets) is in `constants`, which is also re-exported in the prelude.
+When one PDU fails to decode, its error is yielded and decoding carries on with the next
+PDU, as long as the failed PDU's `length` field fits in the datagram. If it does not, the
+rest of the datagram cannot be split into PDUs, so the error is the last item.
 
 To send a bundle, serialize each PDU into the same buffer, one after another, and keep
 the total under the network's maximum datagram size.

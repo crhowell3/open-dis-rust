@@ -34,6 +34,7 @@ src/
 │   └── bit_records.rs             the other SISO bit layouts
 │
 │   the crate's own code, private and re-exported from the root
+├── any_pdu.rs                     AnyPdu, for decoding a PDU of any type
 ├── pdu.rs                         the Pdu, StandardPdu and LiveEntityPdu traits, and the
 │                                  impl_pdu! and pdu_tests! macros
 ├── dis_error.rs                   DISError, DISResult and WireFormatError
@@ -48,7 +49,7 @@ Every public module has one source:
 - **SISO-REF-010-2023.** Anything whose layout or values SISO-REF-010 defines lives in
   `siso`. A record that IEEE 1278.1 defines stays in `records` even when its fields use
   SISO enumerations, as `PduStatus` does.
-- **The crate.** The `Pdu` traits, `DISError` and the prelude are the crate's own API.
+- **The crate.** The `Pdu` traits, `AnyPdu`, `DISError` and the prelude are the crate's own API.
   Their modules are private, and the crate root re-exports them, so each has one path.
 
 Conveniences stay with the type they serve rather than in a utilities module:

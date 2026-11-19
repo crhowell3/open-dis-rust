@@ -20,7 +20,8 @@
 //! - **SISO-REF-010-2023:** [`siso`] holds the enumerations and bit layouts the standard
 //!   refers to by UID.
 //! - **The rest:** the [`Pdu`] trait every PDU implements, [`StandardPdu`] and
-//!   [`LiveEntityPdu`] for the two kinds of header, [`DISError`], and the [`prelude`].
+//!   [`LiveEntityPdu`] for the two kinds of header, [`AnyPdu`] for decoding a PDU of any
+//!   type, [`DISError`], and the [`prelude`].
 //!
 //! ## Example usage
 //!
@@ -68,10 +69,12 @@ pub mod records;
 pub mod siso;
 
 // The crate's own API: the traits every PDU implements and the error type
+pub(crate) mod any_pdu;
 pub(crate) mod dis_error;
 pub(crate) mod pdu;
 pub(crate) mod wire;
 
+pub use any_pdu::AnyPdu;
 pub use dis_error::{DISError, DISResult, WireFormatError};
 pub use pdu::{LiveEntityPdu, Pdu, StandardPdu};
 
@@ -89,7 +92,7 @@ pub fn get_version() -> String {
 pub mod prelude {
     pub use crate::siso::enums::{EntityKind, PduType, ProtocolFamily, ProtocolVersion};
     pub use crate::{
-        DISError, LiveEntityPdu, Pdu, StandardPdu,
+        AnyPdu, DISError, LiveEntityPdu, Pdu, StandardPdu,
         constants::{MAX_PDU_SIZE_OCTETS, PDU_HEADER_SIZE},
         live_entity_records::LiveEntityPduHeader,
         records::{

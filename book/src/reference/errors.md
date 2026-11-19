@@ -49,7 +49,9 @@ Invalid PDU header: PDU length 4 is shorter than its 12-octet header
 ```
 
 The first is a normal event on a busy network. It means you called `deserialize` on
-the wrong type, which you can avoid by checking `PduHeader::get_pdu_type` first.
+the wrong type, which you can avoid by checking `PduHeader::get_pdu_type` first, or by
+decoding with `AnyPdu::deserialize`. `AnyPdu` reports an undefined PDU type as an
+`InvalidHeader` too.
 
 ### `BufferUnderflow`
 

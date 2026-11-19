@@ -29,6 +29,9 @@ The first official release of open-dis-rust!
 - `StandardPdu` and `LiveEntityPdu`, implemented for every PDU with a `PduHeader` and a `LiveEntityPduHeader`
   respectively, to tell the two kinds of PDU apart in generic code. Both are in the prelude
 - `Pdu::pdu_type()` and `Pdu::protocol_family()`, which give the PDU's type and family without reading its header
+- `AnyPdu`, which decodes a PDU of any type. It has one variant per PDU type, named after the `PduType` it encapsulates.
+  `AnyPdu::deserialize` decodes one PDU, picking its type from the header, and `AnyPdu::deserialize_all` decodes every
+  PDU in a datagram. Every PDU converts into an `AnyPdu` with `From`, and `AnyPdu` is in the prelude
 
 ### Changed
 
@@ -86,6 +89,7 @@ The first official release of open-dis-rust!
 
 ### Removed
 
+- `Pdu::as_any`. Use `AnyPdu` to handle PDUs whose type is not known at compile time
 - The constants the standard doesn't define, `BITS_PER_BYTE`, `MAX_ARTICULATION_PARAMS` and
   `MAX_ENTITY_MARKING_LENGTH`, and the unused helpers `validate_pdu_size`, `total_pdu_size` and `validate_marking_length`
 - The `pdu_macro` module: `FieldSerialize`, `FieldDeserialize`, `FieldLen`, `FieldDeserializeWithLen`, `define_pdu!`, `impl_record_fields!`, and
