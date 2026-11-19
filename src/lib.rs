@@ -20,7 +20,8 @@
 //! - **SISO-REF-010-2023:** [`siso`] holds the enumerations and bit layouts the standard
 //!   refers to by UID.
 //! - **The rest:** the [`Pdu`] trait every PDU implements, [`StandardPdu`] and
-//!   [`LiveEntityPdu`] for the two kinds of header, [`DISError`], and the [`prelude`].
+//!   [`LiveEntityPdu`] for the two kinds of header, [`AnyPdu`] for decoding a PDU of any
+//!   type, [`DISError`], and the [`prelude`].
 //!
 //! ## Example usage
 //!

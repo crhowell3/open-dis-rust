@@ -63,7 +63,7 @@ impl Server {
                         println!("Non-radio {:?} PDU from {peer}", other.pdu_type());
                     }
                     Err(e) => {
-                        println!("Undecodable datagram ({size} bytes) from {peer}: {e}")
+                        println!("Undecodable datagram ({size} bytes) from {peer}: {e}");
                     }
                 }
             }

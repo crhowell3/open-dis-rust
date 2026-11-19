@@ -116,7 +116,7 @@ buffer. `AnyPdu::deserialize_all` uses this to decode every PDU in a datagram:
 
 ```rust,ignore
 for pdu in AnyPdu::deserialize_all(datagram) {
-    match(pdu) {
+    match pdu {
         Ok(AnyPdu::EntityState(pdu)) => {
             // ...
         }

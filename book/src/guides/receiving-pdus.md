@@ -41,7 +41,7 @@ async fn main() -> io::Result<()> {
             Ok(AnyPdu::Acknowledge(ack)) => {
                 println!("{from}: acknowledged request {}", ack.request_id);
             }
-            Ok(AnyPdu::EntityState(pdu)) => println!("{from}: entity {:?}"), pdu.entity_id),
+            Ok(AnyPdu::EntityState(pdu)) => println!("{from}: entity {:?}", pdu.entity_id),
             Ok(other) => println!("{from}: ignoring {:?} PDU", other.pdu_type()),
             Err(e) => eprintln!("{from}: undecodable datagram: {e}"),
         }

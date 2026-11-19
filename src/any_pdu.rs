@@ -18,7 +18,7 @@ use crate::{
 
 /// The header octet that holds the PDU type, in both kinds of PDU header
 const PDU_TYPE_OCTET: usize = 2;
-/// The header octets taht hold the PDU's length, in both kinds of PDU header
+/// The header octets that hold the PDU's length, in both kinds of PDU header
 const LENGTH_OCTETS: Range<usize> = 8..10;
 
 /// Defines `AnyPdu` with one variant per PDU, named after its `PduType` variant.
@@ -227,9 +227,9 @@ impl AnyPdu {
     /// Decodes every PDU in a datagram, which the standard allows to hold several
     ///
     /// Each item is the result of [`AnyPdu::deserialize`] on what is left of the datagram.
-    /// When a PDU cannot be decoded, such as one of a type that is not being targeted,
-    /// its error is yielded and decoding carries on after it if its header's length
-    /// field fits in the datagram. Otherwise, the error is the last item.
+    /// When a PDU cannot be decoded, such as one that is malformed or of a PDU type the
+    /// standard does not define, its error is yielded and decoding carries on after it if
+    /// its header's length field fits in the datagram. Otherwise, the error is the last item.
     ///
     /// ```
     /// use open_dis_rust::{
