@@ -126,6 +126,18 @@ The first official release of open-dis-rust!
 - `DataQueryPdu` carries 32-bit datum IDs instead of full datum records
 - `GridData` records' sample type and data representation are 16 bits
 - `IFFFundamentalParameterData::burst_length` is a 32-bit integer
+- The Appearance PDU's Flag-2 marks Appearance-EM with bit 0 and Appearance-Audio with bit 1, instead of bits 1 and 2
+- `LinearSegmentParameter::general_segment_appearance` is the 16-bit General Object Appearance record (`ObjectStateAppearanceGeneral`) instead of a `u32`, so each segment is 64 octets
+- `IOEffectsRecordIOProcess` is a 16-bit enumeration, so the IO Effect record is 16 octets, matching its Record length
+- `Sensor::station` is a 32-bit enumeration value (`u32`)
+- `MinefieldResponseNackPdu` carries 8-bit missing PDU sequence numbers followed by padding to a 32-bit boundary, instead of 64-bit numbers with no padding
+- `IntercomControlPdu::intercom_parameters_length` is the length of the parameters in octets instead of a record count, and `IntercomCommunicationsParameters` carries `record_length` octets of record-specific fields padding to a 32-bit boundary instead of one `u32`. `IntercomCommunicationsParameters::new` takes the record type and the fields
+- `DirectedEnergyFirePdu` carries its DE records as Standard Variable records in `de_records`, and `EntityDamageStatusPdu::damage_descriptions` holds Standard Variable records, so DE Area and Precision Aimpoint records and other record types decode. They were fixed 40-octet Damage Description records. `StandardVariableRecord::from_record` and `to_record` convert between typed records and Standard Variable records
+- `AggregateStatePdu` carries its silent aggregate systems as `SilentAggregateSystem`s (a count, padding and an Aggregate Type) and its silent entity systems as `SilentEntitySystem` records, instead of bare `EntityType`s
+- `Environment` records carry their geometry or state record in `geometry_or_state`, padded to a 64-bit boundary, with `length` in bits set by `serialize`, so Environmental Process PDUs with real environment records decode. `Environment::new` takes the type, index and geometry or state octets
+- `serialize` sets the EE PDU's System Data Length and Beam Data Length and the UA PDU's Emitter System Data Length and Beam Data Length in 32-bit words, or 0 for an EE system or beam over 255 words, instead of sending whatever was set (0 by default)
+- `LiveEntityFirePdu` and `LiveEntityDetonationPdu` follow their flag fields: optional fields are `Option`s that `serialize` signals in `LEFireFlags`, `LEDetonationFlags1` and `LEDetonationFlags2`, munition and event IDs leave out site and application numbers equal to the firing entity's, the Detonation PDU carries one of its two locations, and neither has a padding octet. `LiveMunitionDescriptor` has optional `WarheadAndFuse` and `QuantityAndRate` parts, and the Detonation result is a `DetonationResult`
+- `DEAreaAimpoint` is padded to a 64-bit boundary, `serialize` sets its `record_length`, and `DEAreaAimpoint::new` sets its record type (4001)
 
 ## [0.4.3] - 2026-07-03
 

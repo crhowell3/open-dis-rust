@@ -6,8 +6,8 @@
 
 use crate::records::{EntityType, ExerciseIdentifier, Timestamp};
 use crate::siso::enums::{
-    DISLiveEntitySubprotocolNumber, DeadReckoningAlgorithm, PduType, ProtocolFamily,
-    ProtocolVersion,
+    DISLiveEntitySubprotocolNumber, DeadReckoningAlgorithm, MunitionDescriptorFuse,
+    MunitionDescriptorWarhead, PduType, ProtocolFamily, ProtocolVersion,
 };
 
 macro_rules! fixed_binary {
@@ -524,18 +524,49 @@ pub struct LiveEntityRelativeLocation {
     pub z: i16,
 }
 
-/// The munition in a Live Entity Fire or Detonation PDU: its type, warhead, fuse, quantity,
-/// and rate.
+/// The Munition Descriptor record (§6.2.19.2) as the LE Fire and LE
+/// Detonation PDUs carry it: "the warhead, fuse, quantity, and rate fields of
+/// this record shall be optional" (§9.4.5.6 h, §9.4.6.8 j).
+///
+/// The PDU's flags say which optional parts are present, so this record is
+/// read and written with them as context. `serialize` sets the flags from
+/// the options.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian, warhead_and_fuse_included: bool, quantity_and_rate_included: bool"
+)]
+pub struct LiveMunitionDescriptor {
+    pub munition_type: EntityType,
+    /// `None` means the munition's default warhead and fuse.
+    #[deku(cond = "warhead_and_fuse_included")]
+    pub warhead_and_fuse: Option<WarheadAndFuse>,
+    /// `None` means a single round: a quantity of one and a rate of zero
+    /// (§9.4.5.4).
+    #[deku(cond = "quantity_and_rate_included")]
+    pub quantity_and_rate: Option<QuantityAndRate>,
+}
+
+/// The warhead and fuse of a [`LiveMunitionDescriptor`]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct LiveMunitionDescriptor {
-    pub munition_type: EntityType,
-    pub warhead: u16,
-    pub fuse: u16,
+pub struct WarheadAndFuse {
+    pub warhead: MunitionDescriptorWarhead,
+    pub fuse: MunitionDescriptorFuse,
+}
+
+/// The quantity and rate of a [`LiveMunitionDescriptor`]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct QuantityAndRate {
     pub quantity: u16,
     pub rate: u16,
 }

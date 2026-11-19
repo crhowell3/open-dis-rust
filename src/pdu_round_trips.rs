@@ -20,19 +20,23 @@
     clippy::float_cmp
 )]
 
+use crate::siso::bit_records::ComponentVisualDamageStatus;
 use crate::siso::enums::{
-    GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes,
+    ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor,
+    EnvironmentalProcessRecordType, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
+    IntercomControlRecordType, VariableRecordTypes,
 };
 use crate::{
     DISError,
     pdu::Pdu,
     records::{
-        AggregateIdentifier, Attribute, BeamAntennaPattern, ClockTime, DirectedEnergyDamage,
-        EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor, GridData,
+        AggregateIdentifier, Attribute, BeamAntennaPattern, ClockTime, DEAreaAimpoint,
+        DEPrecisionAimpoint, DETargetEnergyDeposition, DirectedEnergyDamage, EntityIdentifier,
+        EntityType, Environment, EulerAngles, EventIdentifier, GridAxisDescriptor, GridData,
         IFFFundamentalParameterData, IntercomCommunicationsParameters, LinearSegmentParameter,
-        ModulationParameters, PropulsionSystemData, SupplyQuantity, TrackJamData,
-        VariableDatumRecord, VariableParameter, VariableTransmitterParameters, Vector,
-        VectoringNozzleSystemData, WorldCoordinates,
+        ModulationParameters, PropulsionSystemData, SilentEntitySystem, StandardVariableRecord,
+        SupplyQuantity, TrackJamData, VariableDatumRecord, VariableParameter,
+        VariableTransmitterParameters, Vector, VectoringNozzleSystemData, WorldCoordinates,
     },
 };
 use crate::{
@@ -108,8 +112,27 @@ lists!(
             2
         );
         assert_eq!(d.systems[1].beam_data_records.len(), 3);
+        // §7.6.2: lengths in 32-bit words. A beam is 52 octets plus 8 per
+        // target; a system is 20 octets plus its beams.
+        assert_eq!(d.systems[0].beam_data_records[0].beam_data_length, 17);
+        assert_eq!(d.systems[0].system_data_length, 22);
+        assert_eq!(d.systems[1].beam_data_records[2].beam_data_length, 13);
+        assert_eq!(d.systems[1].system_data_length, 5 + 3 * 13);
     }
 );
+
+/// §7.6.2: an emitter system or beam over 255 32-bit words is "large" and its
+/// length is 0.
+#[test]
+fn large_ee_beams_have_zero_length() {
+    let mut pdu = ElectromagneticEmissionsPdu::new();
+    // 52 + 8 * 120 octets = 253 words; 52 + 8 * 126 = 265 words.
+    pdu.systems = vec![ee_system(1, 120), ee_system(1, 126)];
+    let d = round_trip(&mut pdu);
+    assert_eq!(d.systems[0].beam_data_records[0].beam_data_length, 253);
+    assert_eq!(d.systems[0].system_data_length, 0);
+    assert_eq!(d.systems[1].beam_data_records[0].beam_data_length, 0);
+}
 
 lists!(
     underwater_acoustic,
@@ -135,6 +158,10 @@ lists!(
             (1, 2, 3)
         );
         assert_eq!(d.emitter_systems[2].number_of_beams, 2);
+        // §7.6.4 o and s 1): lengths in 32-bit words. A beam is 24 octets; a
+        // system is 20 octets plus its beams.
+        assert_eq!(d.emitter_systems[2].beam_records[1].beam_data_length, 6);
+        assert_eq!(d.emitter_systems[2].emitter_system_data_length, 5 + 2 * 6);
     }
 );
 
@@ -211,8 +238,8 @@ lists!(
     |p| {
         p.aggregate_id_list = vec![AggregateIdentifier::default(); 1];
         p.entity_id_list = vec![EntityIdentifier::default(); 2];
-        p.silent_aggregate_system_list = vec![EntityType::default(); 3];
-        p.silent_entity_system_list = vec![EntityType::default(); 4];
+        p.silent_aggregate_system_list = vec![SilentAggregateSystem::default(); 3];
+        p.silent_entity_system_list = vec![SilentEntitySystem::default(); 4];
         p.variable_datum_list = vec![VariableDatumRecord::default(); 5];
     },
     |d| {
@@ -223,6 +250,38 @@ lists!(
         assert_eq!(d.variable_datum_list.len(), 5);
     }
 );
+
+/// Table 183: a Silent Aggregate System is 96 bits and a Silent Entity System
+/// is a Silent Entity System record of 96 + 32A bits (Table 110).
+#[test]
+fn aggregate_state_silent_systems_have_their_table_sizes() {
+    let mut pdu = AggregateStatePdu::new();
+    let empty = to_bytes(&mut pdu).len();
+
+    pdu.silent_aggregate_system_list = vec![SilentAggregateSystem::new(
+        5,
+        crate::records::AggregateType::default(),
+    )];
+    pdu.silent_entity_system_list = vec![SilentEntitySystem {
+        number_of_entities: 7,
+        number_of_appearance_records: 0,
+        entity_type: EntityType::default(),
+        entity_appearances: vec![crate::records::EntityAppearance::default(); 2],
+    }];
+    let bytes = to_bytes(&mut pdu);
+    assert_eq!(bytes.len(), empty + 12 + (12 + 2 * 4));
+
+    let decoded = round_trip(&mut pdu);
+    assert_eq!(
+        decoded.silent_aggregate_system_list[0].number_of_aggregates,
+        5
+    );
+    assert_eq!(decoded.silent_entity_system_list[0].number_of_entities, 7);
+    assert_eq!(
+        decoded.silent_entity_system_list[0].number_of_appearance_records,
+        2
+    );
+}
 
 #[test]
 fn aggregate_state_pads_id_lists_to_32_bits() {

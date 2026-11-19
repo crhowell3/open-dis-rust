@@ -7,14 +7,40 @@
 //! The Entity Management protocol family
 
 use crate::records::{
-    AggregateIdentifier, AggregateMarking, EntityIdentifier, EntityType, EulerAngles,
-    NamedLocationIdentification, PduHeader, RecordSpecification, Relationship,
-    SimulationIdentifier, VariableDatumRecord, Vector, WorldCoordinates,
+    AggregateIdentifier, AggregateMarking, AggregateType, EntityIdentifier, EntityType,
+    EulerAngles, NamedLocationIdentification, PduHeader, RecordSpecification, Relationship,
+    SilentEntitySystem, SimulationIdentifier, VariableDatumRecord, Vector, WorldCoordinates,
 };
 use crate::siso::enums::{
     AggregateStateAggregateState, AggregateStateFormation, ForceId, IsGroupOfGroupedEntityCategory,
     PduType, ProtocolFamily, RequiredReliabilityService, TransferControlTransferType,
 };
+
+/// One Silent Aggregate System in an Aggregate State PDU (IEEE 1278.1-2012
+/// §7.8.2 item r, Table 183): a number of subaggregates of one type that
+/// are not sending their own Aggregate State PDU
+#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct SilentAggregateSystem {
+    pub number_of_aggregates: u16,
+    padding: u16,
+    pub aggregate_type: AggregateType,
+}
+
+impl SilentAggregateSystem {
+    #[must_use]
+    pub const fn new(number_of_aggregates: u16, aggregate_type: AggregateType) -> Self {
+        Self {
+            number_of_aggregates,
+            padding: 0,
+            aggregate_type,
+        }
+    }
+}
 
 /// Implemented according to IEEE 1278.1-2012 §7.8.2
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
@@ -48,7 +74,7 @@ pub struct AggregateStatePdu {
     )]
     pub number_of_silent_aggregate_types: u16,
     #[deku(
-        update = "self.silent_entity_system_list.len()",
+        update = "crate::wire::update_each(&mut self.silent_entity_system_list)?",
         assert = "crate::wire::fits_in_pdu(*number_of_silent_entity_types)"
     )]
     pub number_of_silent_entity_types: u16,
@@ -63,9 +89,9 @@ pub struct AggregateStatePdu {
     )]
     padding: Vec<u8>,
     #[deku(count = "number_of_silent_aggregate_types")]
-    pub silent_aggregate_system_list: Vec<EntityType>,
+    pub silent_aggregate_system_list: Vec<SilentAggregateSystem>,
     #[deku(count = "number_of_silent_entity_types")]
-    pub silent_entity_system_list: Vec<EntityType>,
+    pub silent_entity_system_list: Vec<SilentEntitySystem>,
     #[deku(
         update = "self.variable_datum_list.len()",
         assert = "crate::wire::fits_in_pdu(*number_of_variable_datum_records)"
