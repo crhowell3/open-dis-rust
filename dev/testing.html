@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
+            window.path_to_searchindex_js = "../searchindex-21e21a9f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -196,7 +196,7 @@ tests:</p>
 <tr><th>Test</th><th>Checks</th></tr>
 </thead>
 <tbody>
-<tr><td><code>cast_to_any</code></td><td><code>as_any()</code> returns the right type.</td></tr>
+<tr><td><code>decodes_as_any_pdu</code></td><td><code>AnyPdu::deserialize</code> decodes the PDU as its own type and encodes it to the same bytes.</td></tr>
 <tr><td><code>new_sets_pdu_type</code></td><td><code>new()</code> sets the PDU type in the header.</td></tr>
 <tr><td><code>new_sets_default_length</code></td><td><code>new()</code> sets the header length to the expected default size.</td></tr>
 <tr><td><code>serialized_length_matches_header</code></td><td>The encoded size equals the header’s Length field.</td></tr>

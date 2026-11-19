@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
+            window.path_to_searchindex_js = "../searchindex-21e21a9f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -191,15 +191,13 @@ let ack = AcknowledgePdu::deserialize(&amp;mut datagram)?;</code></pre>
 <p>If the bytes are not a valid Acknowledge PDU, it returns a <code>DISError</code> instead.
 <a href="../reference/errors.html">Errors</a> describes each type of error.</p>
 <h2 id="receive-and-decode"><a class="header" href="#receive-and-decode">Receive and decode</a></h2>
-<p>A receiver usually handles several PDU types and ignores the rest.
-<code>PduHeader::get_pdu_type</code> reads just the 12-octet header, so you can decide what to do
-with a datagram before decoding it:</p>
+<p>A receiver usually handles several PDU types and ignores the rest. <code>AnyPdu::deserialize</code>
+reads the PDU type from the header and decodes the PDU as that type. <code>AnyPdu</code> has one
+variant per PDU type, named after its <code>PduType</code>, so you <code>match</code> on the ones you handle:</p>
 <pre><code class="language-rust ignore">use std::io;
 use tokio::net::UdpSocket;
 
-use open_dis_rust::{
-    entity_information::EntityStatePdu, prelude::*, simulation_management::AcknowledgePdu,
-};
+use open_dis_rust::prelude::*;
 
 #[tokio::main]
 async fn main() -&gt; io::Result&lt;()&gt; {
@@ -210,17 +208,13 @@ async fn main() -&gt; io::Result&lt;()&gt; {
         let (n, from) = socket.recv_from(&amp;mut buf).await?;
         let mut datagram = buf.get(..n).unwrap_or_default();
 
-        match PduHeader::get_pdu_type(datagram) {
-            Some(PduType::Acknowledge) =&gt; match AcknowledgePdu::deserialize(&amp;mut datagram) {
-                Ok(ack) =&gt; println!("{from}: acknowledged request {}", ack.request_id),
-                Err(e) =&gt; eprintln!("{from}: bad Acknowledge PDU: {e}"),
-            },
-            Some(PduType::EntityState) =&gt; match EntityStatePdu::deserialize(&amp;mut datagram) {
-                Ok(pdu) =&gt; println!("{from}: entity {:?}", pdu.entity_id),
-                Err(e) =&gt; eprintln!("{from}: bad Entity State PDU: {e}"),
-            },
-            Some(other) =&gt; println!("{from}: ignoring {other:?} PDU"),
-            None =&gt; eprintln!("{from}: {n} bytes is too short to be a DIS PDU"),
+        match AnyPdu::deserialize(&amp;mut datagram) {
+            Ok(AnyPdu::Acknowledge(ack)) =&gt; {
+                println!("{from}: acknowledged request {}", ack.request_id);
+            }
+            Ok(AnyPdu::EntityState(pdu)) =&gt; println!("{from}: entity {:?}", pdu.entity_id),
+            Ok(other) =&gt; println!("{from}: ignoring {:?} PDU", other.pdu_type()),
+            Err(e) =&gt; eprintln!("{from}: undecodable datagram: {e}"),
         }
     }
 }</code></pre>
@@ -235,10 +229,13 @@ datagram, so leftover bytes from an earlier, longer datagram cannot be read.</li
 traffic could naturally fail to decode. Log it and keep receiving rather than hard
 stopping your program.</li>
 </ul>
+<p>If you only handle one or two PDU types, you can skip decoding the rest:
+<code>PduHeader::get_pdu_type</code> reads just the 12-octet header, and then you can call
+<code>deserialize</code> on the concrete type, such as <code>EntityStatePdu::deserialize</code>.</p>
 <h2 id="several-pdus-in-a-single-datagram"><a class="header" href="#several-pdus-in-a-single-datagram">Several PDUs in a single datagram</a></h2>
-<p>Because <code>deserialize</code> advances the slice, you can decode a datagram that holds more than
-one PDU by calling it in a loop until the slice is empty.
-<a href="../reference/wire-format.html#several-pdus-in-one-datagram">Wire Format Conventions</a> shows how.</p>
+<p>A datagram can hold more than one PDU. <code>AnyPdu::deserialize_all</code> decodes each of them in
+turn. <a href="../reference/wire-format.html#several-pdus-in-one-datagram">Wire Format Conventions</a>
+shows how.</p>
 
                     </main>
 

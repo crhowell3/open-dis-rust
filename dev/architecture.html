@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
+            window.path_to_searchindex_js = "../searchindex-21e21a9f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -212,6 +212,7 @@ changes to the crate.</p>
 │   └── bit_records.rs             the other SISO bit layouts
 │
 │   the crate's own code, private and re-exported from the root
+├── any_pdu.rs                     AnyPdu, for decoding a PDU of any type
 ├── pdu.rs                         the Pdu, StandardPdu and LiveEntityPdu traits, and the
 │                                  impl_pdu! and pdu_tests! macros
 ├── dis_error.rs                   DISError, DISResult and WireFormatError
@@ -225,7 +226,7 @@ PDU uses, such as <code>Mine</code> or <code>ShaftRPMs</code>, lives next to tha
 <li><strong>SISO-REF-010-2023.</strong> Anything whose layout or values SISO-REF-010 defines lives in
 <code>siso</code>. A record that IEEE 1278.1 defines stays in <code>records</code> even when its fields use
 SISO enumerations, as <code>PduStatus</code> does.</li>
-<li><strong>The crate.</strong> The <code>Pdu</code> traits, <code>DISError</code> and the prelude are the crate’s own API.
+<li><strong>The crate.</strong> The <code>Pdu</code> traits, <code>AnyPdu</code>, <code>DISError</code> and the prelude are the crate’s own API.
 Their modules are private, and the crate root re-exports them, so each has one path.</li>
 </ul>
 <p>Conveniences stay with the type they serve rather than in a utilities module:

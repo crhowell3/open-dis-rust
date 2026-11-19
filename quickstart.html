@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "searchindex-34dfaea9.js";
+            window.path_to_searchindex_js = "searchindex-21e21a9f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a540a839.js"></script>
@@ -269,8 +269,8 @@ yourself.</li>
 </ul>
 <h2 id="2-receive-and-decode-pdus"><a class="header" href="#2-receive-and-decode-pdus">2. Receive and decode PDUs</a></h2>
 <p>The receiver binds to UDP port 3000, which is traditionally the port used for DIS
-traffic per the standard. For each datagram, it reads the header to see what kind of
-PDU arrived, then it attempts to decode it.</p>
+traffic per the standard. It decodes each datagram with <code>AnyPdu</code>, which reads the
+header to determine what kind of PDU arrived and decodes it as that type.</p>
 <pre><code class="language-rust ignore">//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
 //                     Simulation (DIS) application protocol
 //     Copyright (C) 2026 Cameron Howell
@@ -280,7 +280,6 @@ PDU arrived, then it attempts to decode it.</p>
 use std::{error::Error, net::UdpSocket};
 
 use open_dis_rust::prelude::*;
-use open_dis_rust::{entity_information::EntityStatePdu, siso::enums::PduType};
 
 fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
     let socket = UdpSocket::bind("0.0.0.0:3000")?;
@@ -289,37 +288,31 @@ fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
     let mut buf = [0u8; MAX_PDU_SIZE_OCTETS];
     loop {
         let (n, from) = socket.recv_from(&amp;mut buf)?;
-        let Some(datagram) = buf.get(..n) else {
+        let Some(mut datagram) = buf.get(..n) else {
             continue;
         };
 
-        // Peek at the 12-octet header to find out which PDU this is.
-        match PduHeader::get_pdu_type(datagram) {
-            Some(PduType::EntityState) =&gt; {
-                let mut bytes = datagram;
-                match EntityStatePdu::deserialize(&amp;mut bytes) {
-                    Ok(pdu) =&gt; println!(
-                        "{from}: entity {}:{}:{} '{}' at ({:.1}, {:.1}, {:.1})",
-                        pdu.entity_id.simulation_address.site_id,
-                        pdu.entity_id.simulation_address.application_id,
-                        pdu.entity_id.entity_id,
-                        pdu.entity_marking.entity_marking_string,
-                        pdu.entity_location.x_coordinate,
-                        pdu.entity_location.y_coordinate,
-                        pdu.entity_location.z_coordinate,
-                    ),
-                    Err(e) =&gt; eprintln!("{from}: bad Entity State PDU: {e}"),
-                }
-            }
-            Some(other) =&gt; println!("{from}: ignoring {other:?} PDU"),
-            None =&gt; eprintln!("{from}: {n} bytes is too short to be a DIS PDU"),
+        // The header says which PDU it is, and AnyPdu decodes it as that type
+        match AnyPdu::deserialize(&amp;mut datagram) {
+            Ok(AnyPdu::EntityState(pdu)) =&gt; println!(
+                "{from}: entity {}:{}:{} '{}' at ({:.1}, {:.1}, {:.1})",
+                pdu.entity_id.simulation_address.site_id,
+                pdu.entity_id.simulation_address.application_id,
+                pdu.entity_id.entity_id,
+                pdu.entity_marking.entity_marking_string,
+                pdu.entity_location.x_coordinate,
+                pdu.entity_location.y_coordinate,
+                pdu.entity_location.z_coordinate,
+            ),
+            Ok(other) =&gt; println!("{from}: ignoring {:?} PDU", other.pdu_type()),
+            Err(e) =&gt; eprintln!("{from}: undecodable datagram: {e}"),
         }
     }
 }</code></pre>
-<p><code>PduHeader::get_pdu_type</code> reads only the 12-octet header, so it is a cheap way to skip
-PDUs you aren’t accounting for before fully decoding them. <code>deserialize</code> returns an error
-instead of panicking when a datagram is truncated or malformed. A receiver on a shared
-network might expect to receive some bad PDUs at times.</p>
+<p><code>AnyPdu</code> has one variant per PDU type, named after its <code>PduType</code>, so you <code>match</code> on the
+ones you wish to explicitly handle. <code>deserialize</code> returns an error instead of panicking when
+a datagram is truncated or malformed. A receiver on a shared network might expect to receive
+some bad PDUs at times.</p>
 <h2 id="3-run-the-examples"><a class="header" href="#3-run-the-examples">3. Run the examples</a></h2>
 <p>In one terminal, start the receiver:</p>
 <pre><code class="language-shell">cargo run --example quickstart_receive

@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
+            window.path_to_searchindex_js = "../searchindex-21e21a9f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -289,26 +289,19 @@ short.</p>
 <h2 id="several-pdus-in-one-datagram"><a class="header" href="#several-pdus-in-one-datagram">Several PDUs in one datagram</a></h2>
 <p>The standard allows more than one PDU in a single datagram. <code>deserialize</code> reads exactly
 the number of octets given by the PDU’s <code>length</code> field and leaves the rest in the
-buffer, so you can decode a bundle in a loop:</p>
-<pre><code class="language-rust ignore">let mut rest: &amp;[u8] = datagram;
-
-while rest.len() &gt;= PDU_HEADER_SIZE {
-    match PduHeader::get_pdu_type(rest) {
-        Some(PduType::EntityState) =&gt; {
-            let pdu = EntityStatePdu::deserialize(&amp;mut rest)?;
+buffer. <code>AnyPdu::deserialize_all</code> uses this to decode every PDU in a datagram:</p>
+<pre><code class="language-rust ignore">for pdu in AnyPdu::deserialize_all(datagram) {
+    match pdu {
+        Ok(AnyPdu::EntityState(pdu)) =&gt; {
             // ...
         }
-        _ =&gt; {
-            // Skip a PDU we do not want to handle, using the length field (octets 8-9)
-            let len = rest.get(8..10).map_or(0, |b| usize::from(u16::from_be_bytes([b[0], b[1]])));
-            if len &lt; PDU_HEADER_SIZE || len &gt; rest.len() {
-                break; // malformed: drop the rest of the datagram
-            }
-            rest = rest.get(len..).unwrap_or_default();
-        }
+        Ok(_) =&gt; {} // a PDU we do not care to handle
+        Err(e) =&gt; eprintln!("dropping a PDU: {e}"),
     }
 }</code></pre>
-<p><code>PDU_HEADER_SIZE</code> (12 octets) is in <code>constants</code>, which is also re-exported in the prelude.</p>
+<p>When one PDU fails to decode, its error is yielded and decoding carries on with the next
+PDU, as long as the failed PDU’s <code>length</code> field fits in the datagram. If it does not, the
+rest of the datagram cannot be split into PDUs, so the error is the last item.</p>
 <p>To send a bundle, serialize each PDU into the same buffer, one after another, and keep
 the total under the network’s maximum datagram size.</p>
 

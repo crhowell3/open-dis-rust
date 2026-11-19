@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "../searchindex-34dfaea9.js";
+            window.path_to_searchindex_js = "../searchindex-21e21a9f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a540a839.js"></script>
@@ -219,7 +219,9 @@ error from the crate’s internal encoding library isn’t exposed, so match on
 Invalid PDU header: PDU length 4 is shorter than its 12-octet header
 </code></pre>
 <p>The first is a normal event on a busy network. It means you called <code>deserialize</code> on
-the wrong type, which you can avoid by checking <code>PduHeader::get_pdu_type</code> first.</p>
+the wrong type, which you can avoid by checking <code>PduHeader::get_pdu_type</code> first, or by
+decoding with <code>AnyPdu::deserialize</code>. <code>AnyPdu</code> reports an undefined PDU type as an
+<code>InvalidHeader</code> too.</p>
 <h3 id="bufferunderflow"><a class="header" href="#bufferunderflow"><code>BufferUnderflow</code></a></h3>
 <p>The header’s <code>length</code> field promises more octets than the buffer holds. This usually
 means the datagram was truncated, or your receive buffer was too small.</p>
