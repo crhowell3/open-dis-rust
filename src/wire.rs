@@ -250,6 +250,13 @@ pub fn write_zeros<W: no_std_io::Write + no_std_io::Seek>(
     vec![0u8; count].to_writer(writer, ())
 }
 
+/// A length in 32-bit words for an 8-bit length field, or 0 when it doesn't
+/// fit, which the EE PDU uses to mark a large emitter system or beam (§7.6.2).
+#[must_use]
+pub fn length_in_words(octets: usize) -> u8 {
+    u8::try_from(octets / 4).unwrap_or(0)
+}
+
 #[must_use]
 pub const fn padding_to(len: usize, align: usize) -> usize {
     len.next_multiple_of(align).saturating_sub(len)

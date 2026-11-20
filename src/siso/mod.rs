@@ -9,6 +9,7 @@
 pub mod appearance;
 pub mod bit_records;
 pub mod enums;
+pub mod grouped_entity;
 
 /// Implements deku's reader and writer for a fieldless enum that derives
 /// `FromPrimitive`, encoding it as its discriminant in `$repr`.

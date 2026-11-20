@@ -182,12 +182,17 @@ pub struct IntercomControlPdu {
     pub master_intercom_reference_id: EntityIdentifier,
     pub master_intercom_number: u16,
     pub master_channel_id: u16,
+    /// The length of `intercom_parameters` on the wire in octets, padding
+    /// included. `serialize` sets it
     #[deku(
-        update = "self.intercom_parameters.len()",
+        update = "intercom_parameters_len(&mut self.intercom_parameters)?",
         assert = "crate::wire::fits_in_pdu(*intercom_parameters_length)"
     )]
     pub intercom_parameters_length: u32,
-    #[deku(count = "intercom_parameters_length")]
+    #[deku(
+        reader = "read_intercom_parameters(deku::reader, *intercom_parameters_length)",
+        writer = "intercom_parameters.to_writer(deku::writer, ())"
+    )]
     pub intercom_parameters: Vec<IntercomCommunicationsParameters>,
 }
 crate::pdu::impl_pdu!(
@@ -196,6 +201,35 @@ crate::pdu::impl_pdu!(
     PduType::IntercomControl,
     ProtocolFamily::RadioCommunications
 );
+
+/// Updates each parameters record and returns their total encoded length.
+fn intercom_parameters_len(
+    parameters: &mut [IntercomCommunicationsParameters],
+) -> Result<usize, DekuError> {
+    let mut total: usize = 0;
+    for record in parameters.iter_mut() {
+        deku::DekuUpdate::update(record)?;
+        total = total.saturating_add(crate::wire::encoded_len(record)?);
+    }
+    Ok(total)
+}
+
+/// Reads `length` octets of Intercom Parameters (§7.7.6 m) as consecutive
+/// Intercom Communications Parameters records.
+fn read_intercom_parameters<R: Read + Seek>(
+    reader: &mut Reader<R>,
+    length: u32,
+) -> Result<Vec<IntercomCommunicationsParameters>, DekuError> {
+    let length = usize::try_from(length)
+        .map_err(|_| DekuError::Assertion("intercom parameters are too long".into()))?;
+    let octets: Vec<u8> = crate::wire::read_n(reader, length, deku::ctx::Endian::Big)?;
+    let mut rest = octets.as_slice();
+    let mut parameters = Vec::new();
+    while !rest.is_empty() {
+        parameters.push(crate::wire::read(&mut rest)?);
+    }
+    Ok(parameters)
+}
 
 // ---------------------------------------------------------------------------
 // Wire helpers

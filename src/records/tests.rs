@@ -475,3 +475,15 @@ fn change_options_encodes_as_its_octet() {
     let decoded: ChangeOptions = wire::read(&mut buf.as_slice()).unwrap();
     assert_eq!(decoded.to_raw(), 0b1010_0101);
 }
+
+/// Linear Segment Parameter (Table 83): 512 bits; IO Effect (Table 78): 128
+/// bits; Sensor (Table 108): 96 bits.
+#[test]
+fn fixed_record_sizes_match_their_tables() {
+    assert_eq!(
+        crate::wire::encoded_len(&LinearSegmentParameter::default()).unwrap(),
+        64
+    );
+    assert_eq!(crate::wire::encoded_len(&IOEffect::default()).unwrap(), 16);
+    assert_eq!(crate::wire::encoded_len(&Sensor::default()).unwrap(), 12);
+}

@@ -216,7 +216,13 @@ pub struct MinefieldResponseNackPdu {
     #[deku(update = "self.missing_pdu_sequence_numbers.len()")]
     pub number_of_missing_pdus: u8,
     #[deku(count = "number_of_missing_pdus")]
-    pub missing_pdu_sequence_numbers: Vec<u64>,
+    pub missing_pdu_sequence_numbers: Vec<u8>,
+    /// Zero octets that end the PDU on a 32-bit boundary
+    #[deku(
+        count = "nack_padding(usize::from(*number_of_missing_pdus))",
+        writer = "wire::write_zeros(deku::writer, nack_padding(missing_pdu_sequence_numbers.len()))"
+    )]
+    padding: Vec<u8>,
 }
 crate::pdu::impl_pdu!(
     MinefieldResponseNackPdu,
@@ -228,6 +234,13 @@ crate::pdu::impl_pdu!(
 // ---------------------------------------------------------------------------
 // Wire helpers
 // ---------------------------------------------------------------------------
+
+/// Padding after a NACK's missing sequence numbers: the request ID, the count,
+/// and the numbers are `missing + 2` octets, padding to a 32-bit boundary
+/// (Table 190)
+const fn nack_padding(missing: usize) -> usize {
+    wire::padding_to(missing.saturating_add(2), 4)
+}
 
 fn read_sensor_types<R: Read + Seek>(
     reader: &mut Reader<R>,
@@ -681,7 +694,28 @@ mod tests {
     pdu_tests!(
         minefield_response_nack_pdu_tests, MinefieldResponseNackPdu,
         pdu_type: PduType::MinefieldResponseNack,
-        default_bits: 208,
+        default_bits: 224,
         wrong_type: MinefieldDataPdu,
     );
+
+    /// Table 190: 8-bit missing sequence numbers, then padding to a 32-bit
+    /// boundary of P = ceil((N + 2) / 4) * 4 - (N + 2) octets.
+    #[test]
+    fn nack_sequence_numbers_are_octets_padded_to_32_bits() {
+        let mut pdu = MinefieldResponseNackPdu::new();
+        pdu.missing_pdu_sequence_numbers = vec![4, 5, 9];
+        let bytes = to_bytes(&mut pdu);
+
+        // Header 12, minefield ID 6, requesting ID 6, request ID 1, count 1,
+        // numbers 3, padding 3.
+        assert_eq!(bytes.len(), 32);
+        assert_eq!(&bytes[25..32], &[3, 4, 5, 9, 0, 0, 0]);
+
+        let decoded = MinefieldResponseNackPdu::deserialize(&mut bytes.as_slice())
+            .expect("deserialize failed");
+        assert_eq!(decoded.missing_pdu_sequence_numbers, [4, 5, 9]);
+
+        pdu.missing_pdu_sequence_numbers = vec![1, 2];
+        assert_eq!(to_bytes(&mut pdu).len(), 28);
+    }
 }

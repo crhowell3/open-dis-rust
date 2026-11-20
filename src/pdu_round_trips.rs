@@ -20,19 +20,27 @@
     clippy::float_cmp
 )]
 
+use crate::siso::bit_records::ComponentVisualDamageStatus;
 use crate::siso::enums::{
-    GridAxisDescriptorAxisType, GriddedDataDataRepresentation, VariableRecordTypes,
+    ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor,
+    EnvironmentalProcessRecordType, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
+    IntercomControlRecordType, IsGroupOfGroupedEntityCategory, VariableRecordTypes,
+};
+use crate::siso::grouped_entity::{
+    BasicGroundCombatVehicle, GroupedEntityDescription, GroupedEntityLocation,
+    GroupedEntityOrientation,
 };
 use crate::{
     DISError,
     pdu::Pdu,
     records::{
-        AggregateIdentifier, Attribute, BeamAntennaPattern, ClockTime, DirectedEnergyDamage,
-        EntityIdentifier, EntityType, Environment, EulerAngles, GridAxisDescriptor, GridData,
+        AggregateIdentifier, Attribute, BeamAntennaPattern, ClockTime, DEAreaAimpoint,
+        DEPrecisionAimpoint, DETargetEnergyDeposition, DirectedEnergyDamage, EntityIdentifier,
+        EntityType, Environment, EulerAngles, EventIdentifier, GridAxisDescriptor, GridData,
         IFFFundamentalParameterData, IntercomCommunicationsParameters, LinearSegmentParameter,
-        ModulationParameters, PropulsionSystemData, SupplyQuantity, TrackJamData,
-        VariableDatumRecord, VariableParameter, VariableTransmitterParameters, Vector,
-        VectoringNozzleSystemData, WorldCoordinates,
+        ModulationParameters, PropulsionSystemData, SilentEntitySystem, StandardVariableRecord,
+        SupplyQuantity, TrackJamData, VariableDatumRecord, VariableParameter,
+        VariableTransmitterParameters, Vector, VectoringNozzleSystemData, WorldCoordinates,
     },
 };
 use crate::{
@@ -108,8 +116,27 @@ lists!(
             2
         );
         assert_eq!(d.systems[1].beam_data_records.len(), 3);
+        // §7.6.2: lengths in 32-bit words. A beam is 52 octets plus 8 per
+        // target; a system is 20 octets plus its beams.
+        assert_eq!(d.systems[0].beam_data_records[0].beam_data_length, 17);
+        assert_eq!(d.systems[0].system_data_length, 22);
+        assert_eq!(d.systems[1].beam_data_records[2].beam_data_length, 13);
+        assert_eq!(d.systems[1].system_data_length, 5 + 3 * 13);
     }
 );
+
+/// §7.6.2: an emitter system or beam over 255 32-bit words is "large" and its
+/// length is 0.
+#[test]
+fn large_ee_beams_have_zero_length() {
+    let mut pdu = ElectromagneticEmissionsPdu::new();
+    // 52 + 8 * 120 octets = 253 words; 52 + 8 * 126 = 265 words.
+    pdu.systems = vec![ee_system(1, 120), ee_system(1, 126)];
+    let d = round_trip(&mut pdu);
+    assert_eq!(d.systems[0].beam_data_records[0].beam_data_length, 253);
+    assert_eq!(d.systems[0].system_data_length, 0);
+    assert_eq!(d.systems[1].beam_data_records[0].beam_data_length, 0);
+}
 
 lists!(
     underwater_acoustic,
@@ -135,6 +162,10 @@ lists!(
             (1, 2, 3)
         );
         assert_eq!(d.emitter_systems[2].number_of_beams, 2);
+        // §7.6.4 o and s 1): lengths in 32-bit words. A beam is 24 octets; a
+        // system is 20 octets plus its beams.
+        assert_eq!(d.emitter_systems[2].beam_records[1].beam_data_length, 6);
+        assert_eq!(d.emitter_systems[2].emitter_system_data_length, 5 + 2 * 6);
     }
 );
 
@@ -211,8 +242,8 @@ lists!(
     |p| {
         p.aggregate_id_list = vec![AggregateIdentifier::default(); 1];
         p.entity_id_list = vec![EntityIdentifier::default(); 2];
-        p.silent_aggregate_system_list = vec![EntityType::default(); 3];
-        p.silent_entity_system_list = vec![EntityType::default(); 4];
+        p.silent_aggregate_system_list = vec![SilentAggregateSystem::default(); 3];
+        p.silent_entity_system_list = vec![SilentEntitySystem::default(); 4];
         p.variable_datum_list = vec![VariableDatumRecord::default(); 5];
     },
     |d| {
@@ -223,6 +254,38 @@ lists!(
         assert_eq!(d.variable_datum_list.len(), 5);
     }
 );
+
+/// Table 183: a Silent Aggregate System is 96 bits and a Silent Entity System
+/// is a Silent Entity System record of 96 + 32A bits (Table 110).
+#[test]
+fn aggregate_state_silent_systems_have_their_table_sizes() {
+    let mut pdu = AggregateStatePdu::new();
+    let empty = to_bytes(&mut pdu).len();
+
+    pdu.silent_aggregate_system_list = vec![SilentAggregateSystem::new(
+        5,
+        crate::records::AggregateType::default(),
+    )];
+    pdu.silent_entity_system_list = vec![SilentEntitySystem {
+        number_of_entities: 7,
+        number_of_appearance_records: 0,
+        entity_type: EntityType::default(),
+        entity_appearances: vec![crate::records::EntityAppearance::default(); 2],
+    }];
+    let bytes = to_bytes(&mut pdu);
+    assert_eq!(bytes.len(), empty + 12 + (12 + 2 * 4));
+
+    let decoded = round_trip(&mut pdu);
+    assert_eq!(
+        decoded.silent_aggregate_system_list[0].number_of_aggregates,
+        5
+    );
+    assert_eq!(decoded.silent_entity_system_list[0].number_of_entities, 7);
+    assert_eq!(
+        decoded.silent_entity_system_list[0].number_of_appearance_records,
+        2
+    );
+}
 
 #[test]
 fn aggregate_state_pads_id_lists_to_32_bits() {
@@ -246,13 +309,157 @@ lists!(
     is_group_of,
     IsGroupOfPdu,
     |p| {
-        p.grouped_entity_descriptions = vec![1, 2, 3];
+        p.grouped_entity_descriptions = vec![
+            GroupedEntityDescription::BasicGroundCombatVehicle(
+                BasicGroundCombatVehicle::default()
+            );
+            3
+        ];
     },
     |d| {
         assert_eq!(d.number_of_grouped_entities, 3);
-        assert_eq!(d.grouped_entity_descriptions, [1, 2, 3]);
+        assert_eq!(
+            d.grouped_entity_category,
+            IsGroupOfGroupedEntityCategory::BasicGroundCombatVehicle
+        );
+        assert_eq!(d.grouped_entity_descriptions.len(), 3);
     }
 );
+
+/// IEEE 1278.1-2012 Table 184: 320 + 8NG bits, where G is the GED record's size
+/// for the Grouped Entity Category (SISO-REF-010-2023 §20.4.3).
+#[test]
+fn is_group_of_sizes_follow_the_grouped_entity_category() {
+    let records = [
+        (
+            GroupedEntityDescription::BasicGroundCombatVehicle(
+                crate::siso::grouped_entity::BasicGroundCombatVehicle::default(),
+            ),
+            20,
+        ),
+        (
+            GroupedEntityDescription::EnhancedGroundCombatVehicle(
+                crate::siso::grouped_entity::EnhancedGroundCombatVehicle::default(),
+            ),
+            24,
+        ),
+        (
+            GroupedEntityDescription::BasicGroundCombatSoldier(
+                crate::siso::grouped_entity::BasicGroundCombatSoldier::default(),
+            ),
+            20,
+        ),
+        (
+            GroupedEntityDescription::EnhancedGroundCombatSoldier(
+                crate::siso::grouped_entity::EnhancedGroundCombatSoldier::default(),
+            ),
+            24,
+        ),
+        (
+            GroupedEntityDescription::BasicRotorWingAircraft(
+                crate::siso::grouped_entity::BasicRotorWingAircraft::default(),
+            ),
+            24,
+        ),
+        (
+            GroupedEntityDescription::EnhancedRotorWingAircraft(
+                crate::siso::grouped_entity::EnhancedRotorWingAircraft::default(),
+            ),
+            28,
+        ),
+        (
+            GroupedEntityDescription::BasicFixedWingAircraft(
+                crate::siso::grouped_entity::BasicFixedWingAircraft::default(),
+            ),
+            20,
+        ),
+        (
+            GroupedEntityDescription::EnhancedFixedWingAircraft(
+                crate::siso::grouped_entity::EnhancedFixedWingAircraft::default(),
+            ),
+            24,
+        ),
+        (
+            GroupedEntityDescription::GroundLogisticsVehicle(
+                crate::siso::grouped_entity::GroundLogisticsVehicle::default(),
+            ),
+            16,
+        ),
+    ];
+    for (record, size) in records {
+        let mut pdu = IsGroupOfPdu::new();
+        pdu.grouped_entity_descriptions = vec![record; 2];
+        let bytes = to_bytes(&mut pdu);
+        assert_eq!(bytes.len(), 40 + 2 * size, "{:?}", record.category());
+        assert_eq!(bytes[18], record.category() as u8);
+
+        let decoded = round_trip(&mut pdu);
+        assert_eq!(decoded.grouped_entity_descriptions, [record; 2]);
+    }
+}
+
+/// SISO-REF-010-2023 §20.4.3.1: entity number, x/y/z offsets, appearance,
+/// psi/theta/phi, speed, turret azimuth, gun elevation, slew rate, elevation
+/// rate.
+#[test]
+fn basic_ground_combat_vehicle_field_order() {
+    let vehicle = BasicGroundCombatVehicle {
+        entity_number: 0x0102,
+        location: GroupedEntityLocation {
+            x_offset: -1,
+            y_offset: 2,
+            z_offset: 3,
+        },
+        appearance: crate::records::EntityAppearance::from_raw(0xAABB_CCDD),
+        orientation: GroupedEntityOrientation {
+            psi: 4,
+            theta: -5,
+            phi: 6,
+        },
+        speed: -7,
+        turret_azimuth: 8,
+        gun_elevation: 9,
+        turret_slew_rate: 10,
+        gun_elevation_rate: 11,
+    };
+    let mut pdu = IsGroupOfPdu::new();
+    pdu.grouped_entity_descriptions =
+        vec![GroupedEntityDescription::BasicGroundCombatVehicle(vehicle)];
+    let bytes = to_bytes(&mut pdu);
+    assert_eq!(
+        &bytes[40..60],
+        &[
+            0x01, 0x02, 0xFF, 0xFF, 0x00, 0x02, 0x00, 0x03, 0xAA, 0xBB, 0xCC, 0xDD, 4, 0xFB, 6,
+            0xF9, 8, 9, 10, 11
+        ]
+    );
+}
+
+#[test]
+fn is_group_of_rejects_mixed_categories() {
+    let mut pdu = IsGroupOfPdu::new();
+    pdu.grouped_entity_descriptions = vec![
+        GroupedEntityDescription::BasicGroundCombatVehicle(
+            crate::siso::grouped_entity::BasicGroundCombatVehicle::default(),
+        ),
+        GroupedEntityDescription::GroundLogisticsVehicle(
+            crate::siso::grouped_entity::GroundLogisticsVehicle::default(),
+        ),
+    ];
+    assert!(pdu.to_bytes().is_err());
+}
+
+/// Category 0 (Undefined) has no GED record format.
+#[test]
+fn is_group_of_cannot_decode_undefined_entities() {
+    let mut pdu = IsGroupOfPdu::new();
+    pdu.grouped_entity_descriptions = vec![GroupedEntityDescription::GroundLogisticsVehicle(
+        crate::siso::grouped_entity::GroundLogisticsVehicle::default(),
+    )];
+    let mut bytes = to_bytes(&mut pdu);
+    bytes[18] = 0;
+    assert!(IsGroupOfPdu::deserialize(&mut bytes.as_slice()).is_err());
+}
 
 // ---------------------------------------------------------------------------
 // Logistics
@@ -779,9 +986,40 @@ lists!(
         p.intercom_parameters = vec![IntercomCommunicationsParameters::default(); 2];
     },
     |d| {
-        assert_eq!(d.intercom_parameters_length, 2);
+        // Two empty records, each a 4-octet header
+        assert_eq!(d.intercom_parameters_length, 8);
+        assert_eq!(d.intercom_parameters.len(), 2);
     }
 );
+
+/// §7.7.6 m: the length counts octets; §6.2.46: Record Length counts the
+/// record-specific octets, and each record is padded to 32 bits.
+#[test]
+fn intercom_parameters_length_counts_octets() {
+    let mut pdu = IntercomControlPdu::new();
+    pdu.intercom_parameters = vec![
+        IntercomCommunicationsParameters::new(
+            IntercomControlRecordType::default(),
+            vec![1, 2, 3, 4, 5],
+        ),
+        IntercomCommunicationsParameters::new(IntercomControlRecordType::default(), vec![9; 4]),
+    ];
+    let bytes = pdu.to_bytes().expect("serialize failed");
+
+    // Fixed part is 40 octets; then 4 + 5 + 3 padding, then 4 + 4.
+    assert_eq!(bytes.len(), 40 + 12 + 8);
+    assert_eq!(&bytes[36..40], &20u32.to_be_bytes());
+    assert_eq!(&bytes[42..44], &5u16.to_be_bytes());
+    assert_eq!(&bytes[44..52], &[1, 2, 3, 4, 5, 0, 0, 0]);
+
+    let decoded = round_trip(&mut pdu);
+    assert_eq!(decoded.intercom_parameters.len(), 2);
+    assert_eq!(
+        decoded.intercom_parameters[0].record_specific_fields,
+        [1, 2, 3, 4, 5]
+    );
+    assert_eq!(decoded.intercom_parameters[1].record_length, 4);
+}
 
 lists!(
     data_query_reliable,
@@ -828,6 +1066,31 @@ lists!(
     }
 );
 
+/// Table 57: Type 32, Length 16 (64 + K + P bits), Index 8, Padding 8, then
+/// the K-bit geometry or state record padded to a 64-bit boundary.
+#[test]
+fn environment_records_carry_their_geometry_or_state() {
+    let mut pdu = EnvironmentalProcessPdu::new();
+    let empty = to_bytes(&mut pdu).len();
+    pdu.environment_records = vec![
+        Environment::new(EnvironmentalProcessRecordType::default(), 1, vec![1, 2, 3]),
+        Environment::new(EnvironmentalProcessRecordType::default(), 2, vec![7; 16]),
+    ];
+    let bytes = to_bytes(&mut pdu);
+    assert_eq!(bytes.len(), empty + 16 + 24);
+    // The first record's Length is 128 bits; its fields are padded with 5 zeros.
+    assert_eq!(&bytes[empty + 4..empty + 6], &128u16.to_be_bytes());
+    assert_eq!(&bytes[empty + 8..empty + 16], &[1, 2, 3, 0, 0, 0, 0, 0]);
+
+    let decoded = round_trip(&mut pdu);
+    assert_eq!(
+        decoded.environment_records[0].geometry_or_state,
+        [1, 2, 3, 0, 0, 0, 0, 0]
+    );
+    assert_eq!(decoded.environment_records[1].length, 192);
+    assert_eq!(decoded.environment_records[1].geometry_or_state, [7; 16]);
+}
+
 lists!(
     linear_object_state,
     LinearObjectStatePdu,
@@ -865,23 +1128,95 @@ lists!(
     directed_energy_fire,
     DirectedEnergyFirePdu,
     |p| {
-        p.damage_descriptions = vec![DirectedEnergyDamage::default(); 2];
+        p.de_records = vec![StandardVariableRecord::new(4000, 8, vec![]); 2];
     },
     |d| {
         assert_eq!(d.number_of_de_records, 2);
     }
 );
 
+/// §7.3.4 o: a DE Fire PDU's records are DE records such as the 96-octet DE
+/// Precision Aimpoint (Table 45), in Standard Variable format.
+#[test]
+fn directed_energy_fire_carries_precision_aimpoints() {
+    let mut aimpoint = DEPrecisionAimpoint::new();
+    aimpoint.peak_irradiance = 2.5;
+    let mut pdu = DirectedEnergyFirePdu::new();
+    pdu.de_records = vec![StandardVariableRecord::from_record(&aimpoint).expect("encode failed")];
+
+    let decoded = round_trip(&mut pdu);
+    assert_eq!(decoded.de_records.len(), 1);
+    assert_eq!(decoded.de_records[0].record_type, 4000);
+    assert_eq!(decoded.de_records[0].record_length, 96);
+    let back: DEPrecisionAimpoint = decoded.de_records[0].to_record().expect("decode failed");
+    assert!((back.peak_irradiance - 2.5).abs() < f32::EPSILON);
+}
+
 lists!(
     entity_damage_status,
     EntityDamageStatusPdu,
     |p| {
-        p.damage_descriptions = vec![DirectedEnergyDamage::default(); 3];
+        p.damage_descriptions = vec![StandardVariableRecord::new(4500, 8, vec![]); 3];
     },
     |d| {
         assert_eq!(d.number_of_damage_descriptions, 3);
     }
 );
+
+/// Table 44: a DE Area Aimpoint record is padded to a 64-bit boundary and its
+/// Record Length counts the whole record.
+#[test]
+fn directed_energy_fire_carries_area_aimpoints() {
+    let mut lengths = Vec::new();
+    for (patterns, depositions) in [(0, 0), (1, 0), (0, 1), (1, 1)] {
+        let mut aimpoint = DEAreaAimpoint::new();
+        aimpoint.beam_antenna_pattern_records = vec![BeamAntennaPattern::default(); patterns];
+        aimpoint.de_target_energy_deposition_records =
+            vec![DETargetEnergyDeposition::default(); depositions];
+        deku::DekuUpdate::update(&mut aimpoint).expect("update failed");
+        let record = StandardVariableRecord::from_record(&aimpoint).expect("encode failed");
+
+        let mut pdu = DirectedEnergyFirePdu::new();
+        pdu.de_records = vec![record];
+        let decoded = round_trip(&mut pdu);
+        let back: DEAreaAimpoint = decoded.de_records[0].to_record().expect("decode failed");
+        assert_eq!(back.beam_antenna_pattern_records.len(), patterns);
+        assert_eq!(back.de_target_energy_deposition_records.len(), depositions);
+        lengths.push(decoded.de_records[0].record_length);
+    }
+    // 12 + 40N + 12M octets, padded to a multiple of 8.
+    assert_eq!(lengths, [16, 56, 24, 64]);
+}
+
+/// §7.3.5 d: Damage Description records "and may contain other Standard
+/// Variable records".
+#[test]
+fn entity_damage_status_keeps_other_standard_variable_records() {
+    let damage = DirectedEnergyDamage::new(
+        Vector::default(),
+        1.0,
+        300.0,
+        ComponentIdentification::default(),
+        ComponentDamageStatus::default(),
+        ComponentVisualDamageStatus::default(),
+        ComponentVisualSmokeColor::default(),
+        EventIdentifier::default(),
+    );
+    let mut pdu = EntityDamageStatusPdu::new();
+    pdu.damage_descriptions = vec![
+        StandardVariableRecord::new(9999, 0, vec![1, 2, 3]),
+        StandardVariableRecord::from_record(&damage).expect("encode failed"),
+    ];
+
+    let decoded = round_trip(&mut pdu);
+    assert_eq!(decoded.damage_descriptions[0].record_type, 9999);
+    assert_eq!(decoded.damage_descriptions[0].record_length, 16);
+    assert_eq!(decoded.damage_descriptions[1].record_length, 40);
+    let back: DirectedEnergyDamage = decoded.damage_descriptions[1]
+        .to_record()
+        .expect("decode failed");
+    assert!((back.temperature - 300.0).abs() < f32::EPSILON);
+}
 
 // ---------------------------------------------------------------------------
 // IFF layers

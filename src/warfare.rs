@@ -7,8 +7,8 @@
 //! The Warfare protocol family
 
 use crate::records::{
-    ClockTime, DirectedEnergyDamage, EntityIdentifier, EntityType, EventIdentifier,
-    MunitionDescriptor, PduHeader, VariableParameter, Vector, WorldCoordinates,
+    ClockTime, EntityIdentifier, EntityType, EventIdentifier, MunitionDescriptor, PduHeader,
+    StandardVariableRecord, VariableParameter, Vector, WorldCoordinates,
 };
 use crate::siso::enums::{DEFirePulseShape, DetonationResult, PduType, ProtocolFamily};
 
@@ -81,12 +81,16 @@ pub struct DirectedEnergyFirePdu {
     padding3: u32,
     padding4: u16,
     #[deku(
-        update = "self.damage_descriptions.len()",
+        update = "crate::wire::update_each(&mut self.de_records)?",
         assert = "crate::wire::fits_in_pdu(*number_of_de_records)"
     )]
     pub number_of_de_records: u16,
+    /// DE records (§6.2.20), such as [`DEPrecisionAimpoint`](crate::records::DEPrecisionAimpoint) and
+    /// [`DEAreaAimpoint`](crate::records::DEAreaAimpoint), and any other Standard Variable records. Convert a
+    /// typed record with [`StandardVariableRecord::from_record`] and back with
+    /// [`StandardVariableRecord::to_record`].
     #[deku(count = "number_of_de_records")]
-    pub damage_descriptions: Vec<DirectedEnergyDamage>,
+    pub de_records: Vec<StandardVariableRecord>,
 }
 crate::pdu::impl_pdu!(
     DirectedEnergyFirePdu,
@@ -105,12 +109,16 @@ pub struct EntityDamageStatusPdu {
     padding: u16,
     padding2: u16,
     #[deku(
-        update = "self.damage_descriptions.len()",
+        update = "crate::wire::update_each(&mut self.damage_descriptions)?",
         assert = "crate::wire::fits_in_pdu(*number_of_damage_descriptions)"
     )]
     pub number_of_damage_descriptions: u16,
+    /// Damage Description records ([`DirectedEnergyDamage`](crate::records::DirectedEnergyDamage)) and any other
+    /// Standard Variable records. Convert a typed record with
+    /// [`StandardVariableRecord::from_record`] and back with
+    /// [`StandardVariableRecord::to_record`].
     #[deku(count = "number_of_damage_descriptions")]
-    pub damage_descriptions: Vec<DirectedEnergyDamage>,
+    pub damage_descriptions: Vec<StandardVariableRecord>,
 }
 crate::pdu::impl_pdu!(
     EntityDamageStatusPdu,

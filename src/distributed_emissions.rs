@@ -55,6 +55,9 @@ pub struct FundamentalParameterData {
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct ElectromagneticEmissionBeamData {
+    /// This beam's length in 32-bit words, or 0 when it is over 255 words.
+    /// `serialize` sets it.
+    #[deku(update = "crate::wire::length_in_words(crate::wire::encoded_len(self)?)")]
     pub beam_data_length: u8,
     pub beam_id_number: u8,
     pub beam_parameter_index: u16,
@@ -77,6 +80,9 @@ pub struct ElectromagneticEmissionBeamData {
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct ElectromagneticEmissionSystemData {
+    /// This emitter system's length in 32-bit words, beams included, or 0
+    /// when it is over 255 words. `serialize` sets it
+    #[deku(update = "crate::wire::length_in_words(crate::wire::encoded_len(self)?)")]
     pub system_data_length: u8,
     #[deku(update = "crate::wire::update_each(&mut self.beam_data_records)?")]
     pub number_of_beams: u8,
@@ -180,6 +186,8 @@ impl AcousticBeamFundamentalParameter {
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct AcousticBeamData {
+    /// This beam's length in 32-bit words. `serialize` sets it.
+    #[deku(update = "crate::wire::length_in_words(crate::wire::encoded_len(self)?)")]
     pub beam_data_length: u8,
     pub beam_id_number: u8,
     pub pad2: u16,
@@ -211,8 +219,11 @@ impl AcousticBeamData {
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct AcousticEmitterSystemData {
+    /// This emitter system's length in 32-bit words, beams included.
+    /// `serialize` sets it
+    #[deku(update = "crate::wire::length_in_words(crate::wire::encoded_len(self)?)")]
     pub emitter_system_data_length: u8,
-    #[deku(update = "self.beam_records.len()")]
+    #[deku(update = "crate::wire::update_each(&mut self.beam_records)?")]
     pub number_of_beams: u8,
     pub pad2: u16,
     pub acoustic_emitter_system: AcousticEmitterSystem,
