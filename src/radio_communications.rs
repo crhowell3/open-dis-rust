@@ -182,6 +182,8 @@ pub struct IntercomControlPdu {
     pub master_intercom_reference_id: EntityIdentifier,
     pub master_intercom_number: u16,
     pub master_channel_id: u16,
+    /// The length of `intercom_parameters` on the wire in octets, padding
+    /// included. `serialize` sets it
     #[deku(
         update = "intercom_parameters_len(&mut self.intercom_parameters)?",
         assert = "crate::wire::fits_in_pdu(*intercom_parameters_length)"

@@ -1394,7 +1394,7 @@ impl EntityType {
 )]
 pub struct Environment {
     pub environment_type: EnvironmentalProcessRecordType,
-    /// The whole record's length in bits, padding included: 64 + K + P
+    /// The whole record's length in bits, padding included: 64 + K + P.
     /// `serialize` sets it from `geometry_or_state`
     #[deku(
         update = "environment_length_bits(self.geometry_or_state.len())?",

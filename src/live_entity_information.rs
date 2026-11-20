@@ -305,7 +305,7 @@ impl_deku_bitflags!(LEFireFlags, u8);
 /// only when they differ from the firing entity's, as the standard requires,
 /// and are filled in from it when they are not sent.
 ///
-/// If `target_entity_id` is `None`, the standard requires `location`
+/// If `target_live_entity_id` is `None`, the standard requires `location`
 /// (§9.4.5.6 g)
 #[derive(Debug, Default, Clone, deku::DekuRead, deku::DekuWrite)]
 #[deku(endian = "big")]
@@ -520,7 +520,7 @@ impl_deku_bitflags!(LEDetonationFlags2, u8);
 
 /// Implemented according to IEEE 1278.1-2012 §9.4.6.8
 ///
-/// Set the optional fields you wanr to send; `serialize` sets the flags to
+/// Set the optional fields you want to send; `serialize` sets the flags to
 /// match. The munition and event IDs' site and application numbers are sent
 /// only when they differ from the firing entity's, as the standard requires,
 /// and are filled in from it when they are not sent.
