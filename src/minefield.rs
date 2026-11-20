@@ -239,7 +239,7 @@ crate::pdu::impl_pdu!(
 /// and the numbers are `missing + 2` octets, padding to a 32-bit boundary
 /// (Table 190)
 const fn nack_padding(missing: usize) -> usize {
-    wire::padding_to_(missing.saturating_add(2), 4)
+    wire::padding_to(missing.saturating_add(2), 4)
 }
 
 fn read_sensor_types<R: Read + Seek>(

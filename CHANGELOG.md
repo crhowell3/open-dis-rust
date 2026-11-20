@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2026-11-18
+## [1.0.0] - 2026-11-19
 
 The first official release of open-dis-rust!
 

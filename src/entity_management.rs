@@ -15,6 +15,8 @@ use crate::siso::enums::{
     AggregateStateAggregateState, AggregateStateFormation, ForceId, IsGroupOfGroupedEntityCategory,
     PduType, ProtocolFamily, RequiredReliabilityService, TransferControlTransferType,
 };
+use crate::siso::grouped_entity::GroupedEntityDescription;
+use deku::DekuError;
 
 /// One Silent Aggregate System in an Aggregate State PDU (IEEE 1278.1-2012
 /// §7.8.2 item r, Table 183): a number of subaggregates of one type that
@@ -114,14 +116,19 @@ pub struct IsGroupOfPdu {
     #[deku(skip)]
     header: PduHeader,
     pub group_entity_id: EntityIdentifier,
+    /// The type of every entity in the group, which picks the record type of
+    /// `grouped_entity_descriptions`. `serialize` sets it from them when there
+    /// are any.
+    #[deku(update = "self.derived_category()?")]
     pub grouped_entity_category: IsGroupOfGroupedEntityCategory,
     #[deku(update = "self.grouped_entity_descriptions.len()")]
     pub number_of_grouped_entities: u8,
     padding: u32,
     pub latitude: f64,
     pub longitude: f64,
-    #[deku(count = "number_of_grouped_entities")]
-    pub grouped_entity_descriptions: Vec<u64>,
+    /// One record per entity, all of the same category
+    #[deku(count = "number_of_grouped_entities", ctx = "*grouped_entity_category")]
+    pub grouped_entity_descriptions: Vec<GroupedEntityDescription>,
 }
 crate::pdu::impl_pdu!(
     IsGroupOfPdu,
@@ -129,6 +136,26 @@ crate::pdu::impl_pdu!(
     PduType::IsGroupOf,
     ProtocolFamily::EntityManagement
 );
+
+impl IsGroupOfPdu {
+    /// The category of the grouped entity descriptions, which must all share
+    /// one, or the current category when there are none.
+    fn derived_category(&self) -> Result<IsGroupOfGroupedEntityCategory, DekuError> {
+        let mut categories = self
+            .grouped_entity_descriptions
+            .iter()
+            .map(GroupedEntityDescription::category);
+        let Some(first) = categories.next() else {
+            return Ok(self.grouped_entity_category);
+        };
+        if categories.any(|category| category != first) {
+            return Err(DekuError::Assertion(
+                "an IsGroupOf PDU's grouped entity descriptions must all be of one category".into(),
+            ));
+        }
+        Ok(first)
+    }
+}
 
 /// Implemented according to IEEE 1278.1-2012 §7.8.4
 #[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]

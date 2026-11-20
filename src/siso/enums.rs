@@ -8363,7 +8363,7 @@ pub enum IOEffectsRecordIOProcess {
     NoStatement = 0,
 }
 
-impl_deku_enum!(IOEffectsRecordIOProcess, u8, from_u8);
+impl_deku_enum!(IOEffectsRecordIOProcess, u16, from_u16);
 
 // SISO-REF-010-2023 IOCommsNodeRecordCommsNodeType [UID 294]
 #[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]

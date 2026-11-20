@@ -506,7 +506,7 @@ fn deku_matches_from_primitive_for_every_enum() {
     check_u8::<IOEffectsRecordIOStatus>(IOEffectsRecordIOStatus::from_u8);
     check_u8::<IOEffectsRecordIOLinkType>(IOEffectsRecordIOLinkType::from_u8);
     check_u8::<IOEffectsRecordIOEffect>(IOEffectsRecordIOEffect::from_u8);
-    check_u8::<IOEffectsRecordIOProcess>(IOEffectsRecordIOProcess::from_u8);
+    check_u16::<IOEffectsRecordIOProcess>(IOEffectsRecordIOProcess::from_u16);
     check_u8::<IOCommsNodeRecordCommsNodeType>(IOCommsNodeRecordCommsNodeType::from_u8);
     check_u8::<DISAttributeActionCode>(DISAttributeActionCode::from_u8);
     check_u8::<DRParametersType>(DRParametersType::from_u8);

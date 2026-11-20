@@ -28,7 +28,7 @@ pub struct EnvironmentalProcessPdu {
     pub model_type: u8,
     pub environment_status: u8,
     #[deku(
-        update = "self.environment_records.len()",
+        update = "crate::wire::update_each(&mut self.environment_records)?",
         assert = "crate::wire::fits_in_pdu(*number_of_environment_records)"
     )]
     pub number_of_environment_records: u16,

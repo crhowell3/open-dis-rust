@@ -16,6 +16,7 @@ use deku::{
 };
 use num_traits::FromPrimitive;
 
+use crate::siso::appearance::ObjectStateAppearanceGeneral;
 use crate::siso::bit_records::ComponentVisualDamageStatus;
 use crate::siso::enums::{
     ActiveInterrogationIndicator, AggregateStateAggregateKind, ArticulatedPartsTypeClass,
@@ -904,6 +905,8 @@ pub struct ExplosionDescriptor {
 )]
 pub struct DEAreaAimpoint {
     pub record_type: u32,
+    /// The whole record in octets, a multiple of 8. `serialize` sets it
+    #[deku(update = "crate::wire::encoded_len(self)?")]
     pub record_length: u16,
     padding: u16,
     #[deku(
@@ -920,6 +923,33 @@ pub struct DEAreaAimpoint {
     pub beam_antenna_pattern_records: Vec<BeamAntennaPattern>,
     #[deku(count = "de_target_energy_deposition_record_count")]
     pub de_target_energy_deposition_records: Vec<DETargetEnergyDeposition>,
+    /// Zero octets that end the record on a 64-bit boundary
+    #[deku(
+        count = "area_aimpoint_padding(usize::from(*beam_antenna_pattern_record_count), usize::from(*de_target_energy_deposition_record_count))",
+        writer = "crate::wire::write_zeros(deku::writer, area_aimpoint_padding(beam_antenna_pattern_records.len(), de_target_energy_deposition_records.len()))"
+    )]
+    padding2: Vec<u8>,
+}
+
+impl DEAreaAimpoint {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            record_type: 4001,
+            record_length: 16,
+            ..Default::default()
+        }
+    }
+}
+
+/// Padding that ends a DE Area Aimpoint record on a 64-bit boundary: its
+/// 12-octet header, 40-octet Beam Antenna Pattern records and 12-octet DE
+/// Target Energy Deposition records (Table 44).
+const fn area_aimpoint_padding(patterns: usize, depositions: usize) -> usize {
+    let length = 12_usize
+        .saturating_add(patterns.saturating_mul(40))
+        .saturating_add(depositions.saturating_mul(12));
+    crate::wire::padding_to(length, 8)
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.20.3
@@ -1353,6 +1383,9 @@ impl EntityType {
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.31
+///
+/// `geometry_or_state` holds the geometry or state record (§6.2.31.2 and
+/// §6.2.31.3) as raw octets; its layout depends on `environment_type`
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -1361,26 +1394,65 @@ impl EntityType {
 )]
 pub struct Environment {
     pub environment_type: EnvironmentalProcessRecordType,
+    /// The whole record's length in bits, padding included: 64 + K + P
+    /// `serialize` sets it from `geometry_or_state`
+    #[deku(
+        update = "environment_length_bits(self.geometry_or_state.len())?",
+        assert = "valid_environment_length(*length)"
+    )]
     pub length: u16,
     pub index: u8,
-    pub padding: u8,
+    padding: u8,
+    /// When decoded, this includes the padding to the 64-bit boundary; when
+    /// encoded, padding is added to reach it
+    #[deku(
+        count = "usize::from(*length / 8).saturating_sub(8)",
+        writer = "write_environment_fields(deku::writer, geometry_or_state)"
+    )]
+    pub geometry_or_state: Vec<u8>,
 }
 
 impl Environment {
     #[must_use]
-    pub const fn new(
+    pub fn new(
         environment_type: EnvironmentalProcessRecordType,
-        length: u16,
         index: u8,
-        padding: u8,
+        geometry_or_state: Vec<u8>,
     ) -> Self {
+        let length = environment_length_bits(geometry_or_state.len()).unwrap_or(u16::MAX);
         Self {
             environment_type,
             length,
             index,
-            padding,
+            padding: 0,
+            geometry_or_state,
         }
     }
+}
+
+/// An Environment record's Length for `fields` octets of geometry or state:
+/// the 8-octet header plus the fields, padded to 64 bits, in bits (Table 57).
+fn environment_length_bits(fields: usize) -> Result<u16, DekuError> {
+    crate::wire::padded_record_length(fields.saturating_add(2))?
+        .checked_mul(8)
+        .and_then(|bits| u16::try_from(bits).ok())
+        .ok_or_else(|| DekuError::Assertion("environment record is too long".into()))
+}
+
+/// Writes the geometry or state octets and the padding to a 64-bit boundary.
+/// The 8-octet header is already aligned, so only the fields need padding.
+fn write_environment_fields<W: Write + Seek>(
+    writer: &mut Writer<W>,
+    fields: &[u8],
+) -> Result<(), DekuError> {
+    fields.to_writer(writer, ())?;
+    crate::wire::write_zeros(writer, crate::wire::padding_to(fields.len(), 8))
+}
+
+/// Whether a received Length is a whole number of 64-bit words, header
+/// included.
+const fn valid_environment_length(length_bits: u16) -> bool {
+    length_bits >= 64 && length_bits % 64 == 0
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.32
@@ -2015,6 +2087,10 @@ impl InformationLayers {
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.46
+///
+/// `record_length` is the length of `record_specific_fields` in octets, not
+/// counting the record type, the length itself or the padding. On the wire,
+/// the record is padded to a 32-bit boundary.
 #[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
@@ -2023,23 +2099,49 @@ impl InformationLayers {
 )]
 pub struct IntercomCommunicationsParameters {
     pub record_type: IntercomControlRecordType,
+    /// `serialize` sets this from `record_specific_fields`.
+    #[deku(
+        update = "self.record_specific_fields.len()",
+        assert = "crate::wire::fits_in_pdu(*record_length)"
+    )]
     pub record_length: u16,
-    pub record_specific_field: u32,
+    /// Exactly `record_length` octets without the padding
+    #[deku(
+        reader = "read_intercom_fields(deku::reader, *record_length)",
+        writer = "write_intercom_fields(deku::writer, record_specific_fields)"
+    )]
+    pub record_specific_fields: Vec<u8>,
 }
 
 impl IntercomCommunicationsParameters {
     #[must_use]
-    pub const fn new(
-        record_type: IntercomControlRecordType,
-        record_length: u16,
-        record_specific_field: u32,
-    ) -> Self {
+    pub fn new(record_type: IntercomControlRecordType, record_specific_fields: Vec<u8>) -> Self {
         Self {
             record_type,
-            record_length,
-            record_specific_field,
+            record_length: u16::try_from(record_specific_fields.len()).unwrap_or(u16::MAX),
+            record_specific_fields,
         }
     }
+}
+
+/// Reads an Intercom Communications Parameters record's `length` octets of
+/// fields and skips its padding to a 32-bit boundary (§6.2.46, Table 75).
+fn read_intercom_fields<R: Read + Seek>(
+    reader: &mut Reader<R>,
+    length: u16,
+) -> Result<Vec<u8>, DekuError> {
+    let length = usize::from(length);
+    let fields = crate::wire::read_n(reader, length, Endian::Big)?;
+    crate::wire::skip(reader, crate::wire::padding_to(length, 4))?;
+    Ok(fields)
+}
+
+fn write_intercom_fields<W: Write + Seek>(
+    writer: &mut Writer<W>,
+    fields: &[u8],
+) -> Result<(), DekuError> {
+    fields.to_writer(writer, ())?;
+    crate::wire::write_zeros(writer, crate::wire::padding_to(fields.len(), 4))
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.47
@@ -2838,7 +2940,7 @@ impl LayerHeader {
 pub struct LinearSegmentParameter {
     pub segment_number: u8,
     pub segment_modification: u8,
-    pub general_segment_appearance: u32,
+    pub general_segment_appearance: ObjectStateAppearanceGeneral,
     pub specific_segment_appearance: u32,
     pub segment_location: WorldCoordinates,
     pub segment_orientation: EulerAngles,
@@ -2855,7 +2957,7 @@ impl LinearSegmentParameter {
     pub const fn new(
         segment_number: u8,
         segment_modification: u8,
-        general_segment_appearance: u32,
+        general_segment_appearance: ObjectStateAppearanceGeneral,
         specific_segment_appearance: u32,
         segment_location: WorldCoordinates,
         segment_orientation: EulerAngles,
@@ -3765,7 +3867,7 @@ pub struct Sensor {
     pub sensor_type_source: SensorTypeSource,
     pub sensor_on_off_status: SensorOnOffStatus,
     pub sensor_type: u16,
-    pub station: u16,
+    pub station: u32,
     pub quantity: u16,
     padding: u16,
 }
@@ -3780,7 +3882,7 @@ pub struct Sensor {
 pub struct Service(pub ServiceRequestServiceTypeRequested);
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.79
-#[derive(Clone, Debug, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
@@ -3956,6 +4058,42 @@ impl StandardVariableRecord {
             record_length,
             record_specific_fields,
         }
+    }
+
+    /// Encodes a typed record as a Standard Variable record
+    ///
+    /// `record` must begin with its own 32-bit record type and 16-bit record
+    /// length, as [`DirectedEnergyDamage`], [`DEPrecisionAimpoint`] and
+    /// [`IOEffect`] do, and its record length must be its encoded size.
+    ///
+    /// # Errors
+    ///
+    /// Will return `DISError` if `record` can't be encoded, or its record
+    /// length doesn't match its encoded size.
+    pub fn from_record<T: DekuWriter<()>>(record: &T) -> crate::DISResult<Self> {
+        let mut octets = Vec::new();
+        crate::wire::write(record, &mut octets).map_err(crate::DISError::from_wire)?;
+        let mut rest = octets.as_slice();
+        let standard: Self = crate::wire::read(&mut rest).map_err(crate::DISError::from_wire)?;
+        if !rest.is_empty() {
+            return Err(crate::DISError::from_wire(DekuError::Assertion(
+                "the record's length doesn't match its encoded size".into(),
+            )));
+        }
+        Ok(standard)
+    }
+
+    /// Decodes this record as a typed record, such as [`DirectedEnergyDamage`]
+    ///
+    /// Check `record_type` first to pick the type.
+    ///
+    /// # Errors
+    ///
+    /// Will return `DISError` if the record's octets aren't a valid `T`.
+    pub fn to_record<T: for<'a> DekuReader<'a, ()>>(&self) -> crate::DISResult<T> {
+        let mut octets = Vec::new();
+        crate::wire::write(self, &mut octets).map_err(crate::DISError::from_wire)?;
+        crate::wire::read(&mut octets.as_slice()).map_err(crate::DISError::from_wire)
     }
 }
 
