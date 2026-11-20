@@ -190,10 +190,10 @@ lists!(
     entity_state,
     EntityStatePdu,
     |p| {
-        p.articulation_parameter = vec![VariableParameter::default(); 3];
+        p.variable_parameter_records = vec![VariableParameter::default(); 3];
     },
     |d| {
-        assert_eq!(d.number_of_articulation_parameters, 3);
+        assert_eq!(d.number_of_variable_parameter_records, 3);
     }
 );
 

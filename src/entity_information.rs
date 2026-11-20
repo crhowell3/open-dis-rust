@@ -85,8 +85,8 @@ pub struct EntityStatePdu {
     header: PduHeader,
     pub entity_id: EntityIdentifier,
     pub force_id: ForceId,
-    #[deku(update = "self.articulation_parameter.len()")]
-    pub number_of_articulation_parameters: u8,
+    #[deku(update = "self.variable_parameter_records.len()")]
+    pub number_of_variable_parameter_records: u8,
     pub entity_type: EntityType,
     pub alternative_entity_type: EntityType,
     pub entity_linear_velocity: Vector,
@@ -96,8 +96,8 @@ pub struct EntityStatePdu {
     pub dead_reckoning_parameters: DeadReckoningParameters,
     pub entity_marking: EntityMarking,
     pub entity_capabilities: EntityCapabilities,
-    #[deku(count = "number_of_articulation_parameters")]
-    pub articulation_parameter: Vec<VariableParameter>,
+    #[deku(count = "number_of_variable_parameter_records")]
+    pub variable_parameter_records: Vec<VariableParameter>,
 }
 crate::pdu::impl_pdu!(
     EntityStatePdu,
