@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "searchindex-21e21a9f.js";
+            window.path_to_searchindex_js = "searchindex-a83523fc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a540a839.js"></script>
@@ -348,9 +348,7 @@ use open_dis_rust::{
     records::{
         EntityIdentifier, EntityMarking, EntityType, ExerciseIdentifier, Vector, WorldCoordinates,
     },
-    siso::enums::{
-        Country, DeadReckoningAlgorithm, EntityKind, EntityMarkingCharacterSet, ForceId,
-    },
+    siso::enums::{Country, DeadReckoningAlgorithm, EntityKind, ForceId},
 };
 
 fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
@@ -374,7 +372,8 @@ fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
         3,
         0,
     );
-    pdu.entity_marking = EntityMarking::new(EntityMarkingCharacterSet::ASCII, "TANK01".to_string());
+    pdu.entity_marking =
+        EntityMarking::from_ascii("TANK01").ok_or("a marking is up to 11 ASCII characters")?;
     pdu.entity_linear_velocity = Vector::new(10.0, 0.0, 0.0); // m/s, world frame
     pdu.dead_reckoning_parameters.dead_reckoning_algorithm =
         DeadReckoningAlgorithm::DRMConstantVelocityLowAccelerationLinearMotionEntity;
@@ -442,7 +441,7 @@ fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
                 pdu.entity_id.simulation_address.site_id,
                 pdu.entity_id.simulation_address.application_id,
                 pdu.entity_id.entity_id,
-                pdu.entity_marking.entity_marking_string,
+                pdu.entity_marking.as_ascii().unwrap_or("?"),
                 pdu.entity_location.x_coordinate,
                 pdu.entity_location.y_coordinate,
                 pdu.entity_location.z_coordinate,
@@ -1337,7 +1336,7 @@ and <code>to_raw</code> and <code>from_raw</code> give the whole octet.</p>
 <p><code>serialize()</code> sets these fields from the PDU’s contents, so you never set them yourself:</p>
 <ul>
 <li>The header’s <strong>PDU type</strong>, <strong>protocol family</strong>, and <strong>length</strong>.</li>
-<li>Every <strong>count field</strong>, such as the number of articulation parameters or datum records,
+<li>Every <strong>count field</strong>, such as the number of variable parameter records or datum records,
 from the length of the matching <code>Vec</code>.</li>
 <li><strong>Record length</strong> fields in variable-length records, such as attribute records and
 variable transmitter parameters.</li>
