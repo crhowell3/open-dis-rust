@@ -7965,6 +7965,7 @@ pub enum ObjectKind {
 impl_deku_enum!(ObjectKind, u8, from_u8);
 
 /// SISO-REF-010-2023 `GriddedDataFieldNumber` \[UID 243\]
+#[allow(clippy::empty_enums)]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq)]
 pub enum GriddedDataFieldNumber {}
 
@@ -11225,10 +11226,12 @@ pub enum LifeFormHumanSpecificEquipmentClass {
 impl_deku_enum!(LifeFormHumanSpecificEquipmentClass, u8, from_u8);
 
 // SISO-REF-010-2023 CivilianSubmarineSubcategories [UID 506]
+#[allow(clippy::empty_enums)]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq)]
 pub enum CivilianSubmarineSubcategories {}
 
 // SISO-REF-010-2023 PlatformSubsurfaceCivilianSubmersibleSubcategories [UID 507]
+#[allow(clippy::empty_enums)]
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq)]
 pub enum CivilianSubmersibleSubcategories {}
 
