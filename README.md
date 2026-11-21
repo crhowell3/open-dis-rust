@@ -81,7 +81,7 @@ cargo add open-dis-rust
 or by adding this to your project's Cargo.toml `[dependencies]` section:
 
 ```toml
-open-dis-rust = "<insert version>"
+open-dis-rust = "1"
 ```
 
 ### Examples
