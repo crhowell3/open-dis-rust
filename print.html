@@ -16,8 +16,8 @@
         <link rel="icon" href="favicon-de23e50b.svg">
         <link rel="shortcut icon" href="favicon-8114d1fc.png">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-0392ca55.css">
-        <link rel="stylesheet" href="css/chrome-fc474251.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
         <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "mocha";
             const default_dark_theme = "mocha";
-            window.path_to_searchindex_js = "searchindex-a964d9a2.js";
+            window.path_to_searchindex_js = "searchindex-a83523fc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1db8e82e.js"></script>
+        <script src="toc-a540a839.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,210 +178,1847 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="open-dis-rust"><a class="header" href="#open-dis-rust">open-dis-rust</a></h1>
-<p><strong>open-dis-rust</strong> is an open-source implementation of the IEEE 1278.1-2012 Distributed
-Interactive Simulation (DIS) application protocol. This library defines all Protocol
-Data Units (PDUs) listed within the standard documentation as well as all associated
-data types, records, and enumerations.</p>
-<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
-<p>Open DIS Rust is free and open source. You can find the source code as well as
-report issues and create feature requests on <a href="https://github.com/crhowell3/open-dis-rust">GitHub</a>.</p>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p><strong>open-dis-rust</strong> is an open-source Rust implementation of the IEEE 1278.1-2012
+Distributed Interactive Simulation (DIS) application protocol. This crate defines
+strongly typed Rust structures for each Protocol Data Unit (PDU) along with the
+records and SISO-REF-010 enumerations associated with them. It also gives you
+the code to turn those structs into bytes on the wire and back again.</p>
+<pre><code class="language-rust ignore">let mut pdu = EntityStatePdu::new();
+pdu.entity_id = EntityIdentifier::new(SimulationAddress::new(1, 1), 1);
+pdu.force_id = ForceId::Friendly;
+
+let bytes: Vec&lt;u8&gt; = pdu.to_bytes()?; // ready to send over UDP</code></pre>
+<h2 id="what-is-dis"><a class="header" href="#what-is-dis">What is DIS?</a></h2>
+<p>DIS is an IEEE standard that enables independently constructed simulations to share
+one virtual world in real time. Flight simulators, ground vehicle trainers,
+constructive wargames, radio simulators, and live range instrumentation can all
+join the same exercise. Each one broadcasts PDUs that describe its own entities
+and events and reads the PDUs from other participants in the simulation.</p>
+<p>A few PDUs carry most of the traffic in a typical exercise:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>PDU</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td>Entity State</td><td>Describes a simulation entity, including what it is, where it is, how it is moving, and what it looks like</td></tr>
+<tr><td>Fire / Detonation</td><td>A munition was fired, and it detonated at a certain location</td></tr>
+<tr><td>Transmitter / Signal / Receiver</td><td>Simulates radio traffic, including actual audio</td></tr>
+<tr><td>Start/Resume, Stop/Freeze, Acknowledge</td><td>Simulation management for controlling the exercise</td></tr>
+</tbody>
+</table>
+</div>
+<p>DIS has no central server. Simlators usually exchange PDUs over UDP broadcast or multicast,
+and every participant decides for itself which PDUs to act on.</p>
+<h2 id="what-this-crate-does"><a class="header" href="#what-this-crate-does">What this crate does</a></h2>
+<ul>
+<li>Defines all 72 PDU types defined in the IEEE 1278.1-2012 across every protocol family that
+has PDUs, including Live Entity, Information Operations, and Simulation Management with
+Reliability, to name a few.</li>
+<li>Encodes and decodes PDUs in network (big-endian) byte order, and checks the declared PDU
+length against the actual contents.</li>
+<li>Fills in derived fields for you when serializing. These include the PDU type, protocol
+family, total length, record counts, and padding.</li>
+<li>Provides SISO-REF-010 enumerations implemented as Rust enums.</li>
+<li>Avoids <code>unsafe</code> code and panics. Malformed input comes back as <code>DISError</code> instead of
+crashing the simulation.</li>
+</ul>
+<h2 id="what-this-crate-leaves-to-you"><a class="header" href="#what-this-crate-leaves-to-you">What this crate leaves to you</a></h2>
+<p>This crate is a protocol codec, not a complete DIS framework. Any consumer application is
+responsible for:</p>
+<ul>
+<li><strong>Networking.</strong> Any transport mode works, but it is strongly recommended to use UDP in
+distributed simulation environments. The examples in this crate all use UDP either via
+the Rust standard library or with <code>tokio</code>.</li>
+<li><strong>Timing.</strong> This includes heartbeats and timing out entities that have gone stale.</li>
+<li><strong>Dead reckoning.</strong> This crate carries the dead reckoning parameters, but extrapolating
+positions between updates is up to the consumer.</li>
+<li><strong>Coordinate conversion.</strong> DIS locations are geocentric (ECEF) coordinates in meters.
+Converting to and from latitude, longitude, and altitude needs a separate crate or
+custom implementation.</li>
+</ul>
+<h2 id="how-this-book-is-organized"><a class="header" href="#how-this-book-is-organized">How this book is organized</a></h2>
+<ul>
+<li><strong><a href="#installation">Installation</a></strong> and the <strong><a href="#quickstart">Quickstart</a></strong> get you sending
+and receiving PDUs in a few minutes.</li>
+<li><strong>Guides</strong> walk through common tasks in more detail.</li>
+<li><strong>Development</strong> explains how the crate is built, for contributors.</li>
+</ul>
+<p>For the full API, see the <a href="https://docs.rs/open-dis-rust">API documentation on docs.rs</a>.</p>
+<h2 id="project-status-and-feedback"><a class="header" href="#project-status-and-feedback">Project status and feedback</a></h2>
+<p>This crate is free and open source under the BSD 2-Clause License. If you find a PDU,
+record, or enumeration that doesn’t match the standard, or one that another DIS
+implementation is unable to parse, please <a href="https://github.com/crhowell3/open-dis-rust/issues">open an issue</a>
+and attach a packet capture if you can. Captures from real exercises are the fastest
+way to find and fix interoperability problems. Since DIS is commonly used in military
+exercises, ensure that you do NOT post any classified data when submitting tickets.</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="acquiring-open-dis-rust"><a class="header" href="#acquiring-open-dis-rust">Acquiring open-dis-rust</a></h1>
+<h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<h2 id="requirements"><a class="header" href="#requirements">Requirements</a></h2>
 <ul>
-<li><a href="#crates.io">From Crates.io</a></li>
-<li><a href="#build-from-source">Build from Source</a></li>
+<li><strong>Rust 1.85 or newer.</strong> The crate uses the Rust 2024 edition, which first shipped in
+Rust 1.85. Check the installed version with <code>rustc --version</code> and update with <code>rustup update stable</code>.</li>
+<li><strong>Cargo</strong>, which comes with Rust. If you don’t have Rust yet, install it with <a href="https://www.rust-lang.org/tools/install">rustup</a>.</li>
 </ul>
-<h3 id="cratesio"><a class="header" href="#cratesio">crates.io</a></h3>
-<p>In your project, run <code>cargo add open-dis-rust</code> or add <code>open-dis-rust = "&lt;version&gt;"</code> to your Cargo.toml.</p>
-<h3 id="build-from-source"><a class="header" href="#build-from-source">Build from Source</a></h3>
-<p>Clone the open-dis-rust GitHub repository and build with cargo.</p>
-<p>Requirements:</p>
-<ul>
-<li><a href="https://www.rust-lang.org/tools/install">Rust toolchain</a></li>
-<li><a href="https://git-scm.com/">Git version control</a></li>
-</ul>
-<pre><code class="language-shell"># Clone the repo
-git clone https://github.com/crhowell3/open-dis-rust.git
-
-cd open-dis-rust
-
-# Build and test
-cargo build --release
-cargo test
+<p>This crate is pure Rust with no system libraries to install, so it builds anywhere that Rust does,
+including Linux, macOS, and Windows.</p>
+<h2 id="add-the-crate-to-your-project"><a class="header" href="#add-the-crate-to-your-project">Add the crate to your project</a></h2>
+<p>From your project’s directory, run:</p>
+<pre><code class="language-shell">cargo add open-dis-rust
 </code></pre>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="get-in-touch"><a class="header" href="#get-in-touch">Get in touch</a></h1>
-<p>If you have any questions about open-dis-rust, feel free to contact a maintainer. If you have
-any feature requests and/or bugs to report, please open a ticket on <a href="https://github.com/crhowell3/open-dis-rust">GitHub</a>.</p>
-<h2 id="maintainers"><a class="header" href="#maintainers">Maintainers</a></h2>
-<ul>
-<li><a href="https://github.com/crhowell3">https://github.com/crhowell3</a></li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="creating-a-pdu"><a class="header" href="#creating-a-pdu">Creating a PDU</a></h1>
-<p>The IEEE 1278.1-2012 standard defines 72 PDUs, all of which have been
-implemented in this crate. While the topics and contents of the PDUs
-differ, each PDU can be easily instantiated.</p>
-<h3 id="importing-modules"><a class="header" href="#importing-modules">Importing Modules</a></h3>
-<p>The PDUs are divided into separate protocol families, which are groups
-of PDUs that serve a similar purpose. To begin creating a PDU, first
-import the PDU’s module, or, if using multiple PDUs from the same family,
-import the entire protocol family module.</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// Imports just the Acknowledge PDU module
+<p>Or add the dependency to <code>Cargo.toml</code> yourself:</p>
+<pre><code class="language-toml">[dependencies]
+open-dis-rust = "1"
+</code></pre>
+<p>PDUs are encoded into a standard <code>Vec&lt;u8&gt;</code> and decoded from a <code>&amp;[u8]</code>, so you do not need
+third-party crates to use them.</p>
+<p>The package name uses hyphens, but in Rust code, the crate is referred to with underscores:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::entity_information::EntityStatePdu;</code></pre>
+<h3 id="async-networking-optional"><a class="header" href="#async-networking-optional">Async networking (optional)</a></h3>
+<p>The crate doesn’t depend on any networking library; however, the <code>tokio</code> crate is among
+the gold standards of Rust networking and async I/O.</p>
+<pre><code class="language-shell">cargo add tokio --features full
+</code></pre>
+<p>The <a href="#quickstart">Quickstart</a> guide uses <code>std::net::UdpSocket</code>, so <code>tokio</code> is not
+needed to follow along.</p>
+<h2 id="validate"><a class="header" href="#validate">Validate</a></h2>
+<p>To quickly test the crate, place the following code in your application’s <code>src/main.rs</code>:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::prelude::*;
 use open_dis_rust::simulation_management::AcknowledgePdu;
 
-// Imports the entire SIMAN protocol family, including the associated data types
-use open_dis_rust::simulation_management::*;
-<span class="boring">}</span></code></pre>
-<h3 id="creating-a-pdu-1"><a class="header" href="#creating-a-pdu-1">Creating a PDU</a></h3>
-<p>To instantiate a PDU, use the PDU’s <code>new</code> method to pre-populate all its
-fields with data.</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut acknowledge_pdu = AcknowledgePdu::new();
-<span class="boring">}</span></code></pre>
-<p>It is advised to use the <code>mut</code> keyword so that the default values within the
-PDU’s fields can be manipulated before sending it over UDP.</p>
-<h3 id="editing-the-pdu-fields"><a class="header" href="#editing-the-pdu-fields">Editing the PDU Fields</a></h3>
-<p>Each PDU has different fields; no two PDUs have the exact same fields. Every
-PDU is guaranteed to have a <code>pdu_header</code> field that is of type <code>PduHeader</code>.
-See the crate documentation for more information on this type. It is generally
-advised that this field and its subfields should not be directly edited because
-it contains the header information that a receiver would need to correctly
-parse and interpret the data. Upon calling <code>new</code>, this field is pre-populated
-with the correct metadata for the PDU, and it should not be edited afterwards.</p>
-<p>All other fields within a PDU can be safely edited so long as the data being
-assigned to them is of the correct type and length. For most fields, editing
-the value is just a simple assignment, especially with primitive data types.
-However, there are other types that require a little more work to construct
-before assigning. Type information can be found within the crate documentation.</p>
-<p>The following is an example for editing a PDU field that is a primitive type.</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// Instantiate a new Acknowledge PDU
-let mut acknowledge_pdu = AcknowledgePdu::new();
+fn main() {
+    let mut pdu = AcknowledgePdu::new();
+    let bytes = pdu.to_bytes().expect("serialize failed");
+    println!("open-dis-rust {} encoded the following {}-byte PDU: {:?}",
+        open_dis_rust::get_version(),
+        bytes.len(),
+        pdu
+    );
+}</code></pre>
+<p>Then, execute <code>cargo run</code> to see a printout of the crate version and a view into the PDU.</p>
+<h2 id="build-from-source"><a class="header" href="#build-from-source">Build from source</a></h2>
+<p>If you plan on contributing to the development of the crate, or if you want to modify the code for your
+own project, simply clone down the repo and build it yourself. You will need <a href="https://git-scm.com">git</a>
+and Rust.</p>
+<pre><code class="language-shell">git clone https://github.com/crhowell3/open-dis-rust.git
+cd open-dis-rust
 
-// Valid assignment of the request_id field
-acknowledge_pdu.request_id = 14;
-<span class="boring">}</span></code></pre>
-<p>The following is an example for editing a PDU field that is of a special type.</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// Instantiate a new Acknowledge PDU
-let mut acknowledge_pdu = AcknowledgePdu::new();
+cargo build --release
+cargo test -q
+</code></pre>
+<p>If you make modifications and wish to test them against personal projects, add this to your
+Cargo.toml:</p>
+<pre><code class="language-toml">[dependencies]
+open-dis-rust = { path = "path/to/open-dis-rust" }
+</code></pre>
+<h2 id="read-documentation-offline"><a class="header" href="#read-documentation-offline">Read documentation offline</a></h2>
+<p>The API reference is published on <a href="https://docs.rs/open-dis-rust">docs.rs</a>. To build it
+locally and open it in your browser:</p>
+<pre><code class="language-shell">cargo doc --open
+</code></pre>
+<p>To preview this book locally, install <a href="https://rust-lang.github.io/mdBook/">mdBook</a> and
+serve it from the <code>book</code> folder:</p>
+<pre><code class="language-shell">cargo install mdbook
+mdbook serve book --open
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="quickstart"><a class="header" href="#quickstart">Quickstart</a></h1>
+<p>In this walkthrough, you’ll run two small programs. One broadcasts an Entity State PDU
+for a tank once a second. The other listens for PDUs and prints what it hears. This
+walkthrough takes about 5 minutes.</p>
+<p>Both programs live in the repository’s <code>examples</code> directory. You can run them from a
+clone of the repository, as shown at the end of this page, or copy them into your
+own project.</p>
+<h2 id="1-send-an-entity-state-pdu"><a class="header" href="#1-send-an-entity-state-pdu">1. Send an Entity State PDU</a></h2>
+<p>An Entity State PDU is the heartbeat of DIS. Every simulator sends one for each entity
+it owns, at regular intervals, so that everyone else knows where that entity is and
+what it is doing.</p>
+<pre><code class="language-rust ignore">//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2026 Cameron Howell
+//
+//     Licensed under the BSD 2-Clause License
 
-// Assignment occurring field-wise for the originating_entity_id field
-acknowledge_pdu.originating_entity_id.simulation_address.application_id = 1;
-acknowledge_pdu.originating_entity_id.simulation_address.site_id = 3;
-acknowledge_pdu.originating_entity_id.entity_id = 12;
+use std::{error::Error, net::UdpSocket, thread, time::Duration};
 
-// Assignment can also occur by creating an EntityId and assigning
-let mut origin_id = EntityId::new();
-origin_id.simulation_address.application_id = 1;
-origin_id.simulation_address.site_id = 4;
-origin_id.entity_id = 15;
-acknowledge_pdu.originating_entity_id = origin_id;
-<span class="boring">}</span></code></pre>
+use open_dis_rust::prelude::*;
+use open_dis_rust::{
+    entity_information::EntityStatePdu,
+    records::{
+        EntityIdentifier, EntityMarking, EntityType, ExerciseIdentifier, Vector, WorldCoordinates,
+    },
+    siso::enums::{Country, DeadReckoningAlgorithm, EntityKind, ForceId},
+};
+
+fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+    // Bind to any free local port and send to a receiver on port 3000.
+    let socket = UdpSocket::bind("0.0.0.0:0")?;
+    socket.connect("127.0.0.1:3000")?;
+
+    // Build an Entity State PDU describing one tank.
+    let mut pdu = EntityStatePdu::new();
+    pdu.header_mut().exercise_id = ExerciseIdentifier::new(1);
+    let simulation_address = SimulationAddress::new(1, 1);
+    pdu.entity_id = EntityIdentifier::new(simulation_address, 1); // site 1, application 1, entity 1
+    pdu.force_id = ForceId::Friendly;
+    // 1:1:225:1:1:3:0 is the SISO-REF-010 entity type for an M1A2 Abrams.
+    pdu.entity_type = EntityType::new(
+        EntityKind::Platform,
+        1,
+        Country::UnitedStatesofAmerica,
+        1,
+        1,
+        3,
+        0,
+    );
+    pdu.entity_marking =
+        EntityMarking::from_ascii("TANK01").ok_or("a marking is up to 11 ASCII characters")?;
+    pdu.entity_linear_velocity = Vector::new(10.0, 0.0, 0.0); // m/s, world frame
+    pdu.dead_reckoning_parameters.dead_reckoning_algorithm =
+        DeadReckoningAlgorithm::DRMConstantVelocityLowAccelerationLinearMotionEntity;
+
+    // Location is geocentric (ECEF) meters. This point is on the equator at 0 degrees longitude.
+    let mut x = 6_378_137.0;
+
+    for _ in 0..10 {
+        pdu.entity_location = WorldCoordinates::new(x, 0.0, 0.0);
+        pdu.header_mut().timestamp = Timestamp::now();
+
+        // serialize() fills in the PDU type, family, length and all counts.
+        let bytes = pdu.to_bytes()?;
+        socket.send(&amp;bytes)?;
+        println!("sent {}-byte Entity State PDU, x = {x:.1}", bytes.len());
+
+        x += 10.0;
+        thread::sleep(Duration::from_secs(1));
+    }
+
+    Ok(())
+}</code></pre>
+<p>A few things to notice:</p>
+<ul>
+<li><strong><code>EntityStatePdu::new()</code></strong> gives you a PDU with sensible defaults and the header
+already set up. You only fill in the fields you care about.</li>
+<li><strong>Entity IDs</strong> consist of three numbers: site, application, and entity IDs. Together
+they must be unique within the exercise. It should be noted that this crate does NOt
+enforce this constraint. That is completely up to the consumer to ensure uniqueness.</li>
+<li><strong>Entity types</strong> come from the SISO-REF-010 enumerations.</li>
+<li><strong>Locations</strong> are geocentric (ECEF) coordinates in meters.</li>
+<li><strong><code>to_bytes()</code></strong> (and <code>serialize()</code>) fills in the PDU type, protocol family, length,
+and every count field before encoding. You should not have to fill out <code>header.length</code>
+yourself.</li>
+</ul>
+<h2 id="2-receive-and-decode-pdus"><a class="header" href="#2-receive-and-decode-pdus">2. Receive and decode PDUs</a></h2>
+<p>The receiver binds to UDP port 3000, which is traditionally the port used for DIS
+traffic per the standard. It decodes each datagram with <code>AnyPdu</code>, which reads the
+header to determine what kind of PDU arrived and decodes it as that type.</p>
+<pre><code class="language-rust ignore">//     open-dis-rust - Rust implementation of the IEEE 1278.1-2012 Distributed Interactive
+//                     Simulation (DIS) application protocol
+//     Copyright (C) 2026 Cameron Howell
+//
+//     Licensed under the BSD 2-Clause License
+
+use std::{error::Error, net::UdpSocket};
+
+use open_dis_rust::prelude::*;
+
+fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+    let socket = UdpSocket::bind("0.0.0.0:3000")?;
+    println!("listening on {}", socket.local_addr()?);
+
+    let mut buf = [0u8; MAX_PDU_SIZE_OCTETS];
+    loop {
+        let (n, from) = socket.recv_from(&amp;mut buf)?;
+        let Some(mut datagram) = buf.get(..n) else {
+            continue;
+        };
+
+        // The header says which PDU it is, and AnyPdu decodes it as that type
+        match AnyPdu::deserialize(&amp;mut datagram) {
+            Ok(AnyPdu::EntityState(pdu)) =&gt; println!(
+                "{from}: entity {}:{}:{} '{}' at ({:.1}, {:.1}, {:.1})",
+                pdu.entity_id.simulation_address.site_id,
+                pdu.entity_id.simulation_address.application_id,
+                pdu.entity_id.entity_id,
+                pdu.entity_marking.as_ascii().unwrap_or("?"),
+                pdu.entity_location.x_coordinate,
+                pdu.entity_location.y_coordinate,
+                pdu.entity_location.z_coordinate,
+            ),
+            Ok(other) =&gt; println!("{from}: ignoring {:?} PDU", other.pdu_type()),
+            Err(e) =&gt; eprintln!("{from}: undecodable datagram: {e}"),
+        }
+    }
+}</code></pre>
+<p><code>AnyPdu</code> has one variant per PDU type, named after its <code>PduType</code>, so you <code>match</code> on the
+ones you wish to explicitly handle. <code>deserialize</code> returns an error instead of panicking when
+a datagram is truncated or malformed. A receiver on a shared network might expect to receive
+some bad PDUs at times.</p>
+<h2 id="3-run-the-examples"><a class="header" href="#3-run-the-examples">3. Run the examples</a></h2>
+<p>In one terminal, start the receiver:</p>
+<pre><code class="language-shell">cargo run --example quickstart_receive
+</code></pre>
+<p>In a second terminal, start the sender:</p>
+<pre><code class="language-shell">cargo run --example quickstart_send
+</code></pre>
+<p>The sender reports each PDU it sends:</p>
+<pre><code class="language-text">sent 144-byte Entity State PDU, x = 6378137.0
+sent 144-byte Entity State PDU, x = 6378147.0
+sent 144-byte Entity State PDU, x = 6378157.0
+</code></pre>
+<p>The receiver prints the tank moving 10 meters along the x-axis each second:</p>
+<pre><code class="language-text">listening on 0.0.0.0:3000
+127.0.0.1:35774: entity 1:1:1 'TANK01' at (6378137.0, 0.0, 0.0)
+127.0.0.1:35774: entity 1:1:1 'TANK01' at (6378147.0, 0.0, 0.0)
+127.0.0.1:35774: entity 1:1:1 'TANK01' at (6378157.0, 0.0, 0.0)
+</code></pre>
+<p><strong>NOTE:</strong> Source ports will differ as they are chosen at runtime.</p>
+<h2 id="4-observe-packets-in-wireshark-optional"><a class="header" href="#4-observe-packets-in-wireshark-optional">4. Observe packets in Wireshark (optional)</a></h2>
+<p><a href="https://www.wireshark.org/">Wireshark</a> includes a dissector for the DIS protocol, which
+makes it the easiest way to check what your application is actually putting out on the
+wire.</p>
+<p>How to use the DIS dissector:</p>
+<ol>
+<li>Start a capture on the loopback interface.</li>
+<li>Enter <code>dis</code> in the display filter bar.</li>
+<li>Run the sender again.</li>
+</ol>
+<p>Each packet should decode as an Entity State PDU, with the entity ID, entity type, marking,
+and location you set. If the dissector does not recognize the traffic, check that you are
+sending on the correct port (3000), or right-click a packet and choose <strong>Decode As… -&gt; DIS</strong>.</p>
+<h2 id="sending-to-other-machines"><a class="header" href="#sending-to-other-machines">Sending to other machines</a></h2>
+<p>The sender in this example talks only to <code>127.0.0.1</code>. To reach other simulators on your network,
+send to your subnet’s broadcast address or to a multicast group your exercise agrees on. For
+broadcast, enable it on the socket first:</p>
+<pre><code class="language-rust ignore">let socket = UdpSocket::bind("0.0.0.0:0")?;
+socket.set_broadcast(true)?;
+socket.connect("192.168.1.255:3000")?;  // replace with your subnet's broadcast address</code></pre>
+<p>Every participant must also use the same <strong>exercise ID</strong>, which this example sets to <code>1</code>. This
+rule is not enforced by this crate, but it is specified in the DIS standard. Most DIS applications
+ignore PDUs from other exercises.</p>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next steps</a></h2>
+<ul>
+<li><a href="#creating-a-pdu">Creating a PDU</a> covers building other PDU types.</li>
+<li><a href="#sending-pdus">Sending PDUs</a> shows sending with <code>tokio</code>.</li>
+<li><a href="#receiving-pdus">Receiving PDUs</a> covers receiving in more depth.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="identifiers--exercises"><a class="header" href="#identifiers--exercises">Identifiers &amp; Exercises</a></h1>
+<p>Every PDU says which exercise it belongs to and who sent it. This page explains
+the numbers DIS uses for that and how they map to types in open-dis-rust.</p>
+<h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
+<p>An <strong>exercise</strong> is one shared simulated world. Several exercises can run on the
+same network at once, such as a training event and a test. They are kept discrete
+and disjoint via the <strong>exercise ID</strong> in the header of every PDU.</p>
+<ul>
+<li>The exercise ID is one octet, so it ranges from 1 to 255.</li>
+<li>Every participant in an exercise must use the same ID. The exercise organizer
+usually assigns it.</li>
+<li>Receivers ignore PDUs from other exercises. Nothing in the protocol enforces this,
+so your application(s) must handle this on their own.</li>
+</ul>
+<p>PDUs created with <code>new()</code> use exercise ID 1 by default. Set your own before sending:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::prelude::*;
+
+pdu.header_mut().exercise_id = ExerciseIdentifier::new(3);</code></pre>
+<p>The exercise ID is octet 1 of every PDU, so you can filter before decoding anything:</p>
+<pre><code class="language-rust ignore">fn is_same_exercise(datagram: &amp;[u8], exercise_id: u8) -&gt; bool {
+    datagram.get(1) == Some(&amp;exercise_id)
+}</code></pre>
+<h2 id="sites-and-applications"><a class="header" href="#sites-and-applications">Sites and applications</a></h2>
+<p>Within an exercise, every simulation program has a <strong>simulation address</strong>: a pair of
+16-bit numbers used for identification.</p>
+<ul>
+<li>The <strong>site</strong> usually identifies a facility or organization.</li>
+<li>The <strong>application</strong> identifies one running simulation program at that site.</li>
+</ul>
+<p>Together they must be unique in the exercise. Like the exercise ID, they are agreed in
+advance rather than assigned by the protocol. In open-dis-rust, they are stored in
+<code>SimulationAddress</code>:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::records::SimulationAddress;
+
+let me = SimulationAddress::new(1, 100); // site 1, application 100</code></pre>
+<h2 id="entities"><a class="header" href="#entities">Entities</a></h2>
+<p>An <strong>entity</strong> is anything in the simulated world that a simulation owns and reports on,
+such as a vehicle, an aircraft, a person, or a munition in flight. Its <strong>entity ID</strong> is
+its simulation address plus a 16-bit entity number:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::records::{EntityIdentifier, SimulationAddress};
+
+let me = SimulationAddress::new(1, 100);
+let tank = EntityIdentifier::new(me, 7); // entity 7 of site 1, application 100</code></pre>
+<p>The application that owns an entity picks its entity numbers. Use each number for only
+one entity during an exercise. If you reuse a number after an entity is destroyed, other
+simulators may confuse the new entity with the old one.</p>
+<p>Entity number 0 means “no entity”. An entity ID with entity number 0 refers to the
+simulation application itself, which is how simulation management PDUs address a
+whole simulator:</p>
+<pre><code class="language-rust ignore">let my_application = EntityIdentifier::new(me, 0);</code></pre>
+<h2 id="special-values"><a class="header" href="#special-values">Special values</a></h2>
+<p>These constants in <code>constants</code> have fixed meanings:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Constant</th><th>Value</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NO_SITE</code>, <code>NO_APPLIC</code>, <code>NO_ENTITY</code></td><td>0</td><td>None, or not applicable.</td></tr>
+<tr><td><code>ALL_SITES</code>, <code>ALL_APPLIC</code>, <code>ALL_ENTITIES</code></td><td>0xFFFF</td><td>Every site, application, or entity.</td></tr>
+<tr><td><code>RQST_ASSIGN_ID</code></td><td>0xFFFE</td><td>Ask the receiver to assign an entity number.</td></tr>
+</tbody>
+</table>
+</div>
+<p>For example, to send a Start/Resume PDU to every simulator in the exercise:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::constants::{ALL_APPLIC, ALL_ENTITIES, ALL_SITES};
+
+let mut start = StartResumePdu::new();
+start.originating_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 100), 0);
+start.receiving_entity_id =
+    EntityIdentifier::new(SimulationAddress::new(ALL_SITES, ALL_APPLIC), ALL_ENTITIES);</code></pre>
+<p>Other PDUs use 0 to mean “no target”. A Fire PDU for a shot with no intended target
+sets the target entity ID to all zeros.</p>
+<h2 id="other-identifiers"><a class="header" href="#other-identifiers">Other identifiers</a></h2>
+<p>Several other things in DIS are identified the same way: a simulation address plus
+a number that the owning application assigns.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Identifier</th><th>Rust type</th><th>Identifies</th><th>Used in</th></tr>
+</thead>
+<tbody>
+<tr><td>Entity ID</td><td><code>EntityIdentifier</code></td><td>An entity</td><td>Most PDUs</td></tr>
+<tr><td>Event ID</td><td><code>EventIdentifier</code></td><td>One event, such as a shot</td><td>Fire, Detonation, Collision, emissions PDUs</td></tr>
+<tr><td>Object ID</td><td><code>ObjectIdentifier</code></td><td>An environmental object, such as a minefield marker or a crater</td><td>Point, Linear, and Areal Object State</td></tr>
+<tr><td>Aggregate ID</td><td><code>AggregateIdentifier</code></td><td>A group of entities, such as a platoon</td><td>Aggregate State</td></tr>
+<tr><td>Minefield ID</td><td><code>MinefieldIdentifier</code></td><td>A minefield</td><td>Minefield PDUs</td></tr>
+<tr><td>Simulation ID</td><td><code>SimulationIdentifier</code></td><td>A simulation application</td><td>Transfer Ownership, Information Operations</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Event IDs</strong> link related PDUs. When an entity fires, the Fire PDU and the Detonation
+PDU for that shot carry the same event ID, so receivers can match the two. Generally,
+you should monotonically increment the number for each successive event, wrapping around
+once you reach the 16-bit maximum (65535).</p>
+<p><strong>Radios and intercoms</strong> are identified by an entity ID plus a 16-bit radio or
+intercom number because one entity can carry several. The Transmitter, Signal, and
+Receiver PDUs for one radio all use the same <code>entity_id</code> and <code>radio_id</code>.</p>
+<h2 id="live-entity-identifiers"><a class="header" href="#live-entity-identifiers">Live entity identifiers</a></h2>
+<p>The Live Entity PDUs (types 46-50) use smaller fields to save bandwidth on
+instrumented live ranges. <code>LEEntityId</code> has an 8-bit site number, an 8-bit
+application number, and a 16-bit entity number. If your simulation exchanges data with
+live entities, keep its site and application numbers below 256 so that they can be
+represented in both forms.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="protocol-families--pdu-status"><a class="header" href="#protocol-families--pdu-status">Protocol Families &amp; PDU Status</a></h1>
+<h2 id="protocol-families"><a class="header" href="#protocol-families">Protocol families</a></h2>
+<p>IEEE 1278.1-2012 groups its 72 PDU types into <strong>protocol families</strong> by purpose. The
+family is in octet 3 of every PDU header next to the PDU type. You never set it yourself:
+<code>serialize()</code> fills it in automatically.</p>
+<p>In open-dis-rust, each family is a module, and the PDUs for that family are defined in each.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th style="text-align: right">#</th><th>Family</th><th>Module</th><th>What it’s for</th><th style="text-align: right">PDUs</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right">1</td><td>Entity Information/Interaction</td><td><code>entity_information</code></td><td>Where entities are, what they look like, and collisions</td><td style="text-align: right">5</td></tr>
+<tr><td style="text-align: right">2</td><td>Warfare</td><td><code>warfare</code></td><td>Weapons fire, detonations and damage</td><td style="text-align: right">4</td></tr>
+<tr><td style="text-align: right">3</td><td>Logistics</td><td><code>logistics</code></td><td>Resupply and repair between entities</td><td style="text-align: right">6</td></tr>
+<tr><td style="text-align: right">4</td><td>Radio Communications</td><td><code>radio_communications</code></td><td>Simulated radios and intercoms, including audio</td><td style="text-align: right">5</td></tr>
+<tr><td style="text-align: right">5</td><td>Simulation Management</td><td><code>simulation_management</code></td><td>Starting, stopping and controlling the exercise</td><td style="text-align: right">12</td></tr>
+<tr><td style="text-align: right">6</td><td>Distributed Emission Regeneration</td><td><code>distributed_emissions</code></td><td>Radar, jammers, sonar, IFF and laser designators</td><td style="text-align: right">5</td></tr>
+<tr><td style="text-align: right">7</td><td>Entity Management</td><td><code>entity_management</code></td><td>Groups, aggregates and transferring ownership of entities</td><td style="text-align: right">4</td></tr>
+<tr><td style="text-align: right">8</td><td>Minefield</td><td><code>minefield</code></td><td>Minefields and the mines in them</td><td style="text-align: right">4</td></tr>
+<tr><td style="text-align: right">9</td><td>Synthetic Environment</td><td><code>synthetic_environment</code></td><td>Weather, terrain changes and environmental objects</td><td style="text-align: right">5</td></tr>
+<tr><td style="text-align: right">10</td><td>Simulation Management with Reliability</td><td><code>simulation_management_with_reliability</code></td><td>The same jobs as family 5, with acknowledgements and retries</td><td style="text-align: right">15</td></tr>
+<tr><td style="text-align: right">11</td><td>Live Entity Information/Interaction</td><td><code>live_entity_information</code></td><td>Compact PDUs for live, instrumented entities on a range</td><td style="text-align: right">5</td></tr>
+<tr><td style="text-align: right">13</td><td>Information Operations</td><td><code>information_operations</code></td><td>Cyber and electronic warfare effects</td><td style="text-align: right">2</td></tr>
+</tbody>
+</table>
+</div>
+<p>Family 0 means “other”, and family 12 is reserved for the Non Real-Time service. Neither has any PDUs.</p>
+<h3 id="which-families-you-need"><a class="header" href="#which-families-you-need">Which families you need</a></h3>
+<p>Most applications need only a few families:</p>
+<ul>
+<li><strong>Every participant</strong> should send and receive <strong>Entity Information</strong> and respond to
+<strong>Simulation Management</strong>.</li>
+<li><strong>Combat simulations</strong> may use <strong>Warfare</strong>.</li>
+<li><strong>Radio and voice simulations</strong> may use <strong>Radio Communications</strong>.</li>
+<li><strong>Sensor and electronic warfare simulations</strong> use <strong>Distributed Emission Regeneration</strong>.</li>
+</ul>
+<h3 id="reliable-and-unreliable-simulation-management"><a class="header" href="#reliable-and-unreliable-simulation-management">Reliable and unreliable simulation management</a></h3>
+<p>Families 5 and 10 are leveraged for the same tasks. Family 5 PDUs are sent once, and the sender
+cannot tell whether they arrived. Family 10 PDUs carry a <strong>required reliability service</strong> field
+that asks the receiver to acknowledge them, and the sender retries until it gets a reply. Use
+family 10 when a lost message would cause real problems, i.e., when creating or removing
+entities across simulators.</p>
+<h2 id="pdu-status"><a class="header" href="#pdu-status">PDU Status</a></h2>
+<p>Octet 10 of the PDU header holds the <strong>PDU Status</strong> record. It has a few one- and two-bit flags
+that tell a receiver how to treat the PDU. A new PDU has all of these flags cleared, which is
+correct for most traffic.</p>
+<p>You reach the flags through <code>header.pdu_status</code>:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::siso::enums::LVCIndicator;
+
+pdu.header_mut().pdu_status.set_lvc(LVCIndicator::Virtual);</code></pre>
+<h3 id="status-flags"><a class="header" href="#status-flags">Status flags</a></h3>
+<p><strong>LVC Indicator.</strong> Whether the PDU comes from a <strong>live</strong> system (real equipment on a
+range), a <strong>virtual</strong> one (a person within a simulator) or a <strong>constructive</strong> one
+(a computer-controlled simulation, such as a wargame). Many exercises mix all three,
+and receivers sometimes treat them differently such as by hiding constructive entities
+from a live display. Setting it is optional; the default is <code>NoStatement</code>.</p>
+<p><strong>Transferred Entity Indicator (TEI).</strong> Set when the entity a PDU describes is now
+owned by a different simulation from the one that created it. That happens after
+the Transfer Ownership PDU moves an entity from one simulator to another. Receivers
+use it to know that the entity is still the same one, even though a different
+application is now sending its updates.</p>
+<p><strong>Coupled Extension Indicator (CEI).</strong> Set when the PDU has an Attribute PDU
+<strong>coupled</strong> to it, carrying extra data that extends this PDU. Receivers that see this
+flag should wait for the matching Attribute PDU before acting on the data.</p>
+<p><strong>PDU-specific bits.</strong> Bits 4 and 5 mean different things for different PDUs. For
+example, in a Fire PDU, bit 4 says whether a munition or an expendable, such as
+chaff, was fired. In radio PDUs, bits 4 and 5 say whether the radio is attached to an
+entity.</p>
+<p><a href="#pdu-status-1">Wire Format Conventions</a> lists the exact bit
+positions and the method for reading and writing each flag.</p>
+<h3 id="live-entity-pdus"><a class="header" href="#live-entity-pdus">Live Entity PDUs</a></h3>
+<p>The five Live Entity PDUs don’t have a PDU Status record. Their header,
+<code>LiveEntityPduHeader</code>, uses the same octet for a <strong>subprotocol number</strong> instead, which
+says how the rest of the PDU is encoded.</p>
+<p>Every PDU’s <code>header()</code> returns its own header type, so the compiler keeps the two
+apart. Generic code names the kind of PDU it works with by its header: the prelude’s
+<code>StandardPdu</code> is any PDU with a <code>PduHeader</code>, and <code>LiveEntityPdu</code> is any PDU with a
+<code>LiveEntityPduHeader</code>.</p>
+<pre><code class="language-rust ignore">use open_dis_rust::{prelude::*, siso::enums::LVCIndicator};
+
+fn mark_virtual(pdu: &amp;mut impl StandardPdu) {
+    pdu.header_mut().pdu_status.set_lvc(LVCIndicator::Virtual);
+}</code></pre>
+<p>Passing a Live Entity PDU to <code>mark_virtual</code> is a compile error. Code that works with
+every PDU uses <code>Pdu</code>, which has the components that both types share such as <code>pdu_type()</code>
+and <code>serialize()</code>.</p>
+<p>Before a datagram is decoded, its protocol family (octet 3, the same place in both
+headers) says which kind it is: <code>ProtocolFamily::LiveEntityInformationInteraction</code> for
+a Live Entity PDU.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="timestamps"><a class="header" href="#timestamps">Timestamps</a></h1>
+<p>Every PDU header has a 32-bit <strong>timestamp</strong> saying when the data in it was valid.
+Receivers use it to tell how old the data is, to put PDUs in order, and to
+extrapolate entity positions forward to the present.</p>
+<h2 id="time-since-the-hour"><a class="header" href="#time-since-the-hour">Time since the hour</a></h2>
+<p>A DIS timestamp counts time since the <strong>start of the current hour</strong>, not since a fixed
+date. Bits 31 to 1 hold that time in units of 3600/2³¹ seconds, which is about
+1.676 microseconds. Bit 0 says what kind of timestamp it is.</p>
+<pre><code class="language-text"> 31                                                           1   0
+┌─────────────────────────────────────────────────────────────┬───┐
+│ time since the start of the hour, in units of 3600/2³¹ s    │ A │
+└─────────────────────────────────────────────────────────────┴───┘
+                                                  A = 1: absolute, 0: relative
+</code></pre>
+<p>At the start of each hour, the count resets to 0. A receiver comparing timestamps
+must accommodate for this, as show below.</p>
+<h2 id="absolute-and-relative-time"><a class="header" href="#absolute-and-relative-time">Absolute and relative time</a></h2>
+<p><strong>Absolute</strong> timestamps (bit 0 set) are measured against real-world UTC. They only
+work if every participant’s clock is synchronized, usually with RTP or, for tighter
+accuracy, PTP. Because every PDU then shares one time base, receivers can compare
+timestamps from different simulators directly. This is the usual choice for
+networked exercises.</p>
+<p><strong>Relative</strong> timestamps (bit 0 clear) are measured against each simulator’s own clock,
+so they can only be compared with other timestamps from the same simulator. This is
+useful when clocks cannot be synchronized or when a simulation runs faster or slower
+than real time.</p>
+<p>Whichever is chosen, every participant in an exercise should agree on it.</p>
+<h2 id="the-timestamp-type"><a class="header" href="#the-timestamp-type">The <code>Timestamp</code> type</a></h2>
+<p>The crate represents timestamps with <code>records::Timestamp</code>, which is also in the
+prelude. Header timestamps and the time inside Clock Time records both use it.</p>
+<p><strong>Creating timestamps:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Call</th><th>Gives</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Timestamp::now()</code></td><td>An absolute timestamp for the current UTC time, from the system clock</td></tr>
+<tr><td><code>Timestamp::absolute(time_past_hour)</code></td><td>An absolute timestamp for a given time, as a <code>Duration</code></td></tr>
+<tr><td><code>Timestamp::relative(time)</code></td><td>A relative timestamp, for example from the time since your simulation started</td></tr>
+<tr><td><code>Timestamp::from_raw(u32)</code></td><td>A timestamp from its 32-bit wire value</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>absolute</code> and <code>relative</code> discard whole hours, so you can pass a time since midnight,
+or since the simulation started, directly.</p>
+<p><strong>Reading timestamps:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Call</th><th>Gives</th></tr>
+</thead>
+<tbody>
+<tr><td><code>is_absolute()</code></td><td>Whether bit 0 is set</td></tr>
+<tr><td><code>time_past_hour()</code></td><td>The time since the start of the hour, as a <code>Duration</code></td></tr>
+<tr><td><code>later.duration_since(earlier)</code></td><td>The time between two timestamps, allowing for the hour wrapping around</td></tr>
+<tr><td><code>to_raw()</code></td><td>The 32-bit wire value</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>Timestamp</code> implements <code>Display</code>, which prints the time past the hour and its kind,
+such as <code>35:26.232076 abs</code>, which is handy for logging.</p>
+<p>A timestamp’s resolution is about 1.676 µs, so a value converted to a <code>Timestamp</code> and
+back can differ from the original by up to about 0.84 µs.</p>
+<h2 id="setting-the-timestamp-before-sending"><a class="header" href="#setting-the-timestamp-before-sending">Setting the timestamp before sending</a></h2>
+<p><code>new()</code> timestamps a PDU with <code>Timestamp::now()</code> once, when the PDU is created. If you
+keep a PDU and send it repeatedly, as you normally would for Entity State heartbeats,
+set the timestamp again before each send:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::prelude::*;
+
+pdu.header_mut().timestamp = Timestamp::now();
+pdu.serialize(&amp;mut buf)?;</code></pre>
+<p>The timestamp is only as accurate as your system clock, so make sure the machine is
+synchronized.</p>
+<p>To send <strong>relative</strong> timestamps, build them from your own simulation clock:</p>
+<pre><code class="language-rust ignore">use std::time::Instant;
+
+let started = Instant::now();
+// ...
+pdu.header_mut().timestamp = Timestamp::relative(started.elapsed());</code></pre>
+<h2 id="how-old-is-a-pdu"><a class="header" href="#how-old-is-a-pdu">How old is a PDU?</a></h2>
+<p><code>duration_since</code> handles the hour boundary: a timestamp from 59:59, compared with one
+from 00:01, is 2 seconds earlier, not almost an hour.</p>
+<pre><code class="language-rust ignore">use std::time::Duration;
+
+let age = Timestamp::now().duration_since(pdu.header().timestamp);
+if age &lt; Duration::from_secs(30 * 60) {
+    // Extrapolate the entity's position forward by `age` using its dead reckoning parameters
+}</code></pre>
+<p>Because timestamps repeat every hour, a timestamp slightly <em>ahead</em> of your clock, from
+a sender whose clock runs fast, comes out as an age of nearly an hour. Treat ages above
+30 minutes as being from the future, and don’t extrapolate those entities backwards.</p>
+<p>Only compare timestamps of the same kind: absolute with absolute, or relative with
+relative from the same simulator.</p>
+<h2 id="clock-time-records"><a class="header" href="#clock-time-records">Clock Time records</a></h2>
+<p>Some PDUs need to say <em>which</em> hour, not just the time within it. Simulation Management PDUs
+such as Start/Resume use a <strong>Clock Time</strong> record (<code>ClockTime</code>) for this. It has two fields:</p>
+<ul>
+<li><code>hour</code>: the number of hours since 00:00 UTC on 1 January 1970.</li>
+<li><code>time_past_hour</code>: the time within that hour, as a <code>Timestamp</code>.</li>
+</ul>
+<p>To build one for the current time, use <code>ClockTime::now()</code>:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::records::ClockTime;
+
+start.real_world_time = ClockTime::now();</code></pre>
+<p>To build one yourself, pass the hour and a <code>Timestamp</code>:</p>
+<pre><code class="language-rust ignore">use std::time::Duration;
+use open_dis_rust::records::{ClockTime, Timestamp};
+
+// 06:00 UTC on 1 January 2026 is 490,902 hours after the Unix epoch
+let dawn = ClockTime::new(490_902, Timestamp::absolute(Duration::ZERO));</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="enumerations-siso-ref-010"><a class="header" href="#enumerations-siso-ref-010">Enumerations (SISO-REF-010)</a></h1>
+<p>This crate adheres to the IEEE 1278.1-2012 DIS standard, and that standard leverages enumerations
+defined in a separate document, <strong>SISO-REF-010</strong>, <em>Reference for Enumerations for Simulation Interoperability</em>.</p>
+<p>SISO-REF-010 is published by the <a href="https://www.sisostandards.org/">Simulation Interoperability Standards Organization (SISO)</a>
+and is free to download. It is revised regularly to add new countries, platforms, weapons, and emitters. Unlike the IEEE standard,
+it changes from year to year.</p>
+<p>This crate specifically leverages the enumerations defined in <strong>SISO-REF-010-2023</strong>.</p>
+<h2 id="how-enumerations-appear-in-the-crate"><a class="header" href="#how-enumerations-appear-in-the-crate">How enumerations appear in the crate</a></h2>
+<p>All enumerations are in <code>siso::enums</code>. Each comes from one table in SISO-REF-010, which
+identifies its tables by a <strong>UID</strong> number. They take three forms:</p>
+<ul>
+<li><strong>Rust enums</strong> for fields with a fixed list of possible values. Most enumerated fields in a PDU
+use these types directly.</li>
+</ul>
+<pre><code class="language-rust ignore">  use open_dis_rust::siso::enums::ForceId;
+
+  pdu.force_id = ForceId::Friendly;</code></pre>
+<ul>
+<li><strong>Bit flags</strong> for fields where several options can be set at once. These use the
+<a href="https://docs.rs/bitflags"><code>bitflags</code></a> crate, so you combine them with <code>|</code>.</li>
+</ul>
+<pre><code class="language-rust ignore">  use open_dis_rust::siso::bit_records::FrozenBehavior;
+
+  // Keep the simulation clock running and keep sending updates while frozen.
+  stop.frozen_behavior = FrozenBehavior::RunSimulationClock | FrozenBehavior::TransmitUpdates;</code></pre>
+<ul>
+<li><strong>Plain integers</strong> for fields whose meaning depends on another field. An entity type’s category,
+for example, means one thing for a land vehicle and another for an aircraft. The crate has an enum
+for each of those tables, but the field itself is a plain old data type, such as a <code>u8</code>.</li>
+</ul>
+<p>SISO-REF-010 also defines bit layouts: fields whose bits are split into smaller fields, such as
+an entity’s appearance. Those are in <code>siso::appearance</code> and <code>siso::bit_records</code>, with a getter
+and setter for each field.</p>
+<h2 id="finding-a-value"><a class="header" href="#finding-a-value">Finding a value</a></h2>
+<p>Variant names follow the names in SISO-REF-010, with spaces and punctuation removed. For example,
+“United States of America” becomes <code>UnitedStatesofAmerica</code>, and “Able to Comply” becomes <code>AbleToComply</code>.
+Search the <a href="https://docs.rs/open-dis-rust">API documentation</a> for the name, or search <code>src/siso/enums.rs</code>
+for the table name or its UID number.</p>
+<h2 id="values-unknown-to-the-crate"><a class="header" href="#values-unknown-to-the-crate">Values unknown to the crate</a></h2>
+<p>When decoding, a value that is not in the crate’s table is an error. The whole PDU fails with
+<code>DISError::WireFormat</code>. This usually happens when another simulator uses a newer version of
+SISO-REF-010. See <a href="#decoding-behavior">Conformance Notes</a> for details.</p>
+<p>If you encounter an issue like this, please <a href="#encoding-and-interoperability-problems">report it</a>
+with the value and the PDU type.</p>
+<h2 id="deprecated-values"><a class="header" href="#deprecated-values">Deprecated values</a></h2>
+<p>When SISO retires a value, it stays in the tables so that old traffic can still be
+read, but it should not be used in new PDUs. The crate marks these variants <code>#[deprecated]</code>,
+so the compiler warns you if you use one:</p>
+<pre><code class="language-text">warning: use of deprecated unit variant `open_dis_rust::siso::enums::LandDomainCategories::CivilianVehicle`: Deprecated in SISO-REF-010-2023
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="creating-a-pdu"><a class="header" href="#creating-a-pdu">Creating a PDU</a></h1>
+<p>IEEE 1278.1-2012 defines 72 PDUs, and open-dis-rust implements all of them.</p>
+<h2 id="importing-pdus"><a class="header" href="#importing-pdus">Importing PDUs</a></h2>
+<p>Each protocol family is a module, and each PDU is a struct in its family’s module.
+<a href="#protocol-families--pdu-status">Protocol Families</a> lists them. Import the PDU you need along
+with the prelude for the common types and traits:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::{prelude::*, simulation_management::AcknowledgePdu};</code></pre>
+<h2 id="constructing-pdus"><a class="header" href="#constructing-pdus">Constructing PDUs</a></h2>
+<p><code>new()</code> gives a PDU that is ready to send: its header has the correct PDU type, protocol
+family, and length, exercise ID 1, and the current time. Every other field has a sensible
+default value.</p>
+<pre><code class="language-rust ignore">let mut ack = AcknowledgePdu::new();</code></pre>
+<h2 id="set-the-header"><a class="header" href="#set-the-header">Set the header</a></h2>
+<p>Read the header with <code>header()</code> and change it with <code>header_mut()</code>. Set the exercise ID
+and, for a PDU you send more than once, the timestamp:</p>
+<pre><code class="language-rust ignore">ack.header_mut().exercise_id = ExerciseIdentifier::new(3);
+ack.header_mut().timestamp = Timestamp::now();</code></pre>
+<p>The PDU type, protocol family, and length are read-only. Encoding fills them in from the
+PDU, so they cannot disagree with its contents.</p>
+<h2 id="set-the-fields"><a class="header" href="#set-the-fields">Set the fields</a></h2>
+<p>Every other field is public. Simple fields take a plain value:</p>
+<pre><code class="language-rust ignore">ack.request_id = 14;</code></pre>
+<p>Fields that are records, such as identifiers, take a record. Build it with its <code>new</code>
+function, or change its fields one at a time:</p>
+<pre><code class="language-rust ignore">let me = SimulationAddress::new(1, 100);
+ack.originating_entity_id = EntityIdentifier::new(me, 0);
+ack.receiving_entity_id.entity_id = 12;</code></pre>
+<p>Counts and lengths that depend on other fields, such as the number of records in a
+list, are set when the PDU is encoded, so you only fill in the list itself.
+<a href="#what-encoding-fills-in-for-you">Wire Format Conventions</a>
+lists them.</p>
+<h2 id="send-it"><a class="header" href="#send-it">Send it</a></h2>
+<p><a href="#sending-pdus">Sending PDUs</a> shows how to encode the PDU and send it over UDP.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sending-pdus"><a class="header" href="#sending-pdus">Sending PDUs</a></h1>
 <p>While the network protocol is not required to be UDP, this crate has been validated
 against UDP topology, and the example code provided uses UDP as the protocol.</p>
 <h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
-<p>This demonstration utilizes the <code>open_dis_rust</code> crate as well as the <code>bytes</code> and
-<code>tokio</code> crates.</p>
+<p>This demonstration utilizes the <code>open_dis_rust</code> crate and <code>tokio</code>:</p>
+<pre><code class="language-shell">cargo add open-dis-rust
+cargo add tokio --features full
+</code></pre>
 <h2 id="create-and-serialize-the-pdu"><a class="header" href="#create-and-serialize-the-pdu">Create and Serialize the PDU</a></h2>
-<p>As shown in the previous section, we can create a PDU as such:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use open_dis_rust::simulation_management::AcknowledgePdu;
+<p>Create the PDU and fill it its fields as described in <a href="#creating-a-pdu">Creating a PDU</a>:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::{prelude::*, simulation_management::AcknowledgePdu};
 
-let mut ack_pdu = AcknowledgePdu::new();
-<span class="boring">}</span></code></pre>
-<p>Then, we need to create an empty, mutable byte array into which we will serialize
-the PDU:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use bytes::BytesMut;
-
-let mut bytes = BytesMut::new();
-<span class="boring">}</span></code></pre>
-<p>Now, we simply call the <code>serialize</code> function from the PDU and pass in a mutable
-reference to the byte array:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>ack_pdu.serialize(&amp;mut bytes);
-<span class="boring">}</span></code></pre>
-<p>The PDU has now been serialized into the byte array and is ready to be sent.</p>
+let mut ack = AcknowledgePdu::new();
+ack.request_id = 42;</code></pre>
+<p>Then, serialize it. <code>to_bytes</code> returns a new <code>Vec&lt;u8&gt;</code> holding the encoded PDU:</p>
+<pre><code class="language-rust ignore">let bytes: Vec&lt;u8&gt; = ack.to_bytes()?;</code></pre>
+<p>The PDU has now been serialized into a byte array and is ready to be sent.</p>
 <h2 id="initializing-a-udp-socket"><a class="header" href="#initializing-a-udp-socket">Initializing a UDP Socket</a></h2>
 <p>We need to select an address and a port to send the message. For this exercise,
 we will assume the address is <code>localhost (127.0.0.1)</code>, and we will use port <code>3000</code>.
 To create the socket, we use the <code>tokio</code> crate:</p>
-<pre class="playground"><code class="language-rust">use bytes::BytesMut;
-use std::net::SocketAddr;
-use std::io;
+<pre><code class="language-rust ignore">use std::io;
 use tokio::net::UdpSocket;
 
-use open_dis_rust::simulation_management::AcknowledgePdu;
+use open_dis_rust::{prelude::*, simulation_management::AcknowledgePdu};
 
 #[tokio::main]
 async fn main() -&gt; io::Result&lt;()&gt; {
-    let socket = UdpSocket::bind("0.0.0.0:3000").await?;
-    let remote_addr = "127.0.0.1:3000";
+    // Let the operating system pick the local port, and send to port 3000.
+    let socket = UdpSocket::bind("0.0.0.0:0").await?;
+    socket.connect("127.0.0.1:3000").await?;
 
-    socket.connect(remote_addr).await?;
+    let mut ack = AcknowledgePdu::new();
+    ack.request_id = 42;
 
-    let mut ack_pdu = AcknowledgePdu::new();
-    let mut bytes = BytesMut::new();
+    let bytes = ack
+        .to_bytes()
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+    socket.send(&amp;bytes).await?;
 
-    ack_pdu.serialize(&amp;mut bytes);
-    socket.send(&amp;bytes[..]).await?;
-}</code></pre>
-<p>We create a UDP socket and bind it to all network interfaces, specifically on port
-<code>3000</code>. We then establish a one-to-one connection to <code>127.0.0.0:3000</code>. Afterwards,
-we take our serialized PDU and send it via the socket’s <code>send()</code> function. Anything
-listening on 127.0.0.1:3000 will be able to receive the message.</p>
-<p>A tutorial on receiving and parsing a PDU is available in the next section.</p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="receiving-pdus"><a class="header" href="#receiving-pdus">Receiving PDUs</a></h1>
-<p>The same dependencies are required as listed in the previous section.</p>
-<h2 id="receiving-and-parsing-a-pdu"><a class="header" href="#receiving-and-parsing-a-pdu">Receiving and Parsing a PDU</a></h2>
-<p>Using the same UDP socket that we created in the previous section, we
-can receive a PDU and deserialize it from the byte array.</p>
-<pre class="playground"><code class="language-rust">use bytes::BytesMut;
-use std::net::SocketAddr;
-use std::io;
-use tokio::net::UdpSocket;
-
-use open_dis_rust::simulation_management::AcknowledgePdu;
-
-#[tokio::main]
-async fn main() -&gt; io::Result&lt;()&gt; {
-    let socket = UdpSocket::bind("0.0.0.0:3000").await?;
-    let remote_addr = "127.0.0.1:3000";
-
-    socket.connect(remote_addr).await?;
-
-    let mut buf = vec![0; 1204];
-    let n = socket.recv(&amp;mut buf[..]).await?;
-    loop {
-        if n &gt; 0 {
-          dbg!(AcknowledgePdu::deserialize(BytesMut::from(buf.as_slice())).unwrap());
-          break;
-        }
-    }
     Ok(())
 }</code></pre>
-<p>In most cases, the receiver is going to be listening for a particular PDU or range of
-PDUs. Using the above code as an example, if the data received is not able to be
-deserialized into an AcknowledgePdu, an error will be returned. This can be further
-handled by the user.</p>
-<p>There are other ways to determine what type of PDU the data represents, such as reading
-the raw byte array and finding the byte that represents the <code>pdu_type</code> field in the header.
-Then, the user could set up a match tree to attempt to parse the PDU, if they are expected
-to handle it, of course.</p>
+<p><code>DISError</code> implements <code>std::error::Error</code>, so it converts into an <code>io::Error</code>, or a
+<code>Box&lt;dyn Error&gt;</code>, for use with <code>?</code>.</p>
+<p>Anything listening on port 3000 of the local machine receives the PDU. The next guide
+shows how to receive and decode it.</p>
+<h2 id="using-the-bytes-crate"><a class="header" href="#using-the-bytes-crate">Using the <code>bytes</code> crate</a></h2>
+<p>If your application already uses <code>bytes</code>, for example through a <code>tokio</code> codec, encode
+into a <code>Vec&lt;u8&gt;</code> and convert it. <code>Bytes::from</code> takes over the vector’s memory without
+copying:</p>
+<pre><code class="language-rust ignore">let bytes = bytes::Bytes::from(ack.to_bytes()?);</code></pre>
+<p>When receiving, a <code>Bytes</code> or <code>BytesMut</code> dereferences to <code>&amp;[u8]</code>, so you can pass
+<code>&amp;mut &amp;buf[..]</code> straight to <code>deserialize</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="receiving-pdus"><a class="header" href="#receiving-pdus">Receiving PDUs</a></h1>
+<p>This guide receives and decodes PDUs using <code>tokio</code> for networking. The same dependencies
+are used as in <a href="#sending-pdus">Sending PDUs</a>.</p>
+<h2 id="decode-a-pdu"><a class="header" href="#decode-a-pdu">Decode a PDU</a></h2>
+<p><code>deserialize</code> decodes one PDU from the front of a byte slice. It takes the slice by
+mutable reference and advances it past the PDU it read:</p>
+<pre><code class="language-rust ignore">let mut datagram: &amp;[u8] = &amp;buf[..n];
+let ack = AcknowledgePdu::deserialize(&amp;mut datagram)?;</code></pre>
+<p>If the bytes are not a valid Acknowledge PDU, it returns a <code>DISError</code> instead.
+<a href="#errors">Errors</a> describes each type of error.</p>
+<h2 id="receive-and-decode"><a class="header" href="#receive-and-decode">Receive and decode</a></h2>
+<p>A receiver usually handles several PDU types and ignores the rest. <code>AnyPdu::deserialize</code>
+reads the PDU type from the header and decodes the PDU as that type. <code>AnyPdu</code> has one
+variant per PDU type, named after its <code>PduType</code>, so you <code>match</code> on the ones you handle:</p>
+<pre><code class="language-rust ignore">use std::io;
+use tokio::net::UdpSocket;
+
+use open_dis_rust::prelude::*;
+
+#[tokio::main]
+async fn main() -&gt; io::Result&lt;()&gt; {
+    let socket = UdpSocket::bind("0.0.0.0:3000").await?;
+    let mut buf = vec![0u8; MAX_PDU_SIZE_OCTETS];
+
+    loop {
+        let (n, from) = socket.recv_from(&amp;mut buf).await?;
+        let mut datagram = buf.get(..n).unwrap_or_default();
+
+        match AnyPdu::deserialize(&amp;mut datagram) {
+            Ok(AnyPdu::Acknowledge(ack)) =&gt; {
+                println!("{from}: acknowledged request {}", ack.request_id);
+            }
+            Ok(AnyPdu::EntityState(pdu)) =&gt; println!("{from}: entity {:?}", pdu.entity_id),
+            Ok(other) =&gt; println!("{from}: ignoring {:?} PDU", other.pdu_type()),
+            Err(e) =&gt; eprintln!("{from}: undecodable datagram: {e}"),
+        }
+    }
+}</code></pre>
+<p>A few things to note:</p>
+<ul>
+<li><strong>Size the buffer for the largest PDU.</strong> <code>MAX_PDU_SIZE_OCTETS</code> is 8192. A smaller
+buffer could truncate larger PDUs, and attempting to decode a truncated PDU results
+in <code>DISError::BufferUnderflow</code>.</li>
+<li><strong>Decode only the bytes you received.</strong> <code>buf.get(..n)</code> limits the slice to the
+datagram, so leftover bytes from an earlier, longer datagram cannot be read.</li>
+<li><strong>Expect errors.</strong> On a shared network or distributed simulation environment, some
+traffic could naturally fail to decode. Log it and keep receiving rather than hard
+stopping your program.</li>
+</ul>
+<p>If you only handle one or two PDU types, you can skip decoding the rest:
+<code>PduHeader::get_pdu_type</code> reads just the 12-octet header, and then you can call
+<code>deserialize</code> on the concrete type, such as <code>EntityStatePdu::deserialize</code>.</p>
+<h2 id="several-pdus-in-a-single-datagram"><a class="header" href="#several-pdus-in-a-single-datagram">Several PDUs in a single datagram</a></h2>
+<p>A datagram can hold more than one PDU. <code>AnyPdu::deserialize_all</code> decodes each of them in
+turn. <a href="#several-pdus-in-one-datagram">Wire Format Conventions</a>
+shows how.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="conformance-notes"><a class="header" href="#conformance-notes">Conformance Notes</a></h1>
+<p>This page records how closely open-dis-rust follows IEEE 1278.1-2012. This includes
+what has been checked, how the crate behaves at the edges of the standard, and
+where it is currently known to differ. This page will be updated as issues
+are found and eventually fixed.</p>
+<p>If you find a difference that is not listed here, please <a href="#encoding-and-interoperability-problems">report it</a>,
+ideally with a packet capture.</p>
+<h2 id="how-the-crate-is-checked"><a class="header" href="#how-the-crate-is-checked">How the crate is checked</a></h2>
+<ul>
+<li><strong>Review against the standard.</strong> PDU and record layouts have been manually reviewed
+field by field against the IEEE 1278.1-2012 standard document.</li>
+<li><strong>Round-trip tests.</strong> Every PDU has tests that encode it, decode the result, and
+check that the bytes match. These tests catch bugs where encoding and decoding
+may differ, but it fails to catch cases where both follow the same wrong layout.</li>
+</ul>
+<h2 id="what-has-been-checked-and-matches"><a class="header" href="#what-has-been-checked-and-matches">What has been checked and matches</a></h2>
+<ul>
+<li><strong>PDU header.</strong> The 12-octet layout, field order, and sizes are correct for both the
+standard header and the Live Entity header.</li>
+<li><strong>PDU Status record.</strong> The bit assignments are correct, including the per-PDU meanings
+of bits 4 and 5.</li>
+<li><strong>Timestamps.</strong> Encoded in units of 3600/2³¹ seconds past the hour, with the low
+bit set for absolute time.</li>
+<li><strong>Byte order.</strong> Every field is big-endian, and floating-point values are IEEE 754.</li>
+<li><strong>Size limit.</strong> PDUs larger than 8192 octets are rejected when encoding.</li>
+<li><strong>Fixed-size fields.</strong> For nearly all PDUs, the fixed part of the layout is correct.</li>
+</ul>
+<h2 id="decoding-behavior"><a class="header" href="#decoding-behavior">Decoding behavior</a></h2>
+<p>These choices are stricter than some other DIS implementations. They matter most when
+you receive traffic from simulators you do not control.</p>
+<ul>
+<li><strong>Undefined enumeration values are rejected.</strong> If any enumerated field holds a value
+that is not in the crate’s SISO-REF-010 tables, such as a newly assigned country code,
+the whole PDU fails to decode with a <code>WireFormat</code> error. Newer simulators may send
+values the crate does not know about yet.</li>
+<li><strong>Extra octets are rejected.</strong> If a PDU’s length field is longer than the fields the
+crate reads, decoding fails with a <code>DeserializationError</code>.</li>
+<li><strong>The protocol version is not checked.</strong> Any version from 1 to 7 is accepted, and the
+PDU is decoded with the 2012 layout. Most DIS 6 (1998) PDUs decode correctly this way
+because their layouts did not change in the 2012 version.</li>
+<li><strong>The protocol family is not checked</strong> against the PDU type.</li>
+<li><strong>Padding is preserved.</strong> Padding fields are read and kept, so a decoded PDU re-encodes
+to identical bytes. PDUs you build yourself always send zero padding.</li>
+</ul>
+<h2 id="known-differences"><a class="header" href="#known-differences">Known differences</a></h2>
+<p>Each of these produces bytes that differ from the standard in some way. The eventual goal
+is to have this list be completely empty; that is, all known differences have been addressed.</p>
+<h3 id="underwater-acoustic-pdu"><a class="header" href="#underwater-acoustic-pdu">Underwater Acoustic PDU</a></h3>
+<ul>
+<li>The emitter system data length and beam data length fields aren’t computed, so
+they’re always sent as 0.</li>
+<li><strong>To verify:</strong> Shaft RPM Rate of Change is encoded as a 32-bit integer; it may need
+to be a 32-bit float.</li>
+</ul>
+<h3 id="electromagnetic-emission-pdu"><a class="header" href="#electromagnetic-emission-pdu">Electromagnetic Emission PDU</a></h3>
+<p>The system data length and beam data length fields aren’t computed, so they’re
+always sent as 0. Receivers that use these lengths to step through the records can’t
+parse the PDU.</p>
+<h3 id="linear-object-state-pdu"><a class="header" href="#linear-object-state-pdu">Linear Object State PDU</a></h3>
+<p>The general segment appearance in each Linear Segment Parameter record is 32 bits
+instead of 16, which makes each segment 66 octets instead of 64.</p>
+<h3 id="gridded-data-pdu"><a class="header" href="#gridded-data-pdu">Gridded Data PDU</a></h3>
+<p>Grid data records that use representation type 0 are padded to a 16-bit boundary
+instead of a 32-bit one. Types 1 and 2 are padded correctly.</p>
+<h3 id="minefield-response-nack-pdu"><a class="header" href="#minefield-response-nack-pdu">Minefield Response NACK PDU</a></h3>
+<p>Missing PDU sequence numbers are encoded as 64-bit values with no padding. The
+standard calls for 8-bit values padded to a 32-bit boundary.</p>
+<h3 id="directed-energy-fire-pdu"><a class="header" href="#directed-energy-fire-pdu">Directed Energy Fire PDU</a></h3>
+<ul>
+<li>The PDU carries Damage Description records (record type 4500). It should carry DE
+Precision Aimpoint (4000) or DE Area Aimpoint (4001) records.</li>
+<li><strong>To verify:</strong> the 32-bit field after Wavelength is treated as padding; it may be
+Peak Irradiance, a 32-bit float.</li>
+</ul>
+<h2 id="simplified-records"><a class="header" href="#simplified-records">Simplified records</a></h2>
+<p>These PDUs encode correctly when the affected records are empty, but the records
+are modeled more simply than the standard defines them.</p>
+<h3 id="aggregate-state-pdu"><a class="header" href="#aggregate-state-pdu">Aggregate State PDU</a></h3>
+<p>The silent aggregate and silent entity lists are encoded as plain entity types.
+The standard defines Silent Aggregate System records (12 octets each) and Silent
+Entity System records (variable length, with appearance records).</p>
+<h3 id="is-group-of-pdu"><a class="header" href="#is-group-of-pdu">Is Group Of PDU</a></h3>
+<p>Grouped entity descriptions are encoded as 64-bit values. In the standard, their
+size and contents depend on the grouped entity category.</p>
+<h3 id="environmental-process-pdu"><a class="header" href="#environmental-process-pdu">Environmental Process PDU</a></h3>
+<p>Environment records include only their 8-octet header. The geometry and state data
+that follows the header isn’t represented.</p>
+<h3 id="intercom-control-pdu"><a class="header" href="#intercom-control-pdu">Intercom Control PDU</a></h3>
+<p>Intercom communications parameter records have a fixed 32-bit body, although the
+standard allows them to be any length given by their record length field.</p>
+<h3 id="iff-pdu"><a class="header" href="#iff-pdu">IFF PDU</a></h3>
+<p>Layer 1 and layer 2 are decoded into fields. Any further layers, such as Mode 5 and
+Mode S data, are kept as raw octets in <code>IffLayers::other_layers</code>.</p>
+<h2 id="still-to-verify"><a class="header" href="#still-to-verify">Still to verify</a></h2>
+<p>These may differ from the standard. They need checking against the text of
+IEEE 1278.1-2012 or against captures.</p>
+<h3 id="record-specification-record"><a class="header" href="#record-specification-record">Record Specification record</a></h3>
+<p>Used by the Transfer Ownership and Set Record-R PDUs. The crate treats the record
+length as a number of octets and doesn’t pad the record values. The standard may
+define the length in bits, require a 32-bit padding field after the record set
+serial number, and pad the values to a 64-bit boundary.</p>
+<h3 id="live-entity-fire-and-detonation-pdus"><a class="header" href="#live-entity-fire-and-detonation-pdus">Live Entity Fire and Detonation PDUs</a></h3>
+<p>The flag fields are kept as plain integers, and every optional field is always
+encoded. The standard may use the flags to mark some fields as present or absent.</p>
+<h2 id="fields-kept-as-raw-values"><a class="header" href="#fields-kept-as-raw-values">Fields kept as raw values</a></h2>
+<p>These fields encode correctly, but the crate doesn’t interpret them for you. You
+read and write their bits yourself, using the SISO-REF-010 enumerations.</p>
+<ul>
+<li>Entity capabilities, in the Entity State and Appearance PDUs. <code>EntityCapabilities</code> holds
+the 32 bits, whose layout depends on the entity’s kind and domain. Entity appearance
+has typed views instead: <code>EntityAppearance::view</code> reads it with the layout for an
+<code>EntityType</code>.</li>
+<li>Variable parameter records. These are kept as four generic fields rather than as
+typed articulated or attached part records.</li>
+<li>Modulation parameters in the Transmitter PDU. Beam antenna patterns are decoded;
+spherical harmonic patterns are not supported yet, and a Transmitter PDU with one
+fails to decode.</li>
+<li>Signal and Intercom Signal data.</li>
+<li>Specific object appearance in the Point and Linear Object State PDUs. For an areal
+minefield, <code>ArealObjectStateMinefieldAppearance</code> reads it, and the general object
+appearance has its own type, <code>ObjectStateAppearanceGeneral</code>.</li>
+<li>Object modifications in the Point Object State PDU and Linear Segment Parameter
+records (UIDs 240 and 241). The Areal Object State PDU’s is typed.</li>
+</ul>
+<p>The Damage Description record defaults to a record type and length of 0. Set them to
+4500 and 40 when you build one yourself.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="pdu-coverage"><a class="header" href="#pdu-coverage">PDU Coverage</a></h1>
+<p>IEEE 1278.1-2012 defines 72 PDU types. open-dis-rust implements all 72. This
+page lists every type with its number, protocol family, Rust type, and status.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Status</th><th>Count</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td>Complete</td><td>56</td><td>Implemented, with no known differences from the standard.</td></tr>
+<tr><td>Partial</td><td>5</td><td>Implemented, but some variable-length records are kept as raw values or are simplified.</td></tr>
+<tr><td>Known Issues</td><td>6</td><td>Implemented, but at least one field is encoded differently from the standard.</td></tr>
+<tr><td>To Verify</td><td>5</td><td>Implemented, but at least one field may differ from the standard and still needs to be verified.</td></tr>
+<tr><td>Not Implemented</td><td>0</td><td>Not available yet.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Each status other than <code>Complete</code> links to the details on the <a href="#conformance-notes">Conformance Notes</a> page.
+<code>Complete</code> means no problems are known; it does not mean the PDU has been certified against other implementations.</p>
+<h2 id="list-of-pdu-types"><a class="header" href="#list-of-pdu-types">List of PDU types</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th style="text-align: right">Type</th><th>PDU</th><th>Family</th><th>Rust type</th><th>Status</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right">1</td><td>Entity State</td><td>Entity Information</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_information/struct.EntityStatePdu.html"><code>EntityStatePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">2</td><td>Fire</td><td>Warfare</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/warfare/struct.FirePdu.html"><code>FirePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">3</td><td>Detonation</td><td>Warfare</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/warfare/struct.DetonationPdu.html"><code>DetonationPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">4</td><td>Collision</td><td>Entity Information</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_information/struct.CollisionPdu.html"><code>CollisionPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">5</td><td>Service Request</td><td>Logistics</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/logistics/struct.ServiceRequestPdu.html"><code>ServiceRequestPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">6</td><td>Resupply Offer</td><td>Logistics</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/logistics/struct.ResupplyOfferPdu.html"><code>ResupplyOfferPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">7</td><td>Resupply Received</td><td>Logistics</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/logistics/struct.ResupplyReceivedPdu.html"><code>ResupplyReceivedPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">8</td><td>Resupply Cancel</td><td>Logistics</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/logistics/struct.ResupplyCancelPdu.html"><code>ResupplyCancelPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">9</td><td>Repair Complete</td><td>Logistics</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/logistics/struct.RepairCompletePdu.html"><code>RepairCompletePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">10</td><td>Repair Response</td><td>Logistics</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/logistics/struct.RepairResponsePdu.html"><code>RepairResponsePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">11</td><td>Create Entity</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.CreateEntityPdu.html"><code>CreateEntityPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">12</td><td>Remove Entity</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.RemoveEntityPdu.html"><code>RemoveEntityPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">13</td><td>Start/Resume</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.StartResumePdu.html"><code>StartResumePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">14</td><td>Stop/Freeze</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.StopFreezePdu.html"><code>StopFreezePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">15</td><td>Acknowledge</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.AcknowledgePdu.html"><code>AcknowledgePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">16</td><td>Action Request</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.ActionRequestPdu.html"><code>ActionRequestPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">17</td><td>Action Response</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.ActionResponsePdu.html"><code>ActionResponsePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">18</td><td>Data Query</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.DataQueryPdu.html"><code>DataQueryPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">19</td><td>Set Data</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.SetDataPdu.html"><code>SetDataPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">20</td><td>Data</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.DataPdu.html"><code>DataPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">21</td><td>Event Report</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.EventReportPdu.html"><code>EventReportPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">22</td><td>Comment</td><td>Simulation Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management/struct.CommentPdu.html"><code>CommentPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">23</td><td>Electromagnetic Emission</td><td>Distributed Emission</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/distributed_emissions/struct.ElectromagneticEmissionsPdu.html"><code>ElectromagneticEmissionsPdu</code></a></td><td><a href="#electromagnetic-emission-pdu">Known issues</a></td></tr>
+<tr><td style="text-align: right">24</td><td>Designator</td><td>Distributed Emission</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/distributed_emissions/struct.DesignatorPdu.html"><code>DesignatorPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">25</td><td>Transmitter</td><td>Radio</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/radio_communications/struct.TransmitterPdu.html"><code>TransmitterPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">26</td><td>Signal</td><td>Radio</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/radio_communications/struct.SignalPdu.html"><code>SignalPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">27</td><td>Receiver</td><td>Radio</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/radio_communications/struct.ReceiverPdu.html"><code>ReceiverPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">28</td><td>IFF</td><td>Distributed Emission</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/distributed_emissions/struct.IFFPdu.html"><code>IFFPdu</code></a></td><td><a href="#iff-pdu">Partial</a></td></tr>
+<tr><td style="text-align: right">29</td><td>Underwater Acoustic</td><td>Distributed Emission</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/distributed_emissions/struct.UnderwaterAcousticPdu.html"><code>UnderwaterAcousticPdu</code></a></td><td><a href="#underwater-acoustic-pdu">Known issues</a></td></tr>
+<tr><td style="text-align: right">30</td><td>Supplemental Emission</td><td>Distributed Emission</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/distributed_emissions/struct.SupplementalEmissionPdu.html"><code>SupplementalEmissionPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">31</td><td>Intercom Signal</td><td>Radio</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/radio_communications/struct.IntercomSignalPdu.html"><code>IntercomSignalPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">32</td><td>Intercom Control</td><td>Radio</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/radio_communications/struct.IntercomControlPdu.html"><code>IntercomControlPdu</code></a></td><td><a href="#intercom-control-pdu">Partial</a></td></tr>
+<tr><td style="text-align: right">33</td><td>Aggregate State</td><td>Entity Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_management/struct.AggregateStatePdu.html"><code>AggregateStatePdu</code></a></td><td><a href="#aggregate-state-pdu">Partial</a></td></tr>
+<tr><td style="text-align: right">34</td><td>Is Group Of</td><td>Entity Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_management/struct.IsGroupOfPdu.html"><code>IsGroupOfPdu</code></a></td><td><a href="#is-group-of-pdu">Partial</a></td></tr>
+<tr><td style="text-align: right">35</td><td>Transfer Ownership</td><td>Entity Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_management/struct.TransferOwnershipPdu.html"><code>TransferOwnershipPdu</code></a></td><td><a href="#record-specification-record">To verify</a></td></tr>
+<tr><td style="text-align: right">36</td><td>Is Part Of</td><td>Entity Mgmt</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_management/struct.IsPartOfPdu.html"><code>IsPartOfPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">37</td><td>Minefield State</td><td>Minefield</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/minefield/struct.MinefieldStatePdu.html"><code>MinefieldStatePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">38</td><td>Minefield Query</td><td>Minefield</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/minefield/struct.MinefieldQueryPdu.html"><code>MinefieldQueryPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">39</td><td>Minefield Data</td><td>Minefield</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/minefield/struct.MinefieldDataPdu.html"><code>MinefieldDataPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">40</td><td>Minefield Response NACK</td><td>Minefield</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/minefield/struct.MinefieldResponseNackPdu.html"><code>MinefieldResponseNackPdu</code></a></td><td><a href="#minefield-response-nack-pdu">Known issues</a></td></tr>
+<tr><td style="text-align: right">41</td><td>Environmental Process</td><td>Synthetic Env</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/synthetic_environment/struct.EnvironmentalProcessPdu.html"><code>EnvironmentalProcessPdu</code></a></td><td><a href="#environmental-process-pdu">Partial</a></td></tr>
+<tr><td style="text-align: right">42</td><td>Gridded Data</td><td>Synthetic Env</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/synthetic_environment/struct.GriddedDataPdu.html"><code>GriddedDataPdu</code></a></td><td><a href="#gridded-data-pdu">Known issues</a></td></tr>
+<tr><td style="text-align: right">43</td><td>Point Object State</td><td>Synthetic Env</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/synthetic_environment/struct.PointObjectStatePdu.html"><code>PointObjectStatePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">44</td><td>Linear Object State</td><td>Synthetic Env</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/synthetic_environment/struct.LinearObjectStatePdu.html"><code>LinearObjectStatePdu</code></a></td><td><a href="#linear-object-state-pdu">Known issues</a></td></tr>
+<tr><td style="text-align: right">45</td><td>Areal Object State</td><td>Synthetic Env</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/synthetic_environment/struct.ArealObjectStatePdu.html"><code>ArealObjectStatePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">46</td><td>Time Space Position Information (TSPI)</td><td>Live Entity</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/live_entity_information/struct.TimeSpacePositionInformationPdu.html"><code>TimeSpacePositionInformationPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">47</td><td>Appearance</td><td>Live Entity</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/live_entity_information/struct.AppearancePdu.html"><code>AppearancePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">48</td><td>Articulated Parts</td><td>Live Entity</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/live_entity_information/struct.ArticulatedPartsPdu.html"><code>ArticulatedPartsPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">49</td><td>Live Entity Fire</td><td>Live Entity</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/live_entity_information/struct.LiveEntityFirePdu.html"><code>LiveEntityFirePdu</code></a></td><td><a href="#live-entity-fire-and-detonation-pdus">To verify</a></td></tr>
+<tr><td style="text-align: right">50</td><td>Live Entity Detonation</td><td>Live Entity</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/live_entity_information/struct.LiveEntityDetonationPdu.html"><code>LiveEntityDetonationPdu</code></a></td><td><a href="#live-entity-fire-and-detonation-pdus">To verify</a></td></tr>
+<tr><td style="text-align: right">51</td><td>Create Entity-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.CreateEntityReliablePdu.html"><code>CreateEntityReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">52</td><td>Remove Entity-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.RemoveEntityReliablePdu.html"><code>RemoveEntityReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">53</td><td>Start/Resume-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.StartResumeReliablePdu.html"><code>StartResumeReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">54</td><td>Stop/Freeze-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.StopFreezeReliablePdu.html"><code>StopFreezeReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">55</td><td>Acknowledge-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.AcknowledgeReliablePdu.html"><code>AcknowledgeReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">56</td><td>Action Request-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.ActionRequestReliablePdu.html"><code>ActionRequestReliablePdu</code></a></td><td><a href="#action-request-r-pdu">To verify</a></td></tr>
+<tr><td style="text-align: right">57</td><td>Action Response-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.ActionResponseReliablePdu.html"><code>ActionResponseReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">58</td><td>Data Query-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.DataQueryReliablePdu.html"><code>DataQueryReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">59</td><td>Set Data-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.SetDataReliablePdu.html"><code>SetDataReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">60</td><td>Data-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.DataReliablePdu.html"><code>DataReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">61</td><td>Event Report-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.EventReportReliablePdu.html"><code>EventReportReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">62</td><td>Comment-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.CommentReliablePdu.html"><code>CommentReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">63</td><td>Record-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.RecordReliablePdu.html"><code>RecordReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">64</td><td>Set Record-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.SetRecordReliablePdu.html"><code>SetRecordReliablePdu</code></a></td><td><a href="#record-specification-record">To verify</a></td></tr>
+<tr><td style="text-align: right">65</td><td>Record Query-R</td><td>Simulation Mgmt-R</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/simulation_management_with_reliability/struct.RecordQueryReliablePdu.html"><code>RecordQueryReliablePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">66</td><td>Collision-Elastic</td><td>Entity Information</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_information/struct.CollisionElasticPdu.html"><code>CollisionElasticPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">67</td><td>Entity State Update</td><td>Entity Information</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_information/struct.EntityStateUpdatePdu.html"><code>EntityStateUpdatePdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">68</td><td>Directed Energy Fire</td><td>Warfare</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/warfare/struct.DirectedEnergyFirePdu.html"><code>DirectedEnergyFirePdu</code></a></td><td><a href="#directed-energy-fire-pdu">Known issues</a></td></tr>
+<tr><td style="text-align: right">69</td><td>Entity Damage Status</td><td>Warfare</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/warfare/struct.EntityDamageStatusPdu.html"><code>EntityDamageStatusPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">70</td><td>Information Operations Action</td><td>Information Ops</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/information_operations/struct.InformationOperationsActionPdu.html"><code>InformationOperationsActionPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">71</td><td>Information Operations Report</td><td>Information Ops</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/information_operations/struct.InformationOperationsReportPdu.html"><code>InformationOperationsReportPdu</code></a></td><td>Complete</td></tr>
+<tr><td style="text-align: right">72</td><td>Attribute</td><td>Entity Information</td><td><a href="https://docs.rs/open-dis-rust/latest/open_dis_rust/entity_information/struct.AttributePdu.html"><code>AttributePdu</code></a></td><td>Complete</td></tr>
+</tbody>
+</table>
+</div>
+<p>The family column uses short names. Each Rust type lives in the module for its family; for example,
+<code>open_dis_rust::warfare::FirePdu</code>. PDU type 0 (Other) is a placeholder in the enumeration, and there
+is no corresponding PDU.</p>
+<h2 id="headers"><a class="header" href="#headers">Headers</a></h2>
+<p>Two header types are used:</p>
+<ul>
+<li><strong><code>PduHeader</code></strong> for every family except Live Entity.</li>
+<li><strong><code>LiveEntityPduHeader</code></strong> for the five Live Entity PDUs (types 46-50). It has the same 12-octet size,
+but it carries a subprotocol number where the PDU Status record would be.</li>
+</ul>
+<p>Both are covered on the <a href="#wire-format-conventions">Wire Format Conventions</a> page.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="wire-format-conventions"><a class="header" href="#wire-format-conventions">Wire Format Conventions</a></h1>
+<p>This page summarizes how DIS PDUs are laid out on the wire and what open-dis-rust
+does for you when it encodes them. This is a quick reference; for a complete guide,
+check out the IEEE 1278.1-2012 documentation.</p>
+<h2 id="basics"><a class="header" href="#basics">Basics</a></h2>
+<ul>
+<li><strong>Byte order.</strong> Every multi-octet field is big-endian (network byte order).</li>
+<li><strong>Floating point.</strong> 32- and 64-bit floats are in IEEE 754 format.</li>
+<li><strong>Units.</strong> Unless the original standard document specifies otherwise, lengths are
+in meters, angles in radians, time in seconds, and velocities in meters per second.</li>
+<li><strong>Coordinates.</strong>  World coordinates are geocentric (ECEF) coordinates in meters
+encoded as 64-bit floats.</li>
+<li><strong>Maximum size.</strong> A PDU can be at most 8192 octets. Encoding a larger PDU fails
+with <code>DISError::PduSizeExceeded</code>.</li>
+</ul>
+<h2 id="the-pdu-header"><a class="header" href="#the-pdu-header">The PDU header</a></h2>
+<p>Every PDU starts with a 12-octet header.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Octets</th><th>Field</th><th>Size</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>Protocol Version</td><td>8 bits</td><td>Encoded as <code>7</code> for IEEE 1278.1-2012</td></tr>
+<tr><td>1</td><td>Exercise ID</td><td>8 bits</td><td>Must match across all participants in an exercise</td></tr>
+<tr><td>2</td><td>PDU Type</td><td>8 bits</td><td>See <a href="#pdu-coverage">PDU Coverage</a></td></tr>
+<tr><td>3</td><td>Protocol Family</td><td>8 bits</td><td></td></tr>
+<tr><td>4-7</td><td>Timestamp</td><td>32 bits</td><td>See <a href="#timestamps-1">Timestamps</a></td></tr>
+<tr><td>8-9</td><td>Length</td><td>16 bits</td><td>Total PDU length in octets, including the header</td></tr>
+<tr><td>10</td><td>PDU Status</td><td>8 bits</td><td>See <a href="#pdu-status-1">PDU Status</a></td></tr>
+<tr><td>11</td><td>Padding</td><td>8 bits</td><td></td></tr>
+</tbody>
+</table>
+</div>
+<p>In <code>LiveEntityPduHeader</code>, octet 10 holds the subprotocol number instead of the PDU Status
+record.</p>
+<p>To check a datagram’s PDU type without decoding the whole PDU, use <code>PduHeader::get_pdu_type</code>.
+It reads only the header.</p>
+<h3 id="timestamps-1"><a class="header" href="#timestamps-1">Timestamps</a></h3>
+<p>The timestamp counts time since the start of the current hour. Bits 31 to 1 hold the time
+in units of 3600/2³¹ seconds, which is about 1.676 µs. Bit 0 is <code>1</code> for an absolute
+timestamp (synchronized to real time) and <code>0</code> for a relative.</p>
+<p>The header’s <code>timestamp</code> field is a <code>Timestamp</code>. <code>Timestamp::now()</code> gives an absolute
+timestamp for the current UTC time. <code>new()</code> sets it once when you create a PDU, so set it
+again before each send if you reuse a PDU:</p>
+<pre><code class="language-rust ignore">pdu.header_mut().timestamp = Timestamp::now();</code></pre>
+<p>For relative timestamps, use <code>Timestamp::relative(duration)</code>. See
+<a href="#timestamps">Timestamps</a> for the rest of the type.</p>
+<h3 id="pdu-status-1"><a class="header" href="#pdu-status-1">PDU Status</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Bits</th><th>Field</th><th>Applies to</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>Transferred Entity Indicator (TEI)</td><td>PDUs that identify an entity</td></tr>
+<tr><td>1-2</td><td>LVC Indicator</td><td>All PDUs</td></tr>
+<tr><td>3</td><td>Coupled Extension Indicator (CEI)</td><td>All PDUs</td></tr>
+<tr><td>4-5</td><td>Depends on PDU type</td><td>See below</td></tr>
+<tr><td>6-7</td><td>Reserved</td><td></td></tr>
+</tbody>
+</table>
+</div>
+<p>Bits 4 and 5 mean different things depending on the PDU:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>PDU</th><th>Bits 4-5</th><th>Accessor</th></tr>
+</thead>
+<tbody>
+<tr><td>Fire</td><td>Fire Type Indicator (bit 4)</td><td><code>fti</code> / <code>set_fti</code></td></tr>
+<tr><td>Detonation</td><td>Detonation Type Indicator</td><td><code>dti</code> / <code>set_dti</code></td></tr>
+<tr><td>Transmitter, Signal, Receiver</td><td>Radio Attached Indicator</td><td><code>rai</code> / <code>set_rai</code></td></tr>
+<tr><td>Intercom Signal, Intercom Control</td><td>Intercom Attached Indicator</td><td><code>iai</code> / <code>set_iai</code></td></tr>
+<tr><td>IFF</td><td>IFF Simulation Mode (bit 4), Active Interrogation Indicator (bit 5)</td><td><code>ism</code> / <code>set_ism</code>, <code>aii</code> / <code>set_aii</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>The accessors are on <code>records::PduStatus</code>, which you reach through <code>header.pdu_status</code>.
+The fields every PDU can use have accessors, too: <code>tei</code> / <code>set_tei</code>, <code>lvc</code> / <code>set_lvc</code>,
+and <code>cei</code> / <code>set_cei</code>.</p>
+<p>The two-bit fields can hold <code>3</code>, which none of the enumerations define, so <code>dti</code>, <code>rai</code>, and <code>iai</code>
+return an <code>Option</code>. A decoded record keeps every bit as received, including bits 6 and 7,
+and <code>to_raw</code> and <code>from_raw</code> give the whole octet.</p>
+<h2 id="what-encoding-fills-in-for-you"><a class="header" href="#what-encoding-fills-in-for-you">What encoding fills in for you</a></h2>
+<p><code>serialize()</code> sets these fields from the PDU’s contents, so you never set them yourself:</p>
+<ul>
+<li>The header’s <strong>PDU type</strong>, <strong>protocol family</strong>, and <strong>length</strong>.</li>
+<li>Every <strong>count field</strong>, such as the number of variable parameter records or datum records,
+from the length of the matching <code>Vec</code>.</li>
+<li><strong>Record length</strong> fields in variable-length records, such as attribute records and
+variable transmitter parameters.</li>
+<li><strong>Flag fields</strong> that say which optional fields are present. PDUs that have optional
+fields include the TSPI PDU, the Appearance PDU, and the Minefield Data PDU.</li>
+<li><strong>Padding</strong>, which is always written as <code>0</code>.</li>
+</ul>
+<p>You set the <strong>exercise ID</strong>, the <strong>timestamp</strong>, and the <strong>PDU Status</strong> bits. The protocol
+version defaults to <code>7</code>, which represents <code>IEEE 1278.1-2012</code>.</p>
+<p><code>new()</code> also runs these updates, so a freshly created PDU already has the right length in
+its header. Read the header’s PDU type, protocol family, and length with its
+<code>pdu_type()</code>, <code>protocol_family()</code>, and <code>length()</code> methods. The PDU’s own <code>pdu_type()</code> and
+<code>protocol_family()</code> methods give the same values and work even before the header is set.</p>
+<h2 id="strings"><a class="header" href="#strings">Strings</a></h2>
+<p><strong>Entity Marking</strong> is one character-set octet followed by exactly 11 character octets.
+Shorter strings are padded when encoded. Longer ones are cut to 11 octets, so keep markings
+short.</p>
+<h2 id="several-pdus-in-one-datagram"><a class="header" href="#several-pdus-in-one-datagram">Several PDUs in one datagram</a></h2>
+<p>The standard allows more than one PDU in a single datagram. <code>deserialize</code> reads exactly
+the number of octets given by the PDU’s <code>length</code> field and leaves the rest in the
+buffer. <code>AnyPdu::deserialize_all</code> uses this to decode every PDU in a datagram:</p>
+<pre><code class="language-rust ignore">for pdu in AnyPdu::deserialize_all(datagram) {
+    match pdu {
+        Ok(AnyPdu::EntityState(pdu)) =&gt; {
+            // ...
+        }
+        Ok(_) =&gt; {} // a PDU we do not care to handle
+        Err(e) =&gt; eprintln!("dropping a PDU: {e}"),
+    }
+}</code></pre>
+<p>When one PDU fails to decode, its error is yielded and decoding carries on with the next
+PDU, as long as the failed PDU’s <code>length</code> field fits in the datagram. If it does not, the
+rest of the datagram cannot be split into PDUs, so the error is the last item.</p>
+<p>To send a bundle, serialize each PDU into the same buffer, one after another, and keep
+the total under the network’s maximum datagram size.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="errors"><a class="header" href="#errors">Errors</a></h1>
+<p>Every fallible operation in open-dis-rust returns <code>Result&lt;T, DISError&gt;</code>. The crate
+never panics on bad input, so a malformed or unexpected PDU always comes back to you
+as an error you can handle.</p>
+<p><code>DISError</code> implements <code>std::error::Error</code> and <code>Display</code>. The alias <code>DISResult&lt;T&gt;</code>
+can be imported as a shorthand for <code>Result&lt;T, DISError&gt;</code>.</p>
+<h2 id="possibly-encountered-errors"><a class="header" href="#possibly-encountered-errors">Possibly encountered errors</a></h2>
+<p>These are the variants the crate currently returns. The messages are the actual <code>Display</code> output.</p>
+<h3 id="wireformat"><a class="header" href="#wireformat"><code>WireFormat</code></a></h3>
+<p>The bytes do not form a valid PDU. This is the most common decoding error. It has three typical causes:</p>
+<ul>
+<li><strong>The buffer ends partway through a field</strong>, usually because the datagram was
+shorter than the 12-octet header:</li>
+</ul>
+<pre><code class="language-text">  PDU wire format error: Not enough data, need 16 bits (or 2 bytes)
+</code></pre>
+<ul>
+<li><strong>An enumerated field holds a value the crate doesn’t define.</strong> This includes the
+protocol version in the header:</li>
+</ul>
+<pre><code class="language-text">  PDU wire format error: Parse error: 99 is not a defined ProtocolVersion value
+  PDU wire format error: Parse error: 32513 is not a defined AcknowledgeFlag value
+</code></pre>
+<ul>
+<li><strong>A record’s fields are inconsistent</strong>, for example a count or length field that
+doesn’t match the data. This also happens when <em>encoding</em> a record you built
+yourself:</li>
+</ul>
+<pre><code class="language-text">  PDU wire format error: VariableDatumRecord: 16 bits needs 2 octets, but value has 3
+</code></pre>
+<p>The variant holds a <code>WireFormatError</code>, whose message describes the problem. The
+error from the crate’s internal encoding library isn’t exposed, so match on
+<code>WireFormat(_)</code> and use the message.</p>
+<h3 id="invalidheader"><a class="header" href="#invalidheader"><code>InvalidHeader</code></a></h3>
+<p>The header was read but does not fit the PDU you asked for.</p>
+<pre><code class="language-text">Invalid PDU header: expected PDU type EntityState, got Acknowledge
+Invalid PDU header: PDU length 4 is shorter than its 12-octet header
+</code></pre>
+<p>The first is a normal event on a busy network. It means you called <code>deserialize</code> on
+the wrong type, which you can avoid by checking <code>PduHeader::get_pdu_type</code> first, or by
+decoding with <code>AnyPdu::deserialize</code>. <code>AnyPdu</code> reports an undefined PDU type as an
+<code>InvalidHeader</code> too.</p>
+<h3 id="bufferunderflow"><a class="header" href="#bufferunderflow"><code>BufferUnderflow</code></a></h3>
+<p>The header’s <code>length</code> field promises more octets than the buffer holds. This usually
+means the datagram was truncated, or your receive buffer was too small.</p>
+<pre><code class="language-text">Buffer underflow: tried to read 20 bytes, but only 8 bytes remain
+</code></pre>
+<p>Make receive buffers at least <code>MAX_PDU_SIZE_OCTETS</code> (8192) octets.</p>
+<h3 id="deserializationerror"><a class="header" href="#deserializationerror"><code>DeserializationError</code></a></h3>
+<p>The PDU decoded, but its <code>length</code> field covers more octets than its fields use.</p>
+<pre><code class="language-text">PDU deserialization error: PDU length 36 is 4 octets longer than its fields
+</code></pre>
+<p>This can mean the sender uses a newer or extended version of the PDU, or that the crate
+is missing a field. See <a href="#conformance-notes">Conformance Notes</a>.</p>
+<h3 id="pdusizeexceeded"><a class="header" href="#pdusizeexceeded"><code>PduSizeExceeded</code></a></h3>
+<p>Encoding would produce a PDU larger than the 8192-octet limit, usually because of too
+many records or a very large datum value.</p>
+<pre><code class="language-text">PDU size exceeds maximum allowed: 9104 &gt; 8192
+</code></pre>
+<p>Split the data across several PDUs.</p>
+<h2 id="reserved-variants"><a class="header" href="#reserved-variants">Reserved variants</a></h2>
+<p><code>SerializationError</code> exists for internal failures while encoding, which should not happen
+in practice. Keep a catch-all arm in your <code>match</code> so that variants added in future
+releases do not break your code.</p>
+<h2 id="errors-that-are-not-reported"><a class="header" href="#errors-that-are-not-reported">Errors that are not reported</a></h2>
+<p><code>new()</code> and <code>finalize()</code> cannot return errors. If a PDU’s contents are invalid, they leave the
+header length at 0 and carry on. <code>serialize()</code> runs the same checks and does report the error,
+so always check its result.</p>
+<h2 id="handling-errors-in-a-receiver"><a class="header" href="#handling-errors-in-a-receiver">Handling errors in a receiver</a></h2>
+<p>On a shared network, some traffic will always fail to decode. It might come from another exercise,
+a newer simulator or a damaged packet. A receiver should log the problem and move on like so:</p>
+<pre><code class="language-rust ignore">use open_dis_rust::prelude::*;
+use open_dis_rust::entity_information::EntityStatePdu;
+
+fn handle(datagram: &amp;[u8]) {
+    let Some(PduType::EntityState) = PduHeader::get_pdu_type(datagram) else {
+        return; // not a PDU we care about
+    };
+
+    let mut bytes = datagram;
+
+    match EntityStatePdu::deserialize(&amp;mut bytes) {
+        Ok(pdu) =&gt; {
+            // use the PDU
+        }
+        Err(DISError::BufferUnderflow { .. }) =&gt; {
+            eprintln!("truncated Entity State PDU; is the receive buffer big enough?");
+        }
+        Err(DISError::WireFormat(e)) =&gt; {
+            eprintln!("undecodable Entity State PDU: {e}");
+        }
+        Err(e) =&gt; eprintln!("dropping Entity State PDU: {e}"),
+    }
+}</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="architecture"><a class="header" href="#architecture">Architecture</a></h1>
+<p>This page explains how open-dis-rust is put together: where things live, how a PDU
+becomes bytes and vice versa, and the rules the code follows. Read it before making
+changes to the crate.</p>
+<h2 id="layout"><a class="header" href="#layout">Layout</a></h2>
+<pre><code class="language-text">src/
+├── lib.rs                         the crate root: the modules below, the prelude, and the
+│                                  Pdu traits and DISError re-exported
+│
+│   IEEE 1278.1-2012
+├── entity_information.rs          ┐
+├── warfare.rs                     │
+├── logistics.rs                   │  the PDUs, one module per protocol family
+├── ...                            │
+├── information_operations.rs      ┘
+├── records.rs                     the §6.2 and Annex B records PDUs are built from, in
+│                                  section order, including PduHeader and PduStatus
+├── records/tests.rs               record tests
+├── live_entity_records.rs         LiveEntityPduHeader, FixedBinary8/16 and the compact
+│                                  records used by Live Entity PDUs
+├── constants.rs                   the standard's symbolic values and size limits
+│
+│   SISO-REF-010-2023
+├── siso/
+│   ├── mod.rs                     impl_deku_enum! and impl_deku_bitflags!
+│   ├── enums.rs                   the generated enumerations
+│   ├── enums/tests.rs             encoding tests for every enumeration
+│   ├── appearance.rs              typed views of the appearance layouts (§17.11)
+│   ├── appearance/tests.rs        appearance tests
+│   └── bit_records.rs             the other SISO bit layouts
+│
+│   the crate's own code, private and re-exported from the root
+├── any_pdu.rs                     AnyPdu, for decoding a PDU of any type
+├── pdu.rs                         the Pdu, StandardPdu and LiveEntityPdu traits, and the
+│                                  impl_pdu! and pdu_tests! macros
+├── dis_error.rs                   DISError, DISResult and WireFormatError
+└── wire.rs                        bridges byte slices and vectors to deku, plus encoding helpers
+</code></pre>
+<p>Every public module has one source:</p>
+<ul>
+<li><strong>IEEE 1278.1-2012.</strong> PDUs live in the module for their family. The records they
+share live in <code>records.rs</code> in the order of §6.2 of the standard. A part that only one
+PDU uses, such as <code>Mine</code> or <code>ShaftRPMs</code>, lives next to that PDU.</li>
+<li><strong>SISO-REF-010-2023.</strong> Anything whose layout or values SISO-REF-010 defines lives in
+<code>siso</code>. A record that IEEE 1278.1 defines stays in <code>records</code> even when its fields use
+SISO enumerations, as <code>PduStatus</code> does.</li>
+<li><strong>The crate.</strong> The <code>Pdu</code> traits, <code>AnyPdu</code>, <code>DISError</code> and the prelude are the crate’s own API.
+Their modules are private, and the crate root re-exports them, so each has one path.</li>
+</ul>
+<p>Conveniences stay with the type they serve rather than in a utilities module:
+<code>Timestamp::now()</code>, <code>EntityAppearance::view()</code> and every <code>from_raw</code>/<code>to_raw</code> are
+methods on their types. The same goes for types the crate adds to give a standard
+concept a Rust shape, such as <code>AppearanceView</code> or <code>SimulationManagementId</code>. Their docs say
+that they’re conveniences.</p>
+<h2 id="deku"><a class="header" href="#deku">Deku</a></h2>
+<p>This crate leverages <code>deku</code> for most of its data encoding. PDUs and records are plain structs
+that derive <a href="https://docs.rs/deku">deku</a>’s <code>DekuRead</code> and <code>DekuWrite</code>, and deku generates the
+code to read and write their fields in order. Attributes on each field describe anything that
+is not a fixed-size value: counts, lengths, optional fields, and padding.</p>
+<p>There are two attribute forms.</p>
+<p><strong>PDU structs</strong> are always big-endian:</p>
+<pre><code class="language-rust ignore">#[derive(Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[deku(endian = "big")]
+pub struct ServiceRequestPdu { … }</code></pre>
+<p><strong>Records</strong> take their byte order from whatever contains them, and default to
+big-endian when used on their own:</p>
+<pre><code class="language-rust ignore">#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct EntityIdentifier {
+    pub simulation_address: SimulationAddress,
+    pub entity_id: u16,
+}</code></pre>
+<h2 id="header-and-body"><a class="header" href="#header-and-body">Header and body</a></h2>
+<p>Every PDU struct starts with its header, marked <code>#[deku(skip)]</code>:</p>
+<pre><code class="language-rust ignore">pub struct ServiceRequestPdu {
+    #[deku(skip)]
+    header: PduHeader,
+    pub receiving_entity_id: EntityIdentifier,
+    ...
+}</code></pre>
+<p>deku only handles the <strong>body</strong>. The header is read and written separately by the code
+that <code>impl_pdu!</code> generates, because its length field depends on the size of the body,
+and because receivers need to read the header before they know which PDU type to
+decode.</p>
+<h2 id="impl_pdu"><a class="header" href="#impl_pdu"><code>impl_pdu!</code></a></h2>
+<p><code>impl_pdu!</code> turns a deku struct into a PDU. One line per PDU:</p>
+<pre><code class="language-rust ignore">crate::pdu::impl_pdu!(ServiceRequestPdu, PduHeader, PduType::ServiceRequest, ProtocolFamily::Logistics);</code></pre>
+<p>It implements the <code>Pdu</code> trait and adds a <code>new()</code> constructor. The generated methods
+work like this:</p>
+<p><strong>Encoding (<code>serialize</code>):</strong></p>
+<ol>
+<li>Set the header’s PDU type and protocol family.</li>
+<li>Run deku’s update rules (<code>DekuUpdate::update</code>), which recompute derived fields such
+as counts, lengths and flags from the data. See
+<a href="#derived-fields-and-update-rules">Derived fields</a>.</li>
+<li>Append the header and then the body to the caller’s <code>Vec&lt;u8&gt;</code>.</li>
+<li>Compute the total length, header plus body, and fail if it’s over 8192 octets.</li>
+<li>Rewrite the header in place with the real length. If any step fails, the vector is truncated
+back to its original length so callers never see a partial PDU.</li>
+</ol>
+<p><strong>Decoding (<code>deserialize</code>):</strong></p>
+<ol>
+<li>Read the 12-octet header.</li>
+<li>Check that its PDU type matches the struct being decoded.</li>
+<li>Take exactly the number of octets the Length field gives. Fail if the buffer is
+shorter.</li>
+<li>Decode the body from those octets only, so a bad PDU can’t read into the next one.</li>
+<li>Fail if any of those octets weren’t used.</li>
+<li>Attach the header to the decoded body and advance the caller’s slice past the PDU.</li>
+</ol>
+<p><code>new()</code> is <code>Default::default()</code> plus the PDU type, family and length, so a new PDU is
+always valid to send.</p>
+<h2 id="derived-fields-and-update-rules"><a class="header" href="#derived-fields-and-update-rules">Derived fields and update rules</a></h2>
+<p>The values of some fields are determined by the value of others: a count by the length
+of the associated list, a record length by its contents, or a flag by whether an
+optional field is present. Users should never have to set these, so each one has a
+deku <code>update</code> rule:</p>
+<pre><code class="language-rust ignore">#[deku(update = "self.supplies.len()")]
+pub number_of_supply_types: u8,
+padding: u16,
+#[deku(count = "number_of_supply_types")]
+pub supplies: Vec&lt;SupplyQuantity&gt;,</code></pre>
+<ul>
+<li><code>update</code> says how to compute the field when encoding.</li>
+<li><code>count</code> says how many items to read when decoding.</li>
+</ul>
+<p>When a record inside a list has its own derived fields, the list’s count field runs
+the record’s update rules too, using <code>wire::update_each</code>:</p>
+<pre><code class="language-rust ignore">#[deku(update = "crate::wire::update_each(&amp;mut self.systems)?")]
+pub number_of_systems: u8,</code></pre>
+<p><code>update_each</code> updates every record and returns the list’s length, so one rule covers
+both jobs.</p>
+<h2 id="other-field-patterns"><a class="header" href="#other-field-patterns">Other field patterns</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Situation</th><th>Pattern</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td>Padding</td><td>A private field named <code>padding</code>, <code>padding2</code> and so on, with the width the standard gives</td><td><code>CollisionPdu</code></td></tr>
+<tr><td>Optional field controlled by a flag</td><td><code>Option&lt;T&gt;</code> with <code>#[deku(cond = "…")]</code>, plus an <code>update</code> rule that sets the flag</td><td><code>TimeSpacePositionInformationPdu</code></td></tr>
+<tr><td>A 16- or 32-bit count read from the wire</td><td>Add <code>assert = "crate::wire::fits_in_pdu(*count)"</code></td><td><code>AggregateStatePdu</code></td></tr>
+<tr><td>Variable-length record with a length field</td><td>Use the <code>wire</code> helpers <code>padded_record_length</code>, <code>record_fields_len</code> and <code>write_padded_fields</code></td><td><code>Attribute</code></td></tr>
+<tr><td>A layout attributes can’t describe</td><td>Custom <code>reader</code> and <code>writer</code> functions on the field</td><td><code>MinefieldDataPdu</code>, <code>IFFPdu</code></td></tr>
+<tr><td>A record that needs a fully hand-written codec</td><td>Implement <code>DekuReader</code>, <code>DekuWriter</code> and <code>DekuUpdate</code> yourself, then call <code>impl_deku_default_endian!</code></td><td><code>GridAxisDescriptor</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="enumerations"><a class="header" href="#enumerations">Enumerations</a></h2>
+<p>The enumerations and bit layouts in <code>siso</code> take three forms:</p>
+<ul>
+<li><strong>Ordinary enums</strong> derive <code>FromPrimitive</code> and get their deku code from
+<code>impl_deku_enum!(Name, u8, from_u8)</code>. The macro is hand-written rather than derived
+because deku’s derived reader for the largest enums, which have thousands of
+variants, needs megabytes of stack in debug builds.</li>
+<li><strong>Bit flags</strong> use the <code>bitflags!</code> macro, with <code>impl_deku_bitflags!</code> for encoding.
+Unknown bits are kept, so flags from newer revisions round-trip unchanged.</li>
+<li><strong>Bit records</strong> with enumerated or multi-bit fields, such as
+<code>siso::bit_records::ComponentVisualDamageStatus</code>, keep the wire value in a private <code>raw</code> field with a
+getter and setter for each field. Bit 0 is the least significant bit, and unused bits
+are kept as received. <code>PduStatus</code> and the appearance views work the same way.</li>
+</ul>
+<p><a href="#updating-enumerations">Updating Enumerations</a> covers how to change them.</p>
+<h2 id="what-is-public-and-what-is-not"><a class="header" href="#what-is-public-and-what-is-not">What is public and what is not</a></h2>
+<p>The public API is the PDU and record structs, the constants, the <code>siso</code> enumerations
+and bit layouts, the <code>Pdu</code>, <code>StandardPdu</code>, and <code>LiveEntityPdu</code> traits, and <code>DISError</code>.
+Everything that names a <code>deku</code> type is internal: the <code>wire</code> module, <code>impl_pdu!</code>,
+<code>pdu_tests!</code> and <code>impl_deku_default_endian!</code> are all private to the crate, and
+<code>DISError::WireFormat</code> wraps deku’s error in the opaque <code>WireFormatError</code> variant.</p>
+<p>This keeps deku, which hasn’t reached 1.0, out of the crate’s stable API, so the crate
+can upgrade deku without a breaking release. Keep it that way:</p>
+<ul>
+<li>Don’t add a public function, trait method, or <code>From</code> impl that takes or returns a
+deku type. Convert deku errors with <code>DISError::from_wire</code>, which is <code>pub(crate)</code>.</li>
+<li>Public encoding and decoding go through <code>Vec&lt;u8&gt;</code> and <code>&amp;[u8]</code>, not through deku’s
+readers and writers or another crate’s buffer types.</li>
+</ul>
+<p>The structs still implement deku’s <code>DekuRead</code> and <code>DekuWrite</code> because they’re
+derived. Those impls are visible in the API documentation, but they aren’t part of the
+stable API, and users shouldn’t call them.</p>
+<h2 id="rules-the-code-follows"><a class="header" href="#rules-the-code-follows">Rules the code follows</a></h2>
+<p>This crate denies clippy’s <code>pedantic</code> and <code>nursery</code> groups, plus a set of lints that
+rule out panics. These are configured in <code>Cargo.toml</code>, and they shape how the code is
+written:</p>
+<ul>
+<li><strong>No panics on any input.</strong> No <code>unwrap</code>, <code>expect</code>, <code>panic!</code>, <code>unreachable!</code>, or
+<code>todo!</code> outside tests. Errors are propagated up to the caller as <code>DISError</code>.</li>
+<li><strong>No indexing.</strong> Use <code>.get()</code> instead of <code>[i]</code>, and <code>.get(..n)</code> instead of slicing.</li>
+<li><strong>No unchecked arithmetic.</strong> Use <code>checked_*</code> or <code>saturating_*</code> methods instead of
+<code>+</code>, <code>-</code>, and <code>*</code>.</li>
+<li><strong>No <code>as</code> casts.</strong> Use <code>From</code> and <code>TryFrom</code> so that a value that does not fit is an
+error instead of being truncated. Generated code that needs <code>as</code> allows it within that
+scope.</li>
+<li><strong>No trust of count values from the wire.</strong> A count field in a received PDU can say
+anything, especially if the PDU was constructed with a separate crate/library. Check
+it against the PDU size limit before allocating, with <code>fits_in_pdu</code> or <code>wire::read_n</code>,
+so a malformed/malicious PDU cannot make a receiver allocate an unreasonable amount
+of memory.</li>
+<li><strong>Keep encoding and decoding symmetric.</strong> Every field read must be written the same
+way. The round-trip tests check this for every PDU.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="testing-strategy"><a class="header" href="#testing-strategy">Testing Strategy</a></h1>
+<p>A DIS codec has two separate jobs: its encoder and decoder must agree with each other,
+and both must agree with the standard and with other DIS implementations. The current
+tests cover the first objective well. This page describes them, then the tests needed for
+the second objective.</p>
+<h2 id="what-the-tests-cover-today"><a class="header" href="#what-the-tests-cover-today">What the tests cover today</a></h2>
+<p>Run everything with <code>cargo test</code>.</p>
+<h3 id="pdu-tests"><a class="header" href="#pdu-tests">PDU tests</a></h3>
+<p>Every PDU has a <code>pdu_tests!</code> entry at the bottom of its module, which generates these
+tests:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Test</th><th>Checks</th></tr>
+</thead>
+<tbody>
+<tr><td><code>decodes_as_any_pdu</code></td><td><code>AnyPdu::deserialize</code> decodes the PDU as its own type and encodes it to the same bytes.</td></tr>
+<tr><td><code>new_sets_pdu_type</code></td><td><code>new()</code> sets the PDU type in the header.</td></tr>
+<tr><td><code>new_sets_default_length</code></td><td><code>new()</code> sets the header length to the expected default size.</td></tr>
+<tr><td><code>serialized_length_matches_header</code></td><td>The encoded size equals the header’s Length field.</td></tr>
+<tr><td><code>round_trip_is_byte_identical</code></td><td>Encoding, decoding and encoding again produces identical bytes and an identical header.</td></tr>
+<tr><td><code>rejects_wrong_pdu_type</code></td><td>Decoding a different PDU type as this one fails.</td></tr>
+</tbody>
+</table>
+</div>
+<p>The <strong>default length</strong> test is the only one that checks the crate against the standard,
+and only for an empty PDU. Its expected size should be worked out from the
+standard by hand.</p>
+<h3 id="enumeration-tests"><a class="header" href="#enumeration-tests">Enumeration tests</a></h3>
+<p><code>siso/enums/tests.rs</code> checks that every enumeration encodes to the right number
+and that undefined numbers are rejected. 8- and 16-bit enums are tested with every
+possible value. 32-bit enums are tested at every defined value, the values next to
+them, and a few far-off ones.</p>
+<h3 id="unit-tests"><a class="header" href="#unit-tests">Unit tests</a></h3>
+<p>A few modules, including <code>pdu_header.rs</code> and <code>constants.rs</code> have their own unit tests
+for specific behavior such as <code>get_pdu_type</code>.</p>
+<h2 id="what-round-trip-tests-cannot-catch"><a class="header" href="#what-round-trip-tests-cannot-catch">What round-trip tests cannot catch</a></h2>
+<p>A round-trip test passes whenever the encoder and decoder agree, even if both are wrong.
+If a record has a padding field that is 16 bits instead of 8, the encoder writes one
+extra octet, the decoder reads one extra octet, and the round trip passes. Only
+another DIS implementation would notice the error.</p>
+<p>Every problem listed in <a href="#conformance-notes">Conformance Notes</a> is of this
+kind, and all of them pass the current tests.</p>
+<h2 id="golden-byte-tests"><a class="header" href="#golden-byte-tests">Golden-byte tests</a></h2>
+<p>A golden-byte test compares the crate’s output with bytes that came from outside
+the crate; that is, written out by hand from the standard’s field tables, or captured
+from another DIS implementation.</p>
+<p>Put them in <code>tests/golden.rs</code>. Write each fixture as hex, laid out one field per line with
+a comment, so a reviewer can check it against the standard line by line:</p>
+<pre><code class="language-rust ignore">#![allow(clippy::unwrap_used, reason = "test helpers")]
+
+use open_dis_rust::{
+    Pdu,
+    records::{EntityIdentifier, SimulationAddress, Timestamp},
+    simulation_management::AcknowledgePdu,
+    siso::enums::{AcknowledgeFlag, AcknowledgeResponseFlag},
+};
+
+const ACKNOWLEDGE: &amp;str = "
+    07 01 0F 05   00 00 00 00   00 20 00 00   # header: v7, exercise 1, type 15, family 5, timestamp 0, length 32
+    00 01 00 01 00 00                         # originating entity 1:1:0
+    00 01 00 02 00 00                         # receiving entity 1:2:0
+    00 01                                     # acknowledge flag: Create Entity
+    00 01                                     # response flag: Able to Comply
+    00 00 00 2A                               # request ID 42
+";
+
+/// Parses a fixture: hex digits, with whitespace and `# comments` ignored.
+fn fixture(s: &amp;str) -&gt; Vec&lt;u8&gt; {
+    let digits: Vec&lt;u8&gt; = s
+        .lines()
+        .flat_map(|line| line.split('#').next().unwrap().bytes())
+        .filter(|b| !b.is_ascii_whitespace())
+        .collect();
+    digits
+        .chunks(2)
+        .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).unwrap(), 16).unwrap())
+        .collect()
+}
+
+#[test]
+fn acknowledge_encodes_to_golden_bytes() {
+    let mut pdu = AcknowledgePdu::new();
+    pdu.header_mut().timestamp = Timestamp::from_raw(0); // fixed, so the bytes are repeatable
+    pdu.originating_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 1), 0);
+    pdu.receiving_entity_id = EntityIdentifier::new(SimulationAddress::new(1, 2), 0);
+    pdu.acknowledge_flag = AcknowledgeFlag::CreateEntity;
+    pdu.response_flag = AcknowledgeResponseFlag::AbleToComply;
+    pdu.request_id = 42;
+
+    assert_eq!(pdu.to_bytes().unwrap(), fixture(ACKNOWLEDGE));
+}
+
+#[test]
+fn acknowledge_decodes_from_golden_bytes() {
+    let bytes = fixture(ACKNOWLEDGE);
+    let pdu = AcknowledgePdu::deserialize(&amp;mut bytes.as_slice()).unwrap();
+    assert_eq!(
+        pdu.receiving_entity_id,
+        EntityIdentifier::new(SimulationAddress::new(1, 2), 0)
+    );
+    assert_eq!(pdu.response_flag, AcknowledgeResponseFlag::AbleToComply);
+    assert_eq!(pdu.request_id, 42);
+}</code></pre>
+<p>Test both directions for each fixture. <strong>Encoding</strong> checks that the crate writes
+exactly these bytes. <strong>Decoding</strong> checks that it reads the right values from them.</p>
+<p>Set the timestamp to a fixed value, such as 0, before encoding. Otherwise, the bytes
+change on every run.</p>
+<h3 id="where-fixtures-come-from"><a class="header" href="#where-fixtures-come-from">Where fixtures come from</a></h3>
+<p>In order of preference:</p>
+<ol>
+<li><strong>Captures from other implementations,</strong> such as
+<a href="https://github.com/open-dis">OpenDIS for Java, C++ or Python</a>, or a commercial tool.
+These test real interoperability. Save the PDU’s bytes from a Wireshark capture
+(right-click the DIS layer, then <strong>Copy -&gt; …as a Hex Stream</strong>) and note where it came
+from in a comment.</li>
+<li><strong>Hand-written from the standard,</strong> as in the example above. Fill every field with a
+different, recognizable value, so that a field in the wrong place shows up clearly.</li>
+<li><strong>Never from open-dis-rust itself.</strong> A fixture produced by the encoder under test
+only checks that the encoder hasn’t changed.</li>
+</ol>
+<p>Prioritize golden tests for PDUs with variable-length records, padding inside lists,
+or length fields measured in bits or 32-bit words. Those are where the current bugs
+are.</p>
+<h2 id="fuzzing"><a class="header" href="#fuzzing">Fuzzing</a></h2>
+<p>Decoding must never panic no matter what bytes arrive. The crate’s lints rule out most
+panics, but fuzzing checks for the rest along with unbounded memory use.
+<a href="https://rust-fuzz.github.io/book/cargo-fuzz.html">cargo-fuzz</a> works well for this. A
+useful target decodes arbitrary bytes as each PDU type and, when decoding succeeds,
+checks that encoding the result reproduces the input:</p>
+<pre><code class="language-rust ignore">#![no_main]
+use libfuzzer_sys::fuzz_target;
+use open_dis_rust::{Pdu, entity_information::EntityStatePdu};
+
+fuzz_target!(|data: &amp;[u8]| {
+    let mut input = data;
+    if let Ok(mut pdu) = EntityStatePdu::deserialize(&amp;mut input) {
+        let used = data.len() - input.len();
+        let bytes = pdu.to_bytes().expect("a decoded PDU must re-encode");
+        assert_eq!(bytes, data[..used], "re-encoding must reproduce the input");
+    }
+});</code></pre>
+<h2 id="checking-against-wireshark"><a class="header" href="#checking-against-wireshark">Checking against Wireshark</a></h2>
+<p>Wireshark’s DIS dissector is an independent implementation of the standard, and its
+command-line version, <code>tshark</code>, can run in CI. Write the crate’s PDUs to a <code>.pcap</code> file
+in a test, then run <code>tshark -r out.pcap -V</code> and fail if it reports any packet as
+malformed. This catches layout errors in PDUs that don’t have golden-byte tests yet.</p>
+<h2 id="continuous-integration"><a class="header" href="#continuous-integration">Continuous integration</a></h2>
+<p>CI runs on every pull request and push to <code>main</code>. It currently:</p>
+<ul>
+<li>runs <code>cargo test</code> on nightly Rust</li>
+<li>builds on stable and beta</li>
+<li>runs clippy and uploads the results to GitHub code scanning</li>
+</ul>
+<p>Before you push, run the same checks locally:</p>
+<pre><code class="language-shell">cargo fmt --check
+cargo clippy --all-targets
+cargo test
+cargo build --examples
+mdbook build book
+</code></pre>
+<p>Improvements the CI would benefit from:</p>
+<ul>
+<li><strong>Run the tests on stable</strong>, the toolchain users build with, as well as nightly.</li>
+<li><strong>Fail the build on clippy warnings.</strong> The clippy step currently has
+<code>continue-on-error: true</code>, so the strict lints in <code>Cargo.toml</code> aren’t enforced.</li>
+<li><strong>Check formatting</strong> with <code>cargo fmt --check</code>.</li>
+<li><strong>Build the examples and the book,</strong> so the Quickstart code and the book’s code
+samples will not fall out of date.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="updating-enumerations"><a class="header" href="#updating-enumerations">Updating Enumerations</a></h1>
+<p>The enumerations in <code>src/siso/enums.rs</code> come from <strong>SISO-REF-010</strong> which SISO
+revises regularly. The crate currently follows <strong>SISO-REF-010-2023</strong>. This page
+covers the conventions for enumerations and how to move the crate to a new revision.</p>
+<p><a href="#enumerations-siso-ref-010">Enumerations</a> explains what SISO-REF-010 is and how
+users see these types.</p>
+<h2 id="conventions"><a class="header" href="#conventions">Conventions</a></h2>
+<p>Every enumeration in <code>enums.rs</code> follows the same pattern. If modifying or updating to a
+new SISO revision, please adhere to this existing pattern so that the file stays consistent
+and could be regenerated by a script later.</p>
+<h3 id="ordinary-enums"><a class="header" href="#ordinary-enums">Ordinary enums</a></h3>
+<pre><code class="language-rust ignore">// SISO-REF-010-2023 RepairResponseRepairResult [UID 65]
+#[derive(Copy, Clone, Debug, Default, FromPrimitive, PartialEq, Eq)]
+pub enum RepairResponseRepairResult {
+    #[default]
+    Other = 0,
+    RepairEnded = 1,
+    InvalidRepair = 2,
+    RepairInterrupted = 3,
+    ServiceCanceledByTheSupplier = 4,
+}
+
+impl_deku_enum!(RepairResponseRepairResult, u8, from_u8);</code></pre>
+<ul>
+<li><strong>Comment line.</strong> The SISO-REF-010 revision, the table name and its UID. The UID is
+how anyone can find the table in SISO-REF-010.</li>
+<li><strong>Name.</strong> The table name in upper camel case, with spaces and punctuation removed.
+Variant names follow the same rule, from each row’s description.</li>
+<li><strong>Values.</strong> Give every variant an explicit value. Do not allow for values to be determined
+implicitly.</li>
+<li><strong>Default.</strong> Mark the variant for value 0, usually <code>Other</code> or <code>NoStatement</code>, with
+<code>#[default]</code>. If 0 isn’t defined, use the most neutral value.</li>
+<li><strong><code>impl_deku_enum!</code>.</strong> The second argument is the field’s width on the wire, as given
+by SISO-REF-010: <code>u8</code>, <code>u16</code> or <code>u32</code>. The third is the matching <code>FromPrimitive</code>
+method: <code>from_u8</code>, <code>from_u16</code> or <code>from_u32</code>. A wrong width shifts every field after
+it.</li>
+</ul>
+<h3 id="bit-flags"><a class="header" href="#bit-flags">Bit flags</a></h3>
+<p>Tables whose values are bits that can be combined use <code>bitflags!</code> instead. These, and
+the hand-written bit layouts with multi-bit fields, live in <code>src/siso/bit_records.rs</code>
+and <code>src/siso/appearance.rs</code>, not in <code>enums.rs</code>, so regenerating <code>enums.rs</code> will not
+overwrite them:</p>
+<pre><code class="language-rust ignore">// SISO-REF-010-2023 FrozenBehavior [UID 68]
+bitflags! {
+    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+    pub struct FrozenBehavior: u8 {
+        const RunSimulationClock = 1 &lt;&lt; 0;
+        const TransmitUpdates = 1 &lt;&lt; 1;
+        const ProcessUpdates = 1 &lt;&lt; 2;
+    }
+}
+
+impl_deku_bitflags!(FrozenBehavior, u8);</code></pre>
+<h3 id="pdu-status-fields"><a class="header" href="#pdu-status-fields">PDU Status fields</a></h3>
+<p>The enums for the PDU Status record’s bit fields, such as <code>LVCIndicator</code>, are packed
+into <code>PduStatus</code> by its accessors, which match on every variant. Adding a variant to
+one of them is a compile error until the matching accessor handles it.</p>
+<h3 id="deprecated-values-1"><a class="header" href="#deprecated-values-1">Deprecated values</a></h3>
+<p>When SISO deprecates a value, keep the variant and mark it:</p>
+<pre><code class="language-rust ignore">#[deprecated(note = "Deprecated in SISO-REF-010-2023")]
+SerbiaandMontenegro_ = 240,</code></pre>
+<p><strong>NEVER</strong> remove or renumber a variant, even a deprecated one. Old recordings and older
+simulators still send those values, and the crate needs to be able to decode them.</p>
+<h2 id="moving-to-a-new-revision"><a class="header" href="#moving-to-a-new-revision">Moving to a new revision</a></h2>
+<h3 id="1-get-the-new-revision"><a class="header" href="#1-get-the-new-revision">1. Get the new revision</a></h3>
+<p>Download the new SISO-REF-010 from the <a href="https://www.sisostandards.org/">SISO website</a>. Along
+with the PDF, SISO publishes a machine-readable XML edition, which is much easier to compare
+between revisions.</p>
+<h3 id="2-find-what-changed"><a class="header" href="#2-find-what-changed">2. Find what changed</a></h3>
+<p>Compare the XML of the new revision with the current one, and list the tables that changed.
+For each one, note any new values, deprecated values and renamed descriptions. Also note
+any tables that are new in this revision.</p>
+<h3 id="3-update-the-enums"><a class="header" href="#3-update-the-enums">3. Update the enums</a></h3>
+<p>For each changed table:</p>
+<ul>
+<li><strong>New values:</strong> add variants with explicit values in numeric order.</li>
+<li><strong>Newly deprecated values:</strong> add <code>#[deprecated(note = "Deprecated in SISO-REF-010-YYYY")]</code>.</li>
+<li><strong>Renamed descriptions:</strong> keep the old variant name, because renaming a variant
+breaks users’ code. If the new name is much clearer, add it as an associated constant
+instead, and leave the old variant as it is:</li>
+</ul>
+<pre><code class="language-rust ignore">  impl Country {
+      #[allow(non_upper_case_globals)]
+      pub const NewName: Self = Self::OldName;
+  }</code></pre>
+<ul>
+<li><strong>New tables:</strong> add a new enum following the conventions above.</li>
+</ul>
+<h3 id="4-update-the-tests"><a class="header" href="#4-update-the-tests">4. Update the tests</a></h3>
+<p><code>src/siso/enums/tests.rs</code> has one line per enum in
+<code>deku_matches_from_primitive_for_every_enum</code>. Add a line for every new enum:</p>
+<pre><code class="language-rust ignore">check_u8::&lt;RepairResponseRepairResult&gt;(RepairResponseRepairResult::from_u8);</code></pre>
+<p><code>check_u8</code> and <code>check_u16</code> test every possible value. <code>check_u32</code> can’t, so it takes a
+list of the defined values, which you must update whenever you add values to a 32-bit
+enum:</p>
+<pre><code class="language-rust ignore">check_u32::&lt;EntityCapabilities&gt;(
+    &amp;[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    EntityCapabilities::from_u32,
+);</code></pre>
+<h3 id="5-update-the-revision-everywhere"><a class="header" href="#5-update-the-revision-everywhere">5. Update the revision everywhere</a></h3>
+<p>Replace the old revision with the new one in</p>
+<ul>
+<li>the comment line above every enum in <code>enums.rs</code></li>
+<li>the <a href="#enumerations-siso-ref-010">Enumerations</a> page in this book</li>
+<li><code>README.md</code> where the revision is mentioned</li>
+</ul>
+<p>Leave the revision in existing <code>#[deprecated]</code> notes as it is. Those record when each
+value was deprecated.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="get-in-touch"><a class="header" href="#get-in-touch">Get In Touch</a></h1>
+<p>open-dis-rust is maintained by volunteers in their spare time. Everything happens on
+<a href="https://github.com/crhowell3/open-dis-rust">GitHub</a>, so whatever you need, start there.
+Please use the channel that fits your request. That way it reaches the right place, and
+other users can find the answer later.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>I want to…</th><th>Go here</th></tr>
+</thead>
+<tbody>
+<tr><td>Ask a question or get help using the crate</td><td><a href="https://github.com/crhowell3/open-dis-rust/discussions">GitHub Discussions</a></td></tr>
+<tr><td>Report a bug or a PDU / data type / enumeration that doesn’t match the standard</td><td><a href="https://github.com/crhowell3/open-dis-rust/issues/new?template=2-bug-report.yml">Bug report</a></td></tr>
+<tr><td>Suggest a new feature or API change</td><td><a href="https://github.com/crhowell3/open-dis-rust/issues/new?template=3-feature-request.yml">Feature request</a></td></tr>
+<tr><td>Report a mistake in this book or the API docs</td><td><a href="https://github.com/crhowell3/open-dis-rust/issues/new?template=4-docs-issue.yml">Documentation issue</a></td></tr>
+<tr><td>Report a security vulnerability</td><td><a href="https://github.com/crhowell3/open-dis-rust/security/advisories/new">Private security advisory</a>. <strong>Please don’t open a public issue for security vulnerabilities.</strong></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="before-you-open-an-issue"><a class="header" href="#before-you-open-an-issue">Before you open an issue</a></h2>
+<ul>
+<li><strong>Search first.</strong> Check <a href="https://github.com/crhowell3/open-dis-rust/issues?q=is%3Aissue">open and closed issues</a> and Discussions.
+Somebody may already have run into the same problem.</li>
+<li><strong>Check that you are using the latest release.</strong> Run <code>cargo update -p open-dis-rust</code> and try again. It is possible
+your issue has already been addressed in a new update.</li>
+<li><strong>Check the <a href="https://docs.rs/open-dis-rust">API documentation</a>.</strong> Most questions about a specific type or method could be
+answered there.</li>
+</ul>
+<h2 id="reporting-a-bug"><a class="header" href="#reporting-a-bug">Reporting a bug</a></h2>
+<p>A good report allows a maintainer to reproduce the problem without guessing. Please include:</p>
+<ul>
+<li>The <strong>open-dis-rust version</strong> (from <code>Cargo.lock</code>) and your <strong>Rust version</strong> (<code>rustc --version</code>).</li>
+<li>The <strong>PDU type</strong>, <strong>record</strong>, or <strong>enumeration</strong> involved.</li>
+<li><strong>What you expected vs. what happened</strong>, including the full <code>DISError</code> message if there is one.</li>
+<li>The <strong>smallest code that shows the problem</strong>, if you are able to trim it down.</li>
+</ul>
+<h2 id="encoding-and-interoperability-problems"><a class="header" href="#encoding-and-interoperability-problems">Encoding and interoperability problems</a></h2>
+<p>If a PDU will not decode, or another DIS application cannot read what open-dis-rust sends, the raw bytes are by
+far the most useful thing you can attach:</p>
+<ul>
+<li>A <strong>packet capture</strong> (<code>.pcap</code> or <code>.pcapng</code>) from <a href="https://www.wireshark.org/">Wireshark</a>, trimmed to
+the PDUs in question, or a <strong>hex dump</strong> of the datagram.</li>
+<li>The <strong>other application</strong> involved and its version.</li>
+<li>If you have it, the <strong>section or table of IEEE 1278.1-2012</strong> that you think the crate gets wrong.</li>
+</ul>
+<p>Please remove anything sensitive from captures before attaching them, such as exercise data, IP addresses,
+or real-world locations. Also, <strong>NEVER</strong> post anything CUI or classified. Doing so is a violation of
+federal law and potentially a danger to the security of the United States (or whichever country controls the data).</p>
+<h2 id="security-issues"><a class="header" href="#security-issues">Security issues</a></h2>
+<p>If you find a vulnerability such as a malformed PDU that crashes a receiver or uses unbounded memory, report it
+privately using <a href="https://github.com/crhowell3/open-dis-rust/security/advisories/new">GitHub’s private vulnerability reporting</a>.</p>
+<p>A maintainer will acknowledge your report within 5 days. We will work with you on a fix and agree on a disclosure date before
+anything is made public. See <a href="https://github.com/crhowell3/open-dis-rust/blob/main/SECURITY.md"><code>SECURITY.md</code></a> for which
+versions receive security fixes.</p>
+<h2 id="what-to-expect"><a class="header" href="#what-to-expect">What to expect</a></h2>
+<p>This is a volunteer project, so response times vary. Most issues get a first reply within a week.
+If you post an issue and don’t get a response within a couple weeks, a polite follow-up comment is
+welcome. Pull requests that include tests, and bug reports with a capture attached, are usually handled fastest.</p>
+<p>Everyone taking part is expected to follow the project’s <a href="https://github.com/crhowell3/open-dis-rust/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
+<h2 id="maintainers"><a class="header" href="#maintainers">Maintainers</a></h2>
+<ul>
+<li><strong>Cameron Howell</strong> (<a href="https://github.com/crhowell3">@crhowell3</a>), creator and lead maintainer</li>
+</ul>
+<h2 id="supporting-the-project"><a class="header" href="#supporting-the-project">Supporting the project</a></h2>
+<p>Contributing fixes, documentation, and packet captures from real exercises helps make this crate better.</p>
 
                     </main>
 
@@ -419,7 +2056,7 @@ to handle it, of course.</p>
 
         <script src="clipboard-1626706a.min.js"></script>
         <script src="highlight-abc7f01d.js"></script>
-        <script src="book-c22b7243.js"></script>
+        <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 
