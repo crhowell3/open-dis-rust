@@ -86,6 +86,7 @@ The first official release of open-dis-rust!
   - `FrozenBehavior`, `ArealObjectStateModification`, and `ComponentVisualDamageStatus` are in `siso::bit_records`
 - The Live Entity records, `LiveEntityPduHeader`, and `FixedBinary8` and `FixedBinary16` records are all in `live_entity_records`.
   `LiveEntityRelativeLocation` and `LiveMunitionDescriptor` moved there from `live_entity_information`
+- SISO enum variants whose SISO-REF-010 names start with a digit no longer start with `_` in this crate.
 
 ### Removed
 
