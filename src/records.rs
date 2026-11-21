@@ -107,12 +107,12 @@ impl AggregateIdentifier {
 )]
 pub struct AggregateMarking {
     pub character_set: EntityMarkingCharacterSet,
-    pub characters: [i8; 31],
+    pub characters: [u8; 31],
 }
 
 impl AggregateMarking {
     #[must_use]
-    pub const fn new(character_set: EntityMarkingCharacterSet, characters: [i8; 31]) -> Self {
+    pub const fn new(character_set: EntityMarkingCharacterSet, characters: [u8; 31]) -> Self {
         Self {
             character_set,
             characters,
@@ -1047,7 +1047,7 @@ impl BlankingSectorAttribute {
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct AngleDepositionAttribute {
+pub struct AngleDeceptionAttribute {
     pub record_type: u32,
     pub record_length: u16,
     padding: u16,
@@ -1066,7 +1066,7 @@ pub struct AngleDepositionAttribute {
     padding3: u32,
 }
 
-impl AngleDepositionAttribute {
+impl AngleDeceptionAttribute {
     #[must_use]
     pub fn new() -> Self {
         Self {
@@ -1293,12 +1293,12 @@ impl EntityIdentifier {
 const MARKING_CHARACTERS: usize = 11;
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.29
-/// Entity Marking record: a character set followed by 11 character octets.
 ///
-/// Always 12 octets on the wire. A longer `entity_marking_string` is truncated
-/// to its first 11 octets when encoded, a shorter one is zero-padded, and the
-/// padding is removed when decoded.
-#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+/// A character set (UID 45) and an 11-element character string in that
+/// character set. The octets are kept as they are, so markings in any
+/// character set can survive a round-trip unchanged. Use [`Self::from_ascii`] and
+/// [`Self::as_ascii`] for ASCII markings
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
@@ -1306,45 +1306,57 @@ const MARKING_CHARACTERS: usize = 11;
 )]
 pub struct EntityMarking {
     pub entity_marking_character_set: EntityMarkingCharacterSet,
-    #[deku(
-        reader = "read_characters(deku::reader)",
-        writer = "write_characters(deku::writer, &self.entity_marking_string)"
-    )]
-    pub entity_marking_string: String,
+    pub characters: [u8; MARKING_CHARACTERS],
 }
 
 impl EntityMarking {
     #[must_use]
     pub const fn new(
         entity_marking_character_set: EntityMarkingCharacterSet,
-        entity_marking_string: String,
+        characters: [u8; MARKING_CHARACTERS],
     ) -> Self {
         Self {
             entity_marking_character_set,
-            entity_marking_string,
+            characters,
         }
     }
-}
 
-/// Read the 11 character octets, dropping trailing zero padding. Octets that
-/// aren't valid UTF-8 become U+FFFD.
-fn read_characters<R: Read + Seek>(reader: &mut Reader<R>) -> Result<String, DekuError> {
-    let characters = <[u8; MARKING_CHARACTERS]>::from_reader_with_ctx(reader, ())?;
-    let text = characters
-        .iter()
-        .position(|&b| b == 0)
-        .and_then(|end| characters.get(..end))
-        .unwrap_or(&characters);
-    Ok(String::from_utf8_lossy(text).into_owned())
-}
+    /// An ASCII marking of up to 11 characters, zero-padded, or `None` if
+    /// `text` is longer or is not ASCII
+    #[must_use]
+    pub fn from_ascii(text: &str) -> Option<Self> {
+        if !text.is_ascii() || text.len() > MARKING_CHARACTERS {
+            return None;
+        }
 
-/// Write `text` as exactly 11 octets: truncated or zero-padded.
-fn write_characters<W: Write + Seek>(writer: &mut Writer<W>, text: &str) -> Result<(), DekuError> {
-    let mut characters = [0u8; MARKING_CHARACTERS];
-    for (slot, byte) in characters.iter_mut().zip(text.bytes()) {
-        *slot = byte;
+        let mut characters = [0u8; MARKING_CHARACTERS];
+        for (slot, byte) in characters.iter_mut().zip(text.bytes()) {
+            *slot = byte;
+        }
+        Some(Self::new(EntityMarkingCharacterSet::ASCII, characters))
     }
-    characters.to_writer(writer, ())
+
+    /// The marking as text, up to the first zero octet, when the character
+    /// set is ASCII and the characters are as well; otherwise, `None`
+    #[must_use]
+    pub fn as_ascii(&self) -> Option<&str> {
+        if self.entity_marking_character_set != EntityMarkingCharacterSet::ASCII {
+            return None;
+        }
+
+        let end = self
+            .characters
+            .iter()
+            .position(|&octet| octet == 0)
+            .unwrap_or(MARKING_CHARACTERS);
+        let text = self.characters.get(..end)?;
+
+        if text.is_ascii() {
+            std::str::from_utf8(text).ok()
+        } else {
+            None
+        }
+    }
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.30
@@ -2158,15 +2170,15 @@ fn write_intercom_fields<W: Write + Seek>(
 )]
 pub struct IntercomIdentifier {
     pub intercom_reference_id: EntityIdentifier,
-    pub event_number: u16,
+    pub intercom_number: u16,
 }
 
 impl IntercomIdentifier {
     #[must_use]
-    pub const fn new(intercom_reference_id: EntityIdentifier, event_number: u16) -> Self {
+    pub const fn new(intercom_reference_id: EntityIdentifier, intercom_number: u16) -> Self {
         Self {
             intercom_reference_id,
-            event_number,
+            intercom_number,
         }
     }
 }

@@ -487,3 +487,33 @@ fn fixed_record_sizes_match_their_tables() {
     assert_eq!(crate::wire::encoded_len(&IOEffect::default()).unwrap(), 16);
     assert_eq!(crate::wire::encoded_len(&Sensor::default()).unwrap(), 12);
 }
+
+/// §6.2.29: the marking is 11 octets in the record's character set, so the
+/// octets must come back as they were sent, zeros and non-ASCII included.
+#[test]
+fn entity_marking_keeps_every_octet() {
+    let characters = [1, 2, 0, 3, 0x80, 0xC8, 5, 6, 7, 8, 9];
+    let marking = EntityMarking::new(EntityMarkingCharacterSet::DigitChevron, characters);
+    let mut bytes = Vec::new();
+    crate::wire::write(&marking, &mut bytes).unwrap();
+    assert_eq!(bytes, [3, 1, 2, 0, 3, 0x80, 0xC8, 5, 6, 7, 8, 9]);
+
+    let decoded: EntityMarking = crate::wire::read(&mut bytes.as_slice()).unwrap();
+    assert_eq!(decoded, marking);
+    assert_eq!(decoded.as_ascii(), None);
+}
+
+#[test]
+fn entity_marking_ascii_helpers() {
+    let marking = EntityMarking::from_ascii("TANK01").unwrap();
+    assert_eq!(
+        marking.entity_marking_character_set,
+        EntityMarkingCharacterSet::ASCII
+    );
+    assert_eq!(&marking.characters, b"TANK01\0\0\0\0\0");
+    assert_eq!(marking.as_ascii(), Some("TANK01"));
+
+    assert!(EntityMarking::from_ascii("ELEVEN_CHAR").is_some());
+    assert!(EntityMarking::from_ascii("TWELVE_CHARS").is_none());
+    assert!(EntityMarking::from_ascii("PANZÉR").is_none());
+}

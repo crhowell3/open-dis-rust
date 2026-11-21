@@ -26,7 +26,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 pdu.entity_id.simulation_address.site_id,
                 pdu.entity_id.simulation_address.application_id,
                 pdu.entity_id.entity_id,
-                pdu.entity_marking.entity_marking_string,
+                pdu.entity_marking.as_ascii().unwrap_or("?"),
                 pdu.entity_location.x_coordinate,
                 pdu.entity_location.y_coordinate,
                 pdu.entity_location.z_coordinate,

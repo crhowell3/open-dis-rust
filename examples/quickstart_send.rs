@@ -12,9 +12,7 @@ use open_dis_rust::{
     records::{
         EntityIdentifier, EntityMarking, EntityType, ExerciseIdentifier, Vector, WorldCoordinates,
     },
-    siso::enums::{
-        Country, DeadReckoningAlgorithm, EntityKind, EntityMarkingCharacterSet, ForceId,
-    },
+    siso::enums::{Country, DeadReckoningAlgorithm, EntityKind, ForceId},
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -38,7 +36,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         3,
         0,
     );
-    pdu.entity_marking = EntityMarking::new(EntityMarkingCharacterSet::ASCII, "TANK01".to_string());
+    pdu.entity_marking =
+        EntityMarking::from_ascii("TANK01").ok_or("a marking is up to 11 ASCII characters")?;
     pdu.entity_linear_velocity = Vector::new(10.0, 0.0, 0.0); // m/s, world frame
     pdu.dead_reckoning_parameters.dead_reckoning_algorithm =
         DeadReckoningAlgorithm::DRMConstantVelocityLowAccelerationLinearMotionEntity;
