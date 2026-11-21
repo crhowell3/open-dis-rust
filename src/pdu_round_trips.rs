@@ -190,10 +190,10 @@ lists!(
     entity_state,
     EntityStatePdu,
     |p| {
-        p.articulation_parameter = vec![VariableParameter::default(); 3];
+        p.variable_parameter_records = vec![VariableParameter::default(); 3];
     },
     |d| {
-        assert_eq!(d.number_of_articulation_parameters, 3);
+        assert_eq!(d.number_of_variable_parameter_records, 3);
     }
 );
 
@@ -325,6 +325,102 @@ lists!(
         assert_eq!(d.grouped_entity_descriptions.len(), 3);
     }
 );
+
+/// IEEE 1278.1-2012 §6.2.94: each Variable Parameter record is 128 bits,
+/// laid out by its Record Type (Tables 125-129).
+#[test]
+fn entity_state_variable_parameters_follow_their_record_types() {
+    use crate::records::{
+        ArticulatedPartVP, AttachedPartVP, EntityAssociationVP, EntityTypeVP,
+        NamedLocationIdentification, SeparationVP, SimulationAddress,
+    };
+    use crate::siso::enums::{
+        ArticulatedPartsTypeClass, ArticulatedPartsTypeMetric, AttachedPartDetachedIndicator,
+        EntityAssociationAssociationStatus, EntityVPRecordChangeIndicator,
+        SeparationVPPreEntityIndicator, SeparationVPReasonforSeparation,
+    };
+
+    let mut articulated = ArticulatedPartVP::new(
+        ArticulatedPartsTypeClass::Rudder,
+        ArticulatedPartsTypeMetric::Azimuth,
+        1.5,
+    );
+    articulated.change_indicator = 7;
+    articulated.id_part_attached_to = 0x0102;
+    let attached = AttachedPartVP {
+        detached_indicator: AttachedPartDetachedIndicator::Detached,
+        id_part_attached_to: 3,
+        // Fuselage station 2 (UID 57 range starting at 512)
+        parameter_type: 514,
+        attached_part_type: EntityType::default(),
+    };
+    let separation = SeparationVP::new(
+        SeparationVPReasonforSeparation::AttachedPartSeparation,
+        SeparationVPPreEntityIndicator::EntityIDExistedPriortoSeparationwithoutEntityStatePDU,
+        EntityIdentifier::new(SimulationAddress::new(1, 2), 3),
+        NamedLocationIdentification {
+            station_name: 4,
+            station_number: 5,
+        },
+    );
+    let entity_type = EntityTypeVP::new(
+        EntityVPRecordChangeIndicator::ChangeSinceLastIssuance,
+        EntityType::default(),
+    );
+    let association = EntityAssociationVP {
+        association_status: EntityAssociationAssociationStatus::PhysicalAssociationGeneralObject1,
+        group_number: 0xBEEF,
+        ..EntityAssociationVP::default()
+    };
+    let records = [
+        VariableParameter::ArticulatedPart(articulated),
+        VariableParameter::AttachedPart(attached),
+        VariableParameter::Separation(separation),
+        VariableParameter::EntityType(entity_type),
+        VariableParameter::EntityAssociation(association),
+        VariableParameter::Other {
+            record_type: 9,
+            record_specific_fields: [0xAB; 15],
+        },
+    ];
+
+    let mut pdu = EntityStatePdu::new();
+    pdu.variable_parameter_records = records.to_vec();
+    let bytes = to_bytes(&mut pdu);
+    let vp = |i: usize| &bytes[144 + 16 * i..144 + 16 * (i + 1)];
+
+    assert_eq!(bytes.len(), 144 + 6 * 16);
+    assert_eq!(bytes[19], 6, "Number of Variable Parameter Records");
+    // Table 125: type 0, change 7, part 0x0102, parameter type 1024 + 11,
+    // value 1.5, 32 bits of padding.
+    assert_eq!(
+        vp(0),
+        &[0, 7, 1, 2, 0, 0, 4, 11, 0x3F, 0xC0, 0, 0, 0, 0, 0, 0]
+    );
+    // Table 126: type 1, detached 1, part 3, station 514, entity type.
+    assert_eq!(&vp(1)[..8], &[1, 1, 0, 3, 0, 0, 2, 2]);
+    // Table 129: type 2, reason 1, pre-entity 1, padding, parent 1:2:3,
+    // 16 bits of padding, station name 4 and number 5.
+    assert_eq!(vp(2), &[2, 1, 1, 0, 0, 1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 5]);
+    // Table 128: type 3, change 1, entity type, 48 bits of padding.
+    assert_eq!(&vp(3)[..2], &[3, 1]);
+    assert_eq!(&vp(3)[10..], &[0; 6]);
+    // Table 127: type 4, change, status 1, ..., group number last.
+    assert_eq!(&vp(4)[..3], &[4, 0, 1]);
+    assert_eq!(&vp(4)[14..], &[0xBE, 0xEF]);
+    assert_eq!(vp(5)[0], 9);
+
+    let decoded = round_trip(&mut pdu);
+    assert_eq!(decoded.variable_parameter_records, records);
+    let VariableParameter::ArticulatedPart(part) = decoded.variable_parameter_records[0] else {
+        panic!("not an articulated part");
+    };
+    assert_eq!(part.type_class(), Some(ArticulatedPartsTypeClass::Rudder));
+    assert_eq!(
+        part.type_metric(),
+        Some(ArticulatedPartsTypeMetric::Azimuth)
+    );
+}
 
 /// IEEE 1278.1-2012 Table 184: 320 + 8NG bits, where G is the GED record's size
 /// for the Grouped Entity Category (SISO-REF-010-2023 §20.4.3).

@@ -86,7 +86,7 @@ and `to_raw` and `from_raw` give the whole octet.
 `serialize()` sets these fields from the PDU's contents, so you never set them yourself:
 
 - The header's **PDU type**, **protocol family**, and **length**.
-- Every **count field**, such as the number of articulation parameters or datum records,
+- Every **count field**, such as the number of variable parameter records or datum records,
   from the length of the matching `Vec`.
 - **Record length** fields in variable-length records, such as attribute records and
   variable transmitter parameters.

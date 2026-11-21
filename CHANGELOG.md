@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2026-11-20
+## [1.0.0] - 2026-11-21
 
 The first official release of open-dis-rust!
 
@@ -139,6 +139,10 @@ The first official release of open-dis-rust!
 - `LiveEntityFirePdu` and `LiveEntityDetonationPdu` follow their flag fields: optional fields are `Option`s that `serialize` signals in `LEFireFlags`, `LEDetonationFlags1` and `LEDetonationFlags2`, munition and event IDs leave out site and application numbers equal to the firing entity's, the Detonation PDU carries one of its two locations, and neither has a padding octet. `LiveMunitionDescriptor` has optional `WarheadAndFuse` and `QuantityAndRate` parts, and the Detonation result is a `DetonationResult`
 - `DEAreaAimpoint` is padded to a 64-bit boundary, `serialize` sets its `record_length`, and `DEAreaAimpoint::new` sets its record type (4001)
 - `IsGroupOfPdu::grouped_entity_descriptions` holds `GroupedEntityDescription`s, the SISO-REF-010 Grouped Entity Description records (UIDs 215-223, in the new `siso::grouped_entity` module) picked by the Group Entity Category, instead of 8-octet `u64`s. `serialize` sets the category from the records
+- `EntityMarking` keeps its 11 character-octets as `characters: [u8; 11]`, so markings in any character set survive a round-trip. It was originally encoded as a Rust `String` that stopped at the first zero octet and replaced non-UTF-8 octets. `EntityMarking::from_ascii` and `as_ascii` handle ASCII markings
+- `IntercomIdentifier`'s second field in the standard is named `intercom_number`, not `event_number`. This was a mistake copied over from another data type
+- `AngleDepositionAttribute` is renamed `AngleDeceptionAttribute` which refers to the Angle Deception attribute record. This was a mistake from simply misreading the standard
+- `AggregateMarking::characters` is `[u8; 31]`, 8-bit unsigned characters as opposed to `[i8; 31]`, which was most likely a typo or a misreading of the standard
 
 ## [0.4.3] - 2026-07-03
 

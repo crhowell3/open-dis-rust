@@ -20,26 +20,31 @@ use crate::siso::appearance::ObjectStateAppearanceGeneral;
 use crate::siso::bit_records::ComponentVisualDamageStatus;
 use crate::siso::enums::{
     ActiveInterrogationIndicator, AggregateStateAggregateKind, ArticulatedPartsTypeClass,
-    BeamStatusBeamState, ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor,
-    Country, CoupledExtensionIndicator, DEPrecisionAimpointBeamSpotType, DetonationTypeIndicator,
+    ArticulatedPartsTypeMetric, AttachedPartDetachedIndicator, BeamStatusBeamState,
+    ComponentDamageStatus, ComponentIdentification, ComponentVisualSmokeColor, Country,
+    CoupledExtensionIndicator, DEPrecisionAimpointBeamSpotType, DetonationTypeIndicator,
     EEAttributeStateIndicator, EmitterName, EmitterSystemFunction,
-    EntityAssociationAssociationType, EntityKind, EntityMarkingCharacterSet, EntityOwnershipStatus,
-    EnvironmentalProcessRecordType, ExplosiveMaterialCategories, FireTypeIndicator, ForceId,
-    FuelLocation, FuelMeasurementUnits, GridAxisDescriptorAxisType, GriddedDataDataRepresentation,
-    GriddedDataSampleType, IFFApplicableModes, IFFSimulationMode, IFFSystemMode, IFFSystemName,
-    IFFSystemType, IOCommsNodeRecordCommsNodeType, IOEffectsRecordIOEffect,
-    IOEffectsRecordIOLinkType, IOEffectsRecordIOProcess, IOEffectsRecordIOStatus,
-    IntercomAttachedIndicator, IntercomControlRecordType, LVCIndicator, MinefieldSensorTypesFLIR,
+    EntityAssociationAssociationStatus, EntityAssociationAssociationType,
+    EntityAssociationGroupMemberType, EntityAssociationPhysicalAssociationType,
+    EntityAssociationPhysicalConnectionType, EntityKind, EntityMarkingCharacterSet,
+    EntityOwnershipStatus, EntityVPRecordChangeIndicator, EnvironmentalProcessRecordType,
+    ExplosiveMaterialCategories, FireTypeIndicator, ForceId, FuelLocation, FuelMeasurementUnits,
+    GridAxisDescriptorAxisType, GriddedDataDataRepresentation, GriddedDataSampleType,
+    IFFApplicableModes, IFFSimulationMode, IFFSystemMode, IFFSystemName, IFFSystemType,
+    IOCommsNodeRecordCommsNodeType, IOEffectsRecordIOEffect, IOEffectsRecordIOLinkType,
+    IOEffectsRecordIOProcess, IOEffectsRecordIOStatus, IntercomAttachedIndicator,
+    IntercomControlRecordType, IsPartOfStationName, LVCIndicator, MinefieldSensorTypesFLIR,
     MinefieldSensorTypesLaser, MinefieldSensorTypesMagnetic, MinefieldSensorTypesMultispectral,
     MinefieldSensorTypesOptical, MinefieldSensorTypesPhysical, MinefieldSensorTypesRADAR,
     MinefieldSensorTypesSONAR, MinefieldStateProtocolMode, MunitionDescriptorFuse,
     MunitionDescriptorWarhead, MunitionExpendableStatus, OtherKinds, PduStatusIFFSimulationMode,
     PduType, ProtocolFamily, ProtocolVersion, RadioAttachedIndicator, SensorOnOffStatus,
-    SensorTypeSource, ServiceRequestServiceTypeRequested, SupplyFuelType,
-    TransferredEntityIndicator, TransmitterAntennaPatternReferenceSystem,
-    TransmitterMajorModulation, TransmitterModulationTypeSystem, TransponderInterrogatorIndicator,
+    SensorTypeSource, SeparationVPPreEntityIndicator, SeparationVPReasonforSeparation,
+    ServiceRequestServiceTypeRequested, SupplyFuelType, TransferredEntityIndicator,
+    TransmitterAntennaPatternReferenceSystem, TransmitterMajorModulation,
+    TransmitterModulationTypeSystem, TransponderInterrogatorIndicator,
     UAAcousticEmitterSystemFunction, UAAcousticSystemName, UAActiveEmissionParameterIndex,
-    UAScanPattern, VariableParameterRecordType, VariableRecordTypes,
+    UAScanPattern, VariableRecordTypes,
 };
 use crate::wire;
 
@@ -102,12 +107,12 @@ impl AggregateIdentifier {
 )]
 pub struct AggregateMarking {
     pub character_set: EntityMarkingCharacterSet,
-    pub characters: [i8; 31],
+    pub characters: [u8; 31],
 }
 
 impl AggregateMarking {
     #[must_use]
-    pub const fn new(character_set: EntityMarkingCharacterSet, characters: [i8; 31]) -> Self {
+    pub const fn new(character_set: EntityMarkingCharacterSet, characters: [u8; 31]) -> Self {
         Self {
             character_set,
             characters,
@@ -1042,7 +1047,7 @@ impl BlankingSectorAttribute {
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
-pub struct AngleDepositionAttribute {
+pub struct AngleDeceptionAttribute {
     pub record_type: u32,
     pub record_length: u16,
     padding: u16,
@@ -1061,7 +1066,7 @@ pub struct AngleDepositionAttribute {
     padding3: u32,
 }
 
-impl AngleDepositionAttribute {
+impl AngleDeceptionAttribute {
     #[must_use]
     pub fn new() -> Self {
         Self {
@@ -1288,12 +1293,12 @@ impl EntityIdentifier {
 const MARKING_CHARACTERS: usize = 11;
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.29
-/// Entity Marking record: a character set followed by 11 character octets.
 ///
-/// Always 12 octets on the wire. A longer `entity_marking_string` is truncated
-/// to its first 11 octets when encoded, a shorter one is zero-padded, and the
-/// padding is removed when decoded.
-#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+/// A character set (UID 45) and an 11-element character string in that
+/// character set. The octets are kept as they are, so markings in any
+/// character set can survive a round-trip unchanged. Use [`Self::from_ascii`] and
+/// [`Self::as_ascii`] for ASCII markings
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
@@ -1301,45 +1306,57 @@ const MARKING_CHARACTERS: usize = 11;
 )]
 pub struct EntityMarking {
     pub entity_marking_character_set: EntityMarkingCharacterSet,
-    #[deku(
-        reader = "read_characters(deku::reader)",
-        writer = "write_characters(deku::writer, &self.entity_marking_string)"
-    )]
-    pub entity_marking_string: String,
+    pub characters: [u8; MARKING_CHARACTERS],
 }
 
 impl EntityMarking {
     #[must_use]
     pub const fn new(
         entity_marking_character_set: EntityMarkingCharacterSet,
-        entity_marking_string: String,
+        characters: [u8; MARKING_CHARACTERS],
     ) -> Self {
         Self {
             entity_marking_character_set,
-            entity_marking_string,
+            characters,
         }
     }
-}
 
-/// Read the 11 character octets, dropping trailing zero padding. Octets that
-/// aren't valid UTF-8 become U+FFFD.
-fn read_characters<R: Read + Seek>(reader: &mut Reader<R>) -> Result<String, DekuError> {
-    let characters = <[u8; MARKING_CHARACTERS]>::from_reader_with_ctx(reader, ())?;
-    let text = characters
-        .iter()
-        .position(|&b| b == 0)
-        .and_then(|end| characters.get(..end))
-        .unwrap_or(&characters);
-    Ok(String::from_utf8_lossy(text).into_owned())
-}
+    /// An ASCII marking of up to 11 characters, zero-padded, or `None` if
+    /// `text` is longer or is not ASCII
+    #[must_use]
+    pub fn from_ascii(text: &str) -> Option<Self> {
+        if !text.is_ascii() || text.len() > MARKING_CHARACTERS {
+            return None;
+        }
 
-/// Write `text` as exactly 11 octets: truncated or zero-padded.
-fn write_characters<W: Write + Seek>(writer: &mut Writer<W>, text: &str) -> Result<(), DekuError> {
-    let mut characters = [0u8; MARKING_CHARACTERS];
-    for (slot, byte) in characters.iter_mut().zip(text.bytes()) {
-        *slot = byte;
+        let mut characters = [0u8; MARKING_CHARACTERS];
+        for (slot, byte) in characters.iter_mut().zip(text.bytes()) {
+            *slot = byte;
+        }
+        Some(Self::new(EntityMarkingCharacterSet::ASCII, characters))
     }
-    characters.to_writer(writer, ())
+
+    /// The marking as text, up to the first zero octet, when the character
+    /// set is ASCII and the characters are as well; otherwise, `None`
+    #[must_use]
+    pub fn as_ascii(&self) -> Option<&str> {
+        if self.entity_marking_character_set != EntityMarkingCharacterSet::ASCII {
+            return None;
+        }
+
+        let end = self
+            .characters
+            .iter()
+            .position(|&octet| octet == 0)
+            .unwrap_or(MARKING_CHARACTERS);
+        let text = self.characters.get(..end)?;
+
+        if text.is_ascii() {
+            std::str::from_utf8(text).ok()
+        } else {
+            None
+        }
+    }
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.30
@@ -2153,15 +2170,15 @@ fn write_intercom_fields<W: Write + Seek>(
 )]
 pub struct IntercomIdentifier {
     pub intercom_reference_id: EntityIdentifier,
-    pub event_number: u16,
+    pub intercom_number: u16,
 }
 
 impl IntercomIdentifier {
     #[must_use]
-    pub const fn new(intercom_reference_id: EntityIdentifier, event_number: u16) -> Self {
+    pub const fn new(intercom_reference_id: EntityIdentifier, intercom_number: u16) -> Self {
         Self {
             intercom_reference_id,
-            event_number,
+            intercom_number,
         }
     }
 }
@@ -3132,7 +3149,7 @@ pub struct MunitionReload {
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.62
-#[derive(Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
@@ -4537,67 +4554,219 @@ fn write_value<W: Write + Seek>(
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.94.1
-#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+///
+/// A 128-bit record whose format depends on its Record Type (UID 56): one
+/// variant per record type, holding the 120 bits of record-specific fields.
+/// A Record Type the crate doesn't define decodes as [`Self::Other`], so it
+/// round-trips unchanged.
+#[derive(Copy, Clone, Debug, PartialEq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
-    ctx_default = "deku::ctx::Endian::Big"
+    ctx_default = "deku::ctx::Endian::Big",
+    id_type = "u8"
 )]
-pub struct VariableParameter {
-    pub record_type: VariableParameterRecordType,
-    pub variable_parameter_field1: f64,
-    pub variable_parameter_field2: u32,
-    pub variable_parameter_field3: u16,
-    pub variable_parameter_field4: u8,
+pub enum VariableParameter {
+    /// Record Type 0 (§6.2.94.2)
+    #[deku(id = 0)]
+    ArticulatedPart(ArticulatedPartVP),
+    /// Record Type 1 (§6.2.94.3)
+    #[deku(id = 1)]
+    AttachedPart(AttachedPartVP),
+    /// Record Type 2 (§6.2.94.6)
+    #[deku(id = 2)]
+    Separation(SeparationVP),
+    /// Record Type 3 (§6.2.94.5)
+    #[deku(id = 3)]
+    EntityType(EntityTypeVP),
+    /// Record Type 4 (§6.2.94.4)
+    #[deku(id = 4)]
+    EntityAssociation(EntityAssociationVP),
+    /// Any other Record Type, with its record-specific fields as raw octets
+    #[deku(id_pat = "_")]
+    Other {
+        record_type: u8,
+        record_specific_fields: [u8; 15],
+    },
+}
+
+impl Default for VariableParameter {
+    fn default() -> Self {
+        Self::ArticulatedPart(ArticulatedPartVP::default())
+    }
 }
 
 impl VariableParameter {
     #[must_use]
-    pub const fn new(
-        record_type: VariableParameterRecordType,
-        variable_parameter_field1: f64,
-        variable_parameter_field2: u32,
-        variable_parameter_field3: u16,
-        variable_parameter_field4: u8,
-    ) -> Self {
-        Self {
-            record_type,
-            variable_parameter_field1,
-            variable_parameter_field2,
-            variable_parameter_field3,
-            variable_parameter_field4,
+    pub const fn record_type(&self) -> u8 {
+        match self {
+            Self::ArticulatedPart(_) => 0,
+            Self::AttachedPart(_) => 1,
+            Self::Separation(_) => 2,
+            Self::EntityType(_) => 3,
+            Self::EntityAssociation(_) => 4,
+            Self::Other { record_type, .. } => *record_type,
         }
     }
 }
 
-/// Implemented according to IEEE 1278.1-2012 §6.2.94.2
-#[derive(Copy, Clone, Debug, Default, deku::DekuRead, deku::DekuWrite)]
+/// The low bits of an Articulated Part's Parameter Type that hold the Type
+/// Metric: "The maximum value of the Type Metric shall be 31. The Type Class
+/// value shall be a multiple of 32" (Annex I.2.2.4)
+const TYPE_METRIC_MASK: u32 = 31;
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.94.2 (Record Type 0)
+#[derive(Copy, Clone, Debug, Default, PartialEq, deku::DekuRead, deku::DekuWrite)]
 #[deku(
     endian = "endian",
     ctx = "endian: deku::ctx::Endian",
     ctx_default = "deku::ctx::Endian::Big"
 )]
 pub struct ArticulatedPartVP {
-    pub record_type: VariableParameterRecordType,
     pub change_indicator: u8,
     pub id_part_attached_to: u16,
-    pub parameter_type: ArticulatedPartsTypeClass,
+    pub parameter_type: u32,
     pub parameter_value: f32,
     padding: u32,
 }
 
 impl ArticulatedPartVP {
     #[must_use]
-    pub const fn new() -> Self {
+    pub const fn new(
+        type_class: ArticulatedPartsTypeClass,
+        type_metric: ArticulatedPartsTypeMetric,
+        parameter_value: f32,
+    ) -> Self {
+        // Lossless: fieldless enums cast to the type their values fit in.
+        #[allow(clippy::as_conversions)]
+        let parameter_type = (type_class as u32).saturating_add(type_metric as u32);
         Self {
-            record_type: VariableParameterRecordType::ArticulatedPart,
             change_indicator: 0,
             id_part_attached_to: 0,
-            parameter_type: ArticulatedPartsTypeClass::NotSpecified,
-            parameter_value: 0.0,
-            padding: 0u32,
+            parameter_type,
+            parameter_value,
+            padding: 0,
         }
     }
+
+    /// The Type Class: `parameter_type` minus its Type Metric, if it's one
+    /// the crate defines
+    #[must_use]
+    pub fn type_class(&self) -> Option<ArticulatedPartsTypeClass> {
+        ArticulatedPartsTypeClass::from_u32(self.parameter_type & !TYPE_METRIC_MASK)
+    }
+
+    /// The Type Metric: `parameter_type` modulo 32, if it's one the crate
+    /// defines
+    #[must_use]
+    pub fn type_metric(&self) -> Option<ArticulatedPartsTypeMetric> {
+        ArticulatedPartsTypeMetric::from_u32(self.parameter_type & TYPE_METRIC_MASK)
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.94.3 (Record Type 1)
+///
+/// `parameter_type` is the station the part is attached to (UID 57). Stations
+/// are numbered within ranges such as
+/// [`AttachedParts::FuselageStations`](crate::siso::enums::AttachedParts::FuselageStations), so
+/// it is kept as a number.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct AttachedPartVP {
+    pub detached_indicator: AttachedPartDetachedIndicator,
+    /// The part this one is attached to, or 0 for the entity
+    pub id_part_attached_to: u16,
+    pub parameter_type: u32,
+    pub attached_part_type: EntityType,
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.94.6 (Record Type 2)
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct SeparationVP {
+    pub reason_for_separation: SeparationVPReasonforSeparation,
+    pub pre_entity_indicator: SeparationVPPreEntityIndicator,
+    padding: u8,
+    pub parent_entity_id: EntityIdentifier,
+    padding2: u16,
+    pub station_location: NamedLocationIdentification,
+}
+
+impl SeparationVP {
+    #[must_use]
+    pub const fn new(
+        reason_for_separation: SeparationVPReasonforSeparation,
+        pre_entity_indicator: SeparationVPPreEntityIndicator,
+        parent_entity_id: EntityIdentifier,
+        station_location: NamedLocationIdentification,
+    ) -> Self {
+        Self {
+            reason_for_separation,
+            pre_entity_indicator,
+            padding: 0,
+            parent_entity_id,
+            padding2: 0,
+            station_location,
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.94.5 (Record Type 3)
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct EntityTypeVP {
+    pub change_indicator: EntityVPRecordChangeIndicator,
+    pub entity_type: EntityType,
+    padding: u16,
+    padding2: u32,
+}
+
+impl EntityTypeVP {
+    #[must_use]
+    pub const fn new(
+        change_indicator: EntityVPRecordChangeIndicator,
+        entity_type: EntityType,
+    ) -> Self {
+        Self {
+            change_indicator,
+            entity_type,
+            padding: 0,
+            padding2: 0,
+        }
+    }
+}
+
+/// Implemented according to IEEE 1278.1-2012 §6.2.94.4 (Record Type 4)
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, deku::DekuRead, deku::DekuWrite)]
+#[deku(
+    endian = "endian",
+    ctx = "endian: deku::ctx::Endian",
+    ctx_default = "deku::ctx::Endian::Big"
+)]
+pub struct EntityAssociationVP {
+    pub change_indicator: EntityVPRecordChangeIndicator,
+    pub association_status: EntityAssociationAssociationStatus,
+    /// UID 323
+    pub association_type: EntityAssociationPhysicalAssociationType,
+    /// The associated entity, or an object (an Object Identifier has the
+    /// same layout)
+    pub entity_or_object_id: EntityIdentifier,
+    pub own_station_location: IsPartOfStationName,
+    pub physical_connection_type: EntityAssociationPhysicalConnectionType,
+    pub group_member_type: EntityAssociationGroupMemberType,
+    pub group_number: u16,
 }
 
 /// Implemented according to IEEE 1278.1-2012 §6.2.95
